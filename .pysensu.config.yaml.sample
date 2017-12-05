@@ -1,0 +1,14 @@
+name: SecretFound  # name needs to be one word
+alert_after: 0
+realert_every: -1  # -1 means exponential backoff
+runbook: no-runbook-available
+dependencies: []
+team: team-security
+irc_channels: []
+notification_email: to-whom-it-may-concern@example.com
+ticket: False
+project: False
+page: False
+tip: detect_secrets found a secret
+status: 1  # status needs to be 1 (warning) or higher to send the email
+ttl: null # null gets constructed into None

@@ -1,0 +1,14 @@
+*.py[co]
+*.sw[op]
+
+.coverage
+*.egg-info
+.tox
+venv
+/tmp
+
+
+.*ignore
+!.gitignore
+
+.pysensu.config.yaml

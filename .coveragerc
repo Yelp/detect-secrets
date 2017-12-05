@@ -1,0 +1,15 @@
+[run]
+branch = True
+source = .
+omit =
+    .tox/*
+    /tmp*
+    setup.py
+
+[report]
+exclude_lines =
+    # Don't complain if non-runnable code isn't run:
+    ^if __name__ == ['"]__main__['"]:$
+
+    # Need to redefine this, as per documentation
+    pragma: no cover

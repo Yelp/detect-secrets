@@ -1,0 +1,8 @@
+-   id: detect-secrets
+    name: Detect secrets
+    description: Detects high entropy strings that are likely to be passwords.
+    entry: detect-secrets-hook
+    args: ['--base64-limit', '4.5', '--hex-limit', '3']
+    language: python
+    # for backward compatibility
+    files: .*

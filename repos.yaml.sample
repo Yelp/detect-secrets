@@ -1,0 +1,7 @@
+tracked:
+  -   repo: git@github.com:pre-commit/pre-commit-hooks.git
+      is_local_repo: False
+      sha: 9730eb3beb235eabc57d188b58fd135065d07f20
+      cron: "* * 4 * *"
+      plugins:
+        Base64HighEntropyString: 4
