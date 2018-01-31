@@ -338,6 +338,35 @@ class SecretsCollectionTest(unittest.TestCase):
             assert expected_secret[0] in self.logic.data
             assert len(self.logic.data[expected_secret[0]]) == expected_secret[1]
 
+    def test_get_authors(self):
+        mock_filename = 'tests/core/secrets_collection_test.py'
+        self.logic.data[mock_filename] = {
+            PotentialSecret('mock no value type', mock_filename, 3, 'no value'): True
+        }
+        authors = self.logic.get_authors(MockRepo())
+        assert len(authors) == 1
+        for author in authors:
+            assert author == 'khock'
+
+
+class MockRepo(object):
+    def get_blame(self, lineno, filename):
+        return b"""
+            d39c008353447bbc1845812fcaf0a03b50af439f 177 174 1
+            author Kevin Hock
+            author-mail <khock@yelp.com>
+            author-time 1513196047
+            author-tz -0800
+            committer Foo
+            committer-mail <foo@example.com>
+            committer-time 1513196047
+            committer-tz -0800
+            summary mock
+            previous 23c630620c23843559485fd2ada02e9e7bc5a07e4 mock_output.java
+            filename some_file.java
+            "super:secret f8616fefbo41fdc31960ehef078f85527")));
+        """
+
 
 class MockPluginFixedValue(BasePlugin):
 

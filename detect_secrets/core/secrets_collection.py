@@ -9,6 +9,7 @@ from time import gmtime
 from time import strftime
 
 from unidiff import PatchSet
+from unidiff.errors import UnidiffParseError
 
 from detect_secrets.core.log import CustomLog
 from detect_secrets.core.potential_secret import PotentialSecret
@@ -95,15 +96,26 @@ class SecretsCollection(object):
 
         return result
 
-    def load_from_diff(self, diff, exclude_regex='', baseline_file=''):
+    def load_from_diff(self, diff, exclude_regex='', baseline_file='', last_commit_hash='', repo_name=''):
         """Initializes a SecretsCollection object from diff.
         Not a classmethod, since it needs the list of self.plugins for secret scanning.
 
         :param diff: string; diff string
         :param exclude_regex: string; a regular expression of what files to skip over
         :param baseline_file: string or None; the baseline_file of the repo, to skip over since it contains hashes
+        :param last_commit_hash: string; used for logging only -- the last hash we saved
+        :param repo_name: string; used for logging only -- the name of the repo
         """
-        patch_set = PatchSet.from_string(diff)
+        try:
+            patch_set = PatchSet.from_string(diff)
+        except UnidiffParseError:  # pragma: no cover
+            alert = {
+                'alert': 'UnidiffParseError',
+                'hash': last_commit_hash,
+                'repo_name': repo_name,
+            }
+            CustomLogObj.getLogger().error(alert)
+            raise
 
         if exclude_regex:
             regex = re.compile(exclude_regex, re.IGNORECASE)
@@ -254,6 +266,30 @@ class SecretsCollection(object):
                 output[filename].append(tmp)
 
         return output
+
+    def get_authors(self, repo):
+        """Parses git blame output to retrieve author information.
+
+        :param: object; An object representing a repository.
+
+        :returns: set of all authors
+        """
+        authors = set()
+
+        for filename in self.data:
+            # Loop through all PotentialSecret's
+            for item in self.data[filename]:
+                blame = repo.get_blame(
+                    item.lineno,
+                    filename,
+                ).decode('utf-8').split()
+
+                index_of_mail = blame.index('author-mail')
+                email = blame[index_of_mail + 1]  # <khock@yelp.com>
+                index_of_at = email.index('@')
+                authors.add(email[1:index_of_at])  # Skip the <, end at @
+
+        return authors
 
     def __str__(self):  # pragma: no cover
         return json.dumps(self.json(), indent=2)

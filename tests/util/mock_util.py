@@ -84,6 +84,10 @@ def mock_subprocess(case_tuple):
             # This is just a convenience / increased readability conditional
             inputs = inputs[0:1] + inputs[3:]
 
+        # Do the same for --work-tree
+        if len(inputs) >= 2 and inputs[1] == '--work-tree':
+            inputs = inputs[0:1] + inputs[3:]
+
         str_input = ' '.join(
             map(lambda x: x.decode('utf-8')
                 if not isinstance(x, str) else x, inputs)
