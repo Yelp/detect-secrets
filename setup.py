@@ -22,5 +22,5 @@ setup(
             'detect-secrets-server = detect_secrets.server:main',
         ],
     },
-    version='0.6.3',
+    version='0.6.5',
 )
