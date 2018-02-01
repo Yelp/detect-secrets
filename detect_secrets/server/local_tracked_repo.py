@@ -21,7 +21,7 @@ class LocalTrackedRepo(BaseTrackedRepo):
         # the `/.git` folder within the cloned git repo.
         return os.path.join(self.repo, '.git')
 
-    def clone_and_fetch_repo(self):
+    def clone_and_pull_repo(self):
         # Assumption: If you are scanning a local git repo, then you are "actively"
         # working on it. Therefore, this module will not bear the responsibility
         # of auto-updating the repo with `git pull`.

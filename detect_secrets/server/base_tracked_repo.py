@@ -18,7 +18,25 @@ from detect_secrets.server.repo_config import RepoConfig
 
 
 DEFAULT_BASE_TMP_DIR = os.path.expanduser('~/.detect-secrets-server')
-
+IGNORED_FILE_EXTENSIONS = (
+    '7z',
+    'bmp',
+    'bz2',
+    'dmg',
+    'gif',
+    'gz',
+    'jar',
+    'jpg',
+    'jpeg',
+    'png',
+    'rar',
+    's7z',
+    'tar',
+    'tif',
+    'tiff',
+    'zip',
+)
+IGNORED_EXTENSION_REGEX = ''.join('.*\.' + extension + '|' for extension in IGNORED_FILE_EXTENSIONS)[:-1]
 
 CustomLogObj = CustomLog()
 
@@ -122,7 +140,7 @@ class BaseTrackedRepo(object):
 
         :raises: subprocess.CalledProcessError
         """
-        self.clone_and_fetch_repo()
+        self.clone_and_pull_repo()
         diff = self._get_latest_changes()
         baseline = self._get_baseline()
 
@@ -130,9 +148,15 @@ class BaseTrackedRepo(object):
 
         secrets = SecretsCollection(default_plugins)
 
-        secrets.load_from_diff(diff.decode('utf-8'), self.exclude_regex, baseline_file=baseline)
-        if baseline:
+        secrets.load_from_diff(
+            diff,
+            self.exclude_regex,
+            baseline_file=baseline,
+            last_commit_hash=self.last_commit_hash,
+            repo_name=self.name
+        )
 
+        if baseline:
             baseline_collection = SecretsCollection.load_from_string(baseline)
 
             # Don't need to supply filelist, because we're not updating the baseline
@@ -220,7 +244,7 @@ class BaseTrackedRepo(object):
 
         return name
 
-    def clone_and_fetch_repo(self):
+    def clone_and_pull_repo(self):
         """We want to update the repository that we're tracking, to get the latest changes.
         Then, we can subsequently scan these new changes.
 
@@ -245,32 +269,47 @@ class BaseTrackedRepo(object):
             if not match:
                 raise
 
-        # Once we know that we're tracking the repo (after cloning it), then fetch the latest changes.
-        try:
-            # Retrieve the current branch name
-            main_branch = subprocess.check_output([
-                'git',
-                '--git-dir',
-                self.repo_location,
-                'rev-parse',
-                '--abbrev-ref',
-                'HEAD'
-            ], stderr=subprocess.STDOUT).strip()
+        subprocess.check_output([
+            'git',
+            '--git-dir', self.repo_location,
+            '--work-tree', '.',
+            'pull',
+        ], stderr=subprocess.STDOUT)
 
-            # Fetch the latest HEAD into the bare repo
-            subprocess.check_output([
-                'git',
-                '--git-dir',
-                self.repo_location,
-                'fetch',
-                '-q',
-                'origin',
-                main_branch
-            ], stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError:
-            raise
+    def get_blame(self, line_number, filename):
+        """
+        :return: string
 
-    def _get_latest_changes(self):
+        :raises: subprocess.CalledProcessError
+        """
+        return subprocess.check_output([
+            'git',
+            '--git-dir', self.repo_location,
+            '--work-tree', '.',
+            'blame',
+            self.get_main_branch(),
+            '-L', '{0},{1}'.format(line_number, line_number),
+            '--show-email',
+            '--line-porcelain',
+            '--', filename,
+        ], stderr=subprocess.STDOUT)
+
+    def get_main_branch(self):
+        """
+        :return: string
+                 e.g. master most of the time
+        :raises: subprocess.CalledProcessError
+        """
+        return subprocess.check_output([
+            'git',
+            '--git-dir',
+            self.repo_location,
+            'rev-parse',
+            '--abbrev-ref',
+            'HEAD'
+        ], stderr=subprocess.STDOUT).strip()
+
+    def _get_latest_changes(self):  # pragma: no cover
         """
         :return: string
                  This will be the patch file format of difference between last saved "clean"
@@ -279,16 +318,52 @@ class BaseTrackedRepo(object):
         :raises: subprocess.CalledProcessError
         """
         try:
-            diff = subprocess.check_output([
+            filenames_in_diff = subprocess.check_output([
                 'git',
                 '--git-dir', self.repo_location,
-                'diff', self.last_commit_hash, 'HEAD'
-            ], stderr=subprocess.STDOUT)
+                'diff', self.last_commit_hash, 'HEAD',
+                '--name-only'
+            ], stderr=subprocess.STDOUT).decode('utf-8', 'ignore').splitlines()
+
+            trimmed_filesnames = [filename for filename in filenames_in_diff
+                                  if not re.match(IGNORED_EXTENSION_REGEX, filename)]
+
+            args = [
+                'git',
+                '--git-dir', self.repo_location,
+                'diff', self.last_commit_hash, 'HEAD',
+                '--',
+            ]
+            args.extend(trimmed_filesnames)
+            diff = subprocess.check_output(args, stderr=subprocess.STDOUT)
 
         except subprocess.CalledProcessError:
-            raise
+            repo_location_exists = os.path.exists(self.repo_location)
+            head_exists = os.path.exists(self.repo_location + '/logs/HEAD')
+            first_line = ''
+            if head_exists:
+                with open(self.repo_location + '/logs/HEAD', 'r') as f:
+                    first_line = f.readline().strip()
+            alert = {
+                'alert': 'Hash not found when diffing',
+                'hash': self.last_commit_hash,
+                'repo_location': self.repo_location,
+                'repo_name': self.name,
+            }
+            if not repo_location_exists:
+                alert['info'] = 'self.repo_location does not exist'
+            elif not head_exists:
+                alert['info'] = 'logs/HEAD does not exist'
+            else:
+                alert['info'] = 'first_line of logs/HEAD is ' + str(first_line)
+            CustomLogObj.getLogger().error(alert)
 
-        return diff
+            # The last_commit_hash may have been removed from the git logs,
+            # or detect-secrets is being run on an out-of-date repo, in which case it may re-alert on old secrets now.
+            self.update()
+            return ''
+
+        return diff.decode('utf-8', 'ignore')
 
     def _get_baseline(self):
         """Take the most updated baseline, because want to get the most updated

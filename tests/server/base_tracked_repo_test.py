@@ -193,12 +193,8 @@ class BaseTrackedRepoTest(unittest.TestCase):
                 b'fatal: Could not read from remote repository',
             ),
             (
-                'git fetch',
+                'git pull',
                 b'fatal: Could not read from remote repository',
-            ),
-            (
-                'git diff',
-                b'fatal: some unknown error',
             ),
             (
                 'git show',
@@ -219,6 +215,32 @@ class BaseTrackedRepoTest(unittest.TestCase):
                 assert False
             except CalledProcessError:
                 pass
+
+    @mock.patch('detect_secrets.server.base_tracked_repo.subprocess.check_output', autospec=True)
+    def test_scan_with_nonexistant_last_saved_hash(self, mock_subprocess_obj):
+        repo = mock_tracked_repo()
+
+        cases = [
+            (
+                'git diff',
+                b'fatal: the hash is not in git history',
+            ),
+        ]
+
+        for case in cases:
+            mock_subprocess_obj.side_effect = mock_subprocess((
+                SubprocessMock(
+                    expected_input=case[0],
+                    mocked_output=case[1],
+                    should_throw_exception=True,
+                ),
+            ))
+            try:
+                # The diff will be '', so no secrets
+                secrets = repo.scan()
+                assert secrets.data == {}
+            except CalledProcessError:
+                assert False
 
     @mock.patch('detect_secrets.server.base_tracked_repo.subprocess.check_output', autospec=True)
     def test_update(self, mock_subprocess):

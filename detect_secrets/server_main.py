@@ -74,7 +74,7 @@ def add_repo(
     repo = tracked_repo_factory(is_local_repo, bool(s3_config))(**args)
 
     # Clone the repo, if needed.
-    repo.clone_and_fetch_repo()
+    repo.clone_and_pull_repo()
 
     # Make the last_commit_hash of repo point to HEAD
     repo.update()
@@ -296,6 +296,13 @@ def main(argv=None):
 
         if len(secrets.data) > 0:
             log.error('SCAN COMPLETE - We found secrets in: %s', repo.name)
+            alert = {
+                'alert': 'Secrets found',
+                'repo_name': repo.name,
+                'secrets': secrets.json(),
+                'authors': secrets.get_authors(repo),
+            }
+            log.error(alert)
             PySensuYelpHook('.pysensu.config.yaml').alert(secrets, repo.name)
         else:
             log.info('SCAN COMPLETE - STATUS: clean for %s', repo.name)

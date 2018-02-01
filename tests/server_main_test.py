@@ -265,7 +265,7 @@ class ServerTest(unittest.TestCase):
     @mock.patch('detect_secrets.server.base_tracked_repo.subprocess.check_output')
     def test_main_add_repo_remote(self, mock_subprocess_obj):
         mock_subprocess_obj.side_effect = mock_subprocess((
-            # mock out `clone_and_fetch_repo`
+            # mock out `clone_and_pull_repo`
             SubprocessMock(
                 expected_input='git clone',
                 mocked_output=b"fatal: destination path 'asdf' already exists",
@@ -310,7 +310,7 @@ class ServerTest(unittest.TestCase):
     @mock.patch('detect_secrets.server.base_tracked_repo.subprocess.check_output')
     def test_main_add_repo_local(self, mock_subprocess_obj):
         mock_subprocess_obj.side_effect = mock_subprocess((
-            # mock out `clone_and_fetch_repo`
+            # mock out `clone_and_pull_repo`
             SubprocessMock(
                 expected_input='git clone',
                 mocked_output=b"fatal: destination path 'asdf' already exists",
@@ -488,12 +488,16 @@ class ServerTest(unittest.TestCase):
         mock_secret_collection.data['junk'] = 'data'
         mock_scan.return_value = mock_secret_collection
 
-        with mock.patch('detect_secrets.server_main.PySensuYelpHook') as m, \
-                mock.patch('detect_secrets.server.base_tracked_repo.BaseTrackedRepo.update') as u:
+        with mock.patch('detect_secrets.server_main.PySensuYelpHook') as sensu, \
+                mock.patch('detect_secrets.server.base_tracked_repo.BaseTrackedRepo.update') as update, \
+                mock.patch('detect_secrets.core.secrets_collection.SecretsCollection.get_authors') as get_authors, \
+                mock.patch('detect_secrets.core.secrets_collection.SecretsCollection.json') as secrets_json:
             assert main(['--scan-repo', 'will-be-mocked']) == 0
 
-            assert u.call_count == 0
-            assert m.call_count == 1
+            assert update.call_count == 0
+            assert sensu.call_count == 1
+            assert get_authors.call_count == 1
+            assert secrets_json.call_count == 1
 
     def test_main_no_args(self):
         # Needed for coverage
