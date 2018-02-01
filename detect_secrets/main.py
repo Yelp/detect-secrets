@@ -9,7 +9,7 @@ from detect_secrets.core.log import CustomLog
 from detect_secrets.core.usage import ParserBuilder
 from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
 from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
-from detect_secrets.plugins.private_key import PrivateKeyPlugin
+from detect_secrets.plugins.private_key import PrivateKeyDetector
 
 
 def parse_args(argv):
@@ -28,7 +28,7 @@ def main(argv=None):
     default_plugins = (
         HexHighEntropyString(args.hex_limit[0]),
         Base64HighEntropyString(args.base64_limit[0]),
-        PrivateKeyPlugin(),
+        PrivateKeyDetector(),
     )
 
     if args.initialize:

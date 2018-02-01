@@ -19,8 +19,8 @@ setup(
         'console_scripts': [
             'detect-secrets = detect_secrets.main:main',
             'detect-secrets-hook = detect_secrets.pre_commit_hook:main',
-            'detect-secrets-server = detect_secrets.server:main',
+            'detect-secrets-server = detect_secrets.server_main:main',
         ],
     },
-    version='0.6.3',
+    version='0.7.0',
 )

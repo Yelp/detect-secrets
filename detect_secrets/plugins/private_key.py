@@ -5,16 +5,16 @@ from .base import BasePlugin
 from detect_secrets.core.potential_secret import PotentialSecret
 
 
-BLACKLIST = [
+BLACKLIST = (
     'BEGIN RSA PRIVATE KEY',
     'BEGIN DSA PRIVATE KEY',
     'BEGIN EC PRIVATE KEY',
     'BEGIN OPENSSH PRIVATE KEY',
     'BEGIN PRIVATE KEY',
-]
+)
 
 
-class PrivateKeyPlugin(BasePlugin):
+class PrivateKeyDetector(BasePlugin):
     """This checks for private keys by determining whether the blacklisted
     lines are present in the analyzed string.
 

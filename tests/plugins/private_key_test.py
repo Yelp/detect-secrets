@@ -3,14 +3,14 @@ from __future__ import absolute_import
 
 import unittest
 
-from detect_secrets.plugins.private_key import PrivateKeyPlugin
+from detect_secrets.plugins.private_key import PrivateKeyDetector
 from tests.util.file_util import create_file_object_from_string
 
 
-class PrivateKeyPluginTest(unittest.TestCase):
+class PrivateKeyDetectorTest(unittest.TestCase):
 
     def setUp(self):
-        self.logic = PrivateKeyPlugin()
+        self.logic = PrivateKeyDetector()
 
     def test_analyze(self):
         file_content = (

@@ -49,6 +49,7 @@ class ServerTest(unittest.TestCase):
             parse_sensitivity_values(mock_args),
             base64_limit=4.5,
             hex_limit=3,
+            private_key_detector=True,
         )
 
     @mock.patch('detect_secrets.server_main.open_config_file')
@@ -67,6 +68,7 @@ class ServerTest(unittest.TestCase):
             parse_sensitivity_values(mock_args),
             base64_limit=4.5,
             hex_limit=4,
+            private_key_detector=True,
         )
 
     def test_parse_sensitivity_values_cli_overrides_default_values(self):
@@ -76,6 +78,7 @@ class ServerTest(unittest.TestCase):
             parse_sensitivity_values(mock_args),
             base64_limit=2,
             hex_limit=3,
+            private_key_detector=True,
         )
 
     @mock.patch('detect_secrets.server_main.open_config_file')
@@ -94,6 +97,7 @@ class ServerTest(unittest.TestCase):
             parse_sensitivity_values(mock_args),
             base64_limit=2,
             hex_limit=3,
+            private_key_detector=True,
         )
 
     def test_parse_s3_config_fail(self):
@@ -297,6 +301,7 @@ class ServerTest(unittest.TestCase):
             'plugins': {
                 'base64_limit': 2.0,    # supplied CLI value
                 'hex_limit': 3,         # default value
+                'private_key_detector': True,
             },
             'cron': '',
             'baseline_file': '',
@@ -342,6 +347,7 @@ class ServerTest(unittest.TestCase):
             'plugins': {
                 'base64_limit': 4.5,
                 'hex_limit': 3,
+                'private_key_detector': True,
             },
             'cron': '',
             'baseline_file': '.baseline',
@@ -458,6 +464,7 @@ class ServerTest(unittest.TestCase):
             'plugins': {
                 'base64_limit': 3,
                 'hex_limit': None,
+                'private_key_detector': False,
             },
             'cron': '* * * * *',
             'baseline_file': '.secrets.baseline',

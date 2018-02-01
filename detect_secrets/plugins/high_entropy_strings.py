@@ -5,8 +5,8 @@ import math
 import re
 import string
 
+from .base import BasePlugin
 from detect_secrets.core.potential_secret import PotentialSecret
-from detect_secrets.plugins.base import BasePlugin
 
 
 class HighEntropyStringsPlugin(BasePlugin):
