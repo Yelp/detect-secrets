@@ -87,7 +87,7 @@ def parse_sensitivity_values(args):
     """
     When configuring which plugins to run, the user is able to either
     specify a configuration file (with --config-file), or select individual
-    values (eg. --base64-limit).
+    values (e.g. --base64-limit).
 
     This function handles parsing the values from these various places,
     and returning them as a SensitivityValues namedtuple.

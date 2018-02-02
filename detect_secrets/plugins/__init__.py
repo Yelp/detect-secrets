@@ -59,6 +59,7 @@ class SensitivityValues(_SensitivityValues):
 
         if 'PrivateKeyDetector' in kwargs:
             private_key_detector = kwargs['PrivateKeyDetector']
+        private_key_detector = bool(private_key_detector)
 
         return super(SensitivityValues, cls).__new__(
             cls,
@@ -113,9 +114,10 @@ def initialize(plugin_config):
         if not issubclass(klass, BasePlugin):
             continue
 
-        # Plugins with no sensitivity values assigned can be disabled by
-        # not specifying a value.
-        if not value:
+        # Plugins with an explicit value of `False` will be disabled.
+        # In comparison, plugins with `value == None` will default to
+        # default values.
+        if value is False:
             continue
 
         try:
