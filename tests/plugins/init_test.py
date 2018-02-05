@@ -8,6 +8,7 @@ from detect_secrets.plugins import initialize
 from detect_secrets.plugins import SensitivityValues
 from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
 from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
+from detect_secrets.plugins.private_key import PrivateKeyDetector
 
 
 class TestInitPlugins(unittest.TestCase):
@@ -39,3 +40,21 @@ class TestInitPlugins(unittest.TestCase):
             output = initialize(plugins)
 
         assert len(output) == 0
+
+    def test_no_sensitivity_value_necessary_plugin(self):
+        data = {
+            'PrivateKeyDetector': True,
+        }
+        plugins = SensitivityValues(**data)
+
+        output = initialize(plugins)
+        assert len(output) == 1
+        assert isinstance(output[0], PrivateKeyDetector)
+
+    def test_disable_plugin_with_false_value(self):
+        data = {
+            'PrivateKeyDetector': False,
+        }
+        plugins = SensitivityValues(**data)
+
+        assert len(initialize(plugins)) == 0

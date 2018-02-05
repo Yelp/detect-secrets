@@ -84,9 +84,18 @@ def add_repo(
 
 
 def parse_sensitivity_values(args):
-    """User is able to supply either a config file (with --config-file)
-    or individual values (eg. --base64-limit). This handles grabbing these
-    values from the right places, and returning them as a SensitivityValues.
+    """
+    When configuring which plugins to run, the user is able to either
+    specify a configuration file (with --config-file), or select individual
+    values (e.g. --base64-limit).
+
+    This function handles parsing the values from these various places,
+    and returning them as a SensitivityValues namedtuple.
+
+    Order Precedence:
+        1. Values specified in config file.
+        2. Values specified inline. (eg. `--hex-limit 6`)
+        3. Default values for CLI arguments (specified in ParserBuilder)
 
     :param args: parsed arguments from parse_args.
     :return: SensitivityValues
@@ -96,12 +105,13 @@ def parse_sensitivity_values(args):
         data = open_config_file(args.config_file[0]).get('default', {})
         default_plugins = data.get('plugins', {})
 
-    # NOTE: args has the default limits defined, so these values should never fail.
     return SensitivityValues(
-        base64_limit=default_plugins.get(
-            'Base64HighEntropyString') or args.base64_limit[0],
-        hex_limit=default_plugins.get(
-            'HexHighEntropyString') or args.hex_limit[0],
+        base64_limit=default_plugins.get('Base64HighEntropyString') or
+        args.base64_limit[0],
+        hex_limit=default_plugins.get('HexHighEntropyString') or
+        args.hex_limit[0],
+        private_key_detector=default_plugins.get('PrivateKeyDetector') or
+        not args.no_private_key_scan,
     )
 
 
