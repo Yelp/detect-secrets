@@ -48,8 +48,8 @@ $ cat .pre-commit-config.yaml
 ## Installation
 
 There are three components that you can setup, depending on your purposes.
-All three can work independently of each other, but for optimal results, you
-should use all three together.
+While all three are independent, you should pair the Secrets Baseline with
+either the client-side pre-commit hook, or the server-side secret scanner.
 
 1. **Client-side Pre-Commit Hook**, that alerts developers when they attempt
    to enter a secret in the code base.
@@ -150,7 +150,7 @@ $ pip install detect-secrets
 ```
 
 Remember to initialize your baseline with the same sensitivity configurations
-as your pre-commit hook!
+as your pre-commit hook, and server-side secret scanner!
 
 #### Inline Whitelisting
 
