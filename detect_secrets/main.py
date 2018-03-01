@@ -31,11 +31,11 @@ def main(argv=None):
         PrivateKeyDetector(),
     )
 
-    if args.initialize:
+    if args.scan:
         if args.exclude:
             args.exclude = args.exclude[0]
 
-        print(initialize(default_plugins, args.exclude, args.initialize).output_baseline(args.exclude))
+        print(initialize(default_plugins, args.exclude, args.scan).output_baseline(args.exclude))
 
     return 0
 
