@@ -61,7 +61,7 @@ class ParserBuilder(object):
 
     def add_initialize_baseline_argument(self):
         self.parser.add_argument(
-            '--initialize',
+            '--scan',
             nargs='?',
             const='.',
             help=(
@@ -71,7 +71,7 @@ class ParserBuilder(object):
             metavar='DIR_TO_SCAN',
         )
 
-        # Pairing `--exclude` with `--initialize` because it's only used for the initialization.
+        # Pairing `--exclude` with `--scan` because it's only used for the initialization.
         # The pre-commit hook framework already has an `exclude` option that can be used instead.
         self.parser.add_argument(
             '--exclude',

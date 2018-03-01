@@ -23,7 +23,7 @@ class MainTest(unittest.TestCase):
 
     @mock.patch('detect_secrets.main.initialize')
     def test_initialize_flag_no_excludes_no_rootdir(self, mock_initialize):
-        assert main(['--initialize']) == 0
+        assert main(['--scan']) == 0
 
         mock_initialize.assert_called_once_with(
             Any(tuple),
@@ -34,7 +34,7 @@ class MainTest(unittest.TestCase):
     @mock.patch('detect_secrets.main.initialize')
     def test_initialize_flag_with_rootdir(self, mock_initialize):
         assert main([
-            '--initialize',
+            '--scan',
             'test_data'
         ]) == 0
 
@@ -47,7 +47,7 @@ class MainTest(unittest.TestCase):
     @mock.patch('detect_secrets.main.initialize')
     def test_initialize_flag_with_exclude(self, mock_initialize):
         assert main([
-            '--initialize',
+            '--scan',
             '--exclude',
             'some_pattern_here'
         ]) == 0

@@ -30,7 +30,7 @@ need to scan the entire repository every time.
 ### Setting Up a Baseline
 
 ```
-$ detect-secrets --initialize --exclude='^(\.git|venv)' > .secrets.baseline
+$ detect-secrets --scan --exclude='^(\.git|venv)' > .secrets.baseline
 ```
 
 ### Pre-commit Hook
@@ -53,13 +53,13 @@ either the client-side pre-commit hook, or the server-side secret scanner.
 
 1. **Client-side Pre-Commit Hook**, that alerts developers when they attempt
    to enter a secret in the code base.
-   
+
 2. **Server-side Secret Scanning**, to periodically scan tracked repositories,
    and make sure developers didn't accidentally skip the pre-commit check.
-   
+
 3. **Secrets Baseline**, to whitelist pre-existing secrets in the repository,
    so that they won't be continuously caught through scan iterations.
-   
+
 ### Client-side Pre-commit Hook
 
 See [pre-commit](https://github.com/pre-commit/pre-commit) for instructions
@@ -179,10 +179,10 @@ The current heuristic searches we implement out of the box include:
 
 * **Base64HighEntropyString**: checks for all strings matching the Base64
   character set, and alerts if their Shannon entropy is above a certain limit.
-  
+
 * **HexHighEntropyString**: checks for all strings matching the Hex character
   set, and alerts if their Shannon entropy is above a certain limit.
-  
+
 * **PrivateKeyDetector**: checks to see if any private keys are committed.
 
 See [detect_secrets/
@@ -216,4 +216,3 @@ This preset amount can be adjusted in several ways:
 
 Lowering these limits will identify more potential secrets, but also create
 more false positives. Adjust these limits to suit your needs.
-
