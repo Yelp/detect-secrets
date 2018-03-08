@@ -338,15 +338,15 @@ class SecretsCollectionTest(unittest.TestCase):
             assert expected_secret[0] in self.logic.data
             assert len(self.logic.data[expected_secret[0]]) == expected_secret[1]
 
-    def test_get_authors(self):
+    def test_set_authors(self):
         mock_filename = 'tests/core/secrets_collection_test.py'
         self.logic.data[mock_filename] = {
             PotentialSecret('mock no value type', mock_filename, 3, 'no value'): True
         }
-        authors = self.logic.get_authors(MockRepo())
-        assert len(authors) == 1
-        for author in authors:
-            assert author == 'khock'
+        self.logic.set_authors(MockRepo())
+        assert len(self.logic.data[mock_filename]) == 1
+        for secret in self.logic.data[mock_filename]:
+            secret.json()['author'] == 'khock'
 
 
 class MockRepo(object):
