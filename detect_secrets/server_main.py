@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import codecs
+import os.path
 import sys
 
 import yaml
@@ -19,6 +20,7 @@ from detect_secrets.server.s3_tracked_repo import S3Config
 
 
 CustomLogObj = CustomLog()
+PYSENSU_CONFIG = '.pysensu.config.yaml'
 
 
 def open_config_file(config_file):
@@ -296,14 +298,15 @@ def main(argv=None):
 
         if len(secrets.data) > 0:
             log.error('SCAN COMPLETE - We found secrets in: %s', repo.name)
+            secrets.set_authors(repo)
             alert = {
                 'alert': 'Secrets found',
                 'repo_name': repo.name,
                 'secrets': secrets.json(),
-                'authors': secrets.get_authors(repo),
             }
             log.error(alert)
-            PySensuYelpHook('.pysensu.config.yaml').alert(secrets, repo.name)
+            if os.path.isfile(PYSENSU_CONFIG):
+                PySensuYelpHook(PYSENSU_CONFIG).alert(secrets, repo.name)
         else:
             log.info('SCAN COMPLETE - STATUS: clean for %s', repo.name)
 

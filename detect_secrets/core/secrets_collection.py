@@ -267,15 +267,11 @@ class SecretsCollection(object):
 
         return output
 
-    def get_authors(self, repo):
+    def set_authors(self, repo):
         """Parses git blame output to retrieve author information.
 
         :param: object; An object representing a repository.
-
-        :returns: set of all authors
         """
-        authors = set()
-
         for filename in self.data:
             # Loop through all PotentialSecret's
             for item in self.data[filename]:
@@ -287,9 +283,7 @@ class SecretsCollection(object):
                 index_of_mail = blame.index('author-mail')
                 email = blame[index_of_mail + 1]  # <khock@yelp.com>
                 index_of_at = email.index('@')
-                authors.add(email[1:index_of_at])  # Skip the <, end at @
-
-        return authors
+                item.author = email[1:index_of_at]  # Skip the <, end at @
 
     def __str__(self):  # pragma: no cover
         return json.dumps(self.json(), indent=2)
