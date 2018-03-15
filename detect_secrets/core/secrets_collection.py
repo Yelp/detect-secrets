@@ -20,13 +20,17 @@ CustomLogObj = CustomLog()
 
 class SecretsCollection(object):
 
-    def __init__(self, plugins=()):
+    def __init__(self, plugins=(), exclude_regex=''):
         """
-        :param plugins: tuple of plugins to determine secrets
+        :type plugins: tuple of detect_secrets.plugins.BasePlugin
+        :param plugins: rules to determine whether a string is a secret
+
+        :type exclude_regex: str
+        :param exclude_regex: for optional regex for ignored paths.
         """
         self.data = {}
         self.plugins = plugins
-        self.exclude_regex = ''
+        self.exclude_regex = exclude_regex
 
     @classmethod
     def load_from_file(cls, filename):
@@ -232,26 +236,19 @@ class SecretsCollection(object):
         except UnicodeDecodeError:
             log.warning("%s failed to load.", filename)
 
-    def output_baseline(self, exclude_regex=''):
-        """Formats the SecretsCollection for baseline output.
-
-        :param [exclude_regex]: string; for optional regex string for ignored paths.
-        :returns: json-formatted string.
+    def format_for_baseline_output(self):
         """
-        if not exclude_regex:
-            exclude_regex = ''
-
+        :rtype: dict
+        """
         results = self.json()
         for key in results:
             results[key] = sorted(results[key], key=lambda x: x['line_number'])
 
-        obj = {
+        return {
             'generated_at': strftime("%Y-%m-%dT%H:%M:%SZ", gmtime()),
-            'exclude_regex': exclude_regex,
+            'exclude_regex': self.exclude_regex,
             'results': results,
         }
-
-        return json.dumps(obj, indent=2)
 
     def json(self):
         """Custom JSON encoder"""

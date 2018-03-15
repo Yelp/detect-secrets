@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+import json
 import sys
 
 from detect_secrets.core.baseline import initialize
@@ -35,7 +36,16 @@ def main(argv=None):
         if args.exclude:
             args.exclude = args.exclude[0]
 
-        print(initialize(default_plugins, args.exclude, args.scan).output_baseline(args.exclude))
+        print(
+            json.dumps(
+                initialize(
+                    default_plugins,
+                    args.exclude,
+                    args.scan
+                ).format_for_baseline_output(),
+                indent=2,
+            )
+        )
 
     return 0
 

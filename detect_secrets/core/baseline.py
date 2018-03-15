@@ -81,7 +81,7 @@ def apply_baseline_filter(results, baseline, filelist):
     return output
 
 
-def initialize(plugins, exclude_regex=None, rootdir='.'):
+def initialize(plugins, exclude_regex='', rootdir='.'):
     """Scans the entire codebase for high entropy strings, and returns a
     SecretsCollection object.
 
@@ -90,7 +90,7 @@ def initialize(plugins, exclude_regex=None, rootdir='.'):
     :param [rootdir]:       string; specify root directory.
     :returns:               SecretsCollection
     """
-    output = SecretsCollection(plugins)
+    output = SecretsCollection(plugins, exclude_regex)
 
     if exclude_regex:
         regex = re.compile(exclude_regex, re.IGNORECASE)
