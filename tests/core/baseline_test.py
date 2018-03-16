@@ -1,39 +1,19 @@
 #!/usr/bin/python
 from __future__ import absolute_import
 
-import unittest
-
 from detect_secrets.core.baseline import apply_baseline_filter
 from detect_secrets.core.baseline import initialize
 from detect_secrets.core.potential_secret import PotentialSecret
-from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
 from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
+from tests.util.factories import secrets_collection_factory
 
 
-def add_secret(collection, filename, lineno, secret):
-    """Utility function to add individual secrets to a SecretCollection.
+class TestApplyBaselineFilter(object):
 
-    :param collection: SecretCollection; will be modified by this function.
-    :param filename:   string
-    :param secret:     string; secret to add
-    :param lineno:     integer; line number of occurring secret
-    """
-    if filename not in collection.data:  # pragma: no cover
-        collection[filename] = {}
-
-    tmp_secret = PotentialSecret('type', filename, lineno, secret)
-    collection.data[filename][tmp_secret] = tmp_secret
-
-
-class BaselineTest(unittest.TestCase):
-
-    def test_apply_baseline_filter_nothing_new(self):
-        new_findings = SecretsCollection()
-        baseline = SecretsCollection()
-
-        for collection in [new_findings, baseline]:
-            add_secret(collection, 'filename', 1, 'asdf')
+    def test_nothing_new(self):
+        new_findings = secrets_collection_factory([])
+        baseline = secrets_collection_factory([])
 
         results = apply_baseline_filter(new_findings, baseline, ['filename'])
 
@@ -44,12 +24,17 @@ class BaselineTest(unittest.TestCase):
         assert len(baseline.data) == 1
         assert next(iter(baseline.data['filename'])).lineno == 1
 
-    def test_apply_baseline_filter_new_file(self):
-        new_findings = SecretsCollection()
-        add_secret(new_findings, 'filename1', 1, 'asdf')
-
-        baseline = SecretsCollection()
-        add_secret(baseline, 'filename2', 1, 'asdf')
+    def test_new_file(self):
+        new_findings = secrets_collection_factory([
+            {
+                'filename': 'filename1',
+            }
+        ])
+        baseline = secrets_collection_factory([
+            {
+                'filename': 'filename2',
+            }
+        ])
 
         backup_baseline = baseline.data.copy()
         results = apply_baseline_filter(new_findings, baseline, ['filename1', 'filename2'])
@@ -58,13 +43,20 @@ class BaselineTest(unittest.TestCase):
         assert 'filename1' in results.data
         assert baseline.data == backup_baseline
 
-    def test_apply_baseline_filter_new_file_excluded(self):
-        new_findings = SecretsCollection()
-        add_secret(new_findings, 'filename1', 1, 'asdf')
-        add_secret(new_findings, 'filename2', 1, 'asdf')
-
-        baseline = SecretsCollection()
-        add_secret(baseline, 'filename3', 1, 'asdf')
+    def test_new_file_excluded(self):
+        new_findings = secrets_collection_factory([
+            {
+                'filename': 'filename1',
+            },
+            {
+                'filename': 'filename2',
+            }
+        ])
+        baseline = secrets_collection_factory([
+            {
+                'filename': 'filename3',
+            }
+        ])
 
         backup_baseline = baseline.data.copy()
         baseline.exclude_regex = 'filename1'
@@ -74,13 +66,20 @@ class BaselineTest(unittest.TestCase):
         assert 'filename1' not in results.data
         assert baseline.data == backup_baseline
 
-    def test_apply_baseline_filter_new_secret_line_old_file(self):
+    def test_new_secret_line_old_file(self):
         """Same file, new line with potential secret"""
-        new_findings = SecretsCollection()
-        add_secret(new_findings, 'filename', 1, 'secret1')
-
-        baseline = SecretsCollection()
-        add_secret(baseline, 'filename', 2, 'secret2')
+        new_findings = secrets_collection_factory([
+            {
+                'secret': 'secret1',
+                'lineno': 1,
+            }
+        ])
+        baseline = secrets_collection_factory([
+            {
+                'secret': 'secret2',
+                'lineno': 2,
+            }
+        ])
 
         backup_baseline = baseline.data.copy()
         results = apply_baseline_filter(new_findings, baseline, ['filename'])
@@ -90,13 +89,18 @@ class BaselineTest(unittest.TestCase):
         assert results.data['filename'][secretA].secret_hash == PotentialSecret.hash_secret('secret1')
         assert baseline.data == backup_baseline
 
-    def test_apply_baseline_filter_rolled_creds(self):
+    def test_rolled_creds(self):
         """Same line, different secret"""
-        new_findings = SecretsCollection()
-        add_secret(new_findings, 'filename', 1, 'secret_new')
-
-        baseline = SecretsCollection()
-        add_secret(baseline, 'filename', 1, 'secret')
+        new_findings = secrets_collection_factory([
+            {
+                'secret': 'secret_new',
+            }
+        ])
+        baseline = secrets_collection_factory([
+            {
+                'secret': 'secret',
+            }
+        ])
 
         backup_baseline = baseline.data.copy()
         results = apply_baseline_filter(new_findings, baseline, ['filename'])
@@ -107,13 +111,23 @@ class BaselineTest(unittest.TestCase):
         assert results.data['filename'][secretA].secret_hash == PotentialSecret.hash_secret('secret_new')
         assert baseline.data == backup_baseline
 
-    def test_apply_baseline_filter_deleted_secret(self):
-        new_findings = SecretsCollection()
-        add_secret(new_findings, 'filename', 2, 'tofu')
-
-        baseline = SecretsCollection()
-        add_secret(baseline, 'filename', 1, 'hotdog')
-        add_secret(baseline, 'filename', 2, 'tofu')
+    def test_deleted_secret(self):
+        new_findings = secrets_collection_factory([
+            {
+                'secret': 'secret',
+                'lineno': 2,
+            }
+        ])
+        baseline = secrets_collection_factory([
+            {
+                'secret': 'deleted_secret',
+                'lineno': 1,
+            },
+            {
+                'secret': 'secret',
+                'lineno': 2,
+            }
+        ])
 
         results = apply_baseline_filter(new_findings, baseline, ['filename'])
 
@@ -122,10 +136,9 @@ class BaselineTest(unittest.TestCase):
         assert len(baseline.data) == 1
         assert next(iter(baseline.data['filename'])).lineno == 2
 
-    def test_apply_baseline_filter_deleted_secret_file(self):
-        new_findings = SecretsCollection()
-        baseline = SecretsCollection()
-        add_secret(baseline, 'filename', 1, 'secret')
+    def test_deleted_secret_file(self):
+        new_findings = secrets_collection_factory()
+        baseline = secrets_collection_factory([])
 
         results = apply_baseline_filter(new_findings, baseline, ['filename', 'non_relevant_file'])
 
@@ -133,12 +146,13 @@ class BaselineTest(unittest.TestCase):
         assert len(results.data) == 0
         assert len(baseline.data) == 0
 
-    def test_apply_baseline_filter_same_secret_new_location(self):
-        new_findings = SecretsCollection()
-        add_secret(new_findings, 'filename', 1, 'secret')
-
-        baseline = SecretsCollection()
-        add_secret(baseline, 'filename', 2, 'secret')
+    def test_same_secret_new_location(self):
+        new_findings = secrets_collection_factory([])
+        baseline = secrets_collection_factory([
+            {
+                'lineno': 2,
+            },
+        ])
 
         results = apply_baseline_filter(new_findings, baseline, ['filename'])
 
@@ -147,12 +161,18 @@ class BaselineTest(unittest.TestCase):
         assert len(baseline.data) == 1
         assert next(iter(baseline.data['filename'])).lineno == 1
 
-    def test_initialize_basic_usage(self):
+
+class TestInitializeBaseline(object):
+
+    def setup(self):
+        self.plugins = [
+            Base64HighEntropyString(4.5),
+            HexHighEntropyString(3),
+        ]
+
+    def test_basic_usage(self):
         results = initialize(
-            [
-                Base64HighEntropyString(4.5),
-                HexHighEntropyString(3)
-            ],
+            self.plugins,
             rootdir='./test_data',
         ).json()
 
@@ -160,12 +180,9 @@ class BaselineTest(unittest.TestCase):
         assert len(results['file_with_secrets.py']) == 1
         assert len(results['tmp/file_with_secrets.py']) == 2
 
-    def test_initialize_exclude_regex(self):
+    def test_exclude_regex(self):
         results = initialize(
-            [
-                Base64HighEntropyString(4.5),
-                HexHighEntropyString(3)
-            ],
+            self.plugins,
             exclude_regex='tmp*',
             rootdir='./test_data',
         ).json()
@@ -173,12 +190,9 @@ class BaselineTest(unittest.TestCase):
         assert len(results.keys()) == 2
         assert 'file_with_secrets.py' in results
 
-    def test_initialize_exclude_regex_at_root_level(self):
+    def test_exclude_regex_at_root_level(self):
         results = initialize(
-            [
-                Base64HighEntropyString(4.5),
-                HexHighEntropyString(3)
-            ],
+            self.plugins,
             exclude_regex='file_with_secrets.py',
             rootdir='./test_data'
         ).json()
@@ -187,12 +201,9 @@ class BaselineTest(unittest.TestCase):
         # level, and the nested file in tmp.
         assert len(results.keys()) == 1
 
-    def test_initialize_relative_paths(self):
+    def test_relative_paths(self):
         results = initialize(
-            [
-                Base64HighEntropyString(4.5),
-                HexHighEntropyString(3)
-            ],
+            self.plugins,
             rootdir='test_data/../test_data/tmp/..'
         ).json()
 

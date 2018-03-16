@@ -33,7 +33,7 @@ class SecretsCollection(object):
         self.exclude_regex = exclude_regex
 
     @classmethod
-    def load_from_file(cls, filename):
+    def load_baseline_from_file(cls, filename):
         """Initialize a SecretsCollection object from file.
 
         :param filename: string; name of file to load
@@ -42,7 +42,7 @@ class SecretsCollection(object):
         """
         try:
             with codecs.open(filename, encoding='utf-8') as f:
-                baseline = json.loads(f.read())
+                baseline_string = f.read()
 
         except (IOError, UnicodeDecodeError):
             CustomLogObj.getLogger().error(
@@ -51,32 +51,32 @@ class SecretsCollection(object):
 
             raise
 
-        try:
-            return cls.load_from_dict(baseline)
-        except IOError:
-            CustomLogObj.getLogger().error('Incorrectly formatted baseline!')
-            raise
+        return cls.load_baseline_from_string(baseline_string)
 
     @classmethod
-    def load_from_string(cls, string):
-        """Initializes a SecretsCollection object from string
+    def load_baseline_from_string(cls, string):
+        """Initializes a SecretsCollection object from string.
 
-        :param string: string; string to load SecretsCollection from.
-        :returns: SecretsCollection
+        :type string: str
+        :param string: string to load SecretsCollection from.
+
+        :rtype: SecretsCollection
         :raises: IOError
         """
         try:
-            return cls.load_from_dict(json.loads(string))
+            return cls._load_baseline_from_dict(json.loads(string))
         except (IOError, ValueError):
             CustomLogObj.getLogger().error('Incorrectly formatted baseline!')
             raise
 
     @classmethod
-    def load_from_dict(cls, data):
+    def _load_baseline_from_dict(cls, data):
         """Initializes a SecretsCollection object from dictionary.
 
-        :param data: dict; properly formatted dictionary to load SecretsCollection from.
-        :returns: SecretsCollection
+        :type data: dict
+        :param data: properly formatted dictionary to load SecretsCollection from.
+
+        :rtype: SecretsCollection
         :raises: IOError
         """
         result = SecretsCollection()
@@ -100,15 +100,31 @@ class SecretsCollection(object):
 
         return result
 
-    def load_from_diff(self, diff, exclude_regex='', baseline_file='', last_commit_hash='', repo_name=''):
-        """Initializes a SecretsCollection object from diff.
-        Not a classmethod, since it needs the list of self.plugins for secret scanning.
+    def scan_diff(
+            self,
+            diff,
+            baseline_filename='',
+            last_commit_hash='',
+            repo_name=''
+    ):
+        """For optimization purposes, our scanning strategy focuses on looking
+        at incremental differences, rather than re-scanning the codebase every time.
+        This function supports this, and adds information to self.data.
 
-        :param diff: string; diff string
-        :param exclude_regex: string; a regular expression of what files to skip over
-        :param baseline_file: string or None; the baseline_file of the repo, to skip over since it contains hashes
-        :param last_commit_hash: string; used for logging only -- the last hash we saved
-        :param repo_name: string; used for logging only -- the name of the repo
+        :type diff: str
+        :param diff: diff string.
+                     Eg. The output of `git diff <fileA> <fileB>`
+
+        :type baseline_filename: str
+        :param baseline_filename: if there are any baseline secrets, then the baseline
+                                  file will have hashes in them. By specifying it, we
+                                  can skip this clear exception.
+
+        :type last_commit_hash: str
+        :param last_commit_hash: used for logging only -- the last commit hash we saved
+
+        :type repo_name: str
+        :param repo_name: used for logging only -- the name of the repo
         """
         try:
             patch_set = PatchSet.from_string(diff)
@@ -121,16 +137,16 @@ class SecretsCollection(object):
             CustomLogObj.getLogger().error(alert)
             raise
 
-        if exclude_regex:
-            regex = re.compile(exclude_regex, re.IGNORECASE)
+        if self.exclude_regex:
+            regex = re.compile(self.exclude_regex, re.IGNORECASE)
 
         for patch_file in patch_set:
             filename = patch_file.path
             # If the file matches the exclude_regex, we skip it
-            if exclude_regex and regex.search(filename):
+            if self.exclude_regex and regex.search(filename):
                 continue
-            # Skip over the baseline_file, because it will have hashes in it.
-            if filename == baseline_file:
+
+            if filename == baseline_filename:
                 continue
 
             # We only want to capture incoming secrets (so added lines)
@@ -159,9 +175,13 @@ class SecretsCollection(object):
     def scan_file(self, filename, filename_key=None):
         """Scans a specified file, and adds information to self.data
 
-        :param filename:     string; full path to file to scan.
-        :param filename_key: string; key to store in self.data
-        :returns: boolean; used for testing
+        :type filename: str
+        :param filename: full path to file to scan.
+
+        :type filename_key: str
+        :param filename_key: key to store in self.data
+
+        :returns: boolean; though this value is only used for testing
         """
 
         if filename_key is None:
@@ -175,7 +195,6 @@ class SecretsCollection(object):
                 self._extract_secrets(f, filename_key)
 
             return True
-
         except IOError:
             CustomLogObj.getLogger().warning("Unable to open file: %s", filename)
             return False
@@ -183,10 +202,16 @@ class SecretsCollection(object):
     def get_secret(self, filename, secret, typ=None):
         """Checks to see whether a secret is found in the collection.
 
-        :param filename: string; which file to search in.
-        :param secret:   string; secret hash of secret to search for.
-        :param [typ]:    string; type of secret, if known.
-        :returns:        PotentialSecret or None
+        :type filename: str
+        :param filename: the file to search in.
+
+        :type secret: str
+        :param secret: secret hash of secret to search for.
+
+        :type typ: str
+        :param [typ]: type of secret, if known.
+
+        :rtype: PotentialSecret|None
         """
         if filename not in self.data:
             return None
@@ -213,8 +238,8 @@ class SecretsCollection(object):
     def _extract_secrets(self, f, filename):
         """Extract the secrets from a given file object.
 
-        :param f:        File object
-        :param filename: string
+        :type f:        File object
+        :type filename: string
         """
         log = CustomLogObj.getLogger()
         try:

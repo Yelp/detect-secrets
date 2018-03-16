@@ -1,26 +1,39 @@
 #!/usr/bin/python
 from __future__ import absolute_import
 
-import unittest
+import pytest
 
-from detect_secrets.core.potential_secret import PotentialSecret
+from tests.util.factories import potential_secret_factory
 
 
-class PotentialSecretTest(unittest.TestCase):
+class TestPotentialSecret(object):
 
-    def test_equality(self):
-        A = PotentialSecret('type', 'filename', 1, 'secret')
-        B = PotentialSecret('type', 'filename', 2, 'secret')
-        assert A == B
+    @pytest.mark.parametrize(
+        'a,b,is_equal',
+        [
+            (
+                potential_secret_factory(lineno=1),
+                potential_secret_factory(lineno=2),
+                True,
+            ),
+            (
+                potential_secret_factory(type_='A'),
+                potential_secret_factory(type_='B'),
+                False,
+            ),
+            (
+                potential_secret_factory(secret='A'),
+                potential_secret_factory(secret='B'),
+                False,
+            )
+        ]
+    )
+    def test_equality(self, a, b, is_equal):
+        assert (a == b) is is_equal
 
-        A = PotentialSecret('typeA', 'filename', 1, 'secret')
-        B = PotentialSecret('typeB', 'filename', 1, 'secret')
-        assert A != B
-
-        A = PotentialSecret('type', 'filename', 1, 'secretA')
-        B = PotentialSecret('type', 'filename', 1, 'secretB')
-        assert A != B
+        # As a sanity check that it works both ways
+        assert (a != b) is not is_equal
 
     def test_secret_storage(self):
-        secret = PotentialSecret('type', 'filename', 1, 'secret')
+        secret = potential_secret_factory()
         assert secret.secret_hash != 'secret'

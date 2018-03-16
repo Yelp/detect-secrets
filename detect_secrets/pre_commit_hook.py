@@ -54,7 +54,7 @@ def main(argv=None):
         # If baseline is provided, we first want to make sure it's valid, before
         # doing any further computation.
         try:
-            baseline_collection = SecretsCollection.load_from_file(
+            baseline_collection = SecretsCollection.load_baseline_from_file(
                 args.baseline[0]
             )
         except IOError:

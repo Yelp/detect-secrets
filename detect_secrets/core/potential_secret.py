@@ -1,16 +1,35 @@
-#!/usr/bin/python
 import hashlib
 
 
 class PotentialSecret(object):
+    """This custom data type represents a string found, matching the
+    plugin rules defined in SecretsCollection, that has the potential
+    to be a secret that we actually care about.
+
+    "Potential" is the operative word here, because of the nature of
+    false positives.
+
+    We use this custom class so that we can more easily generate data
+    structures and do object-based comparisons with other PotentialSecrets,
+    without actually knowing what the secret is.
+    """
 
     def __init__(self, typ, filename, lineno, secret):
         """
-        :param typ:      string; human-readable typing of what makes this
-                         secret identified a "potential secret"
-        :param filename: string; name of file that this potential secret was found
-        :param lineno:   integer; location of secret
-        :param secret:   string; the secret identified
+        :type typ: str
+        :param typ: human-readable secret type, defined by the plugin
+                    that generated this PotentialSecret.
+                    Eg. "High Entropy String"
+
+        :type filename: str
+        :param filename: name of file that this secret was found
+
+        :type lineno: int
+        :param lineno: location of secret, within filename.
+                       Merely used as a reference for easy triage.
+
+        :type secret: str
+        :param secret: the actual secret identified
         """
         self.type = typ
         self.filename = filename
@@ -18,13 +37,16 @@ class PotentialSecret(object):
         self.secret_hash = self.hash_secret(secret)
 
         # If two PotentialSecrets have the same values for these fields,
-        # they are considered equal.
+        # they are considered equal. Note that line numbers aren't included
+        # in this, because line numbers are subject to change.
         self.fields_to_compare = ['filename', 'secret_hash', 'type']
 
-    @classmethod
-    def hash_secret(self, secret):
-        """
-        :param secret: string
+    @staticmethod
+    def hash_secret(secret):
+        """This offers an abstract method to coherently test this class,
+        without mocking self.secret_hash.
+
+        :type secret: string
         :returns: string
         """
         return hashlib.sha1(secret.encode('utf-8')).hexdigest()

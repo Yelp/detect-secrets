@@ -52,7 +52,7 @@ class PreCommitHookTest(unittest.TestCase):
 
     @mock.patch('detect_secrets.pre_commit_hook.SecretsCollection', autospec=True)
     def test_no_computation_if_bad_baseline(self, mock_secrets_collection):
-        mock_secrets_collection.load_from_file.side_effect = IOError
+        mock_secrets_collection.load_baseline_from_file.side_effect = IOError
 
         assert main([
             '--baseline',
@@ -65,7 +65,7 @@ class PreCommitHookTest(unittest.TestCase):
     @mock.patch('detect_secrets.pre_commit_hook.SecretsCollection', autospec=True)
     @mock.patch('detect_secrets.pre_commit_hook.apply_baseline_filter')
     def test_ignore_baseline_file(self, mock_apply_baseline, mock_secrets_collection):
-        mock_secrets_collection.load_from_file.return_value = None
+        mock_secrets_collection.load_baseline_from_file.return_value = None
 
         assert main([
             '--baseline',

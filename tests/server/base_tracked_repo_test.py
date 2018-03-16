@@ -150,7 +150,7 @@ class BaseTrackedRepoTest(unittest.TestCase):
         assert isinstance(secrets, SecretsCollection)
 
     @mock.patch('detect_secrets.server.base_tracked_repo.apply_baseline_filter')
-    @mock.patch('detect_secrets.server.base_tracked_repo.SecretsCollection.load_from_string')
+    @mock.patch('detect_secrets.server.base_tracked_repo.SecretsCollection.load_baseline_from_string')
     @mock.patch('detect_secrets.server.base_tracked_repo.subprocess.check_output', autospec=True)
     def test_scan_with_baseline(self, mock_subprocess_obj, mock_load_from_string, mock_apply):
         repo = mock_tracked_repo()

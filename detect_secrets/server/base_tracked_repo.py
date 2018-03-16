@@ -146,18 +146,17 @@ class BaseTrackedRepo(object):
 
         default_plugins = initialize(self.plugin_config)
 
-        secrets = SecretsCollection(default_plugins)
+        secrets = SecretsCollection(default_plugins, self.exclude_regex)
 
-        secrets.load_from_diff(
+        secrets.scan_diff(
             diff,
-            self.exclude_regex,
-            baseline_file=baseline,
+            baseline_filename=baseline,
             last_commit_hash=self.last_commit_hash,
             repo_name=self.name
         )
 
         if baseline:
-            baseline_collection = SecretsCollection.load_from_string(baseline)
+            baseline_collection = SecretsCollection.load_baseline_from_string(baseline)
 
             # Don't need to supply filelist, because we're not updating the baseline
             secrets = apply_baseline_filter(secrets, baseline_collection, ())
