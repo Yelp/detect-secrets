@@ -35,6 +35,8 @@ class PotentialSecret(object):
         self.filename = filename
         self.lineno = lineno
         self.secret_hash = self.hash_secret(secret)
+        # This is set in set_authors in SecretsCollection
+        self.author = None
 
         # This is set in set_authors in SecretsCollection
         self.author = None
@@ -62,6 +64,9 @@ class PotentialSecret(object):
             'line_number': self.lineno,
             'hashed_secret': self.secret_hash
         }
+        if self.author:
+            attributes['author'] = self.author
+        return attributes
 
         if self.author:
             attributes['author'] = self.author
