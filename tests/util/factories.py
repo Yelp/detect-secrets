@@ -30,10 +30,6 @@ def secrets_collection_factory(secrets=None, plugins=(), exclude_regex=''):
     if secrets is None:
         return collection
 
-    # TODO: Fix this weird case
-    if len(secrets) == 0:
-        secrets = [{}]
-
     for kwargs in secrets:
         _add_secret(collection, **kwargs)
 
@@ -41,7 +37,8 @@ def secrets_collection_factory(secrets=None, plugins=(), exclude_regex=''):
 
 
 def mock_repo_factory():
-    # TODO
+    # TODO: I will fix this, when I turn the repo tests to use pytest (and
+    #       subsequently, factory patterns)
     class Temporary:
         def get_blame(self):
             pass

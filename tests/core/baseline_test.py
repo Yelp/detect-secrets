@@ -12,8 +12,9 @@ from tests.util.factories import secrets_collection_factory
 class TestApplyBaselineFilter(object):
 
     def test_nothing_new(self):
-        new_findings = secrets_collection_factory([])
-        baseline = secrets_collection_factory([])
+        # We want a secret, but just a default secret (no overriding parameters)
+        new_findings = secrets_collection_factory([{}])
+        baseline = secrets_collection_factory([{}])
 
         results = apply_baseline_filter(new_findings, baseline, ['filename'])
 
@@ -147,7 +148,11 @@ class TestApplyBaselineFilter(object):
         assert len(baseline.data) == 0
 
     def test_same_secret_new_location(self):
-        new_findings = secrets_collection_factory([])
+        new_findings = secrets_collection_factory([
+            {
+                'lineno': 1,
+            }
+        ])
         baseline = secrets_collection_factory([
             {
                 'lineno': 2,
