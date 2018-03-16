@@ -333,14 +333,17 @@ class TestBaselineInputOutput(object):
             assert original[key] == new[key]
 
 
-class TestGetAuthors(object):
+class TestSetAuthors(object):
 
     def test_success(self):
-        with self.mock_repo() as repo:
-            authors = secrets_collection_factory([{'secret': 'hi'}]).get_authors(repo)
+        secrets = secrets_collection_factory([{
+            'filename': 'fileA',
+        }])
 
-        assert len(authors) == 1
-        assert list(authors)[0] == 'khock'
+        with self.mock_repo() as repo:
+            secrets.set_authors(repo)
+
+        assert list(secrets.data['fileA'].values())[0].json()['author'] == 'khock'
 
     @contextmanager
     def mock_repo(self):

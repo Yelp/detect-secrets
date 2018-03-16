@@ -36,6 +36,9 @@ class PotentialSecret(object):
         self.lineno = lineno
         self.secret_hash = self.hash_secret(secret)
 
+        # This is set in set_authors in SecretsCollection
+        self.author = None
+
         # If two PotentialSecrets have the same values for these fields,
         # they are considered equal. Note that line numbers aren't included
         # in this, because line numbers are subject to change.
@@ -53,12 +56,17 @@ class PotentialSecret(object):
 
     def json(self):
         """Custom JSON encoder"""
-        return {
+        attributes = {
             'type': self.type,
             'filename': self.filename,
             'line_number': self.lineno,
             'hashed_secret': self.secret_hash
         }
+
+        if self.author:
+            attributes['author'] = self.author
+
+        return attributes
 
     def __eq__(self, other):
         return all(

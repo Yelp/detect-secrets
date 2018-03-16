@@ -470,10 +470,11 @@ class ServerTest(unittest.TestCase):
             'baseline_file': '.secrets.baseline',
         }, indent=2))
 
+    @mock.patch('detect_secrets.server_main.os.path.isfile')
     @mock.patch('detect_secrets.server_main.CustomLogObj.getLogger')
     @mock.patch('detect_secrets.server.base_tracked_repo.BaseTrackedRepo.scan')
     @mock.patch('detect_secrets.server.base_tracked_repo.BaseTrackedRepo._read_tracked_file')
-    def test_main_scan_repo_scan_success_secrets_found(self, mock_file, mock_scan, mock_log):
+    def test_main_scan_repo_scan_success_secrets_found(self, mock_file, mock_scan, mock_log, mock_is_file):
         mock_file.return_value = {
             'sha': 'does_not_matter',
             'repo': 'repo_name',
@@ -483,6 +484,7 @@ class ServerTest(unittest.TestCase):
             'cron': '* * * * *',
             'baseline_file': '.secrets.baseline',
         }
+        mock_is_file.return_value = True
 
         mock_secret_collection = SecretsCollection()
         mock_secret_collection.data['junk'] = 'data'
@@ -490,13 +492,13 @@ class ServerTest(unittest.TestCase):
 
         with mock.patch('detect_secrets.server_main.PySensuYelpHook') as sensu, \
                 mock.patch('detect_secrets.server.base_tracked_repo.BaseTrackedRepo.update') as update, \
-                mock.patch('detect_secrets.core.secrets_collection.SecretsCollection.get_authors') as get_authors, \
+                mock.patch('detect_secrets.core.secrets_collection.SecretsCollection.set_authors') as set_authors, \
                 mock.patch('detect_secrets.core.secrets_collection.SecretsCollection.json') as secrets_json:
             assert main(['--scan-repo', 'will-be-mocked']) == 0
 
             assert update.call_count == 0
             assert sensu.call_count == 1
-            assert get_authors.call_count == 1
+            assert set_authors.call_count == 1
             assert secrets_json.call_count == 1
 
     def test_main_no_args(self):
