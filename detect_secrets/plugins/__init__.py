@@ -10,17 +10,14 @@ from detect_secrets.core.log import CustomLog
 _CustomLogObj = CustomLog()
 
 
-_SensitivityValues = namedtuple(
+class SensitivityValues(namedtuple(
     'SensitivityValues',
     [
         'base64_limit',
         'hex_limit',
         'private_key_detector',
     ]
-)
-
-
-class SensitivityValues(_SensitivityValues):
+)):
     """Server configuration to determine which plugins to run per repo."""
 
     def __new__(
@@ -69,29 +66,6 @@ class SensitivityValues(_SensitivityValues):
         )
 
 
-def _convert_sensitivity_values_to_class_tuple(sensitivity_values):
-    """
-    :param sensitivity_values: SensitivityValues
-    :return: tuple in the format (<plugin_class_name>, <value_to_initialize_it>)
-             This way, we can initialize the class with <plugin_class_name>(<value>)
-
-    Example:
-        >>> [ ('HexHighEntropyString', 3), ('PrivateKeyDetector', true), ]
-    """
-    mapping = {
-        'base64_limit': 'Base64HighEntropyString',
-        'hex_limit': 'HexHighEntropyString',
-        'private_key_detector': 'PrivateKeyDetector',
-    }
-
-    output = []
-    for key in sensitivity_values._fields:
-        if key in mapping and getattr(sensitivity_values, key) is not None:
-            output.append((mapping[key], getattr(sensitivity_values, key),))
-
-    return tuple(output)
-
-
 def initialize(plugin_config):
     """
     Converts a list of plugin names (and corresponding initializing parameters)
@@ -114,10 +88,7 @@ def initialize(plugin_config):
         if not issubclass(klass, BasePlugin):
             continue
 
-        # Plugins with an explicit value of `False` will be disabled.
-        # In comparison, plugins with `value == None` will default to
-        # default values.
-        if value is False:
+        if not value:
             continue
 
         try:
@@ -134,3 +105,26 @@ def initialize(plugin_config):
         output.append(instance)
 
     return output
+
+
+def _convert_sensitivity_values_to_class_tuple(sensitivity_values):
+    """
+    :param sensitivity_values: SensitivityValues
+    :return: tuple in the format (<plugin_class_name>, <value_to_initialize_it>)
+             This way, we can initialize the class with <plugin_class_name>(<value>)
+
+    Example:
+        >>> [ ('HexHighEntropyString', 3), ('PrivateKeyDetector', true), ]
+    """
+    mapping = {
+        'base64_limit': 'Base64HighEntropyString',
+        'hex_limit': 'HexHighEntropyString',
+        'private_key_detector': 'PrivateKeyDetector',
+    }
+
+    output = []
+    for key in sensitivity_values._fields:
+        if key in mapping and getattr(sensitivity_values, key) is not None:
+            output.append((mapping[key], getattr(sensitivity_values, key),))
+
+    return tuple(output)

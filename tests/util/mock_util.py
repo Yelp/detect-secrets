@@ -2,6 +2,7 @@
  This is a collection of utility functions for easier, DRY testing.
 """
 from collections import namedtuple
+from contextlib import contextmanager
 from subprocess import CalledProcessError
 
 import mock
@@ -106,3 +107,10 @@ def mock_subprocess(case_tuple):
         return b''
 
     return fn
+
+
+@contextmanager
+def mock_open(data, namespace):
+    m = mock.mock_open(read_data=data)
+    with mock.patch(namespace, m):
+        yield m

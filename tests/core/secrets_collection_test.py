@@ -14,6 +14,7 @@ from detect_secrets.plugins.base import BasePlugin
 from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
 from tests.util.factories import mock_repo_factory
 from tests.util.factories import secrets_collection_factory
+from tests.util.mock_util import mock_open as mock_open_base
 
 
 @pytest.fixture
@@ -22,11 +23,8 @@ def mock_log():
         yield m
 
 
-@contextmanager
 def mock_open(data):
-    m = mock.mock_open(read_data=data)
-    with mock.patch('detect_secrets.core.secrets_collection.codecs.open', m):
-        yield m
+    return mock_open_base(data, 'detect_secrets.core.secrets_collection.codecs.open')
 
 
 @pytest.fixture

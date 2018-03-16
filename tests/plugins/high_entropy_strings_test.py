@@ -1,134 +1,127 @@
-#!/usr/bin/python
 from __future__ import absolute_import
 
-import unittest
+import pytest
 
 from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
 from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
 from tests.util.file_util import create_file_object_from_string
 
 
-def abstract_test_case(func):
-    """Decorator used to specify test cases that should NOT be run as part
-    of the base test case, but only run by children test cases"""
+class HighEntropyStringsTest(object):
+    """
+    Some explaining should be done regarding the "enforced" format of the parametrized
+    abstract pytests.
 
-    def decorator(*args, **kwargs):
-        self = args[0]
+    We want to abstract it, so that the tests would be different for each subclass,
+    however, there is no easy way to do that (because pytest marks those fixtures at
+    "collection" time -- at which, it has no knowledge of the actual variables).
 
-        if self.__class__.__name__ == 'HighEntropyStringsTest':
-            return
+    Therefore, as a workaround, we provide string formats as the parameterized variable,
+    and call `.format` on it at a later time.
+    """
 
-        func(*args, **kwargs)
-
-    return decorator
-
-
-class HighEntropyStringsTest(unittest.TestCase):
-
-    def setUp(self, *args):
+    def setup(self, logic, non_secret_string, secret_string):
         """
-        :param plugin:     HighEntropyStringsPlugin
-        :param non_secret: string; a hash that will be ignored by plugin.
-        :param secret:     string; a hash that will be caught by plugin.
+        :type logic: HighEntropyStringsPlugin
+        :param logic: logic used to perform abstracted test cases
+
+        :type non_secret_string: str
+        :param non_secret_string: a hash that will be ignored by the plugin
+
+        :type secret_string: str
+        :param secret_string: a hash that will be caught by the plugin
         """
-        if len(args) == 3:
-            self.logic, self.non_secret, self.secret = args
+        self.logic = logic
+        self.non_secret = non_secret_string
+        self.secret = secret_string
 
-    def run_test(self, cases):
-        """For DRYer code.
-
-        :param cases: list of test cases.
-                      Each test case should be in the format:
-                      [file_content :string, should_be_caught :boolean]
-        """
-        for case in cases:
-            file_content, should_be_caught = case
-            f = create_file_object_from_string(file_content)
-
-            results = self.logic.analyze(f, 'does_not_matter')
-
-            if should_be_caught:
-                assert len(results) == 1
-            else:
-                assert len(results) == 0
-
-    @abstract_test_case
-    def test_analyze_multiple_strings_same_line(self):
-        cases = [
+    @pytest.mark.parametrize(
+        'content_to_format,should_be_caught',
+        [
             (
-                'String #1: "%s"; String #2: "%s"' % (self.non_secret, self.secret),
+                "'{non_secret}'",
+                False,
+            ),
+            (
+                "'{secret}'",
+                True,
+            ),
+        ]
+    )
+    def test_pattern(self, content_to_format, should_be_caught):
+        content = content_to_format.format(
+            non_secret=self.non_secret,
+            secret=self.secret,
+        )
+
+        f = create_file_object_from_string(content)
+
+        results = self.logic.analyze(f, 'does_not_matter')
+
+        assert len(results) == bool(should_be_caught)
+
+    @pytest.mark.parametrize(
+        'content_to_format,expected_results',
+        [
+            (
+                'String #1: "{non_secret}"; String #2: "{secret}"',
                 1,
             ),
             (
-                # We add an 'a' to make the second secret different
-                'String #1: "%s"; String #2: "%s"' % (self.secret, self.secret + 'a'),
+                # We add an 'a' to make the second secret different.
+                # This currently fits both hex and base64 char set.
+                'String #1: "{secret}"; String #2: "{secret}a"',
                 2,
             ),
+        ],
+    )
+    def test_analyze_multiple_strings_same_line(self, content_to_format, expected_results):
+        content = content_to_format.format(
+            non_secret=self.non_secret,
+            secret=self.secret,
+        )
+        f = create_file_object_from_string(content)
+
+        results = self.logic.analyze(f, 'does_not_matter')
+
+        assert len(results) == expected_results
+
+    @pytest.mark.parametrize(
+        'content_to_format',
+        [
+            # Test inline annotation for whitelisting
+            "'{secret}' # pragma: whitelist secret",
+
+            # Not a string
+            "{secret}"
         ]
+    )
+    def test_ignored_lines(self, content_to_format):
+        file_content = content_to_format.format(secret=self.secret)
+        f = create_file_object_from_string(file_content)
 
-        for case in cases:
-            file_content, expected_results = case
-            f = create_file_object_from_string(file_content)
+        results = self.logic.analyze(f, 'does_not_matter')
 
-            results = self.logic.analyze(f, 'does_not_matter')
-
-            assert len(results) == expected_results
-
-    @abstract_test_case
-    def test_ignored_lines(self):
-        cases = [
-            (
-                # Test inline annotation for whitelisting
-                "'%s' # pragma: whitelist secret" % self.secret
-            ),
-            (
-                # Not a string
-                "%s" % self.secret
-            ),
-        ]
-
-        for case in cases:
-            file_content = case
-            f = create_file_object_from_string(file_content)
-
-            results = self.logic.analyze(f, 'does_not_matter')
-
-            assert len(results) == 0
+        assert len(results) == 0
 
 
-class Base64HighEntropyStringsTest(HighEntropyStringsTest):
+class TestBase64HighEntropyStrings(HighEntropyStringsTest):
 
-    def setUp(self):
-        super(Base64HighEntropyStringsTest, self).setUp(
+    def setup(self):
+        super(TestBase64HighEntropyStrings, self).setup(
             # Testing default limit, as suggested by truffleHog.
             Base64HighEntropyString(4.5),
             'c3VwZXIgc2VjcmV0IHZhbHVl',     # too short for high entropy
             'c3VwZXIgbG9uZyBzdHJpbmcgc2hvdWxkIGNhdXNlIGVub3VnaCBlbnRyb3B5',
         )
 
-    def test_pattern(self):
-        cases = [
-            ("'%s'" % self.non_secret, False),
-            ("'%s'" % self.secret, True)
-        ]
 
-        self.run_test(cases)
+class TestHexHighEntropyStrings(HighEntropyStringsTest):
 
-
-class HexHighEntropyStringsTest(HighEntropyStringsTest):
-
-    def setUp(self):
-        super(HexHighEntropyStringsTest, self).setUp(
+    def setup(self):
+        super(TestHexHighEntropyStrings, self).setup(
             # Testing default limit, as suggested by truffleHog.
             HexHighEntropyString(3),
             'aaaaaa',
             '2b00042f7481c7b056c4b410d28f33cf',
         )
-
-    def test_pattern(self):
-        cases = [
-            ("'%s'" % self.non_secret, False),
-            ("'%s'" % self.secret, True)
-        ]
-
-        self.run_test(cases)
