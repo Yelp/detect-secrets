@@ -1,0 +1,42 @@
+{
+  "generated_at": "2018-03-17T03:14:59Z",
+  "exclude_regex": null,
+  "results": {
+    "file_with_secrets.py": [
+      {
+        "type": "High Entropy String",
+        "line_number": 3,
+        "hashed_secret": "262547656a76a8a5d24ad428e7010e0fbb8d0413"
+      }
+    ],
+    "sample.diff": [
+      {
+        "type": "High Entropy String",
+        "line_number": 10,
+        "hashed_secret": "87acec17cd9dcd20a716cc2cf67417b71c8a7016"
+      },
+      {
+        "type": "High Entropy String",
+        "line_number": 34,
+        "hashed_secret": "a539bed96675daafa460631f5a076d9afd70ea9c"
+      },
+      {
+        "type": "High Entropy String",
+        "line_number": 69,
+        "hashed_secret": "b5ce0843584425c0b608d91cb07a50d634282d5d"
+      }
+    ],
+    "tmp/file_with_secrets.py": [
+      {
+        "type": "High Entropy String",
+        "line_number": 3,
+        "hashed_secret": "eb33f663e25e69fad07fe0338935b4954b5027d2"
+      },
+      {
+        "type": "High Entropy String",
+        "line_number": 3,
+        "hashed_secret": "88aa1a600b44f0b5cacad4d6300f64afe6d6e9df"
+      }
+    ]
+  }
+}

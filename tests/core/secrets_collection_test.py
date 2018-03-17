@@ -14,12 +14,13 @@ from detect_secrets.plugins.base import BasePlugin
 from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
 from tests.util.factories import mock_repo_factory
 from tests.util.factories import secrets_collection_factory
+from tests.util.mock_util import mock_log as mock_log_base
 from tests.util.mock_util import mock_open as mock_open_base
 
 
 @pytest.fixture
 def mock_log():
-    with mock.patch('detect_secrets.core.secrets_collection.CustomLogObj', autospec=True) as m:
+    with mock_log_base('detect_secrets.core.secrets_collection.CustomLogObj') as m:
         yield m
 
 

@@ -1,6 +1,8 @@
 #!/usr/bin/python
 from __future__ import absolute_import
 
+import pytest
+
 from detect_secrets.core.baseline import apply_baseline_filter
 from detect_secrets.core.baseline import initialize
 from detect_secrets.core.potential_secret import PotentialSecret
@@ -175,13 +177,24 @@ class TestInitializeBaseline(object):
             HexHighEntropyString(3),
         ]
 
-    def test_basic_usage(self):
+    @pytest.mark.parametrize(
+        'rootdir',
+        [
+            # './test_data/files',
+
+            # Test relative paths
+            'test_data/../test_data/files/tmp/..',
+        ]
+    )
+    def test_basic_usage(self, rootdir):
         results = initialize(
             self.plugins,
-            rootdir='./test_data',
+            rootdir=rootdir,
         ).json()
 
-        assert len(results.keys()) == 3
+        print(results)
+
+        assert len(results.keys()) == 2
         assert len(results['file_with_secrets.py']) == 1
         assert len(results['tmp/file_with_secrets.py']) == 2
 
@@ -189,29 +202,19 @@ class TestInitializeBaseline(object):
         results = initialize(
             self.plugins,
             exclude_regex='tmp*',
-            rootdir='./test_data',
+            rootdir='./test_data/files',
         ).json()
 
-        assert len(results.keys()) == 2
+        assert len(results.keys()) == 1
         assert 'file_with_secrets.py' in results
 
     def test_exclude_regex_at_root_level(self):
         results = initialize(
             self.plugins,
             exclude_regex='file_with_secrets.py',
-            rootdir='./test_data'
+            rootdir='./test_data/files'
         ).json()
 
         # All files_with_secrets.py should be ignored, both at the root
         # level, and the nested file in tmp.
-        assert len(results.keys()) == 1
-
-    def test_relative_paths(self):
-        results = initialize(
-            self.plugins,
-            rootdir='test_data/../test_data/tmp/..'
-        ).json()
-
-        assert len(results.keys()) == 3
-        assert len(results['file_with_secrets.py']) == 1
-        assert len(results['tmp/file_with_secrets.py']) == 2
+        assert not results

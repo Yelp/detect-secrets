@@ -85,7 +85,7 @@ class PotentialSecret(object):
     def __str__(self):  # pragma: no cover
         return (
             "Secret Type: %s\n"
-            "Location:    ./%s:%d\n"
+            "Location:    %s:%d\n"
             # "Hash:        %s\n"
         ) % (
             self.type,

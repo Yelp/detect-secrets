@@ -114,3 +114,9 @@ def mock_open(data, namespace):
     m = mock.mock_open(read_data=data)
     with mock.patch(namespace, m):
         yield m
+
+
+@contextmanager
+def mock_log(namespace):
+    with mock.patch(namespace, autospec=True) as m:
+        yield m
