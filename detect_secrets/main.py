@@ -5,7 +5,7 @@ from __future__ import print_function
 import json
 import sys
 
-from detect_secrets.core.baseline import initialize
+from detect_secrets.core import baseline
 from detect_secrets.core.log import CustomLog
 from detect_secrets.core.usage import ParserBuilder
 from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
@@ -38,7 +38,7 @@ def main(argv=None):
 
         print(
             json.dumps(
-                initialize(
+                baseline.initialize(
                     default_plugins,
                     args.exclude,
                     args.scan

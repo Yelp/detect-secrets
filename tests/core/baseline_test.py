@@ -1,14 +1,17 @@
 #!/usr/bin/python
 from __future__ import absolute_import
 
+import mock
 import pytest
 
+from detect_secrets.core import baseline
 from detect_secrets.core.baseline import apply_baseline_filter
-from detect_secrets.core.baseline import initialize
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
 from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
 from tests.util.factories import secrets_collection_factory
+from tests.util.mock_util import mock_subprocess
+from tests.util.mock_util import SubprocessMock
 
 
 class TestApplyBaselineFilter(object):
@@ -172,49 +175,56 @@ class TestApplyBaselineFilter(object):
 class TestInitializeBaseline(object):
 
     def setup(self):
-        self.plugins = [
+        self.plugins = (
             Base64HighEntropyString(4.5),
             HexHighEntropyString(3),
-        ]
+        )
+
+    def get_results(self, rootdir='./test_data/files', exclude_regex=None):
+        return baseline.initialize(
+            self.plugins,
+            rootdir=rootdir,
+            exclude_regex=exclude_regex,
+        ).json()
 
     @pytest.mark.parametrize(
         'rootdir',
         [
-            # './test_data/files',
+            './test_data/files',
 
             # Test relative paths
             'test_data/../test_data/files/tmp/..',
         ]
     )
     def test_basic_usage(self, rootdir):
-        results = initialize(
-            self.plugins,
-            rootdir=rootdir,
-        ).json()
-
-        print(results)
+        results = self.get_results(rootdir=rootdir)
 
         assert len(results.keys()) == 2
         assert len(results['file_with_secrets.py']) == 1
         assert len(results['tmp/file_with_secrets.py']) == 2
 
     def test_exclude_regex(self):
-        results = initialize(
-            self.plugins,
-            exclude_regex='tmp*',
-            rootdir='./test_data/files',
-        ).json()
+        results = self.get_results(exclude_regex='tmp*')
 
         assert len(results.keys()) == 1
         assert 'file_with_secrets.py' in results
 
     def test_exclude_regex_at_root_level(self):
-        results = initialize(
-            self.plugins,
-            exclude_regex='file_with_secrets.py',
-            rootdir='./test_data/files'
-        ).json()
+        results = self.get_results(exclude_regex='file_with_secrets.py')
 
         # All files_with_secrets.py should be ignored, both at the root
         # level, and the nested file in tmp.
+        assert not results
+
+    @mock.patch('detect_secrets.core.baseline.subprocess.check_output')
+    def test_no_files_in_git_repo(self, mock_subprocess_obj):
+        mock_subprocess_obj.side_effect = mock_subprocess((
+            SubprocessMock(
+                expected_input='git ls-files will_be_mocked',
+                should_throw_exception=True,
+                mocked_output='',
+            ),
+        ))
+
+        results = self.get_results(rootdir='will_be_mocked')
         assert not results
