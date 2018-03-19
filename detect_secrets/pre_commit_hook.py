@@ -7,9 +7,7 @@ from detect_secrets.core.baseline import apply_baseline_filter
 from detect_secrets.core.log import CustomLog
 from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.core.usage import ParserBuilder
-from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
-from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
-from detect_secrets.plugins.private_key import PrivateKeyDetector
+from detect_secrets.plugins import initialize_plugins
 
 
 def parse_args(argv):
@@ -54,12 +52,8 @@ def get_baseline(baseline_filename):
 
 
 def find_secrets_in_files(args):
-    default_plugins = (
-        HexHighEntropyString(args.hex_limit[0]),
-        Base64HighEntropyString(args.base64_limit[0]),
-        PrivateKeyDetector(),
-    )
-    collection = SecretsCollection(default_plugins)
+    plugins = initialize_plugins(args.plugins)
+    collection = SecretsCollection(plugins)
 
     for filename in args.filenames:
         if filename == args.baseline[0]:

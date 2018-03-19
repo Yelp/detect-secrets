@@ -14,7 +14,7 @@ class HighEntropyStringsPlugin(BasePlugin):
 
     secret_type = 'High Entropy String'
 
-    def __init__(self, charset, limit):
+    def __init__(self, charset, limit, *args):
         self.charset = charset
         self.entropy_limit = limit
         self.regex = re.compile(r'([\'"])([%s]+)(\1)' % charset)
@@ -75,14 +75,14 @@ class HighEntropyStringsPlugin(BasePlugin):
 class HexHighEntropyString(HighEntropyStringsPlugin):
     """HighEntropyStringsPlugin for hex strings"""
 
-    def __init__(self, limit):
+    def __init__(self, limit, *args):
         super(HexHighEntropyString, self).__init__(string.hexdigits, limit)
 
 
 class Base64HighEntropyString(HighEntropyStringsPlugin):
     """HighEntropyStringsPlugin for base64 encoded strings"""
 
-    def __init__(self, limit):
+    def __init__(self, limit, *args):
         super(Base64HighEntropyString, self).__init__(
             string.ascii_letters + string.digits + '+/=',
             limit

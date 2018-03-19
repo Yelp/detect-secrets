@@ -109,11 +109,11 @@ def parse_sensitivity_values(args):
 
     return SensitivityValues(
         base64_limit=default_plugins.get('Base64HighEntropyString') or
-        args.base64_limit[0],
+        args.plugins.get('Base64HighEntropyString', {}).get('base64_limit', [])[0],
         hex_limit=default_plugins.get('HexHighEntropyString') or
-        args.hex_limit[0],
+        args.plugins.get('HexHighEntropyString', {}).get('hex_limit', [])[0],
         private_key_detector=default_plugins.get('PrivateKeyDetector') or
-        not args.no_private_key_scan,
+        'PrivateKeyDetector' in args.plugins,
     )
 
 

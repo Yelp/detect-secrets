@@ -82,29 +82,60 @@ def initialize(plugin_config):
     plugin_config_tuple = _convert_sensitivity_values_to_class_tuple(plugin_config)
 
     for plugin, value in plugin_config_tuple:
-        klass = globals()[plugin]
-
-        # Make sure the instance is a BasePlugin type, before creating it.
-        if not issubclass(klass, BasePlugin):
-            continue
-
         if not value:
             continue
 
         try:
-            if value is True:
-                instance = klass()
-            else:
-                instance = klass(value)
+            output.append(_initialize_plugin(plugin, value))
         except TypeError:
-            _CustomLogObj.getLogger().warning(
-                'Unable to initialize plugin!'
-            )
-            continue
-
-        output.append(instance)
+            pass
 
     return output
+
+
+def initialize_plugins(plugins):
+    """
+    NOTE: This currently assumes there is at most one initialization parameter.
+    If this invariant changes, this will need to be modified.
+
+    NOTE: This is very similar to initialize right now (and probably,
+    where we want to head towards in the future?) However, the previous is
+    necessary until we fix server related code.
+
+    :param plugins: plugins dictionary received from ParserBuilder
+                    See example in tests.core.usage_test.
+    :return: tuple of initialized plugins
+    """
+    output = []
+    for plugin_name in plugins:
+        init_values = plugins[plugin_name]
+
+        args = []
+        if init_values:
+            key = list(init_values.keys())[0]
+            args.append(init_values[key][0])
+
+        output.append(_initialize_plugin(plugin_name, *args))
+
+    return tuple(output)
+
+
+def _initialize_plugin(plugin_classname, *args):
+    klass = globals()[plugin_classname]
+
+    # Make sure the instance is a BasePlugin type, before creating it.
+    if not issubclass(klass, BasePlugin):
+        raise TypeError
+
+    try:
+        instance = klass(*args)
+    except TypeError:
+        _CustomLogObj.getLogger().warning(
+            'Unable to initialize plugin!'
+        )
+        raise
+
+    return instance
 
 
 def _convert_sensitivity_values_to_class_tuple(sensitivity_values):

@@ -1,50 +1,20 @@
-#!/usr/bin/python
 from __future__ import absolute_import
 
 import argparse
+from collections import namedtuple
 
 
 class ParserBuilder(object):
 
     def __init__(self):
         self.parser = argparse.ArgumentParser()
+        self.plugins_parser = PluginOptions(self.parser)
+
         self.add_default_arguments()
 
     def add_default_arguments(self):
-        self.add_custom_limits()
-        self.add_opt_out_plugins_options()
+        self.plugins_parser.add_arguments()
         self.add_verbosity_argument()
-
-    def add_custom_limits(self):
-        self.parser.add_argument(
-            '--base64-limit',
-            type=argparse_minmax_type,
-            nargs=1,
-            default=[4.5],
-            help=(
-                'Sets the entropy limit for base64 strings. '
-                'Value must be between 0.0 and 8.0.'
-            ),
-        )
-        self.parser.add_argument(
-            '--hex-limit',
-            type=argparse_minmax_type,
-            nargs=1,
-            default=[3],
-            help=(
-                'Sets the entropy limit for hex strings. '
-                'Value must be between 0.0 and 8.0.'
-            ),
-        )
-        return self
-
-    def add_opt_out_plugins_options(self):
-        self.parser.add_argument(
-            '--no-private-key-scan',
-            action='store_true',
-            help='Disables scanning for private keys.',
-        )
-        return self
 
     def add_verbosity_argument(self):
         self.parser.add_argument(
@@ -159,14 +129,170 @@ class ParserBuilder(object):
         return self
 
     def parse_args(self, argv):
-        return self.parser.parse_args(argv)
+        output = self.parser.parse_args(argv)
+        self.plugins_parser.consolidate_args(output)
+
+        return output
 
 
-def argparse_minmax_type(string):  # pragma: no cover
-    """Custom type for argparse to enforce value limits"""
-    value = float(string)
-    if value < 0 or value > 8:
-        raise argparse.ArgumentTypeError(
-            '%s must be between 0.0 and 8.0' % string)
+class PluginDescriptor(namedtuple(
+    'PluginDescriptor',
+    [
+        # Classname of plugin; used for initialization
+        'classname',
 
-    return value
+        # Flag to disable plugin. Eg. `--no-hex-string-scan`
+        'disable_flag_text',
+
+        # Description for disable flag.
+        'disable_help_text',
+
+        # type: list
+        # Allows the bundling of all related command line provided
+        # arguments together, under one plugin name.
+        # Assumes there is no shared related arg.
+        'related_args',
+    ]
+)):
+    def __new__(cls, related_args=None, **kwargs):
+        if not related_args:
+            related_args = []
+
+        return super(PluginDescriptor, cls).__new__(
+            cls,
+            related_args=related_args,
+            **kwargs,
+        )
+
+
+class PluginOptions(object):
+
+    all_plugins = [
+        PluginDescriptor(
+            classname='HexHighEntropyString',
+            disable_flag_text='--no-hex-string-scan',
+            disable_help_text='Disables scanning for hex high entropy strings',
+            related_args=[
+                '--hex-limit',
+            ],
+        ),
+        PluginDescriptor(
+            classname='Base64HighEntropyString',
+            disable_flag_text='--no-base64-string-scan',
+            disable_help_text='Disables scanning for base64 high entropy strings',
+            related_args=[
+                '--base64-limit',
+            ],
+        ),
+        PluginDescriptor(
+            classname='PrivateKeyDetector',
+            disable_flag_text='--no-private-key-scan',
+            disable_help_text='Disables scanning for private keys.',
+        ),
+    ]
+
+    def __init__(self, parser):
+        self.parser = parser.add_argument_group(
+            title='plugins',
+            description=(
+                'Configure settings for each secret scanning '
+                'ruleset. By default, all plugins are enabled '
+                'unless explicitly disabled.'
+            )
+        )
+
+    def add_arguments(self):
+        self._add_custom_limits()
+        self._add_opt_out_options()
+
+    @staticmethod
+    def consolidate_args(args):
+        """There are many argument fields related to configuring plugins.
+        This function consolidates all of them, and saves the consolidated
+        information in args.plugins.
+
+        Note that we're deferring initialization of those plugins, because
+        plugins may have various initialization values, referenced in
+        different places.
+
+        :param args: output of `argparse.ArgumentParser.parse_args`
+        """
+        active_plugins = {}
+
+        for plugin in PluginOptions.all_plugins:
+            arg_name = PluginOptions._convert_flag_text_to_argument_name(
+                plugin.disable_flag_text
+            )
+
+            # Remove disabled plugins
+            is_disabled = getattr(args, arg_name)
+            delattr(args, arg_name)
+            if is_disabled:
+                continue
+
+            # Consolidate related args
+            related_args = {}
+            for flag_name in plugin.related_args:
+                arg_name = PluginOptions._convert_flag_text_to_argument_name(
+                    flag_name
+                )
+
+                related_args[arg_name] = getattr(args, arg_name)
+                delattr(args, arg_name)
+
+            active_plugins.update({
+                plugin.classname: related_args
+            })
+
+        args.plugins = active_plugins
+
+    def _add_custom_limits(self):
+        high_entropy_help_text = (
+            'Sets the entropy limit for base64 strings. '
+            'Value must be between 0.0 and 8.0.'
+        )
+
+        self.parser.add_argument(
+            '--base64-limit',
+            type=self._argparse_minmax_type,
+            nargs=1,
+            default=[4.5],
+            help=high_entropy_help_text,
+        )
+        self.parser.add_argument(
+            '--hex-limit',
+            type=self._argparse_minmax_type,
+            nargs=1,
+            default=[3],
+            help=high_entropy_help_text,
+        )
+        return self
+
+    def _add_opt_out_options(self):
+        for plugin in self.all_plugins:
+            self.parser.add_argument(
+                plugin.disable_flag_text,
+                action='store_true',
+                help=plugin.disable_help_text,
+            )
+
+        return self
+
+    def _argparse_minmax_type(self, string):
+        """Custom type for argparse to enforce value limits"""
+        value = float(string)
+        if value < 0 or value > 8:
+            raise argparse.ArgumentTypeError(
+                '%s must be between 0.0 and 8.0' % string)
+
+        return value
+
+    @staticmethod
+    def _convert_flag_text_to_argument_name(flag_text):
+        """This just emulates argparse's underlying logic.
+
+        :type flag_text: str
+        :param flag_text: eg. `--no-hex-string-scan`
+        :return: `no_hex_string_scan`
+        """
+        return flag_text[2:].replace('-', '_')
