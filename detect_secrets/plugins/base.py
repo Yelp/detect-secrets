@@ -30,4 +30,12 @@ class BasePlugin(object):
         NOTE: line_num and filename are used for PotentialSecret creation only.
         """
 
-        raise NotImplementedError("%s needs to implement analyze_string()" % self.__class__.__name__)
+        raise NotImplementedError(
+            '%s needs to implement analyze_string()' % self.__class__.__name__
+        )
+
+    @property
+    def __dict__(self):
+        return {
+            'name': self.__class__.__name__,
+        }

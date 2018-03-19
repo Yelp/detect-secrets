@@ -64,9 +64,6 @@ class PotentialSecret(object):
             'line_number': self.lineno,
             'hashed_secret': self.secret_hash
         }
-        if self.author:
-            attributes['author'] = self.author
-        return attributes
 
         if self.author:
             attributes['author'] = self.author
