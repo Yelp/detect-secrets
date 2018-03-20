@@ -269,9 +269,16 @@ class SecretsCollection(object):
         for key in results:
             results[key] = sorted(results[key], key=lambda x: x['line_number'])
 
+        plugins_used = list(map(
+            lambda x: x.__dict__,
+            self.plugins,
+        ))
+        plugins_used = sorted(plugins_used, key=lambda x: x['name'])
+
         return {
             'generated_at': strftime("%Y-%m-%dT%H:%M:%SZ", gmtime()),
             'exclude_regex': self.exclude_regex,
+            'plugins_used': plugins_used,
             'results': results,
         }
 

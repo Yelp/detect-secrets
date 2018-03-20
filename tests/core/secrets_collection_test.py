@@ -12,6 +12,7 @@ from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.plugins.base import BasePlugin
 from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
+from detect_secrets.plugins.private_key import PrivateKeyDetector
 from tests.util.factories import mock_repo_factory
 from tests.util.factories import secrets_collection_factory
 from tests.util.mock_util import mock_log as mock_log_base
@@ -245,7 +246,11 @@ class TestBaselineInputOutput(object):
                     'lineno': 1,
                     'filename': 'fileB',
                 },
-            ]
+            ],
+            plugins=(
+                HexHighEntropyString(3),
+                PrivateKeyDetector(),
+            )
         )
 
     def test_output(self, mock_gmtime):
@@ -303,6 +308,15 @@ class TestBaselineInputOutput(object):
         return {
             'generated_at': strftime('%Y-%m-%dT%H:%M:%SZ', gmtime),
             'exclude_regex': '',
+            'plugins_used': [
+                {
+                    'name': 'HexHighEntropyString',
+                    'limit': 3,
+                },
+                {
+                    'name': 'PrivateKeyDetector',
+                }
+            ],
             'results': {
                 'fileA': [
                     # Line numbers should be sorted, for better readability
