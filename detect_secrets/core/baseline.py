@@ -1,8 +1,8 @@
-#!/usr/bin/python
 from __future__ import absolute_import
 
 import os
 import re
+import subprocess
 
 from detect_secrets.core.secrets_collection import SecretsCollection
 
@@ -81,33 +81,62 @@ def apply_baseline_filter(results, baseline, filelist):
     return output
 
 
-def initialize(plugins, exclude_regex='', rootdir='.'):
+def initialize(plugins, exclude_regex=None, rootdir='.'):
     """Scans the entire codebase for high entropy strings, and returns a
     SecretsCollection object.
 
-    :param plugins:         tuple of detect_secrets.plugins.base.BasePlugin.
-    :param [exclude_regex]: string; for optional regex string for ignored paths.
-    :param [rootdir]:       string; specify root directory.
-    :returns:               SecretsCollection
+    :type plugins: tuple of detect_secrets.plugins.base.BasePlugin
+    :param plugins: rules to initialize the SecretsCollection with.
+
+    :type exclude_regex: str|None
+    :type rootdir: str
+
+    :rtype: SecretsCollection
     """
     output = SecretsCollection(plugins, exclude_regex)
 
+    git_files = _get_git_tracked_files(rootdir)
+    if not git_files:
+        return output
+
     if exclude_regex:
         regex = re.compile(exclude_regex, re.IGNORECASE)
+        git_files = filter(
+            lambda x: not regex.search(x),
+            git_files
+        )
 
-    rootdir = os.path.abspath(rootdir)
-
-    for subdir, dirs, files in os.walk(rootdir):
-        if exclude_regex and regex.search(subdir[len(rootdir) + 1:]):
-            continue
-
-        for file in files:
-            fullpath = os.path.join(subdir, file)
-
-            # Cover root-level files (because the preliminary regex check won't cover it)
-            if exclude_regex and regex.search(fullpath[len(rootdir) + 1:]):
-                continue
-
-            output.scan_file(fullpath, fullpath[len(rootdir) + 1:])
+    for file in git_files:
+        output.scan_file(file)
 
     return output
+
+
+def _get_git_tracked_files(rootdir='.'):
+    """Parsing .gitignore rules is hard.
+
+    However, a way we can get around this problem by just listing all
+    currently tracked git files, and start our search from there.
+    After all, if it isn't in the git repo, we're not concerned about
+    it, because secrets aren't being entered in a shared place.
+
+    :type rootdir: str
+    :param rootdir: root directory of where you want to list files from
+
+    :rtype: set|None
+    :returns: filepaths to files which git currently tracks (locally)
+    """
+    try:
+        with open(os.devnull, 'w') as fnull:
+            git_files = subprocess.check_output(
+                [
+                    'git',
+                    'ls-files',
+                    rootdir,
+                ],
+                stderr=fnull,
+            )
+
+        return set(git_files.decode('utf-8').split())
+    except subprocess.CalledProcessError:
+        return None
