@@ -161,7 +161,7 @@ class PluginDescriptor(namedtuple(
         return super(PluginDescriptor, cls).__new__(
             cls,
             related_args=related_args,
-            **kwargs,
+            **kwargs
         )
 
 
