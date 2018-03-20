@@ -48,11 +48,11 @@ class PotentialSecret(object):
 
     @staticmethod
     def hash_secret(secret):
-        """This offers an abstract method to coherently test this class,
+        """This offers a way to coherently test this class,
         without mocking self.secret_hash.
 
         :type secret: string
-        :returns: string
+        :rtype: string
         """
         return hashlib.sha1(secret.encode('utf-8')).hexdigest()
 

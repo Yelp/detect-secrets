@@ -13,6 +13,7 @@ def potential_secret_factory(type_='type', filename='filename', lineno=1, secret
 
 def secrets_collection_factory(secrets=None, plugins=(), exclude_regex=''):
     """
+    :type secrets: list(dict)
     :param secrets: list of params to pass to add_secret.
                     Eg. [ {'secret': 'blah'}, ]
 

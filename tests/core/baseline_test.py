@@ -141,7 +141,7 @@ class TestApplyBaselineFilter(object):
 
     def test_deleted_secret_file(self):
         new_findings = secrets_collection_factory()
-        baseline = secrets_collection_factory([])
+        baseline = secrets_collection_factory()
 
         results = apply_baseline_filter(new_findings, baseline, ['filename', 'non_relevant_file'])
 
@@ -180,7 +180,7 @@ class TestInitializeBaseline(object):
     @pytest.mark.parametrize(
         'rootdir',
         [
-            # './test_data/files',
+            './test_data/files',
 
             # Test relative paths
             'test_data/../test_data/files/tmp/..',
@@ -191,8 +191,6 @@ class TestInitializeBaseline(object):
             self.plugins,
             rootdir=rootdir,
         ).json()
-
-        print(results)
 
         assert len(results.keys()) == 2
         assert len(results['file_with_secrets.py']) == 1
