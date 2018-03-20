@@ -1,4 +1,3 @@
-#!/usr/bin/python
 from __future__ import absolute_import
 
 import os
@@ -107,9 +106,8 @@ def initialize(plugins, exclude_regex=None, rootdir='.'):
             git_files
         )
 
-    rootdir = os.path.relpath(rootdir)
     for file in git_files:
-        output.scan_file(file, file[len(rootdir) + 1:])
+        output.scan_file(file)
 
     return output
 
@@ -131,7 +129,11 @@ def _get_git_tracked_files(rootdir='.'):
     try:
         with open(os.devnull, 'w') as fnull:
             git_files = subprocess.check_output(
-                'git ls-files'.split() + [rootdir],
+                [
+                    'git',
+                    'ls-files',
+                    rootdir,
+                ],
                 stderr=fnull,
             )
 

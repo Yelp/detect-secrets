@@ -200,14 +200,14 @@ class TestInitializeBaseline(object):
         results = self.get_results(rootdir=rootdir)
 
         assert len(results.keys()) == 2
-        assert len(results['file_with_secrets.py']) == 1
-        assert len(results['tmp/file_with_secrets.py']) == 2
+        assert len(results['test_data/files/file_with_secrets.py']) == 1
+        assert len(results['test_data/files/tmp/file_with_secrets.py']) == 2
 
     def test_exclude_regex(self):
         results = self.get_results(exclude_regex='tmp*')
 
         assert len(results.keys()) == 1
-        assert 'file_with_secrets.py' in results
+        assert 'test_data/files/file_with_secrets.py' in results
 
     def test_exclude_regex_at_root_level(self):
         results = self.get_results(exclude_regex='file_with_secrets.py')
