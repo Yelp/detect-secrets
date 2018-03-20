@@ -1,4 +1,3 @@
-#!/usr/bin/python
 from __future__ import absolute_import
 
 from .base import BasePlugin
@@ -21,8 +20,7 @@ class PrivateKeyDetector(BasePlugin):
     This is based off https://github.com/pre-commit/pre-commit-hooks.
     """
 
-    def __init__(self):
-        self.secret_type = 'Private Key'
+    secret_type = 'Private Key'
 
     def analyze(self, file, filename):
         """We override this, because we're only looking at the first line."""
