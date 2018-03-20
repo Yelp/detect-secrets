@@ -144,7 +144,7 @@ class TestApplyBaselineFilter(object):
 
     def test_deleted_secret_file(self):
         new_findings = secrets_collection_factory()
-        baseline = secrets_collection_factory([])
+        baseline = secrets_collection_factory()
 
         results = apply_baseline_filter(new_findings, baseline, ['filename', 'non_relevant_file'])
 
