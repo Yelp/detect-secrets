@@ -30,7 +30,7 @@ need to scan the entire repository every time.
 ### Setting Up a Baseline
 
 ```
-$ detect-secrets --scan --exclude='^(\.git|venv)' > .secrets.baseline
+$ detect-secrets --scan > .secrets.baseline
 ```
 
 ### Pre-commit Hook
