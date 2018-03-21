@@ -13,7 +13,6 @@ from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.plugins.base import BasePlugin
 from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
 from detect_secrets.plugins.private_key import PrivateKeyDetector
-from tests.util.factories import mock_repo_factory
 from tests.util.factories import secrets_collection_factory
 from tests.util.mock_util import mock_log as mock_log_base
 from tests.util.mock_util import mock_open as mock_open_base
@@ -344,40 +343,6 @@ class TestBaselineInputOutput(object):
     def assert_loaded_collection_is_original_collection(self, original, new):
         for key in ['results', 'exclude_regex']:
             assert original[key] == new[key]
-
-
-class TestSetAuthors(object):
-
-    def test_success(self):
-        secrets = secrets_collection_factory([{
-            'filename': 'fileA',
-        }])
-
-        with self.mock_repo() as repo:
-            secrets.set_authors(repo)
-
-        assert list(secrets.data['fileA'].values())[0].json()['author'] == 'khock'
-
-    @contextmanager
-    def mock_repo(self):
-        mocked_git_blame_output = b"""
-            d39c008353447bbc1845812fcaf0a03b50af439f 177 174 1
-            author Kevin Hock
-            author-mail <khock@yelp.com>
-            author-time 1513196047
-            author-tz -0800
-            committer Foo
-            committer-mail <foo@example.com>
-            committer-time 1513196047
-            committer-tz -0800
-            summary mock
-            previous 23c630620c23843559485fd2ada02e9e7bc5a07e4 mock_output.java
-            filename some_file.java
-            "super:secret f8616fefbo41fdc31960ehef078f85527")));
-        """
-        repo = mock_repo_factory()
-        with mock.patch.object(repo, 'get_blame', return_value=mocked_git_blame_output):
-            yield repo
 
 
 class MockPluginFixedValue(BasePlugin):

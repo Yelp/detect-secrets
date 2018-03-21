@@ -291,7 +291,7 @@ class BaseTrackedRepo(object):
             '--show-email',
             '--line-porcelain',
             '--', filename,
-        ], stderr=subprocess.STDOUT)
+        ], stderr=subprocess.STDOUT).decode('utf-8')
 
     def get_main_branch(self):
         """

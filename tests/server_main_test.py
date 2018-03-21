@@ -1,9 +1,10 @@
-#!/usr/bin/python
 from __future__ import absolute_import
 
 import hashlib
 import json
+import textwrap
 import unittest
+from contextlib import contextmanager
 
 import mock
 
@@ -20,6 +21,9 @@ from detect_secrets.server_main import main
 from detect_secrets.server_main import parse_args
 from detect_secrets.server_main import parse_s3_config
 from detect_secrets.server_main import parse_sensitivity_values
+from detect_secrets.server_main import set_authors_for_found_secrets
+from tests.util.factories import mock_repo_factory
+from tests.util.factories import secrets_collection_factory
 from tests.util.mock_util import mock_subprocess
 from tests.util.mock_util import SubprocessMock
 
@@ -492,15 +496,48 @@ class ServerTest(unittest.TestCase):
 
         with mock.patch('detect_secrets.server_main.PySensuYelpHook') as sensu, \
                 mock.patch('detect_secrets.server.base_tracked_repo.BaseTrackedRepo.update') as update, \
-                mock.patch('detect_secrets.core.secrets_collection.SecretsCollection.set_authors') as set_authors, \
                 mock.patch('detect_secrets.core.secrets_collection.SecretsCollection.json') as secrets_json:
             assert main(['--scan-repo', 'will-be-mocked']) == 0
 
             assert update.call_count == 0
             assert sensu.call_count == 1
-            assert set_authors.call_count == 1
             assert secrets_json.call_count == 1
 
     def test_main_no_args(self):
         # Needed for coverage
         assert main([]) == 0
+
+
+class TestSetAuthorsForFoundSecrets(object):
+
+    def test_success(self):
+        secrets = secrets_collection_factory([{
+            'filename': 'fileA',
+        }]).json()
+
+        with self.mock_repo() as repo:
+            set_authors_for_found_secrets(secrets, repo)
+
+        assert secrets['fileA'][0]['author'] == 'khock'
+
+    @contextmanager
+    def mock_repo(self):
+        mocked_git_blame_output = textwrap.dedent("""
+            d39c008353447bbc1845812fcaf0a03b50af439f 177 174 1
+            author Kevin Hock
+            author-mail <khock@yelp.com>
+            author-time 1513196047
+            author-tz -0800
+            committer Foo
+            committer-mail <foo@example.com>
+            committer-time 1513196047
+            committer-tz -0800
+            summary mock
+            previous 23c630620c23843559485fd2ada02e9e7bc5a07e4 mock_output.java
+            filename some_file.java
+            "super:secret f8616fefbo41fdc31960ehef078f85527")));
+        """)[1:]
+
+        repo = mock_repo_factory()
+        with mock.patch.object(repo, 'get_blame', return_value=mocked_git_blame_output):
+            yield repo
