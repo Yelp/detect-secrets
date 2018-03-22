@@ -298,11 +298,14 @@ def main(argv=None):
 
         if len(secrets.data) > 0:
             log.error('SCAN COMPLETE - We found secrets in: %s', repo.name)
-            secrets.set_authors(repo)
+
+            secrets = secrets.json()
+            set_authors_for_found_secrets(secrets, repo)
+
             alert = {
                 'alert': 'Secrets found',
                 'repo_name': repo.name,
-                'secrets': secrets.json(),
+                'secrets': secrets,
             }
             log.error(alert)
             if os.path.isfile(PYSENSU_CONFIG):
@@ -315,6 +318,46 @@ def main(argv=None):
             repo.save(OverrideLevel.ALWAYS)
 
     return 0
+
+
+def set_authors_for_found_secrets(secrets, repo):
+    """We use git blame to try and identify the user who committed the
+    potential secret. This allows us to follow up with a specific user if a
+    secret is found.
+
+    :type secrets: dict
+    :param secrets: output of SecretsCollection.json()
+
+    :type repo: server.base_tracked_repo.BaseTrackedRepo
+    :param repo: interface to git repository, to git blame.
+    """
+    for filename in secrets:
+        for potential_secret_dict in secrets[filename]:
+            blame_info = repo.get_blame(
+                potential_secret_dict['line_number'],
+                filename,
+            ).split()
+
+            potential_secret_dict['author'] = \
+                _extract_user_from_git_blame_info(blame_info)
+
+
+def _extract_user_from_git_blame_info(blame_info):
+    """As this tool is meant to be used in an enterprise setting, we assume
+    that the email address of the committer uniquely identifies a given user.
+
+    This function extracts that information.
+
+    :type blame_info: str
+    :param blame_info: git blame info, in specific format
+
+    :returns: unique user identifier, from email.
+    """
+    index_of_mail = blame_info.index('author-mail')
+    email = blame_info[index_of_mail + 1]  # <khock@yelp.com>
+    index_of_at = email.index('@')
+
+    return email[1:index_of_at]  # we skip the prefix `<`, up to the `@` sign.
 
 
 if __name__ == '__main__':
