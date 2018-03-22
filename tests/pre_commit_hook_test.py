@@ -10,6 +10,8 @@ from detect_secrets.pre_commit_hook import main
 from tests.util.factories import secrets_collection_factory
 from tests.util.mock_util import mock_log as mock_log_base
 from tests.util.mock_util import mock_open
+from tests.util.mock_util import mock_subprocess
+from tests.util.mock_util import SubprocessMock
 
 
 @pytest.fixture
@@ -32,7 +34,7 @@ def mock_log():
             """Currently, this is the only function that is used
             when obtaining the logger.
             """
-            self.message += str(message)
+            self.message += str(message) + '\n'
 
     with mock_log_base('detect_secrets.pre_commit_hook.CustomLog') as m:
         wrapper = MockLogWrapper()
@@ -100,9 +102,28 @@ class TestPreCommitHook(object):
         assert_commit_blocked('./test_data/baseline.file')
         assert_commit_succeeds('--baseline baseline.file baseline.file')
 
+    def test_quit_if_baseline_is_changed_but_not_staged(self, mock_log):
+        with mock.patch('detect_secrets.pre_commit_hook.subprocess.check_output') as \
+                mock_subprocess_obj:
+            mock_subprocess_obj.side_effect = mock_subprocess((
+                SubprocessMock(
+                    expected_input='git diff --name-only',
+                    mocked_output=b'baseline.file',
+                ),
+            ))
+
+            assert_commit_blocked(
+                '--baseline baseline.file test_data/file_with_secrets.py'
+            )
+
+        assert mock_log.message == (
+            'Your baseline file (baseline.file) is unstaged.\n'
+            '`git add baseline.file` to fix this.\n'
+        )
+
     @staticmethod
     def _create_baseline():
-        base64_hash = 'c3VwZXIgbG9uZyBzdHJpbmcgc2hvdWxkIGNhdXNlIGVub3VnaCBlbnRyb3B5'
+        base64_secret = 'c3VwZXIgbG9uZyBzdHJpbmcgc2hvdWxkIGNhdXNlIGVub3VnaCBlbnRyb3B5'
         baseline = {
             'generated_at': 'does_not_matter',
             'exclude_regex': '',
@@ -111,7 +132,7 @@ class TestPreCommitHook(object):
                     {
                         'type': 'High Entropy String',
                         'line_number': 4,
-                        'hashed_secret': PotentialSecret.hash_secret(base64_hash),
+                        'hashed_secret': PotentialSecret.hash_secret(base64_secret),
                     },
                 ],
             },
