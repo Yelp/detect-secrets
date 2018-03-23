@@ -6,6 +6,7 @@ import pytest
 
 from detect_secrets.core import baseline
 from detect_secrets.core.baseline import apply_baseline_filter
+from detect_secrets.core.baseline import update_baseline_with_removed_secrets
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
 from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
@@ -117,6 +118,9 @@ class TestApplyBaselineFilter(object):
         assert results.data['filename'][secretA].secret_hash == PotentialSecret.hash_secret('secret_new')
         assert baseline.data == backup_baseline
 
+
+class TestUpdateBaselineWithRemovedSecrets(object):
+
     def test_deleted_secret(self):
         new_findings = secrets_collection_factory([
             {
@@ -135,21 +139,35 @@ class TestApplyBaselineFilter(object):
             }
         ])
 
-        results = apply_baseline_filter(new_findings, baseline, ['filename'])
+        is_successful = update_baseline_with_removed_secrets(
+            new_findings,
+            baseline,
+            ['filename'],
+        )
 
-        # Since hotdog doesn't appear in new_findings, it should be removed.
-        assert len(results.data) == 0
+        assert is_successful
         assert len(baseline.data) == 1
         assert next(iter(baseline.data['filename'])).lineno == 2
 
     def test_deleted_secret_file(self):
         new_findings = secrets_collection_factory()
-        baseline = secrets_collection_factory()
+        baseline = secrets_collection_factory([
+            {
+                'filename': 'filename',
+            },
+        ])
 
-        results = apply_baseline_filter(new_findings, baseline, ['filename', 'non_relevant_file'])
+        is_successful = update_baseline_with_removed_secrets(
+            new_findings,
+            baseline,
+            [
+                # This is in baseline, but not in results, so
+                # it should be deleted from baseline.
+                'filename',
+            ],
+        )
 
-        # No results, but baseline should be modified.
-        assert len(results.data) == 0
+        assert is_successful
         assert len(baseline.data) == 0
 
     def test_same_secret_new_location(self):
@@ -164,12 +182,42 @@ class TestApplyBaselineFilter(object):
             },
         ])
 
-        results = apply_baseline_filter(new_findings, baseline, ['filename'])
+        is_successful = update_baseline_with_removed_secrets(
+            new_findings,
+            baseline,
+            ['filename'],
+        )
 
-        # No results, but baseline should be modified with new line location.
-        assert len(results.data) == 0
+        assert is_successful
         assert len(baseline.data) == 1
         assert next(iter(baseline.data['filename'])).lineno == 1
+
+    @pytest.mark.parametrize(
+        'results_dict,baseline_dict',
+        [
+            (
+                {},
+                {
+                    'filename': 'baseline_only_file',
+                },
+            ),
+
+            # Exact same secret, so no modifications necessary.
+            (
+                {},
+                {},
+            ),
+        ]
+    )
+    def test_no_baseline_modifications(self, results_dict, baseline_dict):
+        new_findings = secrets_collection_factory([results_dict])
+        baseline = secrets_collection_factory([baseline_dict])
+
+        assert not update_baseline_with_removed_secrets(
+            new_findings,
+            baseline,
+            ['filename'],
+        )
 
 
 class TestInitializeBaseline(object):

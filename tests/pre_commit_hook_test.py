@@ -54,7 +54,7 @@ def assert_commit_succeeds(command):
 class TestPreCommitHook(object):
 
     def test_file_with_secrets(self, mock_log):
-        assert_commit_blocked('./test_data/files/file_with_secrets.py')
+        assert_commit_blocked('test_data/files/file_with_secrets.py')
 
         message_by_lines = list(filter(
             lambda x: x != '',
@@ -67,21 +67,24 @@ class TestPreCommitHook(object):
         assert message_by_lines[2] == \
             'Secret Type: High Entropy String'
         assert message_by_lines[3] == \
-            'Location:    ./test_data/files/file_with_secrets.py:3'
+            'Location:    test_data/files/file_with_secrets.py:3'
 
     def test_file_no_secrets(self):
-        assert_commit_succeeds('./test_data/files/file_with_no_secrets.py')
+        assert_commit_succeeds('test_data/files/file_with_no_secrets.py')
 
     def test_baseline(self):
         """This just checks if the baseline is loaded, and acts appropriately.
         More detailed baseline tests are in their own separate test suite.
         """
-        with mock_open(
-                self._create_baseline(),
-                'detect_secrets.core.secrets_collection.codecs.open'
+        with mock.patch(
+                (
+                    'detect_secrets.core.secrets_collection.'
+                    'SecretsCollection._get_baseline_string_from_file'
+                ),
+                return_value=self._create_baseline(),
         ):
             assert_commit_succeeds(
-                '--baseline will_be_mocked ./test_data/file_with_secrets.py'
+                '--baseline will_be_mocked test_data/files/file_with_secrets.py'
             )
 
     def test_quit_early_if_bad_baseline(self, mock_get_baseline):
@@ -91,7 +94,7 @@ class TestPreCommitHook(object):
                 autospec=True,
         ) as mock_secrets_collection:
             assert_commit_blocked(
-                '--baseline will_be_mocked ./test_data/file_with_secrets.py'
+                '--baseline will_be_mocked test_data/files/file_with_secrets.py'
             )
 
             assert not mock_secrets_collection.called
@@ -99,7 +102,7 @@ class TestPreCommitHook(object):
     def test_ignore_baseline_file(self, mock_get_baseline):
         mock_get_baseline.return_value = secrets_collection_factory()
 
-        assert_commit_blocked('./test_data/baseline.file')
+        assert_commit_blocked('test_data/baseline.file')
         assert_commit_succeeds('--baseline baseline.file baseline.file')
 
     def test_quit_if_baseline_is_changed_but_not_staged(self, mock_log):
@@ -113,13 +116,38 @@ class TestPreCommitHook(object):
             ))
 
             assert_commit_blocked(
-                '--baseline baseline.file test_data/file_with_secrets.py'
+                '--baseline baseline.file test_data/files/file_with_secrets.py'
             )
 
         assert mock_log.message == (
             'Your baseline file (baseline.file) is unstaged.\n'
             '`git add baseline.file` to fix this.\n'
         )
+
+    def test_writes_new_baseline_if_modified(self):
+        baseline_string = self._create_baseline()
+        modified_baseline = json.loads(baseline_string)
+        modified_baseline['results']['test_data/files/file_with_secrets.py'][0]['line_number'] = 0
+
+        with mock.patch(
+            (
+                'detect_secrets.core.secrets_collection.'
+                'SecretsCollection._get_baseline_string_from_file'
+            ),
+            return_value=json.dumps(modified_baseline),
+        ), mock_open(
+            '',
+            'detect_secrets.pre_commit_hook.open',
+        ) as m:
+            assert_commit_blocked(
+                '--baseline will_be_mocked test_data/files/file_with_secrets.py'
+            )
+
+            baseline_written = json.loads(m().write.call_args[0][0])
+
+        original_baseline = json.loads(baseline_string)
+        assert original_baseline['exclude_regex'] == baseline_written['exclude_regex']
+        assert original_baseline['results'] == baseline_written['results']
 
     @staticmethod
     def _create_baseline():
@@ -128,14 +156,14 @@ class TestPreCommitHook(object):
             'generated_at': 'does_not_matter',
             'exclude_regex': '',
             'results': {
-                './test_data/file_with_secrets.py': [
+                'test_data/files/file_with_secrets.py': [
                     {
                         'type': 'High Entropy String',
-                        'line_number': 4,
+                        'line_number': 3,
                         'hashed_secret': PotentialSecret.hash_secret(base64_secret),
                     },
                 ],
             },
         }
 
-        return json.dumps(baseline)
+        return json.dumps(baseline, indent=2)

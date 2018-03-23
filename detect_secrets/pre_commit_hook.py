@@ -1,10 +1,12 @@
 from __future__ import absolute_import
 
+import json
 import subprocess
 import sys
 import textwrap
 
 from detect_secrets.core.baseline import apply_baseline_filter
+from detect_secrets.core.baseline import update_baseline_with_removed_secrets
 from detect_secrets.core.log import CustomLog
 from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.core.usage import ParserBuilder
@@ -32,15 +34,37 @@ def main(argv=None):
 
     results = find_secrets_in_files(args)
     if baseline_collection:
+        original_results = results
         results = apply_baseline_filter(
             results,
             baseline_collection,
-            args.filenames
+            args.filenames,
         )
 
     if len(results.data) > 0:
-        # TODO: Need to print baseline updated if so.
         pretty_print_diagnostics(results)
+        return 1
+
+    if not baseline_collection:
+        return 0
+
+    # Only attempt baseline modifications if we don't find any new secrets
+    successful_update = update_baseline_with_removed_secrets(
+        original_results,
+        baseline_collection,
+        args.filenames,
+    )
+    if successful_update:
+        with open(args.baseline[0], 'w') as f:
+            f.write(
+                json.dumps(
+                    baseline_collection.format_for_baseline_output(),
+                    indent=2,
+                )
+            )
+
+        # The pre-commit framework should automatically detect a file change
+        # and print a relevant error message.
         return 1
 
     return 0
