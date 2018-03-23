@@ -9,7 +9,7 @@ import sys
 import yaml
 
 from detect_secrets.core.log import CustomLog
-from detect_secrets.core.usage import ParserBuilder
+from detect_secrets.core.usage import ServerParserBuilder
 from detect_secrets.hooks.pysensu_yelp import PySensuYelpHook
 from detect_secrets.plugins import SensitivityValues
 from detect_secrets.server import tracked_repo_factory
@@ -222,14 +222,7 @@ def initialize_repos_from_repo_yaml(
 
 
 def parse_args(argv):
-    return ParserBuilder().add_initialize_server_argument() \
-        .add_scan_repo_argument() \
-        .add_config_file_argument() \
-        .add_add_repo_argument() \
-        .add_local_repo_flag() \
-        .add_s3_config_file_argument() \
-        .add_set_baseline_argument() \
-        .parse_args(argv)
+    return ServerParserBuilder().parse_args(argv)
 
 
 def main(argv=None):

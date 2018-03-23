@@ -11,8 +11,7 @@ from detect_secrets.plugins import initialize_plugins
 
 
 def parse_args(argv):
-    return ParserBuilder().add_filenames_argument() \
-        .add_set_baseline_argument() \
+    return ParserBuilder().add_pre_commit_arguments()\
         .parse_args(argv)
 
 

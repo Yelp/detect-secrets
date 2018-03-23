@@ -12,7 +12,7 @@ from detect_secrets.plugins import initialize_plugins
 
 
 def parse_args(argv):
-    return ParserBuilder().add_initialize_baseline_argument() \
+    return ParserBuilder().add_console_use_arguments() \
         .parse_args(argv)
 
 
