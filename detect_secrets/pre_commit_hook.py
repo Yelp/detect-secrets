@@ -5,7 +5,7 @@ import subprocess
 import sys
 import textwrap
 
-from detect_secrets.core.baseline import apply_baseline_filter
+from detect_secrets.core.baseline import get_secrets_not_in_baseline
 from detect_secrets.core.baseline import update_baseline_with_removed_secrets
 from detect_secrets.core.log import CustomLog
 from detect_secrets.core.secrets_collection import SecretsCollection
@@ -35,10 +35,9 @@ def main(argv=None):
     results = find_secrets_in_files(args)
     if baseline_collection:
         original_results = results
-        results = apply_baseline_filter(
+        results = get_secrets_not_in_baseline(
             results,
             baseline_collection,
-            args.filenames,
         )
 
     if len(results.data) > 0:

@@ -38,57 +38,17 @@ def initialize(plugins, exclude_regex=None, rootdir='.'):
     return output
 
 
-def apply_baseline_filter(results, baseline, filelist):
-    """
-    :param results:  SecretsCollection of current results
-    :param baseline: SecretsCollection of baseline results.
-                     This will be updated accordingly (by reference)
-    :param filelist: list of strings; filenames that are scanned.
-    :returns:        SecretsCollection of new results (filtering out baseline)
-    """
-    output = _get_secrets_not_in_baseline(results, baseline)
-    if len(output.data) > 0:
-        return output
-
-    # Just an empty SecretsCollection
-    return output
-
-
-def _get_git_tracked_files(rootdir='.'):
-    """Parsing .gitignore rules is hard.
-
-    However, a way we can get around this problem by just listing all
-    currently tracked git files, and start our search from there.
-    After all, if it isn't in the git repo, we're not concerned about
-    it, because secrets aren't being entered in a shared place.
-
-    :type rootdir: str
-    :param rootdir: root directory of where you want to list files from
-
-    :rtype: set|None
-    :returns: filepaths to files which git currently tracks (locally)
-    """
-    try:
-        with open(os.devnull, 'w') as fnull:
-            git_files = subprocess.check_output(
-                [
-                    'git',
-                    'ls-files',
-                    rootdir,
-                ],
-                stderr=fnull,
-            )
-
-        return set(git_files.decode('utf-8').split())
-    except subprocess.CalledProcessError:
-        return None
-
-
-def _get_secrets_not_in_baseline(results, baseline):
+def get_secrets_not_in_baseline(results, baseline):
     """
     :type results: SecretsCollection
+    :param results: SecretsCollection of current results
+
     :type baseline: SecretsCollection
+    :param baseline: SecretsCollection of baseline results.
+                     This will be updated accordingly (by reference)
+
     :rtype: SecretsCollection
+    :returns: SecretsCollection of new results (filtering out baseline)
     """
     regex = None
     if baseline.exclude_regex:
@@ -126,7 +86,9 @@ def update_baseline_with_removed_secrets(results, baseline, filelist):
 
     :type results: SecretsCollection
     :type baseline: SecretsCollection
+
     :type filelist: list(str)
+    :param filelist: filenames that are scanned.
 
     :rtype: bool
     :returns: True if baseline was updated
@@ -177,3 +139,33 @@ def update_baseline_with_removed_secrets(results, baseline, filelist):
                 updated = True
 
     return updated
+
+
+def _get_git_tracked_files(rootdir='.'):
+    """Parsing .gitignore rules is hard.
+
+    However, a way we can get around this problem by just listing all
+    currently tracked git files, and start our search from there.
+    After all, if it isn't in the git repo, we're not concerned about
+    it, because secrets aren't being entered in a shared place.
+
+    :type rootdir: str
+    :param rootdir: root directory of where you want to list files from
+
+    :rtype: set|None
+    :returns: filepaths to files which git currently tracks (locally)
+    """
+    try:
+        with open(os.devnull, 'w') as fnull:
+            git_files = subprocess.check_output(
+                [
+                    'git',
+                    'ls-files',
+                    rootdir,
+                ],
+                stderr=fnull,
+            )
+
+        return set(git_files.decode('utf-8').split())
+    except subprocess.CalledProcessError:
+        return None

@@ -1,11 +1,10 @@
-#!/usr/bin/python
 from __future__ import absolute_import
 
 import mock
 import pytest
 
 from detect_secrets.core import baseline
-from detect_secrets.core.baseline import apply_baseline_filter
+from detect_secrets.core.baseline import get_secrets_not_in_baseline
 from detect_secrets.core.baseline import update_baseline_with_removed_secrets
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
@@ -22,7 +21,7 @@ class TestApplyBaselineFilter(object):
         new_findings = secrets_collection_factory([{}])
         baseline = secrets_collection_factory([{}])
 
-        results = apply_baseline_filter(new_findings, baseline, ['filename'])
+        results = get_secrets_not_in_baseline(new_findings, baseline)
 
         # No expected results, because everything filtered out by baseline
         assert len(results.data) == 0
@@ -44,7 +43,7 @@ class TestApplyBaselineFilter(object):
         ])
 
         backup_baseline = baseline.data.copy()
-        results = apply_baseline_filter(new_findings, baseline, ['filename1', 'filename2'])
+        results = get_secrets_not_in_baseline(new_findings, baseline)
 
         assert len(results.data) == 1
         assert 'filename1' in results.data
@@ -67,7 +66,7 @@ class TestApplyBaselineFilter(object):
 
         backup_baseline = baseline.data.copy()
         baseline.exclude_regex = 'filename1'
-        results = apply_baseline_filter(new_findings, baseline, ['filename1', 'filename2'])
+        results = get_secrets_not_in_baseline(new_findings, baseline)
 
         assert len(results.data) == 1
         assert 'filename1' not in results.data
@@ -89,7 +88,7 @@ class TestApplyBaselineFilter(object):
         ])
 
         backup_baseline = baseline.data.copy()
-        results = apply_baseline_filter(new_findings, baseline, ['filename'])
+        results = get_secrets_not_in_baseline(new_findings, baseline)
 
         assert len(results.data['filename']) == 1
         secretA = PotentialSecret('type', 'filename', 1, 'secret1')
@@ -110,12 +109,13 @@ class TestApplyBaselineFilter(object):
         ])
 
         backup_baseline = baseline.data.copy()
-        results = apply_baseline_filter(new_findings, baseline, ['filename'])
+        results = get_secrets_not_in_baseline(new_findings, baseline)
 
         assert len(results.data['filename']) == 1
 
         secretA = PotentialSecret('type', 'filename', 1, 'secret_new')
-        assert results.data['filename'][secretA].secret_hash == PotentialSecret.hash_secret('secret_new')
+        assert results.data['filename'][secretA].secret_hash == \
+            PotentialSecret.hash_secret('secret_new')
         assert baseline.data == backup_baseline
 
 
