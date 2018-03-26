@@ -41,7 +41,7 @@ def mock_repo_factory():
     # TODO: I will fix this, when I turn the repo tests to use pytest (and
     #       subsequently, factory patterns)
     class Temporary:
-        def get_blame(self):
+        def get_blame(self):  # pragma: no cover
             pass
 
     return Temporary()

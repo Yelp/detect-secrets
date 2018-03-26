@@ -39,9 +39,17 @@ class SecretsCollection(object):
         :returns: SecretsCollection
         :raises: IOError
         """
+        return cls.load_baseline_from_string(
+            cls._get_baseline_string_from_file(filename)
+        )
+
+    @classmethod
+    def _get_baseline_string_from_file(cls, filename):
+        """Used for mocking, because we can't mock `open` (as it's also
+        used in `scan_file`."""
         try:
             with codecs.open(filename, encoding='utf-8') as f:
-                baseline_string = f.read()
+                return f.read()
 
         except (IOError, UnicodeDecodeError):
             CustomLogObj.getLogger().error(
@@ -49,8 +57,6 @@ class SecretsCollection(object):
             )
 
             raise
-
-        return cls.load_baseline_from_string(baseline_string)
 
     @classmethod
     def load_baseline_from_string(cls, string):
@@ -169,7 +175,7 @@ class SecretsCollection(object):
         :returns: boolean; though this value is only used for testing
         """
 
-        if filename_key is None:
+        if not filename_key:
             filename_key = filename
 
         if os.path.islink(filename):

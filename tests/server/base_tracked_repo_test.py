@@ -6,7 +6,7 @@ from subprocess import CalledProcessError
 
 import mock
 
-from detect_secrets.core.baseline import apply_baseline_filter
+from detect_secrets.core.baseline import get_secrets_not_in_baseline
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.plugins import SensitivityValues
@@ -149,7 +149,7 @@ class BaseTrackedRepoTest(unittest.TestCase):
         secrets = repo.scan()
         assert isinstance(secrets, SecretsCollection)
 
-    @mock.patch('detect_secrets.server.base_tracked_repo.apply_baseline_filter')
+    @mock.patch('detect_secrets.server.base_tracked_repo.get_secrets_not_in_baseline')
     @mock.patch('detect_secrets.server.base_tracked_repo.SecretsCollection.load_baseline_from_string')
     @mock.patch('detect_secrets.server.base_tracked_repo.subprocess.check_output', autospec=True)
     def test_scan_with_baseline(self, mock_subprocess_obj, mock_load_from_string, mock_apply):
@@ -169,8 +169,8 @@ class BaseTrackedRepoTest(unittest.TestCase):
         }
 
         # Easier than mocking load_from_diff.
-        mock_apply.side_effect = lambda orig, base, filelist: \
-            apply_baseline_filter(original_secrets, baseline_secrets, filelist)
+        mock_apply.side_effect = lambda orig, base: \
+            get_secrets_not_in_baseline(original_secrets, baseline_secrets)
 
         mock_subprocess_obj.side_effect = mock_subprocess((
             SubprocessMock(
