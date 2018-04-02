@@ -12,12 +12,12 @@ from detect_secrets.core.potential_secret import PotentialSecret
 class HighEntropyStringsPlugin(BasePlugin):
     """Base class for string pattern matching"""
 
-    secret_type = 'High Entropy String'
-
-    def __init__(self, charset, limit, *args):
+    def __init__(self, charset, limit):
         self.charset = charset
         self.entropy_limit = limit
         self.regex = re.compile(r'([\'"])([%s]+)(\1)' % charset)
+
+        self.secret_type = 'High Entropy String'
 
         # Allow whitelisting individual lines.
         # TODO: Update for not just python comments?
@@ -62,27 +62,18 @@ class HighEntropyStringsPlugin(BasePlugin):
 
         return output
 
-    @property
-    def __dict__(self):
-        output = super(HighEntropyStringsPlugin, self).__dict__
-        output.update({
-            'limit': self.entropy_limit,
-        })
-
-        return output
-
 
 class HexHighEntropyString(HighEntropyStringsPlugin):
     """HighEntropyStringsPlugin for hex strings"""
 
-    def __init__(self, limit, *args):
+    def __init__(self, limit):
         super(HexHighEntropyString, self).__init__(string.hexdigits, limit)
 
 
 class Base64HighEntropyString(HighEntropyStringsPlugin):
     """HighEntropyStringsPlugin for base64 encoded strings"""
 
-    def __init__(self, limit, *args):
+    def __init__(self, limit):
         super(Base64HighEntropyString, self).__init__(
             string.ascii_letters + string.digits + '+/=',
             limit

@@ -9,7 +9,7 @@ import subprocess
 import sys
 from enum import Enum
 
-from detect_secrets.core.baseline import get_secrets_not_in_baseline
+from detect_secrets.core.baseline import apply_baseline_filter
 from detect_secrets.core.log import CustomLog
 from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.plugins import initialize
@@ -161,7 +161,9 @@ class BaseTrackedRepo(object):
 
         if baseline:
             baseline_collection = SecretsCollection.load_baseline_from_string(baseline)
-            secrets = get_secrets_not_in_baseline(secrets, baseline_collection)
+
+            # Don't need to supply filelist, because we're not updating the baseline
+            secrets = apply_baseline_filter(secrets, baseline_collection, ())
 
         return secrets
 
@@ -293,7 +295,7 @@ class BaseTrackedRepo(object):
             '--show-email',
             '--line-porcelain',
             '--', filename,
-        ], stderr=subprocess.STDOUT).decode('utf-8')
+        ], stderr=subprocess.STDOUT)
 
     def get_main_branch(self):
         """
