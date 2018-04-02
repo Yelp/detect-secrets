@@ -94,7 +94,7 @@ The following keys are accepted in your config file:
 
 ```
 config.yaml
-  |- default		# These are default values to use for each tracked repo.
+  |- default        # These are default values to use for each tracked repo.
 ```
 
 The following attributes are supported under the `default` namespace, and set
@@ -166,7 +166,7 @@ def main():
     print('hello world')
 
 if __name__ == '__main__'
-	main()
+    main()
 ```
 
 This may be a convenient way for you to whitelist secrets, without having to
