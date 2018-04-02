@@ -12,11 +12,11 @@ from detect_secrets.core.log import CustomLog
 from detect_secrets.core.usage import ServerParserBuilder
 from detect_secrets.hooks.pysensu_yelp import PySensuYelpHook
 from detect_secrets.plugins import SensitivityValues
-from detect_secrets.server import tracked_repo_factory
-from detect_secrets.server.base_tracked_repo import DEFAULT_BASE_TMP_DIR
-from detect_secrets.server.base_tracked_repo import OverrideLevel
-from detect_secrets.server.repo_config import RepoConfig
-from detect_secrets.server.s3_tracked_repo import S3Config
+from detect_secrets_server.repos import tracked_repo_factory
+from detect_secrets_server.repos.base_tracked_repo import DEFAULT_BASE_TMP_DIR
+from detect_secrets_server.repos.base_tracked_repo import OverrideLevel
+from detect_secrets_server.repos.repo_config import RepoConfig
+from detect_secrets_server.repos.s3_tracked_repo import S3Config
 
 
 CustomLogObj = CustomLog()

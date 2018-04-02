@@ -6,10 +6,10 @@ from collections import namedtuple
 
 import boto3
 
-from detect_secrets.server.base_tracked_repo import BaseTrackedRepo
-from detect_secrets.server.base_tracked_repo import DEFAULT_BASE_TMP_DIR
-from detect_secrets.server.base_tracked_repo import OverrideLevel
-from detect_secrets.server.local_tracked_repo import LocalTrackedRepo
+from detect_secrets_server.repos.base_tracked_repo import BaseTrackedRepo
+from detect_secrets_server.repos.base_tracked_repo import DEFAULT_BASE_TMP_DIR
+from detect_secrets_server.repos.base_tracked_repo import OverrideLevel
+from detect_secrets_server.repos.local_tracked_repo import LocalTrackedRepo
 
 S3Config = namedtuple(
     'S3Config',

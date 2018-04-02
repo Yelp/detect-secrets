@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from detect_secrets_client.core.usage import ParserBuilder
+from detect_secrets.core.usage import ParserBuilder
 
 
 class ServerParserBuilder(ParserBuilder):

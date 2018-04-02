@@ -4,7 +4,7 @@ import os
 import subprocess
 
 from detect_secrets.core.log import CustomLog
-from detect_secrets.server.base_tracked_repo import BaseTrackedRepo
+from detect_secrets_server.repos.base_tracked_repo import BaseTrackedRepo
 
 
 CustomLogObj = CustomLog()

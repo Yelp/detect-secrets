@@ -7,7 +7,7 @@ import pysensu_yelp
 import yaml
 
 from detect_secrets.core.log import CustomLog
-from detect_secrets.hooks.base import BaseHook
+from detect_secrets_server.hooks.base import BaseHook
 
 
 CustomLogObj = CustomLog()

@@ -14,7 +14,7 @@ from detect_secrets.core.log import CustomLog
 from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.plugins import initialize
 from detect_secrets.plugins import SensitivityValues
-from detect_secrets.server.repo_config import RepoConfig
+from detect_secrets_server.repos.repo_config import RepoConfig
 
 
 DEFAULT_BASE_TMP_DIR = os.path.expanduser('~/.detect-secrets-server')
