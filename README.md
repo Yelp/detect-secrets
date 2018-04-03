@@ -99,7 +99,7 @@ def main():
     print('hello world')
 
 if __name__ == '__main__'
-	main()
+    main()
 ```
 
 This may be a convenient way for you to whitelist secrets, without having to
