@@ -70,25 +70,6 @@ class SubprocessMock(namedtuple(
         )
 
 
-def setup_global_mocks(obj, mocks=[]):  # pragma: no cover
-    """
-    Mocks out global objects, for general test cases.
-    :param obj:   unittest.TestCase
-    :param mocks: mixed; either modules_to_mock_out :string, or
-                  (modules_to_mock_out :string, autospec :boolean)
-    """
-    for item in mocks:
-        autospec = True
-        if not isinstance(item, str) and len(item) > 1:
-            autospec = item[1]
-            item = item[0]
-
-        m = mock.patch(item, autospec=autospec)
-
-        obj.addCleanup(m.stop)
-        m.start()
-
-
 def Any(cls):
     """Used to call assert_called_with with any argument.
 
