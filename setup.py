@@ -7,11 +7,8 @@ setup(
     author='Aaron Loo',
     packages=find_packages(exclude=(['test*', 'tmp*'])),
     install_requires=[
-        'chainmap',
-        'boto3',
         'enum34',
         'future',
-        'pysensu_yelp',
         'pyyaml',
         'unidiff',
     ],
@@ -19,7 +16,6 @@ setup(
         'console_scripts': [
             'detect-secrets = detect_secrets.main:main',
             'detect-secrets-hook = detect_secrets.pre_commit_hook:main',
-            'detect-secrets-server = detect_secrets.server_main:main',
         ],
     },
     version='0.7.0',

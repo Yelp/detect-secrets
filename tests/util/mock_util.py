@@ -70,13 +70,6 @@ class SubprocessMock(namedtuple(
         )
 
 
-class PropertyMock(mock.Mock):
-    """Allows the mocking of class functions with the @property decorator"""
-
-    def __get__(self, instance, owner):
-        return self()
-
-
 def setup_global_mocks(obj, mocks=[]):  # pragma: no cover
     """
     Mocks out global objects, for general test cases.

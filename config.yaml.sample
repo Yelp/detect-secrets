@@ -1,8 +1,0 @@
-default:
-  plugins:
-    HexHighEntropyString: 3
-    Base64HighEntropyString: 4.5
-    PrivateKeyDetector: true
-  baseline: .secrets.baseline
-  base_tmp_dir: /tmp/detect_secrets_tracked_repos
-  exclude_regex: ^(\.git|build|logs|node_modules|virtualenv_run)|.*tests/.*
