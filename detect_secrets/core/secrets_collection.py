@@ -1,4 +1,3 @@
-#!/usr/bin/python
 from __future__ import absolute_import
 
 import codecs
@@ -22,7 +21,7 @@ class SecretsCollection(object):
 
     def __init__(self, plugins=(), exclude_regex=''):
         """
-        :type plugins: tuple of detect_secrets.plugins.BasePlugin
+        :type plugins: tuple of detect_secrets.plugins.base.BasePlugin
         :param plugins: rules to determine whether a string is a secret
 
         :type exclude_regex: str
@@ -40,9 +39,17 @@ class SecretsCollection(object):
         :returns: SecretsCollection
         :raises: IOError
         """
+        return cls.load_baseline_from_string(
+            cls._get_baseline_string_from_file(filename)
+        )
+
+    @classmethod
+    def _get_baseline_string_from_file(cls, filename):
+        """Used for mocking, because we can't mock `open` (as it's also
+        used in `scan_file`."""
         try:
             with codecs.open(filename, encoding='utf-8') as f:
-                baseline_string = f.read()
+                return f.read()
 
         except (IOError, UnicodeDecodeError):
             CustomLogObj.getLogger().error(
@@ -50,8 +57,6 @@ class SecretsCollection(object):
             )
 
             raise
-
-        return cls.load_baseline_from_string(baseline_string)
 
     @classmethod
     def load_baseline_from_string(cls, string):
@@ -149,28 +154,14 @@ class SecretsCollection(object):
             if filename == baseline_filename:
                 continue
 
-            # We only want to capture incoming secrets (so added lines)
-            # Terminology:
-            #  - A "hunk" is a patch chunk in the patch_file
-            #  - `target_lines` is from the incoming changes
-            results = {}
-            for hunk in patch_file:
-                for line in hunk.target_lines():
-                    if line.is_added:
-                        for plugin in self.plugins:
-                            results.update(plugin.analyze_string(
-                                line.value,
-                                line.target_line_no,
-                                filename
-                            ))
-
-            if not results:
-                continue
-
-            if filename not in self.data:
-                self.data[filename] = results
-            else:
-                self.data[filename].update(results)
+            for results, plugin in self._results_accumulator(filename):
+                results.update(
+                    self._extract_secrets_from_patch(
+                        patch_file,
+                        plugin,
+                        filename,
+                    )
+                )
 
     def scan_file(self, filename, filename_key=None):
         """Scans a specified file, and adds information to self.data
@@ -184,7 +175,7 @@ class SecretsCollection(object):
         :returns: boolean; though this value is only used for testing
         """
 
-        if filename_key is None:
+        if not filename_key:
             filename_key = filename
 
         if os.path.islink(filename):
@@ -192,14 +183,14 @@ class SecretsCollection(object):
 
         try:
             with codecs.open(filename, encoding='utf-8') as f:
-                self._extract_secrets(f, filename_key)
+                self._extract_secrets_from_file(f, filename_key)
 
             return True
         except IOError:
             CustomLogObj.getLogger().warning("Unable to open file: %s", filename)
             return False
 
-    def get_secret(self, filename, secret, typ=None):
+    def get_secret(self, filename, secret, type_=None):
         """Checks to see whether a secret is found in the collection.
 
         :type filename: str
@@ -208,18 +199,18 @@ class SecretsCollection(object):
         :type secret: str
         :param secret: secret hash of secret to search for.
 
-        :type typ: str
-        :param [typ]: type of secret, if known.
+        :type type_: str
+        :param type_: type of secret, if known.
 
         :rtype: PotentialSecret|None
         """
         if filename not in self.data:
             return None
 
-        if typ:
+        if type_:
             # Optimized lookup, because we know the type of secret
             # (and therefore, its hash)
-            tmp_secret = PotentialSecret(typ, filename, 0, 'will be overriden')
+            tmp_secret = PotentialSecret(type_, filename, 0, 'will be overriden')
             tmp_secret.secret_hash = secret
 
             if tmp_secret in self.data[filename]:
@@ -234,32 +225,6 @@ class SecretsCollection(object):
                 return obj
 
         return None
-
-    def _extract_secrets(self, f, filename):
-        """Extract the secrets from a given file object.
-
-        :type f:        File object
-        :type filename: string
-        """
-        log = CustomLogObj.getLogger()
-        try:
-            log.info("Checking file: %s", filename)
-
-            results = {}
-            for plugin in self.plugins:
-                results.update(plugin.analyze(f, filename))
-                f.seek(0)
-
-            if not results:
-                return
-
-            if filename not in self.data:
-                self.data[filename] = results
-            else:
-                self.data[filename].update(results)
-
-        except UnicodeDecodeError:
-            log.warning("%s failed to load.", filename)
 
     def format_for_baseline_output(self):
         """
@@ -282,6 +247,69 @@ class SecretsCollection(object):
             'results': results,
         }
 
+    def _results_accumulator(self, filename):
+        """
+        :type filename: str
+        :param filename: name of file, used as a key to store in self.data
+
+        :yields: (dict, detect_secrets.plugins.base.BasePlugin)
+                 Caller is responsible for updating the dictionary with
+                 results of plugin analysis.
+        """
+        results = {}
+
+        for plugin in self.plugins:
+            yield results, plugin
+
+        if not results:
+            return
+
+        if filename not in self.data:
+            self.data[filename] = results
+        else:
+            self.data[filename].update(results)
+
+    def _extract_secrets_from_file(self, f, filename):
+        """Extract secrets from a given file object.
+
+        :type f:        File object
+        :type filename: string
+        """
+        log = CustomLogObj.getLogger()
+        try:
+            log.info("Checking file: %s", filename)
+
+            for results, plugin in self._results_accumulator(filename):
+                results.update(plugin.analyze(f, filename))
+                f.seek(0)
+
+        except UnicodeDecodeError:
+            log.warning("%s failed to load.", filename)
+
+    def _extract_secrets_from_patch(self, f, plugin, filename):
+        """Extract secrets from a given patch file object.
+
+        Note that we only want to capture incoming secrets (so added lines).
+
+        :type f: unidiff.patch.PatchedFile
+        :type plugin: detect_secrets.plugins.base.BasePlugin
+        :type filename: str
+        """
+        output = {}
+        for chunk in f:
+            # target_lines refers to incoming (new) changes
+            for line in chunk.target_lines():
+                if line.is_added:
+                    output.update(
+                        plugin.analyze_string(
+                            line.value,
+                            line.target_line_no,
+                            filename,
+                        )
+                    )
+
+        return output
+
     def json(self):
         """Custom JSON encoder"""
         output = {}
@@ -295,24 +323,6 @@ class SecretsCollection(object):
                 output[filename].append(tmp)
 
         return output
-
-    def set_authors(self, repo):
-        """Parses git blame output to retrieve author information.
-
-        :param: object; An object representing a repository.
-        """
-        for filename in self.data:
-            # Loop through all PotentialSecret's
-            for item in self.data[filename]:
-                blame = repo.get_blame(
-                    item.lineno,
-                    filename,
-                ).decode('utf-8').split()
-
-                index_of_mail = blame.index('author-mail')
-                email = blame[index_of_mail + 1]  # <khock@yelp.com>
-                index_of_at = email.index('@')
-                item.author = email[1:index_of_at]  # Skip the <, end at @
 
     def __str__(self):  # pragma: no cover
         return json.dumps(self.json(), indent=2)

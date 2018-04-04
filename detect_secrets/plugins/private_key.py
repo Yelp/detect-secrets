@@ -23,7 +23,13 @@ class PrivateKeyDetector(BasePlugin):
     secret_type = 'Private Key'
 
     def analyze(self, file, filename):
-        """We override this, because we're only looking at the first line."""
+        """We override this, because we're only looking at the first line.
+
+        Though this doesn't strictly follow the schema of the parent function,
+        all that really matters is that each secret within this file scanned
+        has a unique key. Since we're only expecting at most one secret from
+        this file, by definition any key is a unique key, so we good.
+        """
         return self.analyze_string(
             file.readline(),
             1,

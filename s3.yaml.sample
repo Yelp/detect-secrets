@@ -1,3 +1,0 @@
-s3_creds_file: tests/sample_s3_creds.json
-bucket_name: my-bucket-in-us-east-1
-prefix: secret_scanner_service/tracked_repos/

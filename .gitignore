@@ -7,8 +7,5 @@
 venv
 /tmp
 
-
 .*ignore
 !.gitignore
-
-.pysensu.config.yaml

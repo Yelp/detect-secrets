@@ -5,14 +5,14 @@ from __future__ import print_function
 import json
 import sys
 
-from detect_secrets.core.baseline import initialize
+from detect_secrets.core import baseline
 from detect_secrets.core.log import CustomLog
 from detect_secrets.core.usage import ParserBuilder
 from detect_secrets.plugins import initialize_plugins
 
 
 def parse_args(argv):
-    return ParserBuilder().add_initialize_baseline_argument() \
+    return ParserBuilder().add_console_use_arguments() \
         .parse_args(argv)
 
 
@@ -32,7 +32,7 @@ def main(argv=None):
 
         print(
             json.dumps(
-                initialize(
+                baseline.initialize(
                     plugins,
                     args.exclude,
                     args.scan

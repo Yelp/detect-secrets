@@ -37,16 +37,6 @@ def secrets_collection_factory(secrets=None, plugins=(), exclude_regex=''):
     return collection
 
 
-def mock_repo_factory():
-    # TODO: I will fix this, when I turn the repo tests to use pytest (and
-    #       subsequently, factory patterns)
-    class Temporary:
-        def get_blame(self):
-            pass
-
-    return Temporary()
-
-
 def _add_secret(collection, type_='type', secret='secret', filename='filename', lineno=1):
     """Utility function to add individual secrets to a SecretCollection.
 
