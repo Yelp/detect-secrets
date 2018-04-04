@@ -104,6 +104,32 @@ class HighEntropyStringsTest(object):
 
         assert len(results) == 0
 
+    def test_ini_file(self):
+        # We're testing two files here, because we want to make sure that
+        # the HighEntropyStrings regex is reset back to normal after
+        # scanning the ini file.
+        filenames = [
+            'test_data/files/config.ini',
+            'test_data/files/file_with_secrets.py',
+        ]
+
+        plugin = Base64HighEntropyString(3)
+
+        accumulated_secrets = {}
+        for filename in filenames:
+            with open(filename) as f:
+                accumulated_secrets.update(
+                    plugin.analyze(f, filename),
+                )
+
+        for secret in accumulated_secrets.values():
+            location = str(secret).splitlines()[1]
+            assert location in (
+                'Location:    test_data/files/config.ini:2',
+                'Location:    test_data/files/config.ini:9',
+                'Location:    test_data/files/file_with_secrets.py:3',
+            )
+
 
 class TestBase64HighEntropyStrings(HighEntropyStringsTest):
 
