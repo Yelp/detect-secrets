@@ -13,11 +13,6 @@ standard_library.install_aliases()
 import configparser     # noqa: E402
 
 
-INI_FILE_EXTENSIONS = (
-    'ini',
-)
-
-
 class HighEntropyStringsPlugin(BasePlugin):
     """Base class for string pattern matching"""
 
@@ -33,10 +28,10 @@ class HighEntropyStringsPlugin(BasePlugin):
         self.ignore_regex = re.compile(r'# ?pragma: ?whitelist[ -]secret')
 
     def analyze(self, file, filename):
-        # Heuristically determine whether file is an ini-formatted file.
-        for ext in INI_FILE_EXTENSIONS:
-            if filename.endswith('.{}'.format(ext)):
-                return self._analyze_ini_file(file, filename)
+        try:
+            return self._analyze_ini_file(file, filename)
+        except configparser.Error:
+            file.seek(0)
 
         return super(HighEntropyStringsPlugin, self).analyze(file, filename)
 
