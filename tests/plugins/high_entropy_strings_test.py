@@ -109,7 +109,7 @@ class HighEntropyStringsTest(object):
         # the HighEntropyStrings regex is reset back to normal after
         # scanning the ini file.
         filenames = [
-            'test_data/files/config.ini',
+            'test_data/config.ini',
             'test_data/files/file_with_secrets.py',
         ]
 
@@ -125,8 +125,8 @@ class HighEntropyStringsTest(object):
         for secret in accumulated_secrets.values():
             location = str(secret).splitlines()[1]
             assert location in (
-                'Location:    test_data/files/config.ini:2',
-                'Location:    test_data/files/config.ini:9',
+                'Location:    test_data/config.ini:2',
+                'Location:    test_data/config.ini:9',
                 'Location:    test_data/files/file_with_secrets.py:3',
             )
 
