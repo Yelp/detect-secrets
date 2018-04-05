@@ -1,11 +1,12 @@
+from setuptools import find_packages
 from setuptools import setup
 
 
-VERSION = '0.8.1'
+VERSION = '0.8.2'
 
 setup(
     name='detect_secrets',
-    packages=['detect_secrets'],
+    packages=find_packages(exclude=(['test*', 'tmp*'])),
     version=VERSION,
     description='Tool for detecting secrets in the codebase',
     long_description="Check out detect-secrets on `GitHub <https://github.com/Yelp/detect-secrets>`_!",
