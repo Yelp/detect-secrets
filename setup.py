@@ -11,6 +11,7 @@ setup(
     long_description="Check out detect-secrets on `GitHub <https://github.com/Yelp/detect-secrets>`_!",
     license="Copyright Yelp, Inc. 2018",
     author='Aaron Loo',
+    author_email='aaronloo@yelp.com',
     url='https://github.com/Yelp/detect-secrets',
     download_url='https://github.com/Yelp/detect-secrets/archive/{}.tar.gz'.format(VERSION),
     keywords=['secret-management', 'pre-commit', 'security', 'entropy-checks'],
