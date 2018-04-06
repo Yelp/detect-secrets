@@ -25,11 +25,14 @@ class PrivateKeyDetector(BasePlugin):
     def analyze(self, file, filename):
         """We override this, because we're only looking at the first line.
 
-        Though this doesn't strictly follow the schema of the parent function,
-        all that really matters is that each secret within this file scanned
-        has a unique key. Since we're only expecting at most one secret from
-        this file, by definition any key is a unique key, so we good.
+        :param file:     The File object itself.
+        :param filename: string; filename of File object, used for creating
+                         PotentialSecret objects
+        :returns         dictionary representation of set (for random access by hash)
+                         { detect_secrets.core.potential_secret.__hash__:
+                               detect_secrets.core.potential_secret         }
         """
+
         return self.analyze_string(
             file.readline(),
             1,
@@ -40,11 +43,12 @@ class PrivateKeyDetector(BasePlugin):
         output = {}
 
         if any(line in string for line in BLACKLIST):
-            output[filename] = PotentialSecret(
+            secret = PotentialSecret(
                 self.secret_type,
                 filename,
                 line_num,
                 string,
             )
+            output[secret] = secret
 
         return output
