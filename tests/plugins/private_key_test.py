@@ -16,4 +16,7 @@ class TestPrivateKeyDetector(object):
         )
 
         f = create_file_object_from_string(file_content)
-        assert 'mock_filename' in logic.analyze(f, 'mock_filename')
+        output = logic.analyze(f, 'mock_filename')
+        assert len(output) == 1
+        for potential_secret in output:
+            assert 'mock_filename' == potential_secret.filename
