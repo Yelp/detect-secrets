@@ -40,11 +40,12 @@ class PrivateKeyDetector(BasePlugin):
         output = {}
 
         if any(line in string for line in BLACKLIST):
-            output[filename] = PotentialSecret(
+            secret = PotentialSecret(
                 self.secret_type,
                 filename,
                 line_num,
                 string,
             )
+            output[secret] = secret
 
         return output
