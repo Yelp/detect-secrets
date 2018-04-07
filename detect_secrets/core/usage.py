@@ -90,6 +90,13 @@ class PluginDescriptor(namedtuple(
         # Allows the bundling of all related command line provided
         # arguments together, under one plugin name.
         # Assumes there is no shared related arg.
+        #
+        # Furthermore, each related arg can have its own default
+        # value (paired together, with a tuple). This allows us to
+        # distinguish the difference between a default value, and
+        # whether a user has entered the same value as a default value.
+        # Therefore, only populate the default value upon consolidation
+        # (rather than relying on argparse default).
         'related_args',
     ]
 )):
@@ -112,7 +119,7 @@ class PluginOptions(object):
             disable_flag_text='--no-hex-string-scan',
             disable_help_text='Disables scanning for hex high entropy strings',
             related_args=[
-                '--hex-limit',
+                ('--hex-limit', [3],),
             ],
         ),
         PluginDescriptor(
@@ -120,7 +127,7 @@ class PluginOptions(object):
             disable_flag_text='--no-base64-string-scan',
             disable_help_text='Disables scanning for base64 high entropy strings',
             related_args=[
-                '--base64-limit',
+                ('--base64-limit', [4.5],),
             ],
         ),
         PluginDescriptor(
@@ -171,13 +178,22 @@ class PluginOptions(object):
 
             # Consolidate related args
             related_args = {}
-            for flag_name in plugin.related_args:
+            for related_arg_tuple in plugin.related_args:
+                try:
+                    flag_name, default_value = related_arg_tuple
+                except ValueError:
+                    flag_name = related_arg_tuple
+                    default_value = None
+
                 arg_name = PluginOptions._convert_flag_text_to_argument_name(
                     flag_name
                 )
 
                 related_args[arg_name] = getattr(args, arg_name)
                 delattr(args, arg_name)
+
+                if default_value and related_args[arg_name] is None:
+                    related_args[arg_name] = default_value
 
             active_plugins.update({
                 plugin.classname: related_args
@@ -195,14 +211,12 @@ class PluginOptions(object):
             '--base64-limit',
             type=self._argparse_minmax_type,
             nargs=1,
-            default=[4.5],
             help=high_entropy_help_text,
         )
         self.parser.add_argument(
             '--hex-limit',
             type=self._argparse_minmax_type,
             nargs=1,
-            default=[3],
             help=high_entropy_help_text,
         )
         return self
