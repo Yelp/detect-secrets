@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/Yelp/detect-secrets.svg)](https://travis-ci.org/Yelp/detect-secrets)
+
 # detect-secrets
 
 ## About
