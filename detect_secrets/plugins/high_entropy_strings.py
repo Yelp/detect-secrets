@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import math
+import os
 import re
 import string
 from contextlib import contextmanager
@@ -12,6 +13,12 @@ from .base import BasePlugin
 from detect_secrets.core.potential_secret import PotentialSecret
 standard_library.install_aliases()
 import configparser     # noqa: E402
+
+
+YAML_EXTENSIONS = (
+    '.yaml',
+    '.yml',
+)
 
 
 class HighEntropyStringsPlugin(BasePlugin):
@@ -125,7 +132,7 @@ class HighEntropyStringsPlugin(BasePlugin):
         """
         :returns: same format as super().analyze()
         """
-        if not filename.endswith('.yaml'):
+        if os.path.splitext(filename)[1] not in YAML_EXTENSIONS:
             # The yaml parser is pretty powerful. It eagerly
             # parses things when it's not even a yaml file. Therefore,
             # we use this heuristic to quit early if appropriate.

@@ -136,6 +136,7 @@ class HighEntropyStringsTest(object):
         with open('test_data/config.yaml') as f:
             secrets = plugin.analyze(f, 'test_data/config.yaml')
 
+        assert len(secrets.values()) == 2
         for secret in secrets.values():
             location = str(secret).splitlines()[1]
             assert location in (
