@@ -1,0 +1,9 @@
+credentials:
+    some_value_here: not_a_secret
+    other_value_here: 1234567890a
+    nested:
+        value: abcdefghijklmnop
+list_of_keys:
+    - 123
+    - 456
+    - 234567890a

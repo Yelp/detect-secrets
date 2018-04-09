@@ -5,6 +5,7 @@ import re
 import string
 from contextlib import contextmanager
 
+import yaml
 from future import standard_library
 
 from .base import BasePlugin
@@ -28,10 +29,16 @@ class HighEntropyStringsPlugin(BasePlugin):
         self.ignore_regex = re.compile(r'# ?pragma: ?whitelist[ -]secret')
 
     def analyze(self, file, filename):
-        try:
-            return self._analyze_ini_file(file, filename)
-        except configparser.Error:
-            file.seek(0)
+        file_type_analyzers = (
+            ('_analyze_ini_file', configparser.Error,),
+            ('_analyze_yaml_file', yaml.YAMLError,),
+        )
+
+        for function, error in file_type_analyzers:
+            try:
+                return getattr(self, function)(file, filename)
+            except error:
+                file.seek(0)
 
         return super(HighEntropyStringsPlugin, self).analyze(file, filename)
 
@@ -96,7 +103,11 @@ class HighEntropyStringsPlugin(BasePlugin):
             for section_name, _ in parser.items():
                 for key, value in parser.items(section_name):
                     # +1, because we don't want to double count lines
-                    offset = self._get_line_offset(key, value, lines) + 1
+                    offset = self._get_line_offset_for_ini_files(
+                        key,
+                        value,
+                        lines
+                    ) + 1
                     line_offset += offset
                     lines = lines[offset:]
 
@@ -107,6 +118,44 @@ class HighEntropyStringsPlugin(BasePlugin):
                     )
 
                     potential_secrets.update(secrets)
+
+        return potential_secrets
+
+    def _analyze_yaml_file(self, file, filename):
+        """
+        :returns: same format as super().analyze()
+        """
+        if not filename.endswith('.yaml'):
+            # The yaml parser is pretty powerful. It eagerly
+            # parses things when it's not even a yaml file. Therefore,
+            # we use this heuristic to quit early if appropriate.
+            raise yaml.YAMLError
+
+        data = YamlLineInjector(file).json()
+        potential_secrets = {}
+
+        to_search = [data]
+        with self._non_quoted_string_regex():
+            while len(to_search) > 0:
+                item = to_search.pop()
+
+                try:
+                    if '__line__' in item:
+                        potential_secrets.update(
+                            self.analyze_string(
+                                item['__value__'],
+                                item['__line__'],
+                                filename,
+                            ),
+                        )
+                        continue
+
+                    for key in item:
+                        obj = item[key] if isinstance(item, dict) else key
+                        if isinstance(obj, dict):
+                            to_search.append(obj)
+                except TypeError:
+                    pass
 
         return potential_secrets
 
@@ -133,7 +182,7 @@ class HighEntropyStringsPlugin(BasePlugin):
         self.regex = old_regex
 
     @staticmethod
-    def _get_line_offset(key, value, lines):
+    def _get_line_offset_for_ini_files(key, value, lines):
         """Returns the index of the location of key, value pair in lines.
 
         :type key: str
@@ -165,4 +214,112 @@ class Base64HighEntropyString(HighEntropyStringsPlugin):
         super(Base64HighEntropyString, self).__init__(
             string.ascii_letters + string.digits + '+/=',
             limit
+        )
+
+
+class YamlLineInjector(object):
+    """
+    Yaml config files are interesting, because they don't necessarily conform
+    to our basic regex for detecting HighEntropyStrings as strings don't
+    need to be quoted.
+
+    This causes interesting issues, because our regex won't catch non-quoted
+    strings, and if we ignore the quoting requirement, then we increase our
+    false positive rate, because any long string would have high entropy.
+
+    Therefore, we take a different approach: intercept the parsing of the yaml
+    file to identify string values. This assumes:
+
+        1. Secrets are strings
+        2. Secrets are not keys
+
+    Then, we calculate the entropy of those string values.
+
+    The difficulty comes from determining the line number which these values
+    come from. To do this, we transform the string into a dictionary of
+    meta-tags, in the following format:
+
+    >>> {
+        'key': {
+            '__value__': value,
+            '__line__': <line_number>,
+        }
+    }
+
+    This way, we can quickly identify the line number for auditing at a later
+    stage.
+
+    This parsing method is inspired by https://stackoverflow.com/a/13319530.
+    """
+
+    def __init__(self, file):
+        self.loader = yaml.SafeLoader(file.read())
+
+        self.loader.compose_node = self._compose_node_shim
+
+    def json(self):
+        return self.loader.get_single_data()
+
+    def _compose_node_shim(self, parent, index):
+        line = self.loader.line
+
+        node = yaml.composer.Composer.compose_node(self.loader, parent, index)
+        node.__line__ = line + 1
+
+        if node.tag.endswith(':map'):
+            return self._tag_dict_values(node)
+
+        # TODO: Not sure if need to do :seq
+
+        return node
+
+    def _tag_dict_values(self, map_node):
+        """
+        :type map_node: yaml.nodes.MappingNode
+        :param map_node: It looks like map_node.value contains a list of
+            pair tuples, corresponding to key,value pairs.
+        """
+        new_values = []
+        for key, value in map_node.value:
+            if not value.tag.endswith(':str'):
+                new_values.append((key, value,))
+                continue
+
+            augmented_string = yaml.nodes.MappingNode(
+                tag=map_node.tag,
+                value=[
+                    self._create_key_value_pair_for_mapping_node_value(
+                        '__value__',
+                        value.value,
+                        'tag:yaml.org,2002:str',
+                    ),
+                    self._create_key_value_pair_for_mapping_node_value(
+                        '__line__',
+                        str(value.__line__),
+                        'tag:yaml.org,2002:int',
+                    ),
+                ],
+            )
+
+            new_values.append((key, augmented_string,))
+
+        output = yaml.nodes.MappingNode(
+            tag=map_node.tag,
+            value=new_values,
+            start_mark=map_node.start_mark,
+            end_mark=map_node.end_mark,
+            flow_style=map_node.flow_style,
+        )
+        return output
+
+    def _create_key_value_pair_for_mapping_node_value(self, key, value, tag):
+        return (
+            yaml.nodes.ScalarNode(
+                tag='tag:yaml.org,2002:str',
+                value=key,
+            ),
+            yaml.nodes.ScalarNode(
+                tag=tag,
+                value=value,
+            ),
         )
