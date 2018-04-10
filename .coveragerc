@@ -5,6 +5,7 @@ omit =
     .tox/*
     /tmp*
     setup.py
+    tests/util/*
 
 [report]
 exclude_lines =

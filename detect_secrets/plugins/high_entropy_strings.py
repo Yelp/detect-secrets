@@ -27,6 +27,11 @@ class HighEntropyStringsPlugin(BasePlugin):
     secret_type = 'High Entropy String'
 
     def __init__(self, charset, limit, *args):
+        if limit < 0 or limit > 8:
+            raise ValueError(
+                'The limit set for HighEntropyStrings must be between 0.0 and 8.0'
+            )
+
         self.charset = charset
         self.entropy_limit = limit
         self.regex = re.compile(r'([\'"])([%s]+)(\1)' % charset)

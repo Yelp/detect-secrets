@@ -8,9 +8,9 @@ import pytest
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.pre_commit_hook import main
 from tests.util.factories import secrets_collection_factory
+from tests.util.mock_util import mock_git_calls
 from tests.util.mock_util import mock_log as mock_log_base
 from tests.util.mock_util import mock_open
-from tests.util.mock_util import mock_subprocess
 from tests.util.mock_util import SubprocessMock
 
 
@@ -106,15 +106,15 @@ class TestPreCommitHook(object):
         assert_commit_succeeds('--baseline baseline.file baseline.file')
 
     def test_quit_if_baseline_is_changed_but_not_staged(self, mock_log):
-        with mock.patch('detect_secrets.pre_commit_hook.subprocess.check_output') as \
-                mock_subprocess_obj:
-            mock_subprocess_obj.side_effect = mock_subprocess((
+        with mock_git_calls(
+            'detect_secrets.pre_commit_hook.subprocess.check_output',
+            (
                 SubprocessMock(
                     expected_input='git diff --name-only',
                     mocked_output=b'baseline.file',
                 ),
-            ))
-
+            )
+        ):
             assert_commit_blocked(
                 '--baseline baseline.file test_data/files/file_with_secrets.py'
             )
