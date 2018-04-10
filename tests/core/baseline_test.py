@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 
-import mock
 import pytest
 
 from detect_secrets.core import baseline
@@ -10,7 +9,7 @@ from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
 from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
 from tests.util.factories import secrets_collection_factory
-from tests.util.mock_util import mock_subprocess
+from tests.util.mock_util import mock_git_calls
 from tests.util.mock_util import SubprocessMock
 
 
@@ -264,15 +263,17 @@ class TestInitializeBaseline(object):
         # level, and the nested file in tmp.
         assert not results
 
-    @mock.patch('detect_secrets.core.baseline.subprocess.check_output')
-    def test_no_files_in_git_repo(self, mock_subprocess_obj):
-        mock_subprocess_obj.side_effect = mock_subprocess((
-            SubprocessMock(
-                expected_input='git ls-files will_be_mocked',
-                should_throw_exception=True,
-                mocked_output='',
-            ),
-        ))
+    def test_no_files_in_git_repo(self):
+        with mock_git_calls(
+            'detect_secrets.core.baseline.subprocess.check_output',
+            (
+                SubprocessMock(
+                    expected_input='git ls-files will_be_mocked',
+                    should_throw_exception=True,
+                    mocked_output='',
+                ),
+            )
+        ):
+            results = self.get_results(rootdir='will_be_mocked')
 
-        results = self.get_results(rootdir='will_be_mocked')
         assert not results
