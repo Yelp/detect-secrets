@@ -130,6 +130,20 @@ class HighEntropyStringsTest(object):
                 'Location:    test_data/files/file_with_secrets.py:3',
             )
 
+    def test_yaml_file(self):
+        plugin = Base64HighEntropyString(3)
+
+        with open('test_data/config.yaml') as f:
+            secrets = plugin.analyze(f, 'test_data/config.yaml')
+
+        assert len(secrets.values()) == 2
+        for secret in secrets.values():
+            location = str(secret).splitlines()[1]
+            assert location in (
+                'Location:    test_data/config.yaml:3',
+                'Location:    test_data/config.yaml:5',
+            )
+
 
 class TestBase64HighEntropyStrings(HighEntropyStringsTest):
 
