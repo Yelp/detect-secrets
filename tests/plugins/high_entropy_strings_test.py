@@ -122,13 +122,21 @@ class HighEntropyStringsTest(object):
                     plugin.analyze(f, filename),
                 )
 
+        count = 0
         for secret in accumulated_secrets.values():
             location = str(secret).splitlines()[1]
             assert location in (
                 'Location:    test_data/config.ini:2',
-                'Location:    test_data/config.ini:9',
+                'Location:    test_data/config.ini:6',
+                'Location:    test_data/config.ini:10',
+                'Location:    test_data/config.ini:15',
+                'Location:    test_data/config.ini:21',
+                'Location:    test_data/config.ini:22',
                 'Location:    test_data/files/file_with_secrets.py:3',
             )
+            count += 1
+
+        assert count == 7
 
     def test_yaml_file(self):
         plugin = Base64HighEntropyString(3)
