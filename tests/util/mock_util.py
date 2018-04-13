@@ -107,8 +107,18 @@ def Any(cls):
 
 @contextmanager
 def mock_open(data, namespace):
+    """We heavily rely on file.seek(0), and until we can change this, we need
+    to do a bit more overhead mocking, since the library doesn't support it.
+
+    https://github.com/testing-cabal/mock/issues/426
+    """
     m = mock.mock_open(read_data=data)
     with mock.patch(namespace, m):
+        # This is the patch that we do, because it seems that that the
+        # side_effect resets the data (exactly what we want with our use
+        # case of seek).
+        m().seek = m.side_effect
+
         yield m
 
 

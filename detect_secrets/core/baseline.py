@@ -21,7 +21,12 @@ def initialize(plugins, exclude_regex=None, rootdir='.'):
     """
     output = SecretsCollection(plugins, exclude_regex)
 
-    git_files = _get_git_tracked_files(rootdir)
+    if os.path.isfile(rootdir):
+        # This option allows for much easier adhoc usage.
+        git_files = [rootdir]
+    else:
+        git_files = _get_git_tracked_files(rootdir)
+
     if not git_files:
         return output
 

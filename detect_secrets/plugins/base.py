@@ -14,7 +14,7 @@ class BasePlugin(object):
                                detect_secrets.core.potential_secret         }
         """
         potential_secrets = {}
-        for line_num, line in enumerate(file, start=1):
+        for line_num, line in enumerate(file.readlines(), start=1):
             secrets = self.analyze_string(line, line_num, filename)
             potential_secrets.update(secrets)
 

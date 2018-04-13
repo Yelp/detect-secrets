@@ -111,6 +111,12 @@ class HighEntropyStringsPlugin(BasePlugin):
         lines = list(map(lambda x: x.strip(), file.readlines()))
         line_offset = 0
 
+        if not parser.sections():
+            # To prevent cases where it's not an ini file, but the parser
+            # helpfully attempts to parse everything to a DEFAULT section,
+            # when not explicitly provided.
+            raise configparser.Error
+
         with self._non_quoted_string_regex():
             for section_name, _ in parser.items():
                 for key, value in parser.items(section_name):
@@ -189,9 +195,10 @@ class HighEntropyStringsPlugin(BasePlugin):
         old_regex = self.regex
         self.regex = re.compile(r'^([%s]+)$' % self.charset)
 
-        yield
-
-        self.regex = old_regex
+        try:
+            yield
+        finally:
+            self.regex = old_regex
 
     @staticmethod
     def _get_line_offset_for_ini_files(key, value, lines):

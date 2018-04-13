@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import mock
 import pytest
 
 from detect_secrets.core import baseline
@@ -10,10 +11,83 @@ from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
 from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
 from tests.util.factories import secrets_collection_factory
 from tests.util.mock_util import mock_git_calls
+from tests.util.mock_util import mock_open
 from tests.util.mock_util import SubprocessMock
 
 
-class TestApplyBaselineFilter(object):
+class TestInitializeBaseline(object):
+
+    def setup(self):
+        self.plugins = (
+            Base64HighEntropyString(4.5),
+            HexHighEntropyString(3),
+        )
+
+    def get_results(self, rootdir='./test_data/files', exclude_regex=None):
+        return baseline.initialize(
+            self.plugins,
+            rootdir=rootdir,
+            exclude_regex=exclude_regex,
+        ).json()
+
+    @pytest.mark.parametrize(
+        'rootdir',
+        [
+            './test_data/files',
+
+            # Test relative paths
+            'test_data/../test_data/files/tmp/..',
+        ]
+    )
+    def test_basic_usage(self, rootdir):
+        results = self.get_results(rootdir=rootdir)
+
+        assert len(results.keys()) == 2
+        assert len(results['test_data/files/file_with_secrets.py']) == 1
+        assert len(results['test_data/files/tmp/file_with_secrets.py']) == 2
+
+    def test_exclude_regex(self):
+        results = self.get_results(exclude_regex='tmp*')
+
+        assert len(results.keys()) == 1
+        assert 'test_data/files/file_with_secrets.py' in results
+
+    def test_exclude_regex_at_root_level(self):
+        results = self.get_results(exclude_regex='file_with_secrets.py')
+
+        # All files_with_secrets.py should be ignored, both at the root
+        # level, and the nested file in tmp.
+        assert not results
+
+    def test_no_files_in_git_repo(self):
+        with mock_git_calls(
+            'detect_secrets.core.baseline.subprocess.check_output',
+            (
+                SubprocessMock(
+                    expected_input='git ls-files will_be_mocked',
+                    should_throw_exception=True,
+                    mocked_output='',
+                ),
+            )
+        ):
+            results = self.get_results(rootdir='will_be_mocked')
+
+        assert not results
+
+    def test_single_non_tracked_git_file_should_work(self):
+        with mock.patch(
+                'detect_secrets.core.baseline.os.path.isfile',
+                return_value=True,
+        ), mock_open(
+                'Super hidden value "01234567890"',
+                'detect_secrets.core.secrets_collection.codecs.open',
+        ):
+            results = self.get_results('will_be_mocked')
+
+        assert len(results['will_be_mocked']) == 1
+
+
+class TestGetSecretsNotInBaseline(object):
 
     def test_nothing_new(self):
         # We want a secret, but just a default secret (no overriding parameters)
@@ -91,7 +165,8 @@ class TestApplyBaselineFilter(object):
 
         assert len(results.data['filename']) == 1
         secretA = PotentialSecret('type', 'filename', 1, 'secret1')
-        assert results.data['filename'][secretA].secret_hash == PotentialSecret.hash_secret('secret1')
+        assert results.data['filename'][secretA].secret_hash == \
+            PotentialSecret.hash_secret('secret1')
         assert baseline.data == backup_baseline
 
     def test_rolled_creds(self):
@@ -217,63 +292,3 @@ class TestUpdateBaselineWithRemovedSecrets(object):
             baseline,
             ['filename'],
         )
-
-
-class TestInitializeBaseline(object):
-
-    def setup(self):
-        self.plugins = (
-            Base64HighEntropyString(4.5),
-            HexHighEntropyString(3),
-        )
-
-    def get_results(self, rootdir='./test_data/files', exclude_regex=None):
-        return baseline.initialize(
-            self.plugins,
-            rootdir=rootdir,
-            exclude_regex=exclude_regex,
-        ).json()
-
-    @pytest.mark.parametrize(
-        'rootdir',
-        [
-            './test_data/files',
-
-            # Test relative paths
-            'test_data/../test_data/files/tmp/..',
-        ]
-    )
-    def test_basic_usage(self, rootdir):
-        results = self.get_results(rootdir=rootdir)
-
-        assert len(results.keys()) == 2
-        assert len(results['test_data/files/file_with_secrets.py']) == 1
-        assert len(results['test_data/files/tmp/file_with_secrets.py']) == 2
-
-    def test_exclude_regex(self):
-        results = self.get_results(exclude_regex='tmp*')
-
-        assert len(results.keys()) == 1
-        assert 'test_data/files/file_with_secrets.py' in results
-
-    def test_exclude_regex_at_root_level(self):
-        results = self.get_results(exclude_regex='file_with_secrets.py')
-
-        # All files_with_secrets.py should be ignored, both at the root
-        # level, and the nested file in tmp.
-        assert not results
-
-    def test_no_files_in_git_repo(self):
-        with mock_git_calls(
-            'detect_secrets.core.baseline.subprocess.check_output',
-            (
-                SubprocessMock(
-                    expected_input='git ls-files will_be_mocked',
-                    should_throw_exception=True,
-                    mocked_output='',
-                ),
-            )
-        ):
-            results = self.get_results(rootdir='will_be_mocked')
-
-        assert not results
