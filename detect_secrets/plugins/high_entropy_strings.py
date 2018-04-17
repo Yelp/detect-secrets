@@ -206,6 +206,12 @@ class IniFileParser(object):
         self.line_offset = 0
 
     def iterator(self):
+        if not self.parser.sections():
+            # To prevent cases where it's not an ini file, but the parser
+            # helpfully attempts to parse everything to a DEFAULT section,
+            # when not explicitly provided.
+            raise configparser.Error
+
         for section_name, _ in self.parser.items():
             for key, values in self.parser.items(section_name):
                 for value, offset in self._get_value_and_line_offset(
