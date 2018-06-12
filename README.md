@@ -41,7 +41,7 @@ $ detect-secrets --scan > .secrets.baseline
 ```
 $ cat .pre-commit-config.yaml
 -   repo: git@github.com:yelp/detect-secrets
-    rev: v0.6.3
+    rev: 0.8.2
     hooks:
     -   id: detect-secrets
         args: ['--baseline', '.secrets.baseline']
