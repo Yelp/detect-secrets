@@ -166,4 +166,8 @@ class TestPreCommitHook(object):
             },
         }
 
-        return json.dumps(baseline, indent=2)
+        return json.dumps(
+            baseline,
+            indent=2,
+            sort_keys=True
+        )

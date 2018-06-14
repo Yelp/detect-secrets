@@ -325,7 +325,11 @@ class SecretsCollection(object):
         return output
 
     def __str__(self):  # pragma: no cover
-        return json.dumps(self.json(), indent=2)
+        return json.dumps(
+            self.json(),
+            indent=2,
+            sort_keys=True
+        )
 
     def __getitem__(self, key):  # pragma: no cover
         return self.data[key]
