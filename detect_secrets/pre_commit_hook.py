@@ -58,6 +58,7 @@ def main(argv=None):
                 json.dumps(
                     baseline_collection.format_for_baseline_output(),
                     indent=2,
+                    sort_keys=True
                 )
             )
 

@@ -38,6 +38,7 @@ def main(argv=None):
                     args.scan
                 ).format_for_baseline_output(),
                 indent=2,
+                sort_keys=True
             )
         )
 
