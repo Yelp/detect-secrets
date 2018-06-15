@@ -151,7 +151,7 @@ class HighEntropyStringsTest(object):
                 'Location:    test_data/config.yaml:3',
                 'Location:    test_data/config.yaml:5',
             )
-            
+
     def test_entropy_lower_limit(self):
         with pytest.raises(ValueError):
             Base64HighEntropyString(-1)

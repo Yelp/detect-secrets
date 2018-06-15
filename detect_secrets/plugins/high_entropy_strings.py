@@ -242,7 +242,7 @@ class IniFileParser(object):
         values_list = self._construct_values_list(values)
         if not values_list:
             return []
-        
+
         current_value_list_index = 0
         output = []
         lines_modified = False
