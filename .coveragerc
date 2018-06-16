@@ -3,14 +3,19 @@ branch = True
 source = .
 omit =
     .tox/*
-    /tmp*
     setup.py
-    tests/util/*
 
 [report]
+skip_covered = True
 exclude_lines =
     # Don't complain if non-runnable code isn't run:
     ^if __name__ == ['"]__main__['"]:$
+
+    # Don't complain if tests don't hit defensive assertion code:
+    ^\s*raise AssertionError\b
+    ^\s*raise NotImplementedError\b
+    ^\s*return NotImplemented\b
+    ^\s*raise$
 
     # Need to redefine this, as per documentation
     pragma: no cover

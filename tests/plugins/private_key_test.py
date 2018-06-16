@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 from detect_secrets.plugins.private_key import PrivateKeyDetector
 from tests.util.file_util import create_file_object_from_string

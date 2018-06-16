@@ -66,4 +66,8 @@ index 12ce201..02fcca5 200644
 --- a/.secrets.baseline
 +++ b/.secrets.baseline
 @@ -10,4 +10,5 @@ (
+             'detect-secrets = detect_secrets.main:detect_secrets'
+         ],
+     },
 +        "hashed_secret": "a2480a72004fc40d124495fd59f5b482034fbadd",
+ )

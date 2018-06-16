@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import configparser
 import math
 import os
 import re
@@ -7,12 +8,9 @@ import string
 from contextlib import contextmanager
 
 import yaml
-from future import standard_library
 
 from .base import BasePlugin
 from detect_secrets.core.potential_secret import PotentialSecret
-standard_library.install_aliases()
-import configparser     # noqa: E402
 
 
 YAML_EXTENSIONS = (
