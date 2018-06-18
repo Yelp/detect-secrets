@@ -1,10 +1,11 @@
+*.egg-info
 *.py[co]
 *.sw[op]
 
-.coverage
-*.egg-info
-.tox
-venv
+/.coverage
+/.pytest_cache
+/.tox
+/venv
 /tmp
 
 .*ignore
