@@ -17,10 +17,11 @@ setup(
     download_url='https://github.com/Yelp/detect-secrets/archive/{}.tar.gz'.format(VERSION),
     keywords=['secret-management', 'pre-commit', 'security', 'entropy-checks'],
     install_requires=[
+        'enum34',
         'pyyaml',
         'unidiff',
     ],
-    extras_require={':python_version=="2.7"': ['configparser', 'enum34']},
+    extras_require={':python_version=="2.7"': ['configparser']},
     entry_points={
         'console_scripts': [
             'detect-secrets = detect_secrets.main:main',
