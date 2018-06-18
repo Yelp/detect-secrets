@@ -179,12 +179,16 @@ class HighEntropyStringsPlugin(BasePlugin):
 class HexHighEntropyString(HighEntropyStringsPlugin):
     """HighEntropyStringsPlugin for hex strings"""
 
+    secret_type = 'Hex High Entropy String'
+
     def __init__(self, limit, *args):
         super(HexHighEntropyString, self).__init__(string.hexdigits, limit)
 
 
 class Base64HighEntropyString(HighEntropyStringsPlugin):
     """HighEntropyStringsPlugin for base64 encoded strings"""
+
+    secret_type = 'Base64 High Entropy String'
 
     def __init__(self, limit, *args):
         super(Base64HighEntropyString, self).__init__(

@@ -65,7 +65,7 @@ class TestPreCommitHook(object):
             'Potential secrets about to be committed to git repo!'
         )
         assert message_by_lines[2] == \
-            'Secret Type: High Entropy String'
+            'Secret Type: Base64 High Entropy String'
         assert message_by_lines[3] == \
             'Location:    test_data/files/file_with_secrets.py:3'
 
@@ -158,7 +158,7 @@ class TestPreCommitHook(object):
             'results': {
                 'test_data/files/file_with_secrets.py': [
                     {
-                        'type': 'High Entropy String',
+                        'type': 'Base64 High Entropy String',
                         'line_number': 3,
                         'hashed_secret': PotentialSecret.hash_secret(base64_secret),
                     },
