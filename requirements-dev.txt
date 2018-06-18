@@ -3,3 +3,5 @@ flake8
 mock
 pre-commit
 pytest
+pyyaml
+unidiff
