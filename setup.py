@@ -1,7 +1,7 @@
 from setuptools import find_packages
 from setuptools import setup
 
-
+print('hi')
 VERSION = '0.8.8'
 
 setup(
