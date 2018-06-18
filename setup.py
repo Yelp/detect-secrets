@@ -2,7 +2,7 @@ from setuptools import find_packages
 from setuptools import setup
 
 
-VERSION = '0.8.6'
+VERSION = '0.8.7'
 
 setup(
     name='detect_secrets',
