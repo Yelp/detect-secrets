@@ -166,7 +166,9 @@ class HighEntropyStringsPlugin(BasePlugin):
         cases, we modify the regex accordingly.
         """
         old_regex = self.regex
-        self.regex = re.compile(r'^([%s]+)$' % self.charset)
+        self.regex = re.compile(
+            r'^([%s]+)$' % re.escape(self.charset)
+        )
 
         try:
             yield
@@ -246,8 +248,8 @@ class IniFileParser(object):
         lines_modified = False
 
         first_line_regex = re.compile(r'^\s*{}[ :=]+{}'.format(
-            key,
-            values_list[current_value_list_index],
+            re.escape(key),
+            re.escape(values_list[current_value_list_index]),
         ))
         comment_regex = re.compile(r'\s*[;#]')
         for index, line in enumerate(self.lines):
