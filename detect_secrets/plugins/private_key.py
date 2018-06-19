@@ -48,23 +48,6 @@ class PrivateKeyDetector(BasePlugin):
 
     secret_type = 'Private Key'
 
-    def analyze(self, file, filename):
-        """We override this, because we're only looking at the first line.
-
-        :param file:     The File object itself.
-        :param filename: string; filename of File object, used for creating
-                         PotentialSecret objects
-        :returns         dictionary representation of set (for random access by hash)
-                         { detect_secrets.core.potential_secret.__hash__:
-                               detect_secrets.core.potential_secret         }
-        """
-
-        return self.analyze_string(
-            file.readline(),
-            1,
-            filename,
-        )
-
     def analyze_string(self, string, line_num, filename):
         output = {}
 

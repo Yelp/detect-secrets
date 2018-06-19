@@ -1,20 +1,31 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import pytest
+
 from detect_secrets.plugins.private_key import PrivateKeyDetector
 from tests.util.file_util import create_file_object_from_string
 
 
 class TestPrivateKeyDetector(object):
 
-    def test_analyze(self):
+    @pytest.mark.parametrize(
+        'file_content',
+        [
+            (
+                '-----BEGIN RSA PRIVATE KEY-----\n'
+                'super secret private key here\n'
+                '-----END RSA PRIVATE KEY-----'
+            ),
+            (
+                'some text here\n'
+                '-----BEGIN PRIVATE KEY-----\n'
+                'yabba dabba doo'
+            ),
+        ]
+    )
+    def test_analyze(self, file_content):
         logic = PrivateKeyDetector()
-
-        file_content = (
-            '-----BEGIN RSA PRIVATE KEY-----'
-            'super secret private key here'
-            '-----END RSA PRIVATE KEY-----'
-        )
 
         f = create_file_object_from_string(file_content)
         output = logic.analyze(f, 'mock_filename')
