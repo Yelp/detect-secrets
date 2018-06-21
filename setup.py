@@ -1,8 +1,8 @@
 from setuptools import find_packages
 from setuptools import setup
 
+from detect_secrets import VERSION
 
-VERSION = '0.8.8'
 
 setup(
     name='detect_secrets',
