@@ -82,7 +82,7 @@ def initialize(plugin_config):
     plugin_config_tuple = _convert_sensitivity_values_to_class_tuple(plugin_config)
 
     for plugin_name, values in plugin_config_tuple:
-        if not value:
+        if not values:
             continue
 
         try:

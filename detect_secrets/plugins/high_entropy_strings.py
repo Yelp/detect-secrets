@@ -204,6 +204,7 @@ class Base64HighEntropyString(HighEntropyStringsPlugin):
 
         return output
 
+
 class IniFileParser(object):
 
     def __init__(self, file):

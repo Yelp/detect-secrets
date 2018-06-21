@@ -86,7 +86,7 @@ class SecretsCollection(object):
         :raises: IOError
         """
         result = SecretsCollection()
-        if not all (key in data for key in (
+        if not all(key in data for key in (
             'exclude_regex',
             'result',
             'plugins_used'
