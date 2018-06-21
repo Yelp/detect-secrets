@@ -81,13 +81,15 @@ def initialize(plugin_config):
 
     plugin_config_tuple = _convert_sensitivity_values_to_class_tuple(plugin_config)
 
-    for plugin_name, value in plugin_config_tuple:
+    for plugin_name, values in plugin_config_tuple:
         if not value:
             continue
 
         try:
-            # TODO: This is broken!
-            output.append(initialize_plugin(plugin_name, value=value))
+            output.append(initialize_plugin(
+                plugin_name,
+                **values
+            ))
         except TypeError:
             pass
 
@@ -139,7 +141,7 @@ def _convert_sensitivity_values_to_class_tuple(sensitivity_values):
              This way, we can initialize the class with <plugin_class_name>(<value>)
 
     Example:
-        >>> [ ('HexHighEntropyString', 3), ('PrivateKeyDetector', true), ]
+        >>> [ ('HexHighEntropyString', {'hex_limit': 3}), ('PrivateKeyDetector', {'private_key_detector': true}), ]
     """
     mapping = {
         'base64_limit': 'Base64HighEntropyString',
@@ -150,6 +152,11 @@ def _convert_sensitivity_values_to_class_tuple(sensitivity_values):
     output = []
     for key in sensitivity_values._fields:
         if key in mapping and getattr(sensitivity_values, key) is not None:
-            output.append((mapping[key], getattr(sensitivity_values, key),))
+            output.append(
+                (
+                    mapping[key],
+                    {key: getattr(sensitivity_values, key)},
+                )
+            )
 
     return tuple(output)
