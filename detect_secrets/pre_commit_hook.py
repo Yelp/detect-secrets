@@ -91,7 +91,11 @@ def raise_exception_if_baseline_file_is_not_up_to_date(filename):
     """
     try:
         files_changed_but_not_staged = subprocess.check_output(
-            'git diff --name-only'.split()
+            [
+                'git',
+                'diff',
+                '--name-only',
+            ]
         ).split()
     except subprocess.CalledProcessError:
         # Since we don't pipe stderr, we get free logging through git.

@@ -21,11 +21,11 @@ class SensitivityValues(namedtuple(
     """Server configuration to determine which plugins to run per repo."""
 
     def __new__(
-            cls,
-            base64_limit=None,
-            hex_limit=None,
-            private_key_detector=False,
-            **kwargs
+        cls,
+        base64_limit=None,
+        hex_limit=None,
+        private_key_detector=False,
+        **kwargs
     ):
         """
         We perform this additional mapping logic, for more readable config files.
@@ -81,12 +81,13 @@ def initialize(plugin_config):
 
     plugin_config_tuple = _convert_sensitivity_values_to_class_tuple(plugin_config)
 
-    for plugin, value in plugin_config_tuple:
+    for plugin_name, value in plugin_config_tuple:
         if not value:
             continue
 
         try:
-            output.append(_initialize_plugin(plugin, value))
+            # TODO: This is broken!
+            output.append(initialize_plugin(plugin_name, value=value))
         except TypeError:
             pass
 
@@ -95,9 +96,6 @@ def initialize(plugin_config):
 
 def initialize_plugins(plugins):
     """
-    NOTE: This currently assumes there is at most one initialization parameter.
-    If this invariant changes, this will need to be modified.
-
     NOTE: This is very similar to initialize right now (and probably,
     where we want to head towards in the future?) However, the previous is
     necessary until we fix server related code.
@@ -108,19 +106,15 @@ def initialize_plugins(plugins):
     """
     output = []
     for plugin_name in plugins:
-        init_values = plugins[plugin_name]
-
-        args = []
-        if init_values:
-            key = list(init_values.keys())[0]
-            args.append(init_values[key][0])
-
-        output.append(_initialize_plugin(plugin_name, *args))
+        output.append(initialize_plugin(
+            plugin_name,
+            **plugins[plugin_name]
+        ))
 
     return tuple(output)
 
 
-def _initialize_plugin(plugin_classname, *args):
+def initialize_plugin(plugin_classname, **kwargs):
     klass = globals()[plugin_classname]
 
     # Make sure the instance is a BasePlugin type, before creating it.
@@ -128,7 +122,7 @@ def _initialize_plugin(plugin_classname, *args):
         raise TypeError
 
     try:
-        instance = klass(*args)
+        instance = klass(**kwargs)
     except TypeError:
         _CustomLogObj.getLogger().warning(
             'Unable to initialize plugin!'

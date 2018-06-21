@@ -12,6 +12,7 @@ from unidiff.errors import UnidiffParseError
 
 from detect_secrets.core.log import CustomLog
 from detect_secrets.core.potential_secret import PotentialSecret
+from detect_secrets.plugins import initialize_plugin
 
 
 CustomLogObj = CustomLog()
@@ -85,8 +86,23 @@ class SecretsCollection(object):
         :raises: IOError
         """
         result = SecretsCollection()
-        if 'results' not in data or 'exclude_regex' not in data:
+        if not all (key in data for key in (
+            'exclude_regex',
+            'result',
+            'plugins_used'
+        )):
             raise IOError
+
+        result.exclude_regex = data['exclude_regex']
+
+        plugins = []
+        for plugin in data['plugins_used']:
+            plugin_classname = plugin.pop('name')
+            plugins.append(_initialize_plugin(
+                plugin_classname,
+                **plugin
+            ))
+        result.plugins = tuple(plugins)
 
         for filename in data['results']:
             result.data[filename] = {}
@@ -101,16 +117,14 @@ class SecretsCollection(object):
                 secret.secret_hash = item['hashed_secret']
                 result.data[filename][secret] = secret
 
-        result.exclude_regex = data['exclude_regex']
-
         return result
 
     def scan_diff(
-            self,
-            diff,
-            baseline_filename='',
-            last_commit_hash='',
-            repo_name=''
+        self,
+        diff,
+        baseline_filename='',
+        last_commit_hash='',
+        repo_name=''
     ):
         """For optimization purposes, our scanning strategy focuses on looking
         at incremental differences, rather than re-scanning the codebase every time.

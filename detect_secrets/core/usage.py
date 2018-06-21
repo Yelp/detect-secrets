@@ -119,7 +119,7 @@ class PluginOptions(object):
             disable_flag_text='--no-hex-string-scan',
             disable_help_text='Disables scanning for hex high entropy strings',
             related_args=[
-                ('--hex-limit', [3],),
+                ('--hex-limit', 3,),
             ],
         ),
         PluginDescriptor(
@@ -127,7 +127,7 @@ class PluginOptions(object):
             disable_flag_text='--no-base64-string-scan',
             disable_help_text='Disables scanning for base64 high entropy strings',
             related_args=[
-                ('--base64-limit', [4.5],),
+                ('--base64-limit', 4.5,),
             ],
         ),
         PluginDescriptor(
@@ -210,13 +210,13 @@ class PluginOptions(object):
         self.parser.add_argument(
             '--base64-limit',
             type=self._argparse_minmax_type,
-            nargs=1,
+            nargs='?',
             help=high_entropy_help_text,
         )
         self.parser.add_argument(
             '--hex-limit',
             type=self._argparse_minmax_type,
-            nargs=1,
+            nargs='?',
             help=high_entropy_help_text,
         )
         return self

@@ -150,15 +150,6 @@ class HighEntropyStringsPlugin(BasePlugin):
 
         return potential_secrets
 
-    @property
-    def __dict__(self):
-        output = super(HighEntropyStringsPlugin, self).__dict__
-        output.update({
-            'limit': self.entropy_limit,
-        })
-
-        return output
-
     @contextmanager
     def _non_quoted_string_regex(self):
         """For certain file formats, strings need not necessarily follow the
@@ -179,23 +170,39 @@ class HighEntropyStringsPlugin(BasePlugin):
 class HexHighEntropyString(HighEntropyStringsPlugin):
     """HighEntropyStringsPlugin for hex strings"""
 
-    secret_type = 'Hex High Entropy String'
+    def __init__(self, hex_limit, **kwargs):
+        super(HexHighEntropyString, self).__init__(
+            string.hexdigits,
+            hex_limit
+        )
 
-    def __init__(self, limit, *args):
-        super(HexHighEntropyString, self).__init__(string.hexdigits, limit)
+    @property
+    def __dict__(self):
+        output = super(HighEntropyStringsPlugin, self).__dict__
+        output.update({
+            'hex_limit': self.entropy_limit,
+        })
+
+        return output
 
 
 class Base64HighEntropyString(HighEntropyStringsPlugin):
     """HighEntropyStringsPlugin for base64 encoded strings"""
 
-    secret_type = 'Base64 High Entropy String'
-
-    def __init__(self, limit, *args):
+    def __init__(self, base64_limit, **kwargs):
         super(Base64HighEntropyString, self).__init__(
             string.ascii_letters + string.digits + '+/=',
-            limit
+            base64_limit
         )
 
+    @property
+    def __dict__(self):
+        output = super(HighEntropyStringsPlugin, self).__dict__
+        output.update({
+            'base64_limit': self.entropy_limit,
+        })
+
+        return output
 
 class IniFileParser(object):
 
