@@ -20,7 +20,13 @@ setup(
         'pyyaml',
         'unidiff',
     ],
-    extras_require={':python_version=="2.7"': ['configparser', 'enum34']},
+    extras_require={
+        ':python_version=="2.7"': [
+            'configparser',
+            'enum34',
+            'functools32',
+        ]
+    },
     entry_points={
         'console_scripts': [
             'detect-secrets = detect_secrets.main:main',

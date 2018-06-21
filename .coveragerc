@@ -11,6 +11,9 @@ exclude_lines =
     # Don't complain if non-runnable code isn't run:
     ^if __name__ == ['"]__main__['"]:$
 
+    # Don't complain if performing logic for cross-version functionality
+    ^\s*except ImportError:\b
+
     # Don't complain if tests don't hit defensive assertion code:
     ^\s*raise AssertionError\b
     ^\s*raise NotImplementedError\b

@@ -5,6 +5,12 @@ import subprocess
 import sys
 import textwrap
 
+try:
+    from functools import lru_cache
+except ImportError:
+    from functools32 import lru_cache
+
+from detect_secrets import VERSION
 from detect_secrets.core.baseline import get_secrets_not_in_baseline
 from detect_secrets.core.baseline import update_baseline_with_removed_secrets
 from detect_secrets.core.log import CustomLog
@@ -28,7 +34,7 @@ def main(argv=None):
         # it's valid, before doing any further computation.
         baseline_collection = get_baseline(args.baseline[0])
     except (IOError, ValueError):
-        # Error logs handled in load_baseline_from_file logic.
+        # Error logs handled within logic.
         return 1
 
     results = find_secrets_in_files(args)
@@ -53,20 +59,28 @@ def main(argv=None):
         args.filenames,
     )
     if successful_update:
-        with open(args.baseline[0], 'w') as f:
-            f.write(
-                json.dumps(
-                    baseline_collection.format_for_baseline_output(),
-                    indent=2,
-                    sort_keys=True
-                )
-            )
+        _write_to_baseline_file(
+            args.baseline[0],
+            baseline_collection.format_for_baseline_output(),
+        )
 
         # The pre-commit framework should automatically detect a file change
         # and print a relevant error message.
         return 1
 
     return 0
+
+
+def _write_to_baseline_file(filename, payload):  # pragma: no cover
+    """Breaking this function up for mockability."""
+    with open(filename, 'w') as f:
+        f.write(
+            json.dumps(
+                payload,
+                indent=2,
+                sort_keys=True,
+            )
+        )
 
 
 def get_baseline(baseline_filename):
@@ -79,7 +93,26 @@ def get_baseline(baseline_filename):
 
     raise_exception_if_baseline_file_is_not_up_to_date(baseline_filename)
 
-    return SecretsCollection.load_baseline_from_file(baseline_filename)
+    baseline_string = _get_baseline_string_from_file(baseline_filename)
+    raise_exception_if_baseline_version_is_outdated(
+        json.loads(baseline_string).get('version')
+    )
+
+    return SecretsCollection.load_baseline_from_string(baseline_string)
+
+
+def _get_baseline_string_from_file(filename):   # pragma: no cover
+    """Breaking this function up for mockability."""
+    try:
+        with open(filename) as f:
+            return f.read()
+
+    except IOError:
+        _get_custom_log().error(
+            'Unable to open baseline file: %s.', filename
+        )
+
+        raise
 
 
 def raise_exception_if_baseline_file_is_not_up_to_date(filename):
@@ -98,15 +131,45 @@ def raise_exception_if_baseline_file_is_not_up_to_date(filename):
         raise ValueError
 
     if filename.encode() in files_changed_but_not_staged:
-        CustomLog(formatter='%(message)s').getLogger()\
-            .error((
-                'Your baseline file ({}) is unstaged.\n'
-                '`git add {}` to fix this.'
-            ).format(
-                filename,
-                filename,
-            ))
+        _get_custom_log().error((
+            'Your baseline file ({}) is unstaged.\n'
+            '`git add {}` to fix this.'
+        ).format(
+            filename,
+            filename,
+        ))
 
+        raise ValueError
+
+
+def raise_exception_if_baseline_version_is_outdated(version):
+    """
+    Version changes may cause breaking changes with past baselines.
+    Due to this, we want to make sure that the version that the
+    baseline was created with is compatible with the current version
+    of the scanner.
+
+    We use semantic versioning, and check for bumps in the MINOR
+    version (a good compromise, so we can release patches for other
+    non-baseline-related issues, without having all our users
+    recreate their baselines again).
+
+    :type version: str|None
+    :param version: version of baseline
+    :raises: ValueError
+    """
+    if not version:
+        # Baselines created before this change, so by definition,
+        # would be outdated.
+        raise ValueError
+
+    baseline_version = version.split('.')
+    current_version = VERSION.split('.')
+
+    if int(current_version[0]) > int(baseline_version[0]):
+        raise ValueError
+    elif current_version[0] == baseline_version[0] and \
+            int(current_version[1]) > int(baseline_version[1]):
         raise ValueError
 
 
@@ -129,11 +192,16 @@ def pretty_print_diagnostics(secrets):
 
     :type secrets: SecretsCollection
     """
-    log = CustomLog(formatter='%(message)s').getLogger()
+    log = _get_custom_log()
 
     _print_warning_header(log)
     _print_secrets_found(log, secrets)
     _print_mitigation_suggestions(log)
+
+
+@lru_cache(maxsize=1)
+def _get_custom_log():
+    return CustomLog(formatter='%(message)s').getLogger()
 
 
 def _print_warning_header(log):

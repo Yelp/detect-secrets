@@ -27,37 +27,15 @@ class SecretsCollection(object):
 
         :type exclude_regex: str
         :param exclude_regex: for optional regex for ignored paths.
+
+        :type version: str
+        :param version: version of detect-secrets that SecretsCollection
+            is valid at.
         """
         self.data = {}
         self.plugins = plugins
         self.exclude_regex = exclude_regex
-
-    @classmethod
-    def load_baseline_from_file(cls, filename):
-        """Initialize a SecretsCollection object from file.
-
-        :param filename: string; name of file to load
-        :returns: SecretsCollection
-        :raises: IOError
-        """
-        return cls.load_baseline_from_string(
-            cls._get_baseline_string_from_file(filename)
-        )
-
-    @classmethod
-    def _get_baseline_string_from_file(cls, filename):
-        """Used for mocking, because we can't mock `open` (as it's also
-        used in `scan_file`."""
-        try:
-            with codecs.open(filename, encoding='utf-8') as f:
-                return f.read()
-
-        except (IOError, UnicodeDecodeError):
-            CustomLogObj.getLogger().error(
-                "Unable to open baseline file: %s.", filename
-            )
-
-            raise
+        self.version = VERSION
 
     @classmethod
     def load_baseline_from_string(cls, string):
@@ -103,6 +81,7 @@ class SecretsCollection(object):
                 result.data[filename][secret] = secret
 
         result.exclude_regex = data['exclude_regex']
+        result.version = data['version']
 
         return result
 
@@ -246,7 +225,7 @@ class SecretsCollection(object):
             'exclude_regex': self.exclude_regex,
             'plugins_used': plugins_used,
             'results': results,
-            'version': VERSION,
+            'version': self.version,
         }
 
     def _results_accumulator(self, filename):
