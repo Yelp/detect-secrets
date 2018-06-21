@@ -10,6 +10,7 @@ from time import strftime
 from unidiff import PatchSet
 from unidiff.errors import UnidiffParseError
 
+from detect_secrets import VERSION
 from detect_secrets.core.log import CustomLog
 from detect_secrets.core.potential_secret import PotentialSecret
 
@@ -245,6 +246,7 @@ class SecretsCollection(object):
             'exclude_regex': self.exclude_regex,
             'plugins_used': plugins_used,
             'results': results,
+            'version': VERSION,
         }
 
     def _results_accumulator(self, filename):

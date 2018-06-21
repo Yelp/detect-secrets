@@ -8,6 +8,7 @@ from time import strftime
 import mock
 import pytest
 
+from detect_secrets import VERSION
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.plugins.base import BasePlugin
@@ -337,7 +338,8 @@ class TestBaselineInputOutput(object):
                         'hashed_secret': secret_hash,
                     },
                 ],
-            }
+            },
+            'version': VERSION,
         }
 
     def assert_loaded_collection_is_original_collection(self, original, new):
