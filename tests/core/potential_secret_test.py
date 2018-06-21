@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 import pytest
 
-from tests.util.factories import potential_secret_factory
+from testing.factories import potential_secret_factory
 
 
 class TestPotentialSecret(object):
