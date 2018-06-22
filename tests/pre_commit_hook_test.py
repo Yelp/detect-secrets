@@ -58,11 +58,11 @@ class TestPreCommitHook(object):
 
         message_by_lines = list(filter(
             lambda x: x != '',
-            mock_log.message.splitlines()
+            mock_log.message.splitlines(),
         ))
 
         assert message_by_lines[0].startswith(
-            'Potential secrets about to be committed to git repo!'
+            'Potential secrets about to be committed to git repo!',
         )
         assert message_by_lines[2] == \
             'Secret Type: Base64 High Entropy String'
@@ -84,7 +84,7 @@ class TestPreCommitHook(object):
                 return_value=self._create_baseline(),
         ):
             assert_commit_succeeds(
-                '--baseline will_be_mocked test_data/files/file_with_secrets.py'
+                '--baseline will_be_mocked test_data/files/file_with_secrets.py',
             )
 
     def test_quit_early_if_bad_baseline(self, mock_get_baseline):
@@ -94,7 +94,7 @@ class TestPreCommitHook(object):
                 autospec=True,
         ) as mock_secrets_collection:
             assert_commit_blocked(
-                '--baseline will_be_mocked test_data/files/file_with_secrets.py'
+                '--baseline will_be_mocked test_data/files/file_with_secrets.py',
             )
 
             assert not mock_secrets_collection.called
@@ -113,10 +113,10 @@ class TestPreCommitHook(object):
                     expected_input='git diff --name-only',
                     mocked_output=b'baseline.file',
                 ),
-            )
+            ),
         ):
             assert_commit_blocked(
-                '--baseline baseline.file test_data/files/file_with_secrets.py'
+                '--baseline baseline.file test_data/files/file_with_secrets.py',
             )
 
         assert mock_log.message == (
@@ -140,7 +140,7 @@ class TestPreCommitHook(object):
             'detect_secrets.pre_commit_hook.open',
         ) as m:
             assert_commit_blocked(
-                '--baseline will_be_mocked test_data/files/file_with_secrets.py'
+                '--baseline will_be_mocked test_data/files/file_with_secrets.py',
             )
 
             baseline_written = json.loads(m().write.call_args[0][0])
@@ -169,5 +169,5 @@ class TestPreCommitHook(object):
         return json.dumps(
             baseline,
             indent=2,
-            sort_keys=True
+            sort_keys=True,
         )

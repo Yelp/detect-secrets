@@ -22,7 +22,7 @@ class TestPrivateKeyDetector(object):
                 '-----BEGIN PRIVATE KEY-----\n'
                 'yabba dabba doo'
             ),
-        ]
+        ],
     )
     def test_analyze(self, file_content):
         logic = PrivateKeyDetector()

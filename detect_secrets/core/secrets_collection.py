@@ -40,7 +40,7 @@ class SecretsCollection(object):
         :raises: IOError
         """
         return cls.load_baseline_from_string(
-            cls._get_baseline_string_from_file(filename)
+            cls._get_baseline_string_from_file(filename),
         )
 
     @classmethod
@@ -53,7 +53,7 @@ class SecretsCollection(object):
 
         except (IOError, UnicodeDecodeError):
             CustomLogObj.getLogger().error(
-                "Unable to open baseline file: %s.", filename
+                "Unable to open baseline file: %s.", filename,
             )
 
             raise
@@ -96,7 +96,7 @@ class SecretsCollection(object):
                     item['type'],
                     filename,
                     item['line_number'],
-                    'will be replaced'
+                    'will be replaced',
                 )
                 secret.secret_hash = item['hashed_secret']
                 result.data[filename][secret] = secret
@@ -110,7 +110,7 @@ class SecretsCollection(object):
             diff,
             baseline_filename='',
             last_commit_hash='',
-            repo_name=''
+            repo_name='',
     ):
         """For optimization purposes, our scanning strategy focuses on looking
         at incremental differences, rather than re-scanning the codebase every time.
@@ -160,7 +160,7 @@ class SecretsCollection(object):
                         patch_file,
                         plugin,
                         filename,
-                    )
+                    ),
                 )
 
     def scan_file(self, filename, filename_key=None):
@@ -305,7 +305,7 @@ class SecretsCollection(object):
                             line.value,
                             line.target_line_no,
                             filename,
-                        )
+                        ),
                     )
 
         return output
@@ -328,7 +328,7 @@ class SecretsCollection(object):
         return json.dumps(
             self.json(),
             indent=2,
-            sort_keys=True
+            sort_keys=True,
         )
 
     def __getitem__(self, key):  # pragma: no cover

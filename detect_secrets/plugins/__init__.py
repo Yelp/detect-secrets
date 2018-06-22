@@ -16,7 +16,7 @@ class SensitivityValues(namedtuple(
         'base64_limit',
         'hex_limit',
         'private_key_detector',
-    ]
+    ],
 )):
     """Server configuration to determine which plugins to run per repo."""
 
@@ -131,7 +131,7 @@ def _initialize_plugin(plugin_classname, *args):
         instance = klass(*args)
     except TypeError:
         _CustomLogObj.getLogger().warning(
-            'Unable to initialize plugin!'
+            'Unable to initialize plugin!',
         )
         raise
 

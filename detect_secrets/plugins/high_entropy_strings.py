@@ -27,7 +27,7 @@ class HighEntropyStringsPlugin(BasePlugin):
     def __init__(self, charset, limit, *args):
         if limit < 0 or limit > 8:
             raise ValueError(
-                'The limit set for HighEntropyStrings must be between 0.0 and 8.0'
+                'The limit set for HighEntropyStrings must be between 0.0 and 8.0',
             )
 
         self.charset = charset
@@ -167,7 +167,7 @@ class HighEntropyStringsPlugin(BasePlugin):
         """
         old_regex = self.regex
         self.regex = re.compile(
-            r'^([%s]+)$' % re.escape(self.charset)
+            r'^([%s]+)$' % re.escape(self.charset),
         )
 
         try:
@@ -193,7 +193,7 @@ class Base64HighEntropyString(HighEntropyStringsPlugin):
     def __init__(self, limit, *args):
         super(Base64HighEntropyString, self).__init__(
             string.ascii_letters + string.digits + '+/=',
-            limit
+            limit,
         )
 
 
@@ -332,7 +332,7 @@ class IniFileParser(object):
             filter(
                 lambda x: x,
                 values_list[1:],
-            )
+            ),
         )
 
 
