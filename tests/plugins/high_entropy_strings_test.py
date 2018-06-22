@@ -5,7 +5,7 @@ import pytest
 
 from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
 from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
-from tests.util.file_util import create_file_object_from_string
+from testing.mocks import mock_file_object
 
 
 class HighEntropyStringsTest(object):
@@ -55,7 +55,7 @@ class HighEntropyStringsTest(object):
             secret=self.secret,
         )
 
-        f = create_file_object_from_string(content)
+        f = mock_file_object(content)
 
         results = self.logic.analyze(f, 'does_not_matter')
 
@@ -81,7 +81,7 @@ class HighEntropyStringsTest(object):
             non_secret=self.non_secret,
             secret=self.secret,
         )
-        f = create_file_object_from_string(content)
+        f = mock_file_object(content)
 
         results = self.logic.analyze(f, 'does_not_matter')
 
@@ -99,7 +99,7 @@ class HighEntropyStringsTest(object):
     )
     def test_ignored_lines(self, content_to_format):
         file_content = content_to_format.format(secret=self.secret)
-        f = create_file_object_from_string(file_content)
+        f = mock_file_object(file_content)
 
         results = self.logic.analyze(f, 'does_not_matter')
 

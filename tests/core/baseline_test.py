@@ -9,10 +9,10 @@ from detect_secrets.core.baseline import update_baseline_with_removed_secrets
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
 from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
-from tests.util.factories import secrets_collection_factory
-from tests.util.mock_util import mock_git_calls
-from tests.util.mock_util import mock_open
-from tests.util.mock_util import SubprocessMock
+from testing.factories import secrets_collection_factory
+from testing.mocks import mock_git_calls
+from testing.mocks import mock_open
+from testing.mocks import SubprocessMock
 
 
 class TestInitializeBaseline(object):
