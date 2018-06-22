@@ -1,10 +1,13 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import string
+
 import pytest
 
 from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
 from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
+from detect_secrets.plugins.high_entropy_strings import HighEntropyStringsPlugin
 from testing.mocks import mock_file_object
 
 
@@ -182,3 +185,26 @@ class TestHexHighEntropyStrings(HighEntropyStringsTest):
             'aaaaaa',
             '2b00042f7481c7b056c4b410d28f33cf',
         )
+
+    def test_discounts_when_all_numbers(self):
+        original_scanner = HighEntropyStringsPlugin(
+            string.hexdigits,
+            3,
+        )
+
+        # This makes sure discounting works.
+        assert self.logic.calculate_shannon_entropy('0123456789') < \
+            original_scanner.calculate_shannon_entropy('0123456789')
+
+        # This is the goal.
+        assert self.logic.calculate_shannon_entropy('0123456789') < 3
+
+        # This makes sure it is length dependent.
+        assert self.logic.calculate_shannon_entropy('0123456789') < \
+            self.logic.calculate_shannon_entropy(
+                '01234567890123456789',
+            )
+
+        # This makes sure it only occurs with numbers.
+        assert self.logic.calculate_shannon_entropy('12345a') == \
+            original_scanner.calculate_shannon_entropy('12345a')
