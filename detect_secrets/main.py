@@ -5,6 +5,7 @@ from __future__ import print_function
 import json
 import sys
 
+from detect_secrets import VERSION
 from detect_secrets.core import baseline
 from detect_secrets.core.log import CustomLog
 from detect_secrets.core.usage import ParserBuilder
@@ -23,6 +24,10 @@ def main(argv=None):
     args = parse_args(argv)
     if args.verbose:  # pragma: no cover
         CustomLog.enableDebug(args.verbose)
+
+    if args.version:
+        print(VERSION)
+        return
 
     plugins = initialize_plugins(args.plugins)
 

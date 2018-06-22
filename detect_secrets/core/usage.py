@@ -14,7 +14,8 @@ class ParserBuilder(object):
 
     def add_default_arguments(self):
         self.plugins_parser.add_arguments()
-        self._add_verbosity_argument()
+        self._add_verbosity_argument()\
+            ._add_version_argument()
 
     def add_pre_commit_arguments(self):
         return self._add_filenames_argument()\
@@ -28,6 +29,14 @@ class ParserBuilder(object):
         self.plugins_parser.consolidate_args(output)
 
         return output
+
+    def _add_version_argument(self):
+        self.parser.add_argument(
+            '--version',
+            action='store_true',
+            help='Display version information.',
+        )
+        return self
 
     def _add_verbosity_argument(self):
         self.parser.add_argument(

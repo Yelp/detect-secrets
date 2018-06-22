@@ -1,8 +1,8 @@
 from setuptools import find_packages
 from setuptools import setup
 
+from detect_secrets import VERSION
 
-VERSION = '0.8.8'
 
 setup(
     name='detect_secrets',
@@ -22,7 +22,13 @@ setup(
         'pyyaml',
         'unidiff',
     ],
-    extras_require={':python_version=="2.7"': ['configparser', 'enum34']},
+    extras_require={
+        ':python_version=="2.7"': [
+            'configparser',
+            'enum34',
+            'functools32',
+        ],
+    },
     entry_points={
         'console_scripts': [
             'detect-secrets = detect_secrets.main:main',

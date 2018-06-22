@@ -8,6 +8,7 @@ from time import strftime
 import mock
 import pytest
 
+from detect_secrets import VERSION
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.plugins.base import BasePlugin
@@ -278,28 +279,6 @@ class TestBaselineInputOutput(object):
 
         assert mock_log.getLogger().error.called
 
-    def test_load_baseline_from_file(self, mock_gmtime):
-        original = self.get_baseline_dict(mock_gmtime)
-        with mock_open(json.dumps(original)):
-            secrets = SecretsCollection.load_baseline_from_file('does_not_matter')
-
-        self.assert_loaded_collection_is_original_collection(
-            original,
-            secrets.format_for_baseline_output(),
-        )
-
-    def test_load_baseline_from_file_fails_early_on_bad_filename(self, mock_log):
-        with mock.patch.object(SecretsCollection, 'load_baseline_from_string') as \
-                mock_load_baseline_from_string, \
-                mock_open('will_throw_error') as mock_file:
-            mock_file().read.side_effect = MockUnicodeDecodeError
-
-            with pytest.raises(UnicodeDecodeError):
-                SecretsCollection.load_baseline_from_file('does_not_matter')
-
-            assert not mock_load_baseline_from_string.called
-            assert mock_log.getLogger().error.called
-
     def get_baseline_dict(self, gmtime):
         # They are all the same secret, so they should all have the same secret hash.
         secret_hash = PotentialSecret.hash_secret('secret')
@@ -338,6 +317,7 @@ class TestBaselineInputOutput(object):
                     },
                 ],
             },
+            'version': VERSION,
         }
 
     def assert_loaded_collection_is_original_collection(self, original, new):
