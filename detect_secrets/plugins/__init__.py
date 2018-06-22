@@ -141,7 +141,10 @@ def _convert_sensitivity_values_to_class_tuple(sensitivity_values):
              This way, we can initialize the class with <plugin_class_name>(<value>)
 
     Example:
-        >>> [ ('HexHighEntropyString', {'hex_limit': 3}), ('PrivateKeyDetector', {'private_key_detector': true}), ]
+        >>> [
+                ('HexHighEntropyString', {'hex_limit': 3}),
+                ('PrivateKeyDetector', {'private_key_detector': true}),
+            ]
     """
     mapping = {
         'base64_limit': 'Base64HighEntropyString',
