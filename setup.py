@@ -9,7 +9,9 @@ setup(
     packages=find_packages(exclude=(['test*', 'tmp*'])),
     version=VERSION,
     description='Tool for detecting secrets in the codebase',
-    long_description="Check out detect-secrets on `GitHub <https://github.com/Yelp/detect-secrets>`_!",
+    long_description=(
+        'Check out detect-secrets on `GitHub <https://github.com/Yelp/detect-secrets>`_!'
+    ),
     license="Copyright Yelp, Inc. 2018",
     author='Aaron Loo',
     author_email='aaronloo@yelp.com',
@@ -25,7 +27,7 @@ setup(
             'configparser',
             'enum34',
             'functools32',
-        ]
+        ],
     },
     entry_points={
         'console_scripts': [
@@ -43,5 +45,5 @@ setup(
         "Environment :: Console",
         "Operating System :: OS Independent",
         "Development Status :: 5 - Production/Stable",
-    ]
+    ],
 )

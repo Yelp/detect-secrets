@@ -79,7 +79,7 @@ def _write_to_baseline_file(filename, payload):  # pragma: no cover
                 payload,
                 indent=2,
                 sort_keys=True,
-            )
+            ),
         )
 
 
@@ -124,7 +124,7 @@ def _get_baseline_string_from_file(filename):   # pragma: no cover
 
     except IOError:
         _get_custom_log().error(
-            'Unable to open baseline file: %s.', filename
+            'Unable to open baseline file: %s.', filename,
         )
 
         raise
@@ -139,7 +139,7 @@ def raise_exception_if_baseline_file_is_not_up_to_date(filename):
     """
     try:
         files_changed_but_not_staged = subprocess.check_output(
-            'git diff --name-only'.split()
+            'git diff --name-only'.split(),
         ).split()
     except subprocess.CalledProcessError:
         # Since we don't pipe stderr, we get free logging through git.
@@ -257,7 +257,7 @@ def _print_mitigation_suggestions(log):
     log.error(
         textwrap.fill(
             'If a secret has already been committed, visit '
-            'https://help.github.com/articles/removing-sensitive-data-from-a-repository'
+            'https://help.github.com/articles/removing-sensitive-data-from-a-repository',
         ),
     )
 
