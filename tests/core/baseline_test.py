@@ -79,7 +79,7 @@ class TestInitializeBaseline(object):
                 'detect_secrets.core.baseline.os.path.isfile',
                 return_value=True,
         ), mock_open(
-                'Super hidden value "01234567890"',
+                'Super hidden value "0123456789a"',
                 'detect_secrets.core.secrets_collection.codecs.open',
         ):
             results = self.get_results('will_be_mocked')

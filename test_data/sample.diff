@@ -7,7 +7,7 @@ index 8f56ba1..796dbb3 100644
 
      for subdir, dirs, files in os.walk(rootdir):
 -        if exclude_regex and regex.search(subdir[len(rootdir)+1:]):
-+        if exclude_regex and regex.search(subdir[len("0123456789") + 1:]):
++        if exclude_regex and regex.search(subdir[len("012345678a") + 1:]):
              continue
 
          for file in files:

@@ -184,6 +184,33 @@ class HexHighEntropyString(HighEntropyStringsPlugin):
     def __init__(self, limit, *args):
         super(HexHighEntropyString, self).__init__(string.hexdigits, limit)
 
+    def calculate_shannon_entropy(self, data):
+        """
+        In our investigations, we have found that when the input is all digits,
+        the number of false positives we get greatly exceeds realistic true
+        positive scenarios.
+
+        Therefore, this tries to capture this heuristic mathemetically.
+
+        We do this by noting that the maximum shannon entropy for this charset
+        is ~3.32 (e.g. "0123456789", with every digit different), and we want
+        to lower that below the standard limit, 3. However, at the same time,
+        we also want to accommodate the fact that longer strings have a higher
+        chance of being a true positive, which means "01234567890123456789"
+        should be closer to the maximum entropy than the shorter version.
+        """
+        entropy = super(HexHighEntropyString, self).calculate_shannon_entropy(data)
+        try:
+            int(data)
+
+            # This multiplier was determined through trial and error, with the
+            # intent of keeping it simple, yet achieving our goals.
+            entropy -= 1.2 / math.log(len(data), 2)
+        except ValueError:
+            pass
+
+        return entropy
+
 
 class Base64HighEntropyString(HighEntropyStringsPlugin):
     """HighEntropyStringsPlugin for base64 encoded strings"""
