@@ -1,7 +1,7 @@
 class BasePlugin(object):
     """This is an abstract class to define Plugins API"""
 
-    def __init__(self, *args):
+    def __init__(self, **kwargs):
         pass
 
     def analyze(self, file, filename):  # pragma: no cover

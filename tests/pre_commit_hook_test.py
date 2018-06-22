@@ -202,6 +202,15 @@ def _create_baseline():
     baseline = {
         'generated_at': 'does_not_matter',
         'exclude_regex': '',
+        'plugins_used': [
+            {
+                'name': 'HexHighEntropyString',
+                'hex_limit': 3,
+            },
+            {
+                'name': 'PrivateKeyDetector',
+            },
+        ],
         'results': {
             'test_data/files/file_with_secrets.py': [
                 {

@@ -150,15 +150,6 @@ class HighEntropyStringsPlugin(BasePlugin):
 
         return potential_secrets
 
-    @property
-    def __dict__(self):
-        output = super(HighEntropyStringsPlugin, self).__dict__
-        output.update({
-            'limit': self.entropy_limit,
-        })
-
-        return output
-
     @contextmanager
     def _non_quoted_string_regex(self):
         """For certain file formats, strings need not necessarily follow the
@@ -181,8 +172,20 @@ class HexHighEntropyString(HighEntropyStringsPlugin):
 
     secret_type = 'Hex High Entropy String'
 
-    def __init__(self, limit, *args):
-        super(HexHighEntropyString, self).__init__(string.hexdigits, limit)
+    def __init__(self, hex_limit, **kwargs):
+        super(HexHighEntropyString, self).__init__(
+            string.hexdigits,
+            hex_limit,
+        )
+
+    @property
+    def __dict__(self):
+        output = super(HighEntropyStringsPlugin, self).__dict__
+        output.update({
+            'hex_limit': self.entropy_limit,
+        })
+
+        return output
 
     def calculate_shannon_entropy(self, data):
         """
@@ -217,11 +220,20 @@ class Base64HighEntropyString(HighEntropyStringsPlugin):
 
     secret_type = 'Base64 High Entropy String'
 
-    def __init__(self, limit, *args):
+    def __init__(self, base64_limit, **kwargs):
         super(Base64HighEntropyString, self).__init__(
             string.ascii_letters + string.digits + '+/=',
-            limit,
+            base64_limit,
         )
+
+    @property
+    def __dict__(self):
+        output = super(HighEntropyStringsPlugin, self).__dict__
+        output.update({
+            'base64_limit': self.entropy_limit,
+        })
+
+        return output
 
 
 class IniFileParser(object):
@@ -246,8 +258,8 @@ class IniFileParser(object):
         for section_name, _ in self.parser.items():
             for key, values in self.parser.items(section_name):
                 for value, offset in self._get_value_and_line_offset(
-                        key,
-                        values,
+                    key,
+                    values,
                 ):
                     yield value, offset
 
