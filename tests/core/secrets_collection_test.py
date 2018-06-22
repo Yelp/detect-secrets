@@ -310,7 +310,7 @@ class TestBaselineInputOutput(object):
             'plugins_used': [
                 {
                     'name': 'HexHighEntropyString',
-                    'limit': 3,
+                    'hex_limit': 3,
                 },
                 {
                     'name': 'PrivateKeyDetector',

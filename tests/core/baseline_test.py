@@ -76,11 +76,11 @@ class TestInitializeBaseline(object):
 
     def test_single_non_tracked_git_file_should_work(self):
         with mock.patch(
-                'detect_secrets.core.baseline.os.path.isfile',
-                return_value=True,
+            'detect_secrets.core.baseline.os.path.isfile',
+            return_value=True,
         ), mock_open(
-                'Super hidden value "01234567890"',
-                'detect_secrets.core.secrets_collection.codecs.open',
+            'Super hidden value "01234567890"',
+            'detect_secrets.core.secrets_collection.codecs.open',
         ):
             results = self.get_results('will_be_mocked')
 

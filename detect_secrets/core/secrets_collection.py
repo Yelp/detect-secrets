@@ -88,7 +88,7 @@ class SecretsCollection(object):
         result = SecretsCollection()
         if not all(key in data for key in (
             'exclude_regex',
-            'result',
+            'results',
             'plugins_used'
         )):
             raise IOError
@@ -98,7 +98,7 @@ class SecretsCollection(object):
         plugins = []
         for plugin in data['plugins_used']:
             plugin_classname = plugin.pop('name')
-            plugins.append(_initialize_plugin(
+            plugins.append(initialize_plugin(
                 plugin_classname,
                 **plugin
             ))

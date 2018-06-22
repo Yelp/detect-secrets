@@ -170,6 +170,8 @@ class HighEntropyStringsPlugin(BasePlugin):
 class HexHighEntropyString(HighEntropyStringsPlugin):
     """HighEntropyStringsPlugin for hex strings"""
 
+    secret_type = 'Hex High Entropy String'
+
     def __init__(self, hex_limit, **kwargs):
         super(HexHighEntropyString, self).__init__(
             string.hexdigits,
@@ -188,6 +190,8 @@ class HexHighEntropyString(HighEntropyStringsPlugin):
 
 class Base64HighEntropyString(HighEntropyStringsPlugin):
     """HighEntropyStringsPlugin for base64 encoded strings"""
+
+    secret_type = 'Base64 High Entropy String'
 
     def __init__(self, base64_limit, **kwargs):
         super(Base64HighEntropyString, self).__init__(
@@ -227,8 +231,8 @@ class IniFileParser(object):
         for section_name, _ in self.parser.items():
             for key, values in self.parser.items(section_name):
                 for value, offset in self._get_value_and_line_offset(
-                        key,
-                        values,
+                    key,
+                    values,
                 ):
                     yield value, offset
 

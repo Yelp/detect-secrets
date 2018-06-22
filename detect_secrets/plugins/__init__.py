@@ -155,7 +155,7 @@ def _convert_sensitivity_values_to_class_tuple(sensitivity_values):
             output.append(
                 (
                     mapping[key],
-                    {key: getattr(sensitivity_values, key)},
+                    {key: getattr(sensitivity_values, key)} if getattr(sensitivity_values, key) else {},
                 )
             )
 
