@@ -2,8 +2,8 @@ import mock
 import pytest
 
 from detect_secrets.main import main
-from tests.util.factories import secrets_collection_factory
-from tests.util.mock_util import Any
+from testing.factories import secrets_collection_factory
+from testing.mocks import Any
 
 
 @pytest.fixture
@@ -12,7 +12,7 @@ def mock_baseline_initialize():
 
     with mock.patch(
             'detect_secrets.main.baseline.initialize',
-            return_value=secrets
+            return_value=secrets,
     ) as mock_initialize:
         yield mock_initialize
 

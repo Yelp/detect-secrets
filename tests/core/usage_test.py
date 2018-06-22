@@ -48,7 +48,7 @@ class TestPluginOptions(object):
             ('--hex-limit 8', 8),
             ('--hex-limit -1', None),
             ('--hex-limit 8.1', None),
-        ]
+        ],
     )
     def test_custom_limit(self, argument_string, expected_value):
         if expected_value is not None:

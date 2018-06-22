@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 import pytest
 
-from tests.util.factories import potential_secret_factory
+from testing.factories import potential_secret_factory
 
 
 class TestPotentialSecret(object):
@@ -25,8 +25,8 @@ class TestPotentialSecret(object):
                 potential_secret_factory(secret='A'),
                 potential_secret_factory(secret='B'),
                 False,
-            )
-        ]
+            ),
+        ],
     )
     def test_equality(self, a, b, is_equal):
         assert (a == b) is is_equal

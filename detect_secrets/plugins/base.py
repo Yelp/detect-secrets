@@ -31,7 +31,7 @@ class BasePlugin(object):
         """
 
         raise NotImplementedError(
-            '%s needs to implement analyze_string()' % self.__class__.__name__
+            '%s needs to implement analyze_string()' % self.__class__.__name__,
         )
 
     @property

@@ -8,14 +8,15 @@ from time import strftime
 import mock
 import pytest
 
+from detect_secrets import VERSION
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.plugins.base import BasePlugin
 from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
 from detect_secrets.plugins.private_key import PrivateKeyDetector
-from tests.util.factories import secrets_collection_factory
-from tests.util.mock_util import mock_log as mock_log_base
-from tests.util.mock_util import mock_open as mock_open_base
+from testing.factories import secrets_collection_factory
+from testing.mocks import mock_log as mock_log_base
+from testing.mocks import mock_open as mock_open_base
 
 
 @pytest.fixture
@@ -61,7 +62,7 @@ class TestScanFile(object):
 
     def test_success_single_plugin(self):
         logic = secrets_collection_factory(
-            plugins=(MockPluginFixedValue(),)
+            plugins=(MockPluginFixedValue(),),
         )
 
         with mock_open('junk text here, as it does not matter'):
@@ -75,7 +76,7 @@ class TestScanFile(object):
                 {
                     'filename': 'filename',
                     'lineno': 3,
-                }
+                },
             ],
             plugins=(
                 MockPluginFixedValue(),
@@ -94,7 +95,7 @@ class TestScanFile(object):
 
     def test_unicode_decode_error(self, mock_log):
         logic = secrets_collection_factory(
-            plugins=(MockPluginFileValue(),)
+            plugins=(MockPluginFileValue(),),
         )
 
         with mock_open('junk text here') as m:
@@ -174,7 +175,7 @@ class TestGetSecret(object):
             ('filename', 'secret_hash', True),
             ('filename', 'not_a_secret_hash', False),
             ('diff_filename', 'secret_hash', False),
-        ]
+        ],
     )
     def test_optional_type(self, filename, secret_hash, expected_value):
         with self._mock_secret_hash():
@@ -182,7 +183,7 @@ class TestGetSecret(object):
                 {
                     'filename': 'filename',
                     'lineno': 1,
-                }
+                },
             ])
 
         result = logic.get_secret(filename, secret_hash)
@@ -197,7 +198,7 @@ class TestGetSecret(object):
         [
             ('type', False),
             ('wrong_type', True),
-        ]
+        ],
     )
     def test_explicit_type_for_optimization(self, type_, is_none):
         with self._mock_secret_hash():
@@ -249,7 +250,7 @@ class TestBaselineInputOutput(object):
             plugins=(
                 HexHighEntropyString(3),
                 PrivateKeyDetector(),
-            )
+            ),
         )
 
     def test_output(self, mock_gmtime):
@@ -263,7 +264,7 @@ class TestBaselineInputOutput(object):
         original = self.get_baseline_dict(mock_gmtime)
 
         secrets = SecretsCollection.load_baseline_from_string(
-            json.dumps(original)
+            json.dumps(original),
         ).format_for_baseline_output()
 
         self.assert_loaded_collection_is_original_collection(original, secrets)
@@ -277,28 +278,6 @@ class TestBaselineInputOutput(object):
             )
 
         assert mock_log.getLogger().error.called
-
-    def test_load_baseline_from_file(self, mock_gmtime):
-        original = self.get_baseline_dict(mock_gmtime)
-        with mock_open(json.dumps(original)):
-            secrets = SecretsCollection.load_baseline_from_file('does_not_matter')
-
-        self.assert_loaded_collection_is_original_collection(
-            original,
-            secrets.format_for_baseline_output()
-        )
-
-    def test_load_baseline_from_file_fails_early_on_bad_filename(self, mock_log):
-        with mock.patch.object(SecretsCollection, 'load_baseline_from_string') as \
-                mock_load_baseline_from_string, \
-                mock_open('will_throw_error') as mock_file:
-            mock_file().read.side_effect = MockUnicodeDecodeError
-
-            with pytest.raises(UnicodeDecodeError):
-                SecretsCollection.load_baseline_from_file('does_not_matter')
-
-            assert not mock_load_baseline_from_string.called
-            assert mock_log.getLogger().error.called
 
     def get_baseline_dict(self, gmtime):
         # They are all the same secret, so they should all have the same secret hash.
@@ -314,7 +293,7 @@ class TestBaselineInputOutput(object):
                 },
                 {
                     'name': 'PrivateKeyDetector',
-                }
+                },
             ],
             'results': {
                 'fileA': [
@@ -337,7 +316,8 @@ class TestBaselineInputOutput(object):
                         'hashed_secret': secret_hash,
                     },
                 ],
-            }
+            },
+            'version': VERSION,
         }
 
     def assert_loaded_collection_is_original_collection(self, original, new):

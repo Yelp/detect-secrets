@@ -1,11 +1,14 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import string
+
 import pytest
 
 from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
 from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
-from tests.util.file_util import create_file_object_from_string
+from detect_secrets.plugins.high_entropy_strings import HighEntropyStringsPlugin
+from testing.mocks import mock_file_object
 
 
 class HighEntropyStringsTest(object):
@@ -47,7 +50,7 @@ class HighEntropyStringsTest(object):
                 "'{secret}'",
                 True,
             ),
-        ]
+        ],
     )
     def test_pattern(self, content_to_format, should_be_caught):
         content = content_to_format.format(
@@ -55,7 +58,7 @@ class HighEntropyStringsTest(object):
             secret=self.secret,
         )
 
-        f = create_file_object_from_string(content)
+        f = mock_file_object(content)
 
         results = self.logic.analyze(f, 'does_not_matter')
 
@@ -81,7 +84,7 @@ class HighEntropyStringsTest(object):
             non_secret=self.non_secret,
             secret=self.secret,
         )
-        f = create_file_object_from_string(content)
+        f = mock_file_object(content)
 
         results = self.logic.analyze(f, 'does_not_matter')
 
@@ -94,12 +97,12 @@ class HighEntropyStringsTest(object):
             "'{secret}' # pragma: whitelist secret",
 
             # Not a string
-            "{secret}"
-        ]
+            "{secret}",
+        ],
     )
     def test_ignored_lines(self, content_to_format):
         file_content = content_to_format.format(secret=self.secret)
-        f = create_file_object_from_string(file_content)
+        f = mock_file_object(file_content)
 
         results = self.logic.analyze(f, 'does_not_matter')
 
@@ -182,3 +185,24 @@ class TestHexHighEntropyStrings(HighEntropyStringsTest):
             'aaaaaa',
             '2b00042f7481c7b056c4b410d28f33cf',
         )
+
+    def test_discounts_when_all_numbers(self):
+        original_scanner = HighEntropyStringsPlugin(
+            string.hexdigits,
+            3,
+        )
+
+        # This makes sure discounting works.
+        assert self.logic.calculate_shannon_entropy('0123456789') < \
+            original_scanner.calculate_shannon_entropy('0123456789')
+
+        # This is the goal.
+        assert self.logic.calculate_shannon_entropy('0123456789') < 3
+
+        # This makes sure it is length dependent.
+        assert self.logic.calculate_shannon_entropy('0123456789') < \
+            self.logic.calculate_shannon_entropy('01234567890123456789')
+
+        # This makes sure it only occurs with numbers.
+        assert self.logic.calculate_shannon_entropy('12345a') == \
+            original_scanner.calculate_shannon_entropy('12345a')

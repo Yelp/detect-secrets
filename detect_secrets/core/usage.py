@@ -14,7 +14,8 @@ class ParserBuilder(object):
 
     def add_default_arguments(self):
         self.plugins_parser.add_arguments()
-        self._add_verbosity_argument()
+        self._add_verbosity_argument()\
+            ._add_version_argument()
 
     def add_pre_commit_arguments(self):
         return self._add_filenames_argument()\
@@ -28,6 +29,14 @@ class ParserBuilder(object):
         self.plugins_parser.consolidate_args(output)
 
         return output
+
+    def _add_version_argument(self):
+        self.parser.add_argument(
+            '--version',
+            action='store_true',
+            help='Display version information.',
+        )
+        return self
 
     def _add_verbosity_argument(self):
         self.parser.add_argument(
@@ -68,7 +77,7 @@ class ParserBuilder(object):
         self.parser.add_argument(
             '--exclude',
             nargs=1,
-            help='Pass in regex to specify ignored paths during initialization scan.'
+            help='Pass in regex to specify ignored paths during initialization scan.',
         )
 
         return self
@@ -98,7 +107,7 @@ class PluginDescriptor(namedtuple(
         # Therefore, only populate the default value upon consolidation
         # (rather than relying on argparse default).
         'related_args',
-    ]
+    ],
 )):
     def __new__(cls, related_args=None, **kwargs):
         if not related_args:
@@ -144,7 +153,7 @@ class PluginOptions(object):
                 'Configure settings for each secret scanning '
                 'ruleset. By default, all plugins are enabled '
                 'unless explicitly disabled.'
-            )
+            ),
         )
 
     def add_arguments(self):
@@ -167,7 +176,7 @@ class PluginOptions(object):
 
         for plugin in PluginOptions.all_plugins:
             arg_name = PluginOptions._convert_flag_text_to_argument_name(
-                plugin.disable_flag_text
+                plugin.disable_flag_text,
             )
 
             # Remove disabled plugins
@@ -186,7 +195,7 @@ class PluginOptions(object):
                     default_value = None
 
                 arg_name = PluginOptions._convert_flag_text_to_argument_name(
-                    flag_name
+                    flag_name,
                 )
 
                 related_args[arg_name] = getattr(args, arg_name)
@@ -196,7 +205,7 @@ class PluginOptions(object):
                     related_args[arg_name] = default_value
 
             active_plugins.update({
-                plugin.classname: related_args
+                plugin.classname: related_args,
             })
 
         args.plugins = active_plugins
@@ -236,7 +245,8 @@ class PluginOptions(object):
         value = float(string)
         if value < 0 or value > 8:
             raise argparse.ArgumentTypeError(
-                '%s must be between 0.0 and 8.0' % string)
+                '%s must be between 0.0 and 8.0' % string,
+            )
 
         return value
 

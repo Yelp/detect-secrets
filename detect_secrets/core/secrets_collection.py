@@ -10,6 +10,7 @@ from time import strftime
 from unidiff import PatchSet
 from unidiff.errors import UnidiffParseError
 
+from detect_secrets import VERSION
 from detect_secrets.core.log import CustomLog
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins import initialize_plugin
@@ -27,37 +28,15 @@ class SecretsCollection(object):
 
         :type exclude_regex: str
         :param exclude_regex: for optional regex for ignored paths.
+
+        :type version: str
+        :param version: version of detect-secrets that SecretsCollection
+            is valid at.
         """
         self.data = {}
         self.plugins = plugins
         self.exclude_regex = exclude_regex
-
-    @classmethod
-    def load_baseline_from_file(cls, filename):
-        """Initialize a SecretsCollection object from file.
-
-        :param filename: string; name of file to load
-        :returns: SecretsCollection
-        :raises: IOError
-        """
-        return cls.load_baseline_from_string(
-            cls._get_baseline_string_from_file(filename)
-        )
-
-    @classmethod
-    def _get_baseline_string_from_file(cls, filename):
-        """Used for mocking, because we can't mock `open` (as it's also
-        used in `scan_file`."""
-        try:
-            with codecs.open(filename, encoding='utf-8') as f:
-                return f.read()
-
-        except (IOError, UnicodeDecodeError):
-            CustomLogObj.getLogger().error(
-                "Unable to open baseline file: %s.", filename
-            )
-
-            raise
+        self.version = VERSION
 
     @classmethod
     def load_baseline_from_string(cls, string):
@@ -88,8 +67,9 @@ class SecretsCollection(object):
         result = SecretsCollection()
         if not all(key in data for key in (
             'exclude_regex',
+            'plugins_used',
             'results',
-            'plugins_used'
+            'version',
         )):
             raise IOError
 
@@ -112,10 +92,12 @@ class SecretsCollection(object):
                     item['type'],
                     filename,
                     item['line_number'],
-                    'will be replaced'
+                    'will be replaced',
                 )
                 secret.secret_hash = item['hashed_secret']
                 result.data[filename][secret] = secret
+
+        result.version = data['version']
 
         return result
 
@@ -124,7 +106,7 @@ class SecretsCollection(object):
         diff,
         baseline_filename='',
         last_commit_hash='',
-        repo_name=''
+        repo_name='',
     ):
         """For optimization purposes, our scanning strategy focuses on looking
         at incremental differences, rather than re-scanning the codebase every time.
@@ -174,7 +156,7 @@ class SecretsCollection(object):
                         patch_file,
                         plugin,
                         filename,
-                    )
+                    ),
                 )
 
     def scan_file(self, filename, filename_key=None):
@@ -259,6 +241,7 @@ class SecretsCollection(object):
             'exclude_regex': self.exclude_regex,
             'plugins_used': plugins_used,
             'results': results,
+            'version': self.version,
         }
 
     def _results_accumulator(self, filename):
@@ -319,7 +302,7 @@ class SecretsCollection(object):
                             line.value,
                             line.target_line_no,
                             filename,
-                        )
+                        ),
                     )
 
         return output
@@ -342,7 +325,7 @@ class SecretsCollection(object):
         return json.dumps(
             self.json(),
             indent=2,
-            sort_keys=True
+            sort_keys=True,
         )
 
     def __getitem__(self, key):  # pragma: no cover

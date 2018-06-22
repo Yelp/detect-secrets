@@ -16,7 +16,7 @@ class SensitivityValues(namedtuple(
         'base64_limit',
         'hex_limit',
         'private_key_detector',
-    ]
+    ],
 )):
     """Server configuration to determine which plugins to run per repo."""
 
@@ -127,7 +127,7 @@ def initialize_plugin(plugin_classname, **kwargs):
         instance = klass(**kwargs)
     except TypeError:
         _CustomLogObj.getLogger().warning(
-            'Unable to initialize plugin!'
+            'Unable to initialize plugin!',
         )
         raise
 
@@ -158,8 +158,8 @@ def _convert_sensitivity_values_to_class_tuple(sensitivity_values):
             output.append(
                 (
                     mapping[key],
-                    {key: getattr(sensitivity_values, key)} if getattr(sensitivity_values, key) else {},
-                )
+                    {key: getattr(sensitivity_values, key)} if getattr(sensitivity_values, key) else {},  # noqa: E501
+                ),
             )
 
     return tuple(output)

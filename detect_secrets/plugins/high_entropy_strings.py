@@ -27,7 +27,7 @@ class HighEntropyStringsPlugin(BasePlugin):
     def __init__(self, charset, limit, *args):
         if limit < 0 or limit > 8:
             raise ValueError(
-                'The limit set for HighEntropyStrings must be between 0.0 and 8.0'
+                'The limit set for HighEntropyStrings must be between 0.0 and 8.0',
             )
 
         self.charset = charset
@@ -158,7 +158,7 @@ class HighEntropyStringsPlugin(BasePlugin):
         """
         old_regex = self.regex
         self.regex = re.compile(
-            r'^([%s]+)$' % re.escape(self.charset)
+            r'^([%s]+)$' % re.escape(self.charset),
         )
 
         try:
@@ -175,7 +175,7 @@ class HexHighEntropyString(HighEntropyStringsPlugin):
     def __init__(self, hex_limit, **kwargs):
         super(HexHighEntropyString, self).__init__(
             string.hexdigits,
-            hex_limit
+            hex_limit,
         )
 
     @property
@@ -187,6 +187,33 @@ class HexHighEntropyString(HighEntropyStringsPlugin):
 
         return output
 
+    def calculate_shannon_entropy(self, data):
+        """
+        In our investigations, we have found that when the input is all digits,
+        the number of false positives we get greatly exceeds realistic true
+        positive scenarios.
+
+        Therefore, this tries to capture this heuristic mathemetically.
+
+        We do this by noting that the maximum shannon entropy for this charset
+        is ~3.32 (e.g. "0123456789", with every digit different), and we want
+        to lower that below the standard limit, 3. However, at the same time,
+        we also want to accommodate the fact that longer strings have a higher
+        chance of being a true positive, which means "01234567890123456789"
+        should be closer to the maximum entropy than the shorter version.
+        """
+        entropy = super(HexHighEntropyString, self).calculate_shannon_entropy(data)
+        try:
+            int(data)
+
+            # This multiplier was determined through trial and error, with the
+            # intent of keeping it simple, yet achieving our goals.
+            entropy -= 1.2 / math.log(len(data), 2)
+        except ValueError:
+            pass
+
+        return entropy
+
 
 class Base64HighEntropyString(HighEntropyStringsPlugin):
     """HighEntropyStringsPlugin for base64 encoded strings"""
@@ -196,7 +223,7 @@ class Base64HighEntropyString(HighEntropyStringsPlugin):
     def __init__(self, base64_limit, **kwargs):
         super(Base64HighEntropyString, self).__init__(
             string.ascii_letters + string.digits + '+/=',
-            base64_limit
+            base64_limit,
         )
 
     @property
@@ -344,7 +371,7 @@ class IniFileParser(object):
             filter(
                 lambda x: x,
                 values_list[1:],
-            )
+            ),
         )
 
 
