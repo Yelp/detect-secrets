@@ -7,11 +7,11 @@ import pytest
 
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.pre_commit_hook import main
-from tests.util.factories import secrets_collection_factory
-from tests.util.mock_util import mock_git_calls
-from tests.util.mock_util import mock_log as mock_log_base
-from tests.util.mock_util import mock_open
-from tests.util.mock_util import SubprocessMock
+from testing.factories import secrets_collection_factory
+from testing.mocks import mock_git_calls
+from testing.mocks import mock_log as mock_log_base
+from testing.mocks import mock_open
+from testing.mocks import SubprocessMock
 
 
 @pytest.fixture

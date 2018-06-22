@@ -2,8 +2,8 @@ import mock
 import pytest
 
 from detect_secrets.main import main
-from tests.util.factories import secrets_collection_factory
-from tests.util.mock_util import Any
+from testing.factories import secrets_collection_factory
+from testing.mocks import Any
 
 
 @pytest.fixture
