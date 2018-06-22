@@ -47,7 +47,7 @@ class HighEntropyStringsTest(object):
                 "'{secret}'",
                 True,
             ),
-        ]
+        ],
     )
     def test_pattern(self, content_to_format, should_be_caught):
         content = content_to_format.format(
@@ -94,8 +94,8 @@ class HighEntropyStringsTest(object):
             "'{secret}' # pragma: whitelist secret",
 
             # Not a string
-            "{secret}"
-        ]
+            "{secret}",
+        ],
     )
     def test_ignored_lines(self, content_to_format):
         file_content = content_to_format.format(secret=self.secret)

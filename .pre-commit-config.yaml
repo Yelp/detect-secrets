@@ -9,10 +9,14 @@
     -   id: name-tests-test
         exclude: tests/util
     -   id: flake8
-        args: ['--ignore=E501']
+        args: ['--max-line-length', '100']
         exclude: ^test_data/
 -   repo: https://github.com/asottile/reorder_python_imports
     sha: v0.3.5
     hooks:
     -   id: reorder-python-imports
         language_version: python3
+-   repo: https://github.com/asottile/add-trailing-comma
+    sha: v0.6.4
+    hooks:
+    -   id: add-trailing-comma

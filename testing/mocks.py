@@ -34,8 +34,8 @@ def mock_git_calls(subprocess_namespace, cases):
             raise AssertionError(
                 '\nExpected: ""\n'
                 'Actual: "{}"'.format(
-                    command
-                )
+                    command,
+                ),
             )
         current_case['index'] += 1
 
@@ -49,7 +49,7 @@ def mock_git_calls(subprocess_namespace, cases):
                 'Actual: "{}"'.format(
                     case.expected_input,
                     command,
-                )
+                ),
             )
 
         if case.should_throw_exception:
@@ -70,7 +70,7 @@ class SubprocessMock(namedtuple(
         'expected_input',
         'mocked_output',
         'should_throw_exception',
-    ]
+    ],
 )):
     """For use with mock_subprocess.
 
@@ -89,7 +89,7 @@ class SubprocessMock(namedtuple(
             cls,
             expected_input,
             mocked_output,
-            should_throw_exception
+            should_throw_exception,
         )
 
 

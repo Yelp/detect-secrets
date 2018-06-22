@@ -25,8 +25,8 @@ class TestPotentialSecret(object):
                 potential_secret_factory(secret='A'),
                 potential_secret_factory(secret='B'),
                 False,
-            )
-        ]
+            ),
+        ],
     )
     def test_equality(self, a, b, is_equal):
         assert (a == b) is is_equal

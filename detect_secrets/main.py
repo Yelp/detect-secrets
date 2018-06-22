@@ -35,11 +35,11 @@ def main(argv=None):
                 baseline.initialize(
                     plugins,
                     args.exclude,
-                    args.scan
+                    args.scan,
                 ).format_for_baseline_output(),
                 indent=2,
-                sort_keys=True
-            )
+                sort_keys=True,
+            ),
         )
 
     return 0

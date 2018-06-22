@@ -57,7 +57,7 @@ class PotentialSecret(object):
             'type': self.type,
             'filename': self.filename,
             'line_number': self.lineno,
-            'hashed_secret': self.secret_hash
+            'hashed_secret': self.secret_hash,
         }
 
         return attributes
@@ -73,7 +73,7 @@ class PotentialSecret(object):
 
     def __hash__(self):
         return hash(
-            tuple([getattr(self, x) for x in self.fields_to_compare])
+            tuple([getattr(self, x) for x in self.fields_to_compare]),
         )
 
     def __str__(self):  # pragma: no cover
