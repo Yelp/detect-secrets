@@ -94,9 +94,24 @@ def get_baseline(baseline_filename):
     raise_exception_if_baseline_file_is_not_up_to_date(baseline_filename)
 
     baseline_string = _get_baseline_string_from_file(baseline_filename)
-    raise_exception_if_baseline_version_is_outdated(
-        json.loads(baseline_string).get('version')
-    )
+    baseline_version = json.loads(baseline_string).get('version')
+
+    try:
+        raise_exception_if_baseline_version_is_outdated(
+            baseline_version,
+        )
+    except ValueError:
+        _get_custom_log().error(
+            'The supplied baseline may be incompatible with the current\n'
+            'version of detect-secrets. Please recreate your baseline to\n'
+            'avoid potential mis-configurations.\n\n'
+            'Current Version: %s\n'
+            'Baseline Version: %s',
+            VERSION,
+            baseline_version if baseline_version else '0.0.0',
+        )
+
+        raise
 
     return SecretsCollection.load_baseline_from_string(baseline_string)
 

@@ -6,9 +6,9 @@ from contextlib import contextmanager
 import mock
 import pytest
 
+from detect_secrets import pre_commit_hook
 from detect_secrets import VERSION
 from detect_secrets.core.potential_secret import PotentialSecret
-from detect_secrets.pre_commit_hook import main
 from testing.factories import secrets_collection_factory
 from testing.mocks import mock_git_calls
 from testing.mocks import mock_log as mock_log_base
@@ -16,11 +16,11 @@ from testing.mocks import SubprocessMock
 
 
 def assert_commit_blocked(command):
-    assert main(command.split()) == 1
+    assert pre_commit_hook.main(command.split()) == 1
 
 
 def assert_commit_succeeds(command):
-    assert main(command.split()) == 0
+    assert pre_commit_hook.main(command.split()) == 0
 
 
 class TestPreCommitHook(object):
@@ -101,11 +101,28 @@ class TestPreCommitHook(object):
             ('0.8.8', '1.0.0',),
         ]
     )
-    def test_fails_if_baseline_version_is_outdated(self, baseline_version, current_version):
+    def test_fails_if_baseline_version_is_outdated(
+        self,
+        mock_log,
+        baseline_version,
+        current_version
+    ):
         with _mock_versions(baseline_version, current_version):
             assert_commit_blocked(
                 '--baseline will_be_mocked'
             )
+
+        assert mock_log.message == (
+            'The supplied baseline may be incompatible with the current\n'
+            'version of detect-secrets. Please recreate your baseline to\n'
+            'avoid potential mis-configurations.\n'
+            '\n'
+            'Current Version: {}\n'
+            'Baseline Version: {}\n'
+        ).format(
+            current_version,
+            baseline_version if baseline_version else '0.0.0',
+        )
 
     def test_succeeds_if_patch_version_is_different(self):
         with _mock_versions('0.8.8', '0.8.9'):
@@ -143,11 +160,11 @@ def mock_log():
         def __init__(self):
             self.message = ''
 
-        def error(self, message):
+        def error(self, message, *args):
             """Currently, this is the only function that is used
             when obtaining the logger.
             """
-            self.message += str(message) + '\n'
+            self.message += (str(message) + '\n') % args
 
     with mock_log_base('detect_secrets.pre_commit_hook._get_custom_log') as m:
         wrapper = MockLogWrapper()
@@ -172,9 +189,10 @@ def _mock_versions(baseline_version, current_version):
     with mock.patch(
         'detect_secrets.pre_commit_hook._get_baseline_string_from_file',
         return_value=json.dumps(baseline),
-    ), mock.patch(
-        'detect_secrets.pre_commit_hook.VERSION',
-        return_value=current_version,
+    ), mock.patch.object(
+        pre_commit_hook,
+        'VERSION',
+        current_version,
     ):
         yield
 
