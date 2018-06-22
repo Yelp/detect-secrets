@@ -201,9 +201,7 @@ class TestHexHighEntropyStrings(HighEntropyStringsTest):
 
         # This makes sure it is length dependent.
         assert self.logic.calculate_shannon_entropy('0123456789') < \
-            self.logic.calculate_shannon_entropy(
-                '01234567890123456789',
-            )
+            self.logic.calculate_shannon_entropy('01234567890123456789')
 
         # This makes sure it only occurs with numbers.
         assert self.logic.calculate_shannon_entropy('12345a') == \
