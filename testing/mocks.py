@@ -1,6 +1,5 @@
-"""
- This is a collection of utility functions for easier, DRY testing.
-"""
+"""This is a collection of utility functions for easier, DRY testing."""
+import io
 from collections import namedtuple
 from contextlib import contextmanager
 from subprocess import CalledProcessError
@@ -31,16 +30,16 @@ def mock_git_calls(subprocess_namespace, cases):
 
         try:
             case = cases[current_case['index']]
-        except IndexError:
+        except IndexError:  # pragma: no cover
             raise AssertionError(
                 '\nExpected: ""\n'
                 'Actual: "{}"'.format(
-                    command
-                )
+                    command,
+                ),
             )
         current_case['index'] += 1
 
-        if command != case.expected_input:
+        if command != case.expected_input:  # pragma: no cover
             # Pretty it up a little, for display
             if not case.expected_input.startswith('git'):
                 case.expected_input = 'git ' + case.expected_input
@@ -50,7 +49,7 @@ def mock_git_calls(subprocess_namespace, cases):
                 'Actual: "{}"'.format(
                     case.expected_input,
                     command,
-                )
+                ),
             )
 
         if case.should_throw_exception:
@@ -71,7 +70,7 @@ class SubprocessMock(namedtuple(
         'expected_input',
         'mocked_output',
         'should_throw_exception',
-    ]
+    ],
 )):
     """For use with mock_subprocess.
 
@@ -90,7 +89,7 @@ class SubprocessMock(namedtuple(
             cls,
             expected_input,
             mocked_output,
-            should_throw_exception
+            should_throw_exception,
         )
 
 
@@ -120,6 +119,10 @@ def mock_open(data, namespace):
         m().seek = m.side_effect
 
         yield m
+
+
+def mock_file_object(string):
+    return io.StringIO(string)
 
 
 @contextmanager

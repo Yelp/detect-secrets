@@ -5,6 +5,7 @@ from __future__ import print_function
 import json
 import sys
 
+from detect_secrets import VERSION
 from detect_secrets.core import audit
 from detect_secrets.core import baseline
 from detect_secrets.core.log import CustomLog
@@ -25,6 +26,10 @@ def main(argv=None):
     if args.verbose:  # pragma: no cover
         CustomLog.enableDebug(args.verbose)
 
+    if args.version:
+        print(VERSION)
+        return
+
     plugins = initialize_plugins(args.plugins)
 
     if args.scan:
@@ -36,11 +41,11 @@ def main(argv=None):
                 baseline.initialize(
                     plugins,
                     args.exclude,
-                    args.scan
+                    args.scan,
                 ).format_for_baseline_output(),
                 indent=2,
-                sort_keys=True
-            )
+                sort_keys=True,
+            ),
         )
     elif args.audit:
         audit.audit_baseline(args.audit[0])

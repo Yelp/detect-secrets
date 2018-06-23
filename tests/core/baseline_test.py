@@ -12,10 +12,10 @@ from detect_secrets.core.baseline import update_baseline_with_removed_secrets
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
 from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
-from tests.util.factories import secrets_collection_factory
-from tests.util.mock_util import mock_git_calls
-from tests.util.mock_util import mock_open
-from tests.util.mock_util import SubprocessMock
+from testing.factories import secrets_collection_factory
+from testing.mocks import mock_git_calls
+from testing.mocks import mock_open
+from testing.mocks import SubprocessMock
 
 
 class TestInitializeBaseline(object):
@@ -40,7 +40,7 @@ class TestInitializeBaseline(object):
 
             # Test relative paths
             'test_data/../test_data/files/tmp/..',
-        ]
+        ],
     )
     def test_basic_usage(self, rootdir):
         results = self.get_results(rootdir=rootdir)
@@ -71,7 +71,7 @@ class TestInitializeBaseline(object):
                     should_throw_exception=True,
                     mocked_output='',
                 ),
-            )
+            ),
         ):
             results = self.get_results(rootdir='will_be_mocked')
 
@@ -79,11 +79,11 @@ class TestInitializeBaseline(object):
 
     def test_single_non_tracked_git_file_should_work(self):
         with mock.patch(
-                'detect_secrets.core.baseline.os.path.isfile',
-                return_value=True,
+            'detect_secrets.core.baseline.os.path.isfile',
+            return_value=True,
         ), mock_open(
-                'Super hidden value "01234567890"',
-                'detect_secrets.core.secrets_collection.codecs.open',
+            'Super hidden value "0123456789a"',
+            'detect_secrets.core.secrets_collection.codecs.open',
         ):
             results = self.get_results('will_be_mocked')
 
@@ -110,12 +110,12 @@ class TestGetSecretsNotInBaseline(object):
         new_findings = secrets_collection_factory([
             {
                 'filename': 'filename1',
-            }
+            },
         ])
         baseline = secrets_collection_factory([
             {
                 'filename': 'filename2',
-            }
+            },
         ])
 
         backup_baseline = baseline.data.copy()
@@ -132,12 +132,12 @@ class TestGetSecretsNotInBaseline(object):
             },
             {
                 'filename': 'filename2',
-            }
+            },
         ])
         baseline = secrets_collection_factory([
             {
                 'filename': 'filename3',
-            }
+            },
         ])
 
         backup_baseline = baseline.data.copy()
@@ -154,13 +154,13 @@ class TestGetSecretsNotInBaseline(object):
             {
                 'secret': 'secret1',
                 'lineno': 1,
-            }
+            },
         ])
         baseline = secrets_collection_factory([
             {
                 'secret': 'secret2',
                 'lineno': 2,
-            }
+            },
         ])
 
         backup_baseline = baseline.data.copy()
@@ -177,12 +177,12 @@ class TestGetSecretsNotInBaseline(object):
         new_findings = secrets_collection_factory([
             {
                 'secret': 'secret_new',
-            }
+            },
         ])
         baseline = secrets_collection_factory([
             {
                 'secret': 'secret',
-            }
+            },
         ])
 
         backup_baseline = baseline.data.copy()
@@ -203,7 +203,7 @@ class TestUpdateBaselineWithRemovedSecrets(object):
             {
                 'secret': 'secret',
                 'lineno': 2,
-            }
+            },
         ])
         baseline = secrets_collection_factory([
             {
@@ -213,7 +213,7 @@ class TestUpdateBaselineWithRemovedSecrets(object):
             {
                 'secret': 'secret',
                 'lineno': 2,
-            }
+            },
         ])
 
         is_successful = update_baseline_with_removed_secrets(
@@ -251,7 +251,7 @@ class TestUpdateBaselineWithRemovedSecrets(object):
         new_findings = secrets_collection_factory([
             {
                 'lineno': 1,
-            }
+            },
         ])
         baseline = secrets_collection_factory([
             {
@@ -284,7 +284,7 @@ class TestUpdateBaselineWithRemovedSecrets(object):
                 {},
                 {},
             ),
-        ]
+        ],
     )
     def test_no_baseline_modifications(self, results_dict, baseline_dict):
         new_findings = secrets_collection_factory([results_dict])
@@ -325,7 +325,7 @@ class TestMergeResults(object):
             {
                 'filenameA': [
                     modified_secretA,
-                ]
+                ],
             },
         ) == {
             'filenameA': [

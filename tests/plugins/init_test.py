@@ -41,12 +41,12 @@ class TestInitializePlugins(object):
     def test_initialize_plugins_failed_instantiation(self):
         with mock.patch(
             'detect_secrets.plugins.HexHighEntropyString.__init__',
-            side_effect=TypeError
+            side_effect=TypeError,
         ):
             output = initialize(
                 SensitivityValues(
                     hex_limit=3,
-                )
+                ),
             )
 
         assert len(output) == 0

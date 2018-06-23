@@ -34,7 +34,7 @@ def initialize(plugins, exclude_regex=None, rootdir='.'):
         regex = re.compile(exclude_regex, re.IGNORECASE)
         git_files = filter(
             lambda x: not regex.search(x),
-            git_files
+            git_files,
         )
 
     for file in git_files:

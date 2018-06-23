@@ -16,16 +16,16 @@ class SensitivityValues(namedtuple(
         'base64_limit',
         'hex_limit',
         'private_key_detector',
-    ]
+    ],
 )):
     """Server configuration to determine which plugins to run per repo."""
 
     def __new__(
-            cls,
-            base64_limit=None,
-            hex_limit=None,
-            private_key_detector=False,
-            **kwargs
+        cls,
+        base64_limit=None,
+        hex_limit=None,
+        private_key_detector=False,
+        **kwargs
     ):
         """
         We perform this additional mapping logic, for more readable config files.
@@ -81,12 +81,15 @@ def initialize(plugin_config):
 
     plugin_config_tuple = _convert_sensitivity_values_to_class_tuple(plugin_config)
 
-    for plugin, value in plugin_config_tuple:
-        if not value:
+    for plugin_name, values in plugin_config_tuple:
+        if not values:
             continue
 
         try:
-            output.append(_initialize_plugin(plugin, value))
+            output.append(initialize_plugin(
+                plugin_name,
+                **values
+            ))
         except TypeError:
             pass
 
@@ -95,9 +98,6 @@ def initialize(plugin_config):
 
 def initialize_plugins(plugins):
     """
-    NOTE: This currently assumes there is at most one initialization parameter.
-    If this invariant changes, this will need to be modified.
-
     NOTE: This is very similar to initialize right now (and probably,
     where we want to head towards in the future?) However, the previous is
     necessary until we fix server related code.
@@ -108,19 +108,15 @@ def initialize_plugins(plugins):
     """
     output = []
     for plugin_name in plugins:
-        init_values = plugins[plugin_name]
-
-        args = []
-        if init_values:
-            key = list(init_values.keys())[0]
-            args.append(init_values[key][0])
-
-        output.append(_initialize_plugin(plugin_name, *args))
+        output.append(initialize_plugin(
+            plugin_name,
+            **plugins[plugin_name]
+        ))
 
     return tuple(output)
 
 
-def _initialize_plugin(plugin_classname, *args):
+def initialize_plugin(plugin_classname, **kwargs):
     klass = globals()[plugin_classname]
 
     # Make sure the instance is a BasePlugin type, before creating it.
@@ -128,10 +124,10 @@ def _initialize_plugin(plugin_classname, *args):
         raise TypeError
 
     try:
-        instance = klass(*args)
+        instance = klass(**kwargs)
     except TypeError:
         _CustomLogObj.getLogger().warning(
-            'Unable to initialize plugin!'
+            'Unable to initialize plugin!',
         )
         raise
 
@@ -145,7 +141,10 @@ def _convert_sensitivity_values_to_class_tuple(sensitivity_values):
              This way, we can initialize the class with <plugin_class_name>(<value>)
 
     Example:
-        >>> [ ('HexHighEntropyString', 3), ('PrivateKeyDetector', true), ]
+        >>> [
+                ('HexHighEntropyString', {'hex_limit': 3}),
+                ('PrivateKeyDetector', {'private_key_detector': true}),
+            ]
     """
     mapping = {
         'base64_limit': 'Base64HighEntropyString',
@@ -156,6 +155,11 @@ def _convert_sensitivity_values_to_class_tuple(sensitivity_values):
     output = []
     for key in sensitivity_values._fields:
         if key in mapping and getattr(sensitivity_values, key) is not None:
-            output.append((mapping[key], getattr(sensitivity_values, key),))
+            output.append(
+                (
+                    mapping[key],
+                    {key: getattr(sensitivity_values, key)} if getattr(sensitivity_values, key) else {},  # noqa: E501
+                ),
+            )
 
     return tuple(output)

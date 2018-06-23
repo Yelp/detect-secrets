@@ -25,10 +25,10 @@ class TestPluginOptions(object):
 
         assert args.plugins == {
             'HexHighEntropyString': {
-                'hex_limit': [3],
+                'hex_limit': 3,
             },
             'Base64HighEntropyString': {
-                'base64_limit': [4.5],
+                'base64_limit': 4.5,
             },
             'PrivateKeyDetector': {},
         }
@@ -48,13 +48,13 @@ class TestPluginOptions(object):
             ('--hex-limit 8', 8),
             ('--hex-limit -1', None),
             ('--hex-limit 8.1', None),
-        ]
+        ],
     )
     def test_custom_limit(self, argument_string, expected_value):
         if expected_value is not None:
             args = self.parse_args(argument_string)
 
-            assert args.plugins['HexHighEntropyString']['hex_limit'][0] == expected_value
+            assert args.plugins['HexHighEntropyString']['hex_limit'] == expected_value
         else:
             with pytest.raises(SystemExit):
                 self.parse_args(argument_string)

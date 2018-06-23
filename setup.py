@@ -1,15 +1,17 @@
 from setuptools import find_packages
 from setuptools import setup
 
+from detect_secrets import VERSION
 
-VERSION = '0.8.8'
 
 setup(
     name='detect_secrets',
     packages=find_packages(exclude=(['test*', 'tmp*'])),
     version=VERSION,
     description='Tool for detecting secrets in the codebase',
-    long_description="Check out detect-secrets on `GitHub <https://github.com/Yelp/detect-secrets>`_!",
+    long_description=(
+        'Check out detect-secrets on `GitHub <https://github.com/Yelp/detect-secrets>`_!'
+    ),
     license="Copyright Yelp, Inc. 2018",
     author='Aaron Loo',
     author_email='aaronloo@yelp.com',
@@ -25,6 +27,7 @@ setup(
             'configparser',
             'enum34',
             'future',
+            'functools32',
         ],
     },
     entry_points={
@@ -43,5 +46,5 @@ setup(
         "Environment :: Console",
         "Operating System :: OS Independent",
         "Development Status :: 5 - Production/Stable",
-    ]
+    ],
 )
