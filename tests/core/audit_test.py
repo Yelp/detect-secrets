@@ -18,12 +18,23 @@ class TestAuditBaseline(object):
             assert mock_printer.message == ''
 
     def test_quit_before_making_decision(self, mock_printer):
-        self.run_logic(['q'])
+        with self.mock_env(['q']):
+            audit.audit_baseline('will_be_mocked')
 
         assert mock_printer.message == (
             'Quitting...\n'
             'Saving progress...\n'
         )
+
+    def test_nothing_to_audit(self, mock_printer):
+        modified_baseline = self.baseline.copy()
+        modified_baseline['results']['filenameA'][0]['is_secret'] = True
+        modified_baseline['results']['filenameA'][1]['is_secret'] = False
+
+        with self.mock_env(baseline=modified_baseline):
+            audit.audit_baseline('will_be_mocked')
+
+        assert mock_printer.message == 'Nothing to audit!\n'
 
     def test_making_decisions(self, mock_printer):
         modified_baseline = self.baseline.copy()
@@ -86,7 +97,7 @@ class TestAuditBaseline(object):
             audit,
             '_print_context',
         ), mock_user_input(
-            user_inputs
+            user_inputs,
         ), mock.patch.object(
             audit,
             '_save_baseline_to_file',
@@ -118,7 +129,7 @@ class TestSecretGenerator(object):
 
     def test_generates_secret(self):
         count = 0
-        for filename, secret in audit._secret_generator({
+        for filename, secret, index, total in audit._secret_generator({
             'results': {
                 'filenameA': [
                     {
@@ -128,7 +139,7 @@ class TestSecretGenerator(object):
                         'hashed_secret': 'b',
                     },
                 ],
-            }
+            },
         }):
             assert filename == 'filenameA'
             if count == 0:
@@ -139,7 +150,7 @@ class TestSecretGenerator(object):
             count += 1
 
     def test_skips_if_already_audited(self):
-        for filename, secret in audit._secret_generator({
+        for filename, secret, index, total in audit._secret_generator({
             'results': {
                 'filenameA': [
                     {
@@ -150,7 +161,7 @@ class TestSecretGenerator(object):
                         'hashed_secret': 'b',
                     },
                 ],
-            }
+            },
         }):
             assert secret['hashed_secret'] == 'b'
 
@@ -164,7 +175,7 @@ class TestGetUserDecision(object):
             ('N', 'n',),
             ('Skip', 's',),
             ('QUIT', 'q',),
-        ]
+        ],
     )
     def test_get_user_decision_valid_input(
         self,

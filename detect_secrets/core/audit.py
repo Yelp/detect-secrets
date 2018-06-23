@@ -16,10 +16,12 @@ def audit_baseline(baseline_filename):
     if not original_baseline:
         return
 
+    has_scanned_one_secret = False
     results = defaultdict(list)
-    for filename, secret in _secret_generator(original_baseline):
+    for filename, secret, index, total in _secret_generator(original_baseline):
+        has_scanned_one_secret = True
         _clear_screen()
-        _print_context(filename, secret)
+        _print_context(filename, secret, index, total)
 
         decision = _get_user_decision()
         if decision == 'q':
@@ -29,6 +31,10 @@ def audit_baseline(baseline_filename):
         _handle_user_decision(decision, secret)
         results[filename].append(secret)
 
+    if not has_scanned_one_secret:
+        print('Nothing to audit!')
+        return
+
     print('Saving progress...')
     original_baseline['results'] = merge_results(
         original_baseline['results'],
@@ -37,12 +43,29 @@ def audit_baseline(baseline_filename):
     _save_baseline_to_file(baseline_filename, original_baseline)
 
 
-def _clear_screen():
+def _clear_screen():    # pragma: no cover
     subprocess.call(['clear'])
 
 
-def _print_context(filename, secret):   # pragma: no cover
-    print('{} {}'.format(
+def _print_context(filename, secret, count, total):   # pragma: no cover
+    """
+    :type filename: str
+    :param filename: the file currently scanned.
+
+    :type secret: dict, in PotentialSecret.json() format
+    :param secret: the secret, represented in the baseline file.
+
+    :type count: int
+    :param count: current count of secrets scanned so far
+
+    :type total: int
+    :param total: total number of secrets in baseline
+    """
+    secrets_left = '[{}/{}]'.format(
+        count,
+        total,
+    )
+    print('{} {} {}'.format(
         BashColor.color(
             'Filename:',
             Color.BOLD,
@@ -50,6 +73,10 @@ def _print_context(filename, secret):   # pragma: no cover
         BashColor.color(
             filename,
             Color.PURPLE,
+        ),
+        BashColor.color(
+            secrets_left,
+            Color.BOLD,
         ),
     ))
     print('-' * 10)
@@ -87,12 +114,23 @@ def _save_baseline_to_file(filename, data):
 
 
 def _secret_generator(baseline):
+    current_secret_index = 1
+    num_secrets_to_parse = sum(map(
+        lambda filename: len(list(filter(
+            lambda secret: not hasattr(secret, 'is_secret'),
+            baseline['results'][filename],
+        ))),
+        baseline['results'],
+    ))
+
     for filename, secrets in baseline['results'].items():
         for secret in secrets:
             try:
                 secret['is_secret']
             except KeyError:
-                yield filename, secret
+                yield filename, secret, current_secret_index, num_secrets_to_parse
+
+            current_secret_index += 1
 
         break
 
@@ -130,10 +168,10 @@ def _get_secret_with_context(filename, secret_lineno, lines_of_context):
                     str(int(x[0]) + start_line),
                     Color.LIGHT_GREEN,
                 ),
-                x[1]
+                x[1],
             ),
             enumerate(output.splitlines()),
-        )
+        ),
     )
 
 

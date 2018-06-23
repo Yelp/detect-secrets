@@ -8,7 +8,7 @@ class BasePlugin(object):
     __metaclass__ = ABCMeta
     secret_type = None
 
-    def __init__(self, *args):
+    def __init__(self, **kwargs):
         if not self.secret_type:
             raise ValueError('Plugins need to declare a secret_type.')
 
