@@ -334,6 +334,43 @@ class TestMergeResults(object):
             ],
         }
 
+    def test_old_results_have_shifted_subset(self):
+        secretA = self.get_secret()
+        secretA['is_secret'] = False
+
+        secretB = self.get_secret()
+        secretC = self.get_secret()
+        secretD = self.get_secret()
+
+        modified_secretB = secretB.copy()
+        modified_secretB['is_secret'] = True
+        modified_secretC = secretC.copy()
+        modified_secretC['is_secret'] = False
+
+        assert merge_results(
+            {
+                'filename': [
+                    secretA,
+                    secretB,
+                    secretC,
+                    secretD,
+                ],
+            },
+            {
+                'filename': [
+                    modified_secretB,
+                    modified_secretC,
+                ],
+            },
+        ) == {
+            'filename': [
+                secretA,
+                modified_secretB,
+                modified_secretC,
+                secretD,
+            ],
+        }
+
     def test_old_results_completely_overriden(self):
         secretA = self.get_secret()
         secretB = self.get_secret()

@@ -170,8 +170,23 @@ def merge_results(old_results, new_results):
             new_results[filename] = secrets
             break
 
-        if len(secrets) > len(new_results[filename]):
-            new_results[filename].extend(secrets[len(new_results[filename]):])
+        if len(secrets) == len(new_results[filename]):
+            # Complete override
+            break
+
+        # Need to figure out starting point. That is, while
+        # len(new_results) < len(old_results), they may not start at the same
+        # place.
+        #
+        # e.g. old_results = A,B,C,D
+        #      new_results = B,C
+        first_secret_hash = new_results[filename][0]['hashed_secret']
+        for index, secret in enumerate(secrets):
+            if secret['hashed_secret'] == first_secret_hash:
+                new_results[filename] = secrets[:index] + \
+                    new_results[filename] + \
+                    secrets[index + len(new_results[filename]):]
+                break
 
     return new_results
 
