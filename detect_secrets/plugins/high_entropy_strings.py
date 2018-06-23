@@ -203,6 +203,9 @@ class HexHighEntropyString(HighEntropyStringsPlugin):
         should be closer to the maximum entropy than the shorter version.
         """
         entropy = super(HexHighEntropyString, self).calculate_shannon_entropy(data)
+        if len(data) == 1:
+            return entropy
+
         try:
             int(data)
 
