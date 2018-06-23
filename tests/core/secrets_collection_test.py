@@ -347,20 +347,32 @@ class TestBaselineInputOutput(object):
 
 class MockPluginFixedValue(BasePlugin):
 
+    secret_type = 'mock_plugin_fixed_value'
+
     def analyze(self, f, filename):
         # We're not testing the plugin's ability to analyze secrets, so
         # it doesn't matter what we return
         secret = PotentialSecret('mock fixed value type', filename, 1, 'asdf')
         return {secret: secret}
 
+    def analyze_string(self, value):
+        # Needed, because abstract method
+        pass
+
 
 class MockPluginFileValue(BasePlugin):
+
+    secret_type = 'mock_plugin_file_value'
 
     def analyze(self, f, filename):
         # We're not testing the plugin's ability to analyze secrets, so
         # it doesn't matter what we return
         secret = PotentialSecret('mock file value type', filename, 2, f.read().strip())
         return {secret: secret}
+
+    def analyze_string(self, value):
+        # Needed, because abstract method
+        pass
 
 
 MockUnicodeDecodeError = UnicodeDecodeError('encoding type', b'subject', 0, 1, 'exception message')

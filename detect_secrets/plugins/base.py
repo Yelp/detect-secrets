@@ -1,8 +1,16 @@
+from abc import ABCMeta
+from abc import abstractmethod
+
+
 class BasePlugin(object):
     """This is an abstract class to define Plugins API"""
 
+    __metaclass__ = ABCMeta
+    secret_type = None
+
     def __init__(self, *args):
-        pass
+        if not self.secret_type:
+            raise ValueError('Plugins need to declare a secret_type.')
 
     def analyze(self, file, filename):  # pragma: no cover
         """
@@ -20,6 +28,7 @@ class BasePlugin(object):
 
         return potential_secrets
 
+    @abstractmethod
     def analyze_string(self, string, line_num, filename):   # pragma: no cover
         """
         :param string:    string; the line to analyze
@@ -29,10 +38,7 @@ class BasePlugin(object):
 
         NOTE: line_num and filename are used for PotentialSecret creation only.
         """
-
-        raise NotImplementedError(
-            '%s needs to implement analyze_string()' % self.__class__.__name__
-        )
+        pass
 
     @property
     def __dict__(self):

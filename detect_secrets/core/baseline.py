@@ -146,6 +146,36 @@ def update_baseline_with_removed_secrets(results, baseline, filelist):
     return updated
 
 
+def merge_results(old_results, new_results):
+    """Update results in baseline with latest information.
+
+    As a rule of thumb, we want to favor the new results, yet at the same
+    time, transfer non-modified data from the old results set.
+
+    Assumptions:
+        * The list of results in each secret set is in the same order.
+          This means that new_results cannot have *more* results than
+          old_results.
+
+    :type old_results: dict
+    :param old_results: results of status quo
+
+    :type new_results: dict
+    :param new_results: results to replace status quo
+
+    :rtype: dict
+    """
+    for filename, secrets in old_results.items():
+        if filename not in new_results:
+            new_results[filename] = secrets
+            break
+
+        if len(secrets) > len(new_results[filename]):
+            new_results[filename].extend(secrets[len(new_results[filename]):])
+
+    return new_results
+
+
 def _get_git_tracked_files(rootdir='.'):
     """Parsing .gitignore rules is hard.
 

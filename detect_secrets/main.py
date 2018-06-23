@@ -5,6 +5,7 @@ from __future__ import print_function
 import json
 import sys
 
+from detect_secrets.core import audit
 from detect_secrets.core import baseline
 from detect_secrets.core.log import CustomLog
 from detect_secrets.core.usage import ParserBuilder
@@ -41,6 +42,8 @@ def main(argv=None):
                 sort_keys=True
             )
         )
+    elif args.audit:
+        audit.audit_baseline(args.audit[0])
 
     return 0
 

@@ -1,10 +1,13 @@
 from __future__ import absolute_import
 
+import random
+
 import mock
 import pytest
 
 from detect_secrets.core import baseline
 from detect_secrets.core.baseline import get_secrets_not_in_baseline
+from detect_secrets.core.baseline import merge_results
 from detect_secrets.core.baseline import update_baseline_with_removed_secrets
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
@@ -292,3 +295,69 @@ class TestUpdateBaselineWithRemovedSecrets(object):
             baseline,
             ['filename'],
         )
+
+
+class TestMergeResults(object):
+
+    def test_new_results_has_nothing(self):
+        old_result = {
+            'filenameA': [
+                self.get_secret(),
+            ],
+        }
+
+        assert merge_results(old_result, {}) == old_result
+
+    def test_old_results_have_subset_of_new_results(self):
+        secretA = self.get_secret()
+        secretB = self.get_secret()
+
+        modified_secretA = secretA.copy()
+        modified_secretA['is_secret'] = True
+
+        assert merge_results(
+            {
+                'filenameA': [
+                    secretA,
+                    secretB,
+                ],
+            },
+            {
+                'filenameA': [
+                    modified_secretA,
+                ]
+            },
+        ) == {
+            'filenameA': [
+                modified_secretA,
+                secretB,
+            ],
+        }
+
+    def test_old_results_completely_overriden(self):
+        secretA = self.get_secret()
+        secretB = self.get_secret()
+
+        assert merge_results(
+            {
+                'filenameA': [secretA],
+            },
+            {
+                'filenameA': [secretB],
+            },
+        ) == {
+            'filenameA': [secretB],
+        }
+
+    @staticmethod
+    def get_secret():
+        """Generates a random secret, used for testing.
+
+        :rtype: dict
+        """
+        random_number = random.randint(0, 500)
+        return {
+            'hashed_secret': PotentialSecret.hash_secret(str(random_number)),
+            'line_number': random_number,
+            'type': 'Test Type',
+        }

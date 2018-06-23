@@ -21,7 +21,8 @@ class ParserBuilder(object):
             ._add_set_baseline_argument()
 
     def add_console_use_arguments(self):
-        return self._add_initialize_baseline_argument()
+        return self._add_initialize_baseline_argument()\
+            ._add_audit_baseline_argument()
 
     def parse_args(self, argv):
         output = self.parser.parse_args(argv)
@@ -69,6 +70,19 @@ class ParserBuilder(object):
             '--exclude',
             nargs=1,
             help='Pass in regex to specify ignored paths during initialization scan.'
+        )
+
+        return self
+
+    def _add_audit_baseline_argument(self):
+        self.parser.add_argument(
+            '--audit',
+            nargs=1,
+            metavar='BASELINE_FILE_TO_AUDIT',
+            help=(
+                'Audit a given baseline file to distinguish the difference '
+                'between false and true positives.'
+            ),
         )
 
         return self

@@ -5,6 +5,7 @@ import math
 import os
 import re
 import string
+from abc import ABCMeta
 from contextlib import contextmanager
 
 import yaml
@@ -22,7 +23,7 @@ YAML_EXTENSIONS = (
 class HighEntropyStringsPlugin(BasePlugin):
     """Base class for string pattern matching"""
 
-    secret_type = 'High Entropy String'
+    __metaclass__ = ABCMeta
 
     def __init__(self, charset, limit, *args):
         if limit < 0 or limit > 8:
