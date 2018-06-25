@@ -40,6 +40,16 @@ class BasePlugin(object):
         """
         pass
 
+    @abstractmethod
+    def secret_generator(self, string):  # pragma: no cover
+        """Flags secrets in a given string, and yields the raw secret value.
+        Used in self.analyze_string for PotentialSecret creation.
+
+        :type string: str
+        :param string: the secret to scan
+        """
+        pass
+
     @property
     def __dict__(self):
         return {

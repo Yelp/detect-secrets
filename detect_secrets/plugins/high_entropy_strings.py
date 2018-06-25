@@ -83,6 +83,13 @@ class HighEntropyStringsPlugin(BasePlugin):
         if self.ignore_regex.search(string):
             return output
 
+        for result in self.secret_generator(string):
+            secret = PotentialSecret(self.secret_type, filename, line_num, result)
+            output[secret] = secret
+
+        return output
+
+    def secret_generator(self, string):
         # There may be multiple strings on the same line
         results = self.regex.findall(string)
         for result in results:
@@ -92,10 +99,7 @@ class HighEntropyStringsPlugin(BasePlugin):
 
             entropy_value = self.calculate_shannon_entropy(result)
             if entropy_value > self.entropy_limit:
-                secret = PotentialSecret(self.secret_type, filename, line_num, result)
-                output[secret] = secret
-
-        return output
+                yield result
 
     def _analyze_ini_file(self, file, filename):
         """
