@@ -2,17 +2,23 @@ from enum import Enum
 
 
 class Color(Enum):
-    NORMAL = 0
-    BOLD = 1
+    NORMAL = '[0m'
+    BOLD = '[1m'
 
-    RED = 2
-    LIGHT_GREEN = 3
-    PURPLE = 4
+    RED = '[41m'
+    LIGHT_GREEN = '[92m'
+    PURPLE = '[95m'
 
 
 class _BashColor(object):
 
     PREFIX = '\033'
+
+    def __init__(self):
+        self.DISABLED = False
+
+    def disable_color(self):
+        self.DISABLED = True
 
     def color(self, text, color):
         """
@@ -24,15 +30,11 @@ class _BashColor(object):
 
         :returns: colored string
         """
-        color_map = {
-            Color.BOLD: '[1m',
-            Color.RED: '[41m',
-            Color.LIGHT_GREEN: '[92m',
-            Color.PURPLE: '[95m',
-        }
+        if self.DISABLED:
+            return text
 
-        return self.PREFIX + color_map[color] + text + \
-            self.PREFIX + '[0m'
+        return self.PREFIX + color.value + text + \
+            self.PREFIX + Color.NORMAL.value
 
 
 BashColor = _BashColor()
