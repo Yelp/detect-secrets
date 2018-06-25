@@ -10,7 +10,7 @@ from detect_secrets.core import audit
 from detect_secrets.core import baseline
 from detect_secrets.core.log import CustomLog
 from detect_secrets.core.usage import ParserBuilder
-from detect_secrets.plugins import initialize_plugins
+from detect_secrets.plugins.core import initialize
 
 
 def parse_args(argv):
@@ -30,7 +30,7 @@ def main(argv=None):
         print(VERSION)
         return
 
-    plugins = initialize_plugins(args.plugins)
+    plugins = initialize.from_parser_builder(args.plugins)
 
     if args.scan:
         if args.exclude:
