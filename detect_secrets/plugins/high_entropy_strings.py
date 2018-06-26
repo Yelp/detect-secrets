@@ -101,13 +101,37 @@ class HighEntropyStringsPlugin(BasePlugin):
             if entropy_value > self.entropy_limit:
                 yield result
 
+    @contextmanager
+    def non_quoted_string_regex(self, strict=True):
+        """For certain file formats, strings need not necessarily follow the
+        normal convention of being denoted by single or double quotes. In these
+        cases, we modify the regex accordingly.
+
+        Public, because detect_secrets.core.audit needs to reference it.
+
+        :type strict: bool
+        :param strict: if True, the regex will match the entire string.
+        """
+        old_regex = self.regex
+
+        regex_alternative = r'([{}]+)'.format(re.escape(self.charset))
+        if strict:
+            regex_alternative = r'^' + regex_alternative + r'$'
+
+        self.regex = re.compile(regex_alternative)
+
+        try:
+            yield
+        finally:
+            self.regex = old_regex
+
     def _analyze_ini_file(self, file, filename):
         """
         :returns: same format as super().analyze()
         """
         potential_secrets = {}
 
-        with self._non_quoted_string_regex():
+        with self.non_quoted_string_regex():
             for value, lineno in IniFileParser(file).iterator():
                 potential_secrets.update(self.analyze_string(
                     value,
@@ -131,7 +155,7 @@ class HighEntropyStringsPlugin(BasePlugin):
         potential_secrets = {}
 
         to_search = [data]
-        with self._non_quoted_string_regex():
+        with self.non_quoted_string_regex():
             while len(to_search) > 0:
                 item = to_search.pop()
 
@@ -154,22 +178,6 @@ class HighEntropyStringsPlugin(BasePlugin):
                     pass
 
         return potential_secrets
-
-    @contextmanager
-    def _non_quoted_string_regex(self):
-        """For certain file formats, strings need not necessarily follow the
-        normal convention of being denoted by single or double quotes. In these
-        cases, we modify the regex accordingly.
-        """
-        old_regex = self.regex
-        self.regex = re.compile(
-            r'^([%s]+)$' % re.escape(self.charset),
-        )
-
-        try:
-            yield
-        finally:
-            self.regex = old_regex
 
 
 class HexHighEntropyString(HighEntropyStringsPlugin):

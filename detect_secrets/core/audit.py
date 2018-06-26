@@ -8,6 +8,7 @@ from builtins import input
 from collections import defaultdict
 
 from ..plugins.core import initialize
+from ..plugins.high_entropy_strings import HighEntropyStringsPlugin
 from .baseline import merge_results
 from .color import BashColor
 from .color import Color
@@ -147,6 +148,7 @@ def _save_baseline_to_file(filename, data):  # pragma: no cover
 
 
 def _secret_generator(baseline):
+    """Generates secrets to audit, from the baseline"""
     current_secret_index = 1
     num_secrets_to_parse = sum(map(
         lambda filename: len(list(filter(
@@ -250,7 +252,7 @@ def _highlight_secret(secret_line, secret, filename, plugin_settings):
         plugin_settings,
     )
 
-    for raw_secret in plugin.secret_generator(secret_line):
+    for raw_secret in _raw_secret_generator(plugin, secret_line):
         secret_obj = PotentialSecret(
             plugin.secret_type,
             filename,
@@ -265,15 +267,6 @@ def _highlight_secret(secret_line, secret, filename, plugin_settings):
         # We only want to highlight the right one.
         if secret_obj.secret_hash == secret['hashed_secret']:
             break
-    else:
-        # It hits here if the secret has been moved, from the original
-        # line number listed in the baseline.
-        raise SecretNotFoundOnSpecifiedLineError(
-            textwrap.dedent("""
-                ERROR: Secret not found on specified line number!
-                Try recreating your baseline to fix this issue.
-            """)[1:-1],
-        )
 
     index_of_secret = secret_line.index(raw_secret)
     return '{}{}{}'.format(
@@ -283,6 +276,26 @@ def _highlight_secret(secret_line, secret, filename, plugin_settings):
             Color.RED,
         ),
         secret_line[index_of_secret + len(raw_secret):],
+    )
+
+
+def _raw_secret_generator(plugin, secret_line):
+    """Generates raw secrets by re-scanning the line, with the specified plugin"""
+    for raw_secret in plugin.secret_generator(secret_line):
+        yield raw_secret
+
+    if issubclass(plugin.__class__, HighEntropyStringsPlugin):
+        with plugin.non_quoted_string_regex(strict=False):
+            for raw_secret in plugin.secret_generator(secret_line):
+                yield raw_secret
+
+    # It hits here if the secret has been moved, from the original
+    # line number listed in the baseline.
+    raise SecretNotFoundOnSpecifiedLineError(
+        textwrap.dedent("""
+            ERROR: Secret not found on specified line number!
+            Try recreating your baseline to fix this issue.
+        """)[1:-1],
     )
 
 
