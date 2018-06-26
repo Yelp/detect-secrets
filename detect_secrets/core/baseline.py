@@ -168,11 +168,11 @@ def merge_results(old_results, new_results):
     for filename, secrets in old_results.items():
         if filename not in new_results:
             new_results[filename] = secrets
-            break
+            continue
 
         if len(secrets) == len(new_results[filename]):
             # Complete override
-            break
+            continue
 
         # Need to figure out starting point. That is, while
         # len(new_results) < len(old_results), they may not start at the same

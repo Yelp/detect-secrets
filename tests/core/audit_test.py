@@ -22,8 +22,10 @@ class TestAuditBaseline(object):
             assert mock_printer.message == ''
 
     def test_quit_before_making_decision(self, mock_printer):
-        with self.mock_env(['q']):
+        with self.mock_env(['q']) as m:
             audit.audit_baseline('will_be_mocked')
+
+            assert m.call_args[0][1] == self.baseline
 
         assert mock_printer.message == (
             'Quitting...\n'
@@ -131,6 +133,13 @@ class TestAuditBaseline(object):
                     },
                     {
                         'hashed_secret': 'b',
+                        'line_number': 123,
+                        'type': 'Test Type',
+                    },
+                ],
+                'filenameB': [
+                    {
+                        'hashed_secret': 'c',
                         'line_number': 123,
                         'type': 'Test Type',
                     },
