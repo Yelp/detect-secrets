@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import string
 import textwrap
 from contextlib import contextmanager
+from copy import deepcopy
 
 import mock
 import pytest
@@ -33,9 +34,10 @@ class TestAuditBaseline(object):
         )
 
     def test_nothing_to_audit(self, mock_printer):
-        modified_baseline = self.baseline.copy()
+        modified_baseline = deepcopy(self.baseline)
         modified_baseline['results']['filenameA'][0]['is_secret'] = True
         modified_baseline['results']['filenameA'][1]['is_secret'] = False
+        modified_baseline['results']['filenameB'][0]['is_secret'] = False
 
         with self.mock_env(baseline=modified_baseline):
             audit.audit_baseline('will_be_mocked')
@@ -43,19 +45,28 @@ class TestAuditBaseline(object):
         assert mock_printer.message == 'Nothing to audit!\n'
 
     def test_making_decisions(self, mock_printer):
-        modified_baseline = self.baseline.copy()
-        modified_baseline['results']['filenameA'][0]['is_secret'] = True
-        modified_baseline['results']['filenameA'][1]['is_secret'] = False
+        modified_baseline = deepcopy(self.baseline)
 
-        self.run_logic(['y', 'n'], modified_baseline)
+        # Need to do it this way, because dictionaries are not ordered:
+        # meaning, that if we hard-code results to certain filenames, it's
+        # going to be a flakey test.
+        values_to_inject = [True, False, False]
+        for secrets in modified_baseline['results'].values():
+            for secret in secrets:
+                secret['is_secret'] = values_to_inject.pop(0)
+
+        self.run_logic(['y', 'n', 'n'], modified_baseline)
 
         assert mock_printer.message == (
             'Saving progress...\n'
         )
 
     def test_quit_half_way(self, mock_printer):
-        modified_baseline = self.baseline.copy()
-        modified_baseline['results']['filenameA'][0]['is_secret'] = False
+        modified_baseline = deepcopy(self.baseline)
+
+        for secrets in modified_baseline['results'].values():
+            secrets[0]['is_secret'] = False
+            break
 
         self.run_logic(['n', 'q'], modified_baseline)
 
@@ -65,10 +76,16 @@ class TestAuditBaseline(object):
         )
 
     def test_skip_decision(self, mock_printer):
-        modified_baseline = self.baseline.copy()
-        modified_baseline['results']['filenameA'][1]['is_secret'] = True
+        modified_baseline = deepcopy(self.baseline)
 
-        self.run_logic(['s', 'y'], modified_baseline)
+        values_to_inject = [None, True, True]
+        for secrets in modified_baseline['results'].values():
+            for secret in secrets:
+                value = values_to_inject.pop(0)
+                if value:
+                    secret['is_secret'] = value
+
+        self.run_logic(['s', 'y', 'y'], modified_baseline)
 
         assert mock_printer.message == (
             'Saving progress...\n'
@@ -439,17 +456,16 @@ def mock_user_input(inputs):
     :type inputs: list
     :param inputs: list of user choices
     """
-    current_case = {'index': 0}     # needed, because py2 doesn't have nonlocal
-
     class InputShim(object):
         def __init__(self):
             self.message = ''
+            self.index = 0
 
         def get_user_input(self, *args, **kwargs):
             self.message += args[0]
 
-            output = inputs[current_case['index']]
-            current_case['index'] += 1
+            output = inputs[self.index]
+            self.index += 1
 
             return output
 

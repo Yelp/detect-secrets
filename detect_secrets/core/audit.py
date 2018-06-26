@@ -154,13 +154,19 @@ def _save_baseline_to_file(filename, data):  # pragma: no cover
 def _secret_generator(baseline):
     """Generates secrets to audit, from the baseline"""
     current_secret_index = 1
-    num_secrets_to_parse = sum(map(
-        lambda filename: len(list(filter(
-            lambda secret: not hasattr(secret, 'is_secret'),
-            baseline['results'][filename],
-        ))),
-        baseline['results'],
-    ))
+    num_secrets_to_parse = sum(
+        map(
+            lambda filename: len(
+                list(
+                    filter(
+                        lambda secret: not hasattr(secret, 'is_secret'),
+                        baseline['results'][filename],
+                    ),
+                ),
+            ),
+            baseline['results'],
+        ),
+    )
 
     for filename, secrets in baseline['results'].items():
         for secret in secrets:
@@ -170,8 +176,6 @@ def _secret_generator(baseline):
                 yield filename, secret, current_secret_index, num_secrets_to_parse
 
             current_secret_index += 1
-
-        break
 
 
 def _get_secret_with_context(
@@ -271,6 +275,13 @@ def _highlight_secret(secret_line, secret, filename, plugin_settings):
         # We only want to highlight the right one.
         if secret_obj.secret_hash == secret['hashed_secret']:
             break
+    else:
+        raise SecretNotFoundOnSpecifiedLineError(
+            textwrap.dedent("""
+                ERROR: Secret not found on specified line number!
+                Try recreating your baseline to fix this issue.
+            """)[1:-1],
+        )
 
     index_of_secret = secret_line.index(raw_secret)
     return '{}{}{}'.format(
@@ -292,15 +303,6 @@ def _raw_secret_generator(plugin, secret_line):
         with plugin.non_quoted_string_regex(strict=False):
             for raw_secret in plugin.secret_generator(secret_line):
                 yield raw_secret
-
-    # It hits here if the secret has been moved, from the original
-    # line number listed in the baseline.
-    raise SecretNotFoundOnSpecifiedLineError(
-        textwrap.dedent("""
-            ERROR: Secret not found on specified line number!
-            Try recreating your baseline to fix this issue.
-        """)[1:-1],
-    )
 
 
 def _get_user_decision(prompt_secret_decision=True):
