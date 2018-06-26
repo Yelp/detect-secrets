@@ -17,6 +17,9 @@ class _BashColor(object):
     def __init__(self):
         self.DISABLED = False
 
+    def enable_color(self):
+        self.DISABLED = False
+
     def disable_color(self):
         self.DISABLED = True
 

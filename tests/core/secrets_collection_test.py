@@ -325,7 +325,17 @@ class TestBaselineInputOutput(object):
             assert original[key] == new[key]
 
 
-class MockPluginFixedValue(BasePlugin):
+class MockBasePlugin(BasePlugin):
+    """Abstract testing class, to implement abstract methods."""
+
+    def analyze_string(self, value):
+        pass
+
+    def secret_generator(self, string):
+        pass
+
+
+class MockPluginFixedValue(MockBasePlugin):
 
     secret_type = 'mock_plugin_fixed_value'
 
@@ -335,12 +345,8 @@ class MockPluginFixedValue(BasePlugin):
         secret = PotentialSecret('mock fixed value type', filename, 1, 'asdf')
         return {secret: secret}
 
-    def analyze_string(self, value):
-        # Needed, because abstract method
-        pass
 
-
-class MockPluginFileValue(BasePlugin):
+class MockPluginFileValue(MockBasePlugin):
 
     secret_type = 'mock_plugin_file_value'
 
@@ -349,10 +355,6 @@ class MockPluginFileValue(BasePlugin):
         # it doesn't matter what we return
         secret = PotentialSecret('mock file value type', filename, 2, f.read().strip())
         return {secret: secret}
-
-    def analyze_string(self, value):
-        # Needed, because abstract method
-        pass
 
 
 MockUnicodeDecodeError = UnicodeDecodeError('encoding type', b'subject', 0, 1, 'exception message')

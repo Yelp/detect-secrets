@@ -26,7 +26,7 @@ def main(argv=None):
     if args.verbose:  # pragma: no cover
         CustomLog.enableDebug(args.verbose)
 
-    if args.version:
+    if args.version:    # pragma: no cover
         print(VERSION)
         return
 

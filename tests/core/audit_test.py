@@ -1,11 +1,15 @@
 from __future__ import absolute_import
 
+import string
+import textwrap
 from contextlib import contextmanager
 
 import mock
 import pytest
 
 from detect_secrets.core import audit
+from detect_secrets.core.color import BashColor
+from testing.factories import potential_secret_factory
 
 
 class TestAuditBaseline(object):
@@ -87,18 +91,23 @@ class TestAuditBaseline(object):
             user_inputs = []
 
         with mock.patch.object(
+            # We mock this, so we don't need to do any file I/O.
             audit,
             '_get_baseline_from_file',
             return_value=baseline,
         ), mock.patch.object(
+            # We mock this, because we don't really care about clearing
+            # screens for test cases.
             audit,
             '_clear_screen',
         ), mock.patch.object(
+            # Tests for this fall under a different test suite.
             audit,
             '_print_context',
         ), mock_user_input(
             user_inputs,
         ), mock.patch.object(
+            # We mock this, so we don't need to do any file I/O.
             audit,
             '_save_baseline_to_file',
         ) as m:
@@ -108,6 +117,11 @@ class TestAuditBaseline(object):
     def baseline(self):
         return {
             'generated_at': 'some timestamp',
+            'plugins_used': [
+                {
+                    'name': 'TestPlugin',
+                },
+            ],
             'results': {
                 'filenameA': [
                     {
@@ -123,6 +137,190 @@ class TestAuditBaseline(object):
                 ],
             },
         }
+
+
+class TestPrintContext(object):
+
+    def setup(self):
+        BashColor.disable_color()
+
+    def teardown(self):
+        BashColor.enable_color()
+
+    def run_logic(self, secret=None, secret_lineno=15, settings=None):
+        # Setup default arguments
+        if not secret:
+            secret = potential_secret_factory(
+                type_='Private Key',
+                filename='filenameA',
+                secret='BEGIN PRIVATE KEY',
+                lineno=secret_lineno,
+            ).json()
+
+        if not settings:
+            settings = [
+                {
+                    'name': 'PrivateKeyDetector',
+                },
+            ]
+
+        audit._print_context(
+            secret['filename'],
+            secret,
+            count=1,
+            total=2,
+            plugin_settings=settings,
+        )
+
+    @contextmanager
+    def _mock_sed_call(
+        self,
+        start_line=10,
+        secret_line=15,
+        end_line=20,
+        line_containing_secret='BEGIN PRIVATE KEY',
+    ):
+        with mock.patch(
+            'detect_secrets.core.audit.subprocess',
+        ) as m:
+            m.check_output.return_value = '{}{}{}'.format(
+                self._make_string_into_individual_lines(
+                    string.ascii_letters[:(secret_line - start_line)],
+                ),
+                line_containing_secret + '\n',
+                self._make_string_into_individual_lines(
+                    string.ascii_letters[:(end_line - secret_line)][::-1],
+                ),
+            ).encode()
+
+            yield m.check_output
+
+    @staticmethod
+    def _make_string_into_individual_lines(string):
+        return ''.join(
+            map(
+                lambda x: x + '\n',
+                string,
+            ),
+        )
+
+    def test_basic(self, mock_printer):
+        with self._mock_sed_call(
+            start_line=10,
+            secret_line=15,
+            end_line=20,
+            line_containing_secret='-----BEGIN PRIVATE KEY-----',
+        ) as sed_call:
+            self.run_logic()
+
+            assert sed_call.call_args[0][0] == 'sed -n 10,20p filenameA'.split()
+
+        assert mock_printer.message == textwrap.dedent("""
+            Secrets Left: 1/2
+            Filename:     filenameA
+            ----------
+            10:a
+            11:b
+            12:c
+            13:d
+            14:e
+            15:-----BEGIN PRIVATE KEY-----
+            16:e
+            17:d
+            18:c
+            19:b
+            20:a
+            ----------
+
+        """)[1:-1]
+
+    def test_secret_at_top_of_file(self, mock_printer):
+        with self._mock_sed_call(
+            start_line=1,
+            secret_line=1,
+            end_line=6,
+            line_containing_secret='-----BEGIN PRIVATE KEY-----',
+        ) as sed_call:
+            self.run_logic(
+                secret_lineno=1,
+            )
+
+            assert sed_call.call_args[0][0] == 'sed -n 1,6p filenameA'.split()
+
+        assert mock_printer.message == textwrap.dedent("""
+            Secrets Left: 1/2
+            Filename:     filenameA
+            ----------
+            1:-----BEGIN PRIVATE KEY-----
+            2:e
+            3:d
+            4:c
+            5:b
+            6:a
+            ----------
+
+        """)[1:-1]
+
+    def test_secret_not_found(self, mock_printer):
+        with self._mock_sed_call(), pytest.raises(
+            audit.SecretNotFoundOnSpecifiedLineError,
+        ):
+            self.run_logic(
+                secret=potential_secret_factory(
+                    type_='Private Key',
+                    filename='filenameA',
+                    secret='BEGIN RSA PRIVATE KEY',
+                    lineno=15,
+                ).json(),
+            )
+
+        assert mock_printer.message == textwrap.dedent("""
+            Secrets Left: 1/2
+            Filename:     filenameA
+            ----------
+            ERROR: Secret not found on specified line number!
+            Try recreating your baseline to fix this issue.
+            ----------
+
+        """)[1:-1]
+
+    def test_secret_in_yaml_file(self, mock_printer):
+        with self._mock_sed_call(
+            line_containing_secret='api key: 123456789a',
+        ):
+            self.run_logic(
+                secret=potential_secret_factory(
+                    type_='Hex High Entropy String',
+                    filename='filenameB',
+                    secret='123456789a',
+                    lineno=15,
+                ).json(),
+                settings=[
+                    {
+                        'name': 'HexHighEntropyString',
+                        'hex_limit': 3,
+                    },
+                ],
+            )
+
+        assert mock_printer.message == textwrap.dedent("""
+            Secrets Left: 1/2
+            Filename:     filenameB
+            ----------
+            10:a
+            11:b
+            12:c
+            13:d
+            14:e
+            15:api key: 123456789a
+            16:e
+            17:d
+            18:c
+            19:b
+            20:a
+            ----------
+
+        """)[1:-1]
 
 
 class TestSecretGenerator(object):
@@ -192,6 +390,25 @@ class TestGetUserDecision(object):
 
         assert mock_printer.message == ('Invalid input.\n')
 
+    @pytest.mark.parametrize(
+        'prompt_secret_decision, expected_output',
+        [
+            (
+                True,
+                'Is this a valid secret? (y)es, (n)o, (s)kip, (q)uit: ',
+            ),
+            (
+                False,
+                'What would you like to do? (s)kip, (q)uit: ',
+            ),
+        ],
+    )
+    def test_input_message(self, prompt_secret_decision, expected_output):
+        with mock_user_input(['q']) as m:
+            audit._get_user_decision(prompt_secret_decision=prompt_secret_decision)
+
+            assert m.message == expected_output
+
 
 @pytest.fixture
 def mock_printer():
@@ -200,7 +417,7 @@ def mock_printer():
             self.message = ''
 
         def add(self, message):
-            self.message += message + '\n'
+            self.message += str(message) + '\n'
 
     shim = PrinterShim()
     with mock.patch.object(audit, 'print', shim.add):
@@ -215,11 +432,18 @@ def mock_user_input(inputs):
     """
     current_case = {'index': 0}     # needed, because py2 doesn't have nonlocal
 
-    def _wrapped(*args, **kwargs):
-        output = inputs[current_case['index']]
-        current_case['index'] += 1
+    class InputShim(object):
+        def __init__(self):
+            self.message = ''
 
-        return output
+        def get_user_input(self, *args, **kwargs):
+            self.message += args[0]
 
-    with mock.patch.object(audit, 'input', _wrapped):
-        yield
+            output = inputs[current_case['index']]
+            current_case['index'] += 1
+
+            return output
+
+    shim = InputShim()
+    with mock.patch.object(audit, 'input', shim.get_user_input):
+        yield shim

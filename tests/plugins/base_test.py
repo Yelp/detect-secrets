@@ -10,5 +10,8 @@ def test_fails_if_no_secret_type_defined():
         def analyze_string(self, *args, **kwargs):
             pass
 
+        def secret_generator(self, *args, **kwargs):
+            pass
+
     with pytest.raises(ValueError):
         MockPlugin()
