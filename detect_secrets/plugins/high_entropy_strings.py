@@ -5,6 +5,7 @@ import math
 import os
 import re
 import string
+from abc import ABCMeta
 from contextlib import contextmanager
 
 import yaml
@@ -22,7 +23,7 @@ YAML_EXTENSIONS = (
 class HighEntropyStringsPlugin(BasePlugin):
     """Base class for string pattern matching"""
 
-    secret_type = 'High Entropy String'
+    __metaclass__ = ABCMeta
 
     def __init__(self, charset, limit, *args):
         if limit < 0 or limit > 8:
@@ -82,6 +83,13 @@ class HighEntropyStringsPlugin(BasePlugin):
         if self.ignore_regex.search(string):
             return output
 
+        for result in self.secret_generator(string):
+            secret = PotentialSecret(self.secret_type, filename, line_num, result)
+            output[secret] = secret
+
+        return output
+
+    def secret_generator(self, string):
         # There may be multiple strings on the same line
         results = self.regex.findall(string)
         for result in results:
@@ -91,10 +99,31 @@ class HighEntropyStringsPlugin(BasePlugin):
 
             entropy_value = self.calculate_shannon_entropy(result)
             if entropy_value > self.entropy_limit:
-                secret = PotentialSecret(self.secret_type, filename, line_num, result)
-                output[secret] = secret
+                yield result
 
-        return output
+    @contextmanager
+    def non_quoted_string_regex(self, strict=True):
+        """For certain file formats, strings need not necessarily follow the
+        normal convention of being denoted by single or double quotes. In these
+        cases, we modify the regex accordingly.
+
+        Public, because detect_secrets.core.audit needs to reference it.
+
+        :type strict: bool
+        :param strict: if True, the regex will match the entire string.
+        """
+        old_regex = self.regex
+
+        regex_alternative = r'([{}]+)'.format(re.escape(self.charset))
+        if strict:
+            regex_alternative = r'^' + regex_alternative + r'$'
+
+        self.regex = re.compile(regex_alternative)
+
+        try:
+            yield
+        finally:
+            self.regex = old_regex
 
     def _analyze_ini_file(self, file, filename):
         """
@@ -102,7 +131,7 @@ class HighEntropyStringsPlugin(BasePlugin):
         """
         potential_secrets = {}
 
-        with self._non_quoted_string_regex():
+        with self.non_quoted_string_regex():
             for value, lineno in IniFileParser(file).iterator():
                 potential_secrets.update(self.analyze_string(
                     value,
@@ -126,7 +155,7 @@ class HighEntropyStringsPlugin(BasePlugin):
         potential_secrets = {}
 
         to_search = [data]
-        with self._non_quoted_string_regex():
+        with self.non_quoted_string_regex():
             while len(to_search) > 0:
                 item = to_search.pop()
 
@@ -149,22 +178,6 @@ class HighEntropyStringsPlugin(BasePlugin):
                     pass
 
         return potential_secrets
-
-    @contextmanager
-    def _non_quoted_string_regex(self):
-        """For certain file formats, strings need not necessarily follow the
-        normal convention of being denoted by single or double quotes. In these
-        cases, we modify the regex accordingly.
-        """
-        old_regex = self.regex
-        self.regex = re.compile(
-            r'^([%s]+)$' % re.escape(self.charset),
-        )
-
-        try:
-            yield
-        finally:
-            self.regex = old_regex
 
 
 class HexHighEntropyString(HighEntropyStringsPlugin):

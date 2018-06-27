@@ -16,7 +16,7 @@ from detect_secrets.core.baseline import update_baseline_with_removed_secrets
 from detect_secrets.core.log import CustomLog
 from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.core.usage import ParserBuilder
-from detect_secrets.plugins import initialize_plugins
+from detect_secrets.plugins.core import initialize
 
 
 def parse_args(argv):
@@ -193,7 +193,7 @@ def raise_exception_if_baseline_version_is_outdated(version):
 
 
 def find_secrets_in_files(args):
-    plugins = initialize_plugins(args.plugins)
+    plugins = initialize.from_parser_builder(args.plugins)
     collection = SecretsCollection(plugins)
 
     for filename in args.filenames:

@@ -13,7 +13,7 @@ from unidiff.errors import UnidiffParseError
 from detect_secrets import VERSION
 from detect_secrets.core.log import CustomLog
 from detect_secrets.core.potential_secret import PotentialSecret
-from detect_secrets.plugins import initialize_plugin
+from detect_secrets.plugins.core import initialize
 
 
 CustomLogObj = CustomLog()
@@ -78,7 +78,7 @@ class SecretsCollection(object):
         plugins = []
         for plugin in data['plugins_used']:
             plugin_classname = plugin.pop('name')
-            plugins.append(initialize_plugin(
+            plugins.append(initialize.from_plugin_classname(
                 plugin_classname,
                 **plugin
             ))

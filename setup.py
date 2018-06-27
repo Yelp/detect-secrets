@@ -26,6 +26,7 @@ setup(
         ':python_version=="2.7"': [
             'configparser',
             'enum34',
+            'future',
             'functools32',
         ],
     },

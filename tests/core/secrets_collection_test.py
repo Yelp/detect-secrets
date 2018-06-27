@@ -325,7 +325,19 @@ class TestBaselineInputOutput(object):
             assert original[key] == new[key]
 
 
-class MockPluginFixedValue(BasePlugin):
+class MockBasePlugin(BasePlugin):
+    """Abstract testing class, to implement abstract methods."""
+
+    def analyze_string(self, value):
+        pass
+
+    def secret_generator(self, string):
+        pass
+
+
+class MockPluginFixedValue(MockBasePlugin):
+
+    secret_type = 'mock_plugin_fixed_value'
 
     def analyze(self, f, filename):
         # We're not testing the plugin's ability to analyze secrets, so
@@ -334,7 +346,9 @@ class MockPluginFixedValue(BasePlugin):
         return {secret: secret}
 
 
-class MockPluginFileValue(BasePlugin):
+class MockPluginFileValue(MockBasePlugin):
+
+    secret_type = 'mock_plugin_file_value'
 
     def analyze(self, f, filename):
         # We're not testing the plugin's ability to analyze secrets, so

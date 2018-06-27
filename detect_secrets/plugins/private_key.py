@@ -51,13 +51,18 @@ class PrivateKeyDetector(BasePlugin):
     def analyze_string(self, string, line_num, filename):
         output = {}
 
-        if any(line in string for line in BLACKLIST):
+        for identifier in self.secret_generator(string):
             secret = PotentialSecret(
                 self.secret_type,
                 filename,
                 line_num,
-                string,
+                identifier,
             )
             output[secret] = secret
 
         return output
+
+    def secret_generator(self, string):
+        for line in BLACKLIST:
+            if line in string:
+                yield line

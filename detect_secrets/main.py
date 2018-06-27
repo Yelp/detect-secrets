@@ -6,10 +6,11 @@ import json
 import sys
 
 from detect_secrets import VERSION
+from detect_secrets.core import audit
 from detect_secrets.core import baseline
 from detect_secrets.core.log import CustomLog
 from detect_secrets.core.usage import ParserBuilder
-from detect_secrets.plugins import initialize_plugins
+from detect_secrets.plugins.core import initialize
 
 
 def parse_args(argv):
@@ -25,11 +26,11 @@ def main(argv=None):
     if args.verbose:  # pragma: no cover
         CustomLog.enableDebug(args.verbose)
 
-    if args.version:
+    if args.version:    # pragma: no cover
         print(VERSION)
         return
 
-    plugins = initialize_plugins(args.plugins)
+    plugins = initialize.from_parser_builder(args.plugins)
 
     if args.scan:
         if args.exclude:
@@ -46,6 +47,8 @@ def main(argv=None):
                 sort_keys=True,
             ),
         )
+    elif args.audit:
+        audit.audit_baseline(args.audit[0])
 
     return 0
 
