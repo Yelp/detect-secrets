@@ -81,6 +81,14 @@ class ParserBuilder(object):
             help='Pass in regex to specify ignored paths during initialization scan.',
         )
 
+        # Pairing `--import` with `--scan` because it's only used for initialization.
+        self.parser.add_argument(
+            '--import',
+            nargs=1,
+            metavar='OLD_BASELINE_FILE',
+            help='Import settings from previous existing baseline.',
+        )
+
         return self
 
     def _add_audit_baseline_argument(self):

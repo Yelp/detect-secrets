@@ -7,6 +7,7 @@ import pytest
 
 from detect_secrets.core import baseline
 from detect_secrets.core.baseline import get_secrets_not_in_baseline
+from detect_secrets.core.baseline import merge_baseline
 from detect_secrets.core.baseline import merge_results
 from detect_secrets.core.baseline import update_baseline_with_removed_secrets
 from detect_secrets.core.potential_secret import PotentialSecret
@@ -295,6 +296,109 @@ class TestUpdateBaselineWithRemovedSecrets(object):
             baseline,
             ['filename'],
         )
+
+
+class TestMergeBaseline(object):
+
+    def test_copies_is_secret_label_accurately(self):
+        assert merge_baseline(
+            {
+                'results': {
+                    'filenameA': [
+                        # Old has label, but new does not.
+                        {
+                            'hashed_secret': 'a',
+                            'is_secret': False,
+                            'line_number': 1,
+                            'type': 'Test Type',
+                        },
+                        # Both old and new have label
+                        {
+                            'hashed_secret': 'b',
+                            'is_secret': True,
+                            'line_number': 2,
+                            'type': 'Test Type',
+                        },
+                    ],
+                    'filenameB': [
+                        # Only new has label
+                        {
+                            'hashed_secret': 'c',
+                            'line_number': 3,
+                            'type': 'Test Type',
+                        },
+                        # Both don't have labels
+                        {
+                            'hashed_secret': 'd',
+                            'line_number': 4,
+                            'type': 'Test Type',
+                        },
+                    ],
+                },
+            },
+            {
+                'results': {
+                    'filenameA': [
+                        {
+                            'hashed_secret': 'a',
+                            'line_number': 1,
+                            'type': 'Test Type',
+                        },
+                        {
+                            'hashed_secret': 'b',
+                            'is_secret': False,
+                            'line_number': 2,
+                            'type': 'Test Type',
+                        },
+                    ],
+                    'filenameB': [
+                        {
+                            'hashed_secret': 'c',
+                            'is_secret': False,
+                            'line_number': 3,
+                            'type': 'Test Type',
+                        },
+                        {
+                            'hashed_secret': 'd',
+                            'line_number': 4,
+                            'type': 'Test Type',
+                        },
+                    ],
+                },
+            },
+        ) == {
+            'results': {
+                'filenameA': [
+                    {
+                        'hashed_secret': 'a',
+                        'is_secret': False,
+                        'line_number': 1,
+                        'type': 'Test Type',
+                    },
+                    {
+                        'hashed_secret': 'b',
+                        'is_secret': False,
+                        'line_number': 2,
+                        'type': 'Test Type',
+                    },
+                ],
+                'filenameB': [
+                    {
+                        'hashed_secret': 'c',
+                        'is_secret': False,
+                        'line_number': 3,
+                        'type': 'Test Type',
+                    },
+                    {
+                        'hashed_secret': 'd',
+                        'line_number': 4,
+                        'type': 'Test Type',
+                    },
+                ],
+            },
+
+        }
+        pass
 
 
 class TestMergeResults(object):
