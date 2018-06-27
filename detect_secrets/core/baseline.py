@@ -146,6 +146,29 @@ def update_baseline_with_removed_secrets(results, baseline, filelist):
     return updated
 
 
+def merge_baseline(old_baseline, new_baseline):
+    """Updates baseline to be compatible with the latest version of
+    detect-secrets.
+
+    Currently, this only exists to transfer whitelisted secrets across
+    to the new baseline, and will only work with baselines created
+    after v0.9.
+
+    :type old_baseline: dict
+    :param old_baseline: baseline dict, loaded from previous baseline
+
+    :type new_baseline: dict
+    :param new_baseline: most recent scan
+    """
+    # TODO: merge_results does not take into account `is_secret`
+    new_baseline['results'] = merge_results(
+        old_baseline['results'],
+        new_baseline['results'],
+    )
+
+    return new_baseline
+
+
 def merge_results(old_results, new_results):
     """Update results in baseline with latest information.
 
@@ -171,7 +194,21 @@ def merge_results(old_results, new_results):
             continue
 
         if len(secrets) == len(new_results[filename]):
-            # Complete override
+            # Assuming that secrets remain in order.
+            for index, secrets_tuple in enumerate(zip(secrets, new_results[filename])):
+                old_secret, new_secret = secrets_tuple
+                if old_secret['hashed_secret'] != new_secret['hashed_secret']:
+                    # We don't join the two secret sets, because if the later
+                    # result set did not discover an old secret, it's probably
+                    # moved.
+                    # If it did discover it, then lengths would be different.
+                    continue
+
+                if 'is_secret' in old_secret and 'is_secret' not in new_secret:
+                    # If the new_secret has a label, then go with the later
+                    # version.
+                    new_results[filename][index] = old_secret
+
             continue
 
         # Need to figure out starting point. That is, while
