@@ -5,18 +5,16 @@ import subprocess
 import sys
 import textwrap
 
-try:
-    from functools import lru_cache
-except ImportError:
-    from functools32 import lru_cache
-
 from detect_secrets import VERSION
 from detect_secrets.core.baseline import get_secrets_not_in_baseline
 from detect_secrets.core.baseline import update_baseline_with_removed_secrets
-from detect_secrets.core.log import CustomLog
+from detect_secrets.core.log import get_logger
 from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.core.usage import ParserBuilder
 from detect_secrets.plugins.core import initialize
+
+
+log = get_logger(format_string='%(message)s')
 
 
 def parse_args(argv):
@@ -27,7 +25,7 @@ def parse_args(argv):
 def main(argv=None):
     args = parse_args(argv)
     if args.verbose:  # pragma: no cover
-        CustomLog.enableDebug(args.verbose)
+        log.set_debug_level(args.verbose)
 
     try:
         # If baseline is provided, we first want to make sure
@@ -101,7 +99,7 @@ def get_baseline(baseline_filename):
             baseline_version,
         )
     except ValueError:
-        _get_custom_log().error(
+        log.error(
             'The supplied baseline may be incompatible with the current\n'
             'version of detect-secrets. Please recreate your baseline to\n'
             'avoid potential mis-configurations.\n\n'
@@ -123,7 +121,7 @@ def _get_baseline_string_from_file(filename):   # pragma: no cover
             return f.read()
 
     except IOError:
-        _get_custom_log().error(
+        log.error(
             'Unable to open baseline file: %s.', filename,
         )
 
@@ -150,7 +148,7 @@ def raise_exception_if_baseline_file_is_not_up_to_date(filename):
         raise ValueError
 
     if filename.encode() in files_changed_but_not_staged:
-        _get_custom_log().error((
+        log.error((
             'Your baseline file ({}) is unstaged.\n'
             '`git add {}` to fix this.'
         ).format(
@@ -211,19 +209,12 @@ def pretty_print_diagnostics(secrets):
 
     :type secrets: SecretsCollection
     """
-    log = _get_custom_log()
-
-    _print_warning_header(log)
-    _print_secrets_found(log, secrets)
-    _print_mitigation_suggestions(log)
+    _print_warning_header()
+    _print_secrets_found(secrets)
+    _print_mitigation_suggestions()
 
 
-@lru_cache(maxsize=1)
-def _get_custom_log():
-    return CustomLog(formatter='%(message)s').getLogger()
-
-
-def _print_warning_header(log):
+def _print_warning_header():
     message = (
         'Potential secrets about to be committed to git repo! Please rectify '
         'or explicitly ignore with `pragma: whitelist secret` comment.'
@@ -233,13 +224,13 @@ def _print_warning_header(log):
     log.error('')
 
 
-def _print_secrets_found(log, secrets):
+def _print_secrets_found(secrets):
     for filename in secrets.data:
         for secret in secrets.data[filename].values():
             log.error(secret)
 
 
-def _print_mitigation_suggestions(log):
+def _print_mitigation_suggestions():
     suggestions = [
         'For information about putting your secrets in a safer place, please ask in #security',
         'Mark false positives with `# pragma: whitelist secret`',

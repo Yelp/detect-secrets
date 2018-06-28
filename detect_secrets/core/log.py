@@ -1,59 +1,49 @@
-#!/usr/bin/python
 import logging
 import sys
 
 
-class CustomLog(logging.getLoggerClass()):  # pragma: no cover
+def get_logger(name=None, format_string=None):
+    """
+    :type name: str
+    :param name: used for declaring log channels.
 
-    log_format_string = '[%(module)s]\t%(levelname)s\t%(message)s'
+    :type format_string: str
+    :param format_string: for custom formatting
+    """
+    logging.captureWarnings(True)
+    log = logging.getLogger(name)
 
-    # See CustomLog.enableDebug
-    debug_mode = 0
+    # Bind custom method to instance.
+    # Source: https://stackoverflow.com/a/2982
+    log.set_debug_level = _set_debug_level.__get__(log)
+    log.set_debug_level(0)
 
-    def __init__(self, debug_mode=None, formatter=None, *args, **kwargs):
-        """
-        :param name:       string; used for declaring log channels.
-        :param debug_mode: debug level for this specific logger instance.
-        :param formatter:  string; for custom formatting
-        """
-        super(CustomLog, self).__init__('', *args, **kwargs)
+    if not format_string:
+        format_string = '[%(module)s]\t%(levelname)s\t%(message)s'
 
-        if debug_mode is not None:
-            self.debug_mode = debug_mode
+    # Setting up log formats
+    log.handlers = []
+    handler = logging.StreamHandler(sys.stderr)
+    handler.setFormatter(
+        logging.Formatter(format_string),
+    )
+    log.addHandler(handler)
 
-        if formatter is None:
-            self.formatter = logging.Formatter(CustomLog.log_format_string)
-        elif isinstance(formatter, str):
-            self.formatter = logging.Formatter(formatter)
+    return log
 
-    @classmethod
-    def enableDebug(cls, verbose_level):
-        """Configure the global verbosity of logs
 
-        :param verbose_level: integer; between 0-2
-        """
-        cls.debug_mode = verbose_level
+def _set_debug_level(self, debug_level):
+    """
+    :type debug_level: int, between 0-2
+    :param debug_level: configure verbosity of log
+    """
+    mapping = {
+        0: logging.ERROR,
+        1: logging.INFO,
+        2: logging.DEBUG,
+    }
 
-    def getLogger(self, name=None):
-        log = logging.getLogger(name)
+    self.setLevel(mapping[debug_level])
 
-        debug_mode = self.debug_mode if self.debug_mode is not None else CustomLog.debug_mode
 
-        # Apply custom default options
-        log_level = logging.ERROR
-        if debug_mode == 1:
-            log_level = logging.INFO
-        elif debug_mode == 2:
-            log_level = logging.DEBUG
-
-        log.setLevel(log_level)
-
-        if self.formatter:
-            log.handlers = []
-            handler = logging.StreamHandler(sys.stderr)
-            handler.setFormatter(self.formatter)
-            log.addHandler(handler)
-
-        logging.captureWarnings(True)
-
-        return log
+log = get_logger()

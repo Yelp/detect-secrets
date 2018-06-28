@@ -8,10 +8,7 @@ from ..base import BasePlugin
 from ..high_entropy_strings import Base64HighEntropyString  # noqa: F401
 from ..high_entropy_strings import HexHighEntropyString     # noqa: F401
 from ..private_key import PrivateKeyDetector                # noqa: F401
-from detect_secrets.core.log import CustomLog
-
-
-_CustomLogObj = CustomLog()
+from detect_secrets.core.log import log
 
 
 def from_parser_builder(plugins_dict):
@@ -45,7 +42,7 @@ def from_plugin_classname(plugin_classname, **kwargs):
     try:
         instance = klass(**kwargs)
     except TypeError:
-        _CustomLogObj.getLogger().warning(
+        log.warning(
             'Unable to initialize plugin!',
         )
         raise

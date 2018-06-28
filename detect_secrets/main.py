@@ -8,7 +8,7 @@ import sys
 from detect_secrets import VERSION
 from detect_secrets.core import audit
 from detect_secrets.core import baseline
-from detect_secrets.core.log import CustomLog
+from detect_secrets.core.log import log
 from detect_secrets.core.usage import ParserBuilder
 from detect_secrets.plugins.core import initialize
 
@@ -24,7 +24,7 @@ def main(argv=None):
 
     args = parse_args(argv)
     if args.verbose:  # pragma: no cover
-        CustomLog.enableDebug(args.verbose)
+        log.set_debug_level(args.verbose)
 
     if args.version:    # pragma: no cover
         print(VERSION)

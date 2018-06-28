@@ -11,12 +11,9 @@ from unidiff import PatchSet
 from unidiff.errors import UnidiffParseError
 
 from detect_secrets import VERSION
-from detect_secrets.core.log import CustomLog
+from detect_secrets.core.log import log
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.core import initialize
-
-
-CustomLogObj = CustomLog()
 
 
 class SecretsCollection(object):
@@ -51,7 +48,7 @@ class SecretsCollection(object):
         try:
             return cls._load_baseline_from_dict(json.loads(string))
         except (IOError, ValueError):
-            CustomLogObj.getLogger().error('Incorrectly formatted baseline!')
+            log.error('Incorrectly formatted baseline!')
             raise
 
     @classmethod
@@ -135,7 +132,7 @@ class SecretsCollection(object):
                 'hash': last_commit_hash,
                 'repo_name': repo_name,
             }
-            CustomLogObj.getLogger().error(alert)
+            log.error(alert)
             raise
 
         if self.exclude_regex:
@@ -183,7 +180,7 @@ class SecretsCollection(object):
 
             return True
         except IOError:
-            CustomLogObj.getLogger().warning("Unable to open file: %s", filename)
+            log.warning("Unable to open file: %s", filename)
             return False
 
     def get_secret(self, filename, secret, type_=None):
@@ -272,7 +269,6 @@ class SecretsCollection(object):
         :type f:        File object
         :type filename: string
         """
-        log = CustomLogObj.getLogger()
         try:
             log.info("Checking file: %s", filename)
 

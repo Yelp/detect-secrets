@@ -21,7 +21,7 @@ from testing.mocks import mock_open as mock_open_base
 
 @pytest.fixture
 def mock_log():
-    with mock_log_base('detect_secrets.core.secrets_collection.CustomLogObj') as m:
+    with mock_log_base('detect_secrets.core.secrets_collection.log') as m:
         yield m
 
 
@@ -58,7 +58,7 @@ class TestScanFile(object):
         logic = secrets_collection_factory()
 
         assert not logic.scan_file('non_existent_file')
-        mock_log.getLogger().warning.assert_called_once()
+        mock_log.warning_messages == 'Unable to open file: non_existent_file'
 
     def test_success_single_plugin(self):
         logic = secrets_collection_factory(
@@ -103,7 +103,8 @@ class TestScanFile(object):
 
             logic.scan_file('filename')
 
-        assert mock_log.getLogger().warning.called
+        assert mock_log.info_messages == 'Checking file: filename\n'
+        assert mock_log.warning_messages == 'filename failed to load.\n'
 
         # If the file read was successful, secret would have been caught and added.
         assert len(logic.data) == 0
@@ -277,7 +278,7 @@ class TestBaselineInputOutput(object):
                 }),
             )
 
-        assert mock_log.getLogger().error.called
+        assert mock_log.error_messages == 'Incorrectly formatted baseline!\n'
 
     def get_baseline_dict(self, gmtime):
         # They are all the same secret, so they should all have the same secret hash.
