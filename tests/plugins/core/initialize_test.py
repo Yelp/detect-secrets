@@ -22,7 +22,7 @@ class TestFromPluginClassname(object):
     def test_fails_if_not_base_plugin(self):
         with pytest.raises(TypeError):
             initialize.from_plugin_classname(
-                'CustomLog',
+                'log',
             )
 
     def test_fails_on_bad_initialization(self):

@@ -1,5 +1,6 @@
 """This is a collection of utility functions for easier, DRY testing."""
 import io
+from collections import defaultdict
 from collections import namedtuple
 from contextlib import contextmanager
 from subprocess import CalledProcessError
@@ -127,5 +128,33 @@ def mock_file_object(string):
 
 @contextmanager
 def mock_log(namespace):
-    with mock.patch(namespace, autospec=True) as m:
-        yield m
+    class MockLogWrapper(object):
+        """This is used to check what is being logged."""
+
+        def __init__(self):
+            self.messages = defaultdict(str)
+
+        def error(self, message, *args):
+            self.messages['error'] += (str(message) + '\n') % args
+
+        @property
+        def error_messages(self):
+            return self.messages['error']
+
+        def warning(self, message, *args):
+            self.messages['warning'] += (str(message) + '\n') % args
+
+        @property
+        def warning_messages(self):
+            return self.messages['warning']
+
+        def info(self, message, *args):
+            self.messages['info'] += (str(message) + '\n') % args
+
+        @property
+        def info_messages(self):
+            return self.messages['info']
+
+    wrapper = MockLogWrapper()
+    with mock.patch(namespace, wrapper):
+        yield wrapper

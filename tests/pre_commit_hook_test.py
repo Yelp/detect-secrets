@@ -30,7 +30,7 @@ class TestPreCommitHook(object):
 
         message_by_lines = list(filter(
             lambda x: x != '',
-            mock_log.message.splitlines(),
+            mock_log.error_messages.splitlines(),
         ))
 
         assert message_by_lines[0].startswith(
@@ -88,7 +88,7 @@ class TestPreCommitHook(object):
                 '--baseline baseline.file test_data/files/file_with_secrets.py',
             )
 
-        assert mock_log.message == (
+        assert mock_log.error_messages == (
             'Your baseline file (baseline.file) is unstaged.\n'
             '`git add baseline.file` to fix this.\n'
         )
@@ -112,7 +112,7 @@ class TestPreCommitHook(object):
                 '--baseline will_be_mocked',
             )
 
-        assert mock_log.message == (
+        assert mock_log.error_messages == (
             'The supplied baseline may be incompatible with the current\n'
             'version of detect-secrets. Please recreate your baseline to\n'
             'avoid potential mis-configurations.\n'
@@ -154,23 +154,8 @@ class TestPreCommitHook(object):
 
 @pytest.fixture
 def mock_log():
-    class MockLogWrapper(object):
-        """This is used to check what is being logged."""
-
-        def __init__(self):
-            self.message = ''
-
-        def error(self, message, *args):
-            """Currently, this is the only function that is used
-            when obtaining the logger.
-            """
-            self.message += (str(message) + '\n') % args
-
-    with mock_log_base('detect_secrets.pre_commit_hook._get_custom_log') as m:
-        wrapper = MockLogWrapper()
-        m.return_value = wrapper
-
-        yield wrapper
+    with mock_log_base('detect_secrets.pre_commit_hook.log') as m:
+        yield m
 
 
 @pytest.fixture
