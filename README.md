@@ -48,6 +48,21 @@ $ cat .pre-commit-config.yaml
         exclude: .*/tests/.*
 ```
 
+### Auditing Baseline
+
+```
+$ detect-secrets --audit .secrets.baseline
+```
+
+### Upgrading Baselines
+
+This is only applicable for upgrading baselines that have been created after version 0.9.
+For upgrading baselines lower than that version, just recreate it.
+
+```
+$ detect-secrets --scan < .secrets.baseline > .secrets.baseline.new
+```
+
 ## Installation
 
 There are three components that you can setup, depending on your purposes.
@@ -85,7 +100,7 @@ repository for installation instructions.
 $ pip install detect-secrets
 ```
 
-Remember to initialize your baseline with the same sensitivity configurations
+Remember to initialize your baseline with the same plugin configurations
 as your pre-commit hook, and server-side secret scanner!
 
 #### Inline Whitelisting
@@ -137,7 +152,7 @@ committing secrets.
 * Multi-line secrets.
 * Default passwords (eg. `password = "password"`)
 
-### Sensitivity Configuration
+### Plugin Configuration
 
 One method that this package uses to find secrets is by searching for high
 entropy strings in the codebase. This is calculated through the [Shannon entropy
