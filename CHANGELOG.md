@@ -1,3 +1,11 @@
+### 0.9.1
+
+#### Fixed
+
+- [Fixed "leapfrog" edge case](https://github.com/Yelp/detect-secrets/pull/47)
+  for audit functionality.
+- Better numbering system with interactive audit.
+
 ### 0.9.0
 
 #### Added
