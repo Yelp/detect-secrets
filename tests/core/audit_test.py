@@ -91,9 +91,16 @@ class TestAuditBaseline(object):
             'Saving progress...\n'
         )
 
+    def test_leapfrog_decision(self, mock_printer):
+        modified_baseline = deepcopy(self.leapfrog_baseline)
+        modified_baseline['results']['filenameA'][1]['is_secret'] = True
+        modified_baseline['results']['filenameA'][3]['is_secret'] = True
+
+        self.run_logic(['y', 'y'], modified_baseline, self.leapfrog_baseline)
+
     @contextmanager
-    def run_logic(self, inputs, modified_baseline=None):
-        with self.mock_env(inputs) as m:
+    def run_logic(self, inputs, modified_baseline=None, input_baseline=None):
+        with self.mock_env(inputs, baseline=input_baseline) as m:
             audit.audit_baseline('will_be_mocked')
 
             if not modified_baseline:
@@ -158,6 +165,43 @@ class TestAuditBaseline(object):
                     {
                         'hashed_secret': 'c',
                         'line_number': 123,
+                        'type': 'Test Type',
+                    },
+                ],
+            },
+        }
+
+    @property
+    def leapfrog_baseline(self):
+        return {
+            'generated_at': 'some timestamp',
+            'plugins_used': [
+                {
+                    'name': 'TestPlugin',
+                },
+            ],
+            'results': {
+                'filenameA': [
+                    {
+                        'hashed_secret': 'a',
+                        'line_number': 122,
+                        'type': 'Test Type',
+                        'is_secret': True,
+                    },
+                    {
+                        'hashed_secret': 'b',
+                        'line_number': 123,
+                        'type': 'Test Type',
+                    },
+                    {
+                        'hashed_secret': 'c',
+                        'line_number': 124,
+                        'type': 'Test Type',
+                        'is_secret': False,
+                    },
+                    {
+                        'hashed_secret': 'd',
+                        'line_number': 125,
                         'type': 'Test Type',
                     },
                 ],
@@ -347,47 +391,6 @@ class TestPrintContext(object):
             ----------
 
         """)[1:-1]
-
-
-class TestSecretGenerator(object):
-
-    def test_generates_secret(self):
-        count = 0
-        for filename, secret, index, total in audit._secret_generator({
-            'results': {
-                'filenameA': [
-                    {
-                        'hashed_secret': 'a',
-                    },
-                    {
-                        'hashed_secret': 'b',
-                    },
-                ],
-            },
-        }):
-            assert filename == 'filenameA'
-            if count == 0:
-                assert secret['hashed_secret'] == 'a'
-            else:
-                assert secret['hashed_secret'] == 'b'
-
-            count += 1
-
-    def test_skips_if_already_audited(self):
-        for filename, secret, index, total in audit._secret_generator({
-            'results': {
-                'filenameA': [
-                    {
-                        'hashed_secret': 'a',
-                        'is_secret': False,
-                    },
-                    {
-                        'hashed_secret': 'b',
-                    },
-                ],
-            },
-        }):
-            assert secret['hashed_secret'] == 'b'
 
 
 class TestGetUserDecision(object):
