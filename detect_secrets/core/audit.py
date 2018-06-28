@@ -24,23 +24,28 @@ def audit_baseline(baseline_filename):
     if not original_baseline:
         return
 
-    has_scanned_one_secret = False
+    current_secret_index = 0
     results = defaultdict(list)
-    for filename, secret, index, total in _secret_generator(original_baseline):
-        has_scanned_one_secret = True
+    for filename, secret, total in _secret_generator(original_baseline):
         _clear_screen()
 
-        try:
-            _print_context(
-                filename,
-                secret,
-                index,
-                total,
-                original_baseline['plugins_used'],
-            )
-            decision = _get_user_decision()
-        except SecretNotFoundOnSpecifiedLineError:
-            decision = _get_user_decision(prompt_secret_decision=False)
+        if 'is_secret' not in secret:
+            current_secret_index += 1
+            try:
+                _print_context(
+                    filename,
+                    secret,
+                    current_secret_index,
+                    total,
+                    original_baseline['plugins_used'],
+                )
+                decision = _get_user_decision()
+            except SecretNotFoundOnSpecifiedLineError:
+                decision = _get_user_decision(prompt_secret_decision=False)
+        else:
+            # Unfortunately, we need to add skipped secrets in results,
+            # otherwise merge_results won't know how to handle it.
+            decision = 's'
 
         if decision == 'q':
             print('Quitting...')
@@ -49,7 +54,7 @@ def audit_baseline(baseline_filename):
         _handle_user_decision(decision, secret)
         results[filename].append(secret)
 
-    if not has_scanned_one_secret:
+    if current_secret_index == 0:
         print('Nothing to audit!')
         return
 
@@ -153,13 +158,12 @@ def _save_baseline_to_file(filename, data):  # pragma: no cover
 
 def _secret_generator(baseline):
     """Generates secrets to audit, from the baseline"""
-    current_secret_index = 1
     num_secrets_to_parse = sum(
         map(
             lambda filename: len(
                 list(
                     filter(
-                        lambda secret: not hasattr(secret, 'is_secret'),
+                        lambda secret: 'is_secret' not in secret,
                         baseline['results'][filename],
                     ),
                 ),
@@ -170,12 +174,7 @@ def _secret_generator(baseline):
 
     for filename, secrets in baseline['results'].items():
         for secret in secrets:
-            try:
-                secret['is_secret']
-            except KeyError:
-                yield filename, secret, current_secret_index, num_secrets_to_parse
-
-            current_secret_index += 1
+            yield filename, secret, num_secrets_to_parse
 
 
 def _get_secret_with_context(
