@@ -1,13 +1,18 @@
 import json
+import textwrap
 from contextlib import contextmanager
 
 import mock
 import pytest
 
+from detect_secrets import main as main_module
+from detect_secrets.core import audit as audit_module
+from detect_secrets.core.color import BashColor
 from detect_secrets.main import main
 from testing.factories import secrets_collection_factory
 from testing.mocks import Any
 from testing.mocks import mock_open
+from testing.mocks import mock_printer
 
 
 @pytest.fixture
@@ -93,6 +98,83 @@ class TestMain(object):
             {'key': 'value'},
             Any(dict),
         )
+
+    @pytest.mark.parametrize(
+        'filename, expected_output',
+        [
+            (
+                'test_data/short_files/first_line.py',
+                textwrap.dedent("""
+                    1:secret = '0123456789a'
+                    2:print('second line')
+                    3:var = 'third line'
+                """)[1:-1],
+            ),
+            (
+                'test_data/short_files/middle_line.yml',
+                textwrap.dedent("""
+                    1:deploy:
+                    2:    user: aaronloo
+                    3:    password:
+                    4:        secure: thequickbrownfoxjumpsoverthelazydog
+                    5:    on:
+                    6:        repo: Yelp/detect-secrets
+                """)[1:-1],
+            ),
+            (
+                'test_data/short_files/last_line.ini',
+                textwrap.dedent("""
+                    1:[some section]
+                    2:secrets_for_no_one_to_find =
+                    3:    hunter2
+                    4:    password123
+                    5:    0123456789a
+                """)[1:-1],
+            ),
+        ],
+    )
+    def test_audit_first_line(self, filename, expected_output):
+        BashColor.disable_color()
+
+        with mock_stdin(), mock_printer(
+            # To extract the baseline output
+            main_module,
+        ) as printer_shim:
+            main(['--scan', filename])
+            baseline = printer_shim.message
+
+        with mock_stdin(), mock.patch(
+            # To pipe in printer_shim
+            'detect_secrets.core.audit._get_baseline_from_file',
+            return_value=json.loads(baseline),
+        ), mock.patch(
+            # We don't want to clear the pytest testing screen
+            'detect_secrets.core.audit._clear_screen',
+        ), mock.patch(
+            # Gotta mock it, because tests aren't interactive
+            'detect_secrets.core.audit._get_user_decision',
+            return_value='s',
+        ), mock.patch(
+            # We don't want to write an actual file
+            'detect_secrets.core.audit._save_baseline_to_file',
+        ), mock_printer(
+            audit_module,
+        ) as printer_shim:
+            main('--audit will_be_mocked'.split())
+
+            assert printer_shim.message == textwrap.dedent("""
+                Secrets Left: 1/1
+                Filename:     {}
+                ----------
+                {}
+                ----------
+                Saving progress...
+            """)[1:].format(
+                filename,
+                expected_output,
+            )
+
+        BashColor.enable_color()
 
 
 @contextmanager
