@@ -212,10 +212,25 @@ def _get_secret_with_context(
         filename,
     ]).decode('utf-8').splitlines()
 
+    trailing_lines_of_context = lines_of_context
+    if len(output) < end_line - start_line + 1:
+        # This handles the case of a short file.
+        num_lines_in_file = int(subprocess.check_output([
+            'wc',
+            '-l',
+            filename,
+        ]).decode('utf-8').split()[0])
+
+        trailing_lines_of_context = lines_of_context - \
+            (end_line - num_lines_in_file)
+
     # -1, because that's where the secret actually is (without it,
-    # it would just be the start of the context block)
-    output[-lines_of_context - 1] = _highlight_secret(
-        output[-lines_of_context - 1],
+    # it would just be the start of the context block).
+    # NOTE: index_of_secret_in_output should *always* be negative.
+    index_of_secret_in_output = -trailing_lines_of_context - 1
+
+    output[index_of_secret_in_output] = _highlight_secret(
+        output[index_of_secret_in_output],
         secret,
         filename,
         plugin_settings,

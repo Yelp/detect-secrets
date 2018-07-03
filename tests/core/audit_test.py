@@ -11,6 +11,7 @@ import pytest
 from detect_secrets.core import audit
 from detect_secrets.core.color import BashColor
 from testing.factories import potential_secret_factory
+from testing.mocks import mock_printer as mock_printer_base
 
 
 class TestAuditBaseline(object):
@@ -441,15 +442,7 @@ class TestGetUserDecision(object):
 
 @pytest.fixture
 def mock_printer():
-    class PrinterShim(object):
-        def __init__(self):
-            self.message = ''
-
-        def add(self, message):
-            self.message += str(message) + '\n'
-
-    shim = PrinterShim()
-    with mock.patch.object(audit, 'print', shim.add):
+    with mock_printer_base(audit) as shim:
         yield shim
 
 

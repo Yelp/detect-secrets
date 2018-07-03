@@ -127,6 +127,26 @@ def mock_file_object(string):
 
 
 @contextmanager
+def mock_printer(obj):
+    """
+    :type obj: module
+    """
+    class PrinterShim(object):
+        def __init__(self):
+            self.clear()
+
+        def add(self, message):
+            self.message += str(message) + '\n'
+
+        def clear(self):
+            self.message = ''
+
+    shim = PrinterShim()
+    with mock.patch.object(obj, 'print', shim.add):
+        yield shim
+
+
+@contextmanager
 def mock_log(namespace):
     class MockLogWrapper(object):
         """This is used to check what is being logged."""
