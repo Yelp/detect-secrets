@@ -10,26 +10,36 @@ class ParserBuilder(object):
 
     def __init__(self):
         self.parser = argparse.ArgumentParser()
-        self.plugins_parser = PluginOptions(self.parser)
 
         self.add_default_arguments()
 
     def add_default_arguments(self):
-        self.plugins_parser.add_arguments()
         self._add_verbosity_argument()\
             ._add_version_argument()
 
+        return self
+
     def add_pre_commit_arguments(self):
-        return self._add_filenames_argument()\
+        self._add_filenames_argument()\
             ._add_set_baseline_argument()
 
+        PluginOptions(self.parser).add_arguments()
+
+        return self
+
     def add_console_use_arguments(self):
-        return self._add_initialize_baseline_argument()\
-            ._add_audit_baseline_argument()
+        subparser = self.parser.add_subparsers(
+            dest='action',
+        )
+
+        for action_parser in [ScanOptions, AuditOptions]:
+            action_parser(subparser).add_arguments()
+
+        return self
 
     def parse_args(self, argv):
         output = self.parser.parse_args(argv)
-        self.plugins_parser.consolidate_args(output)
+        PluginOptions.consolidate_args(output)
 
         return output
 
@@ -64,16 +74,29 @@ class ParserBuilder(object):
         )
         return self
 
+
+class ScanOptions(object):
+
+    def __init__(self, subparser):
+        self.parser = subparser.add_parser(
+            'scan',
+        )
+
+    def add_arguments(self):
+        self._add_initialize_baseline_argument()
+        PluginOptions(self.parser).add_arguments()
+
+        return self
+
     def _add_initialize_baseline_argument(self):
         self.parser.add_argument(
-            '--scan',
+            'path',
             nargs='?',
-            const='.',
+            default='.',
             help=(
                 'Scans the entire codebase and outputs a snapshot of '
                 'currently identified secrets.'
             ),
-            metavar='DIR_TO_SCAN',
         )
 
         # Pairing `--exclude` with `--scan` because it's only used for the initialization.
@@ -90,15 +113,23 @@ class ParserBuilder(object):
             nargs=1,
             metavar='OLD_BASELINE_FILE',
             help='Import settings from previous existing baseline.',
+            dest='import_filename',
         )
 
         return self
 
-    def _add_audit_baseline_argument(self):
+
+class AuditOptions(object):
+
+    def __init__(self, subparser):
+        self.parser = subparser.add_parser(
+            'audit',
+        )
+
+    def add_arguments(self):
         self.parser.add_argument(
-            '--audit',
+            'filename',
             nargs=1,
-            metavar='BASELINE_FILE_TO_AUDIT',
             help=(
                 'Audit a given baseline file to distinguish the difference '
                 'between false and true positives.'
@@ -185,6 +216,8 @@ class PluginOptions(object):
         self._add_custom_limits()
         self._add_opt_out_options()
 
+        return self
+
     @staticmethod
     def consolidate_args(args):
         """There are many argument fields related to configuring plugins.
@@ -197,6 +230,11 @@ class PluginOptions(object):
 
         :param args: output of `argparse.ArgumentParser.parse_args`
         """
+        # Using `--hex-limit` as a canary to identify whether this
+        # consolidation is appropriate.
+        if not hasattr(args, 'hex_limit'):
+            return
+
         active_plugins = {}
 
         for plugin in PluginOptions.all_plugins:

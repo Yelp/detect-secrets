@@ -9,8 +9,9 @@ class TestPluginOptions(object):
 
     @staticmethod
     def parse_args(argument_string=''):
-        # PluginOptions are added by default
-        return ParserBuilder().parse_args(argument_string.split())
+        # PluginOptions are added in pre-commit hook
+        return ParserBuilder().add_pre_commit_arguments()\
+            .parse_args(argument_string.split())
 
     def test_added_by_default(self):
         # This is what happens with unrecognized arguments
