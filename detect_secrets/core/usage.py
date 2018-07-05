@@ -83,7 +83,9 @@ class ScanOptions(object):
         )
 
     def add_arguments(self):
-        self._add_initialize_baseline_argument()
+        self._add_initialize_baseline_argument()\
+            ._add_adhoc_scanning_argument()
+
         PluginOptions(self.parser).add_arguments()
 
         return self
@@ -114,6 +116,19 @@ class ScanOptions(object):
             metavar='OLD_BASELINE_FILE',
             help='Import settings from previous existing baseline.',
             dest='import_filename',
+        )
+
+        return self
+
+    def _add_adhoc_scanning_argument(self):
+        self.parser.add_argument(
+            '--string',
+            nargs='?',
+            const=True,
+            help=(
+                'Scans an individual string, and displays configured '
+                'plugins\' verdict.'
+            ),
         )
 
         return self

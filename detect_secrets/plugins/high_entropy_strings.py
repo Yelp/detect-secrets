@@ -101,6 +101,21 @@ class HighEntropyStringsPlugin(BasePlugin):
             if entropy_value > self.entropy_limit:
                 yield result
 
+    def adhoc_scan(self, string):
+        # Since it's an individual string, it's just bad UX to require quotes
+        # around the expected secret.
+        with self.non_quoted_string_regex():
+            results = self.analyze_string(string, 0, 'does_not_matter')
+
+            # NOTE: Trailing space allows for nicer formatting
+            output = 'False' if not results else 'True '
+            if self.regex.search(string):
+                output += ' ({})'.format(
+                    round(self.calculate_shannon_entropy(string), 3),
+                )
+
+            return output
+
     @contextmanager
     def non_quoted_string_regex(self, strict=True):
         """For certain file formats, strings need not necessarily follow the

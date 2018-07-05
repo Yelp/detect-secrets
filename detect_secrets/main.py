@@ -26,9 +26,21 @@ def main(argv=None):
         log.set_debug_level(args.verbose)
 
     if args.action == 'scan':
+        # Plugins are *always* rescanned with fresh settings, because
+        # we want to get the latest updates.
+        plugins = initialize.from_parser_builder(args.plugins)
+
+        if args.string:
+            line = args.string
+            if isinstance(args.string, bool):
+                line = sys.stdin.read().splitlines()[0]
+
+            _scan_string(line, plugins)
+            return 0
+
         print(
             json.dumps(
-                _perform_scan(args),
+                _perform_scan(args, plugins),
                 indent=2,
                 sort_keys=True,
             ),
@@ -40,12 +52,27 @@ def main(argv=None):
     return 0
 
 
-def _perform_scan(args):
-    old_baseline = _get_existing_baseline(args.import_filename)
+def _scan_string(line, plugins):
+    longest_plugin_name_length = max(
+        map(
+            lambda x: len(x.__class__.__name__),
+            plugins,
+        ),
+    )
 
-    # Plugins are *always* rescanned with fresh settings, because
-    # we want to get the latest updates.
-    plugins = initialize.from_parser_builder(args.plugins)
+    output = [
+        ('{:%d}: {}' % longest_plugin_name_length).format(
+            plugin.__class__.__name__,
+            plugin.adhoc_scan(line),
+        )
+        for plugin in plugins
+    ]
+
+    print('\n'.join(sorted(output)))
+
+
+def _perform_scan(args, plugins):
+    old_baseline = _get_existing_baseline(args.import_filename)
 
     # Favors --exclude argument over existing baseline's regex (if exists)
     if args.exclude:

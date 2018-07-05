@@ -73,6 +73,34 @@ class TestMain(object):
             '.',
         )
 
+    def test_scan_string_basic(self, mock_baseline_initialize):
+        with mock_stdin(
+            '0123456789a',
+        ), mock_printer(
+            main_module,
+        ) as printer_shim:
+            assert main('scan --string'.split()) == 0
+            assert printer_shim.message == textwrap.dedent("""
+                Base64HighEntropyString: False (3.459)
+                HexHighEntropyString   : True  (3.459)
+                PrivateKeyDetector     : False
+            """)[1:]
+
+        mock_baseline_initialize.assert_not_called()
+
+    def test_scan_string_cli_overrides_stdin(self):
+        with mock_stdin(
+            '0123456789a',
+        ), mock_printer(
+            main_module,
+        ) as printer_shim:
+            assert main('scan --string 012345'.split()) == 0
+            assert printer_shim.message == textwrap.dedent("""
+                Base64HighEntropyString: False (2.585)
+                HexHighEntropyString   : False (2.121)
+                PrivateKeyDetector     : False
+            """)[1:]
+
     def test_reads_from_stdin(self, mock_merge_baseline):
         with mock_stdin(json.dumps({'key': 'value'})):
             assert main(['scan']) == 0
