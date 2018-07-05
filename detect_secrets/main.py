@@ -5,7 +5,6 @@ from __future__ import print_function
 import json
 import sys
 
-from detect_secrets import VERSION
 from detect_secrets.core import audit
 from detect_secrets.core import baseline
 from detect_secrets.core.log import log
@@ -25,10 +24,6 @@ def main(argv=None):
     args = parse_args(argv)
     if args.verbose:  # pragma: no cover
         log.set_debug_level(args.verbose)
-
-    if args.version:    # pragma: no cover
-        print(VERSION)
-        return
 
     if args.scan:
         print(

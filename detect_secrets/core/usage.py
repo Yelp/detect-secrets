@@ -3,6 +3,8 @@ from __future__ import absolute_import
 import argparse
 from collections import namedtuple
 
+from detect_secrets import VERSION
+
 
 class ParserBuilder(object):
 
@@ -34,7 +36,8 @@ class ParserBuilder(object):
     def _add_version_argument(self):
         self.parser.add_argument(
             '--version',
-            action='store_true',
+            action='version',
+            version=VERSION,
             help='Display version information.',
         )
         return self
