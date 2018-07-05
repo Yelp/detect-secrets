@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/Yelp/detect-secrets.svg)](https://travis-ci.org/Yelp/detect-secrets.svg?branch=master)
+[![Build Status](https://travis-ci.org/Yelp/detect-secrets.svg?branch=master)](https://travis-ci.org/Yelp/detect-secrets)
 [![PyPI version](https://badge.fury.io/py/detect-secrets.svg)](https://badge.fury.io/py/detect-secrets)
 
 # detect-secrets
