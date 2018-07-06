@@ -12,7 +12,7 @@ class BasePlugin(object):
         if not self.secret_type:
             raise ValueError('Plugins need to declare a secret_type.')
 
-    def analyze(self, file, filename):  # pragma: no cover
+    def analyze(self, file, filename):
         """
         :param file:     The File object itself.
         :param filename: string; filename of File object, used for creating
@@ -29,7 +29,7 @@ class BasePlugin(object):
         return potential_secrets
 
     @abstractmethod
-    def analyze_string(self, string, line_num, filename):   # pragma: no cover
+    def analyze_string(self, string, line_num, filename):
         """
         :param string:    string; the line to analyze
         :param line_num:  integer; line number that is currently being analyzed
@@ -38,17 +38,17 @@ class BasePlugin(object):
 
         NOTE: line_num and filename are used for PotentialSecret creation only.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
-    def secret_generator(self, string):  # pragma: no cover
+    def secret_generator(self, string):
         """Flags secrets in a given string, and yields the raw secret value.
         Used in self.analyze_string for PotentialSecret creation.
 
         :type string: str
         :param string: the secret to scan
         """
-        pass
+        raise NotImplementedError
 
     @property
     def __dict__(self):
