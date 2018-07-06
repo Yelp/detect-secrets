@@ -43,13 +43,9 @@ class TestMain(object):
     Most of the functional test cases should be within their own module tests.
     """
 
-    def test_smoke(self):
-        with mock_stdin():
-            assert main([]) == 0
-
     def test_scan_basic(self, mock_baseline_initialize):
         with mock_stdin():
-            assert main(['--scan']) == 0
+            assert main(['scan']) == 0
 
         mock_baseline_initialize.assert_called_once_with(
             Any(tuple),
@@ -59,7 +55,7 @@ class TestMain(object):
 
     def test_scan_with_rootdir(self, mock_baseline_initialize):
         with mock_stdin():
-            assert main('--scan test_data'.split()) == 0
+            assert main('scan test_data'.split()) == 0
 
         mock_baseline_initialize.assert_called_once_with(
             Any(tuple),
@@ -69,7 +65,7 @@ class TestMain(object):
 
     def test_scan_with_excludes_flag(self, mock_baseline_initialize):
         with mock_stdin():
-            assert main('--scan --exclude some_pattern_here'.split()) == 0
+            assert main('scan --exclude some_pattern_here'.split()) == 0
 
         mock_baseline_initialize.assert_called_once_with(
             Any(tuple),
@@ -79,7 +75,7 @@ class TestMain(object):
 
     def test_reads_from_stdin(self, mock_merge_baseline):
         with mock_stdin(json.dumps({'key': 'value'})):
-            assert main(['--scan']) == 0
+            assert main(['scan']) == 0
 
         mock_merge_baseline.assert_called_once_with(
             {'key': 'value'},
@@ -91,7 +87,7 @@ class TestMain(object):
             json.dumps({'key': 'value'}),
             'detect_secrets.main.open',
         ) as m:
-            assert main('--scan --import old_baseline_file'.split()) == 0
+            assert main('scan --import old_baseline_file'.split()) == 0
             assert m.call_args[0][0] == 'old_baseline_file'
 
         mock_merge_baseline.assert_called_once_with(
@@ -133,14 +129,14 @@ class TestMain(object):
             ),
         ],
     )
-    def test_audit_first_line(self, filename, expected_output):
+    def test_audit_short_file(self, filename, expected_output):
         BashColor.disable_color()
 
         with mock_stdin(), mock_printer(
             # To extract the baseline output
             main_module,
         ) as printer_shim:
-            main(['--scan', filename])
+            main(['scan', filename])
             baseline = printer_shim.message
 
         with mock_stdin(), mock.patch(
@@ -160,7 +156,7 @@ class TestMain(object):
         ), mock_printer(
             audit_module,
         ) as printer_shim:
-            main('--audit will_be_mocked'.split())
+            main('audit will_be_mocked'.split())
 
             assert printer_shim.message == textwrap.dedent("""
                 Secrets Left: 1/1

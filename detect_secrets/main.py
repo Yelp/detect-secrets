@@ -5,7 +5,6 @@ from __future__ import print_function
 import json
 import sys
 
-from detect_secrets import VERSION
 from detect_secrets.core import audit
 from detect_secrets.core import baseline
 from detect_secrets.core.log import log
@@ -26,11 +25,7 @@ def main(argv=None):
     if args.verbose:  # pragma: no cover
         log.set_debug_level(args.verbose)
 
-    if args.version:    # pragma: no cover
-        print(VERSION)
-        return
-
-    if args.scan:
+    if args.action == 'scan':
         print(
             json.dumps(
                 _perform_scan(args),
@@ -39,14 +34,14 @@ def main(argv=None):
             ),
         )
 
-    elif args.audit:
-        audit.audit_baseline(args.audit[0])
+    elif args.action == 'audit':
+        audit.audit_baseline(args.filename[0])
 
     return 0
 
 
 def _perform_scan(args):
-    old_baseline = _get_existing_baseline(args)
+    old_baseline = _get_existing_baseline(args.import_filename)
 
     # Plugins are *always* rescanned with fresh settings, because
     # we want to get the latest updates.
@@ -61,7 +56,7 @@ def _perform_scan(args):
     new_baseline = baseline.initialize(
         plugins,
         args.exclude,
-        args.scan,
+        args.path,
     ).format_for_baseline_output()
 
     if old_baseline:
@@ -73,10 +68,10 @@ def _perform_scan(args):
     return new_baseline
 
 
-def _get_existing_baseline(args):
+def _get_existing_baseline(import_filename):
     # Favors --import argument over stdin.
-    if getattr(args, 'import'):
-        with open(getattr(args, 'import')[0]) as f:
+    if import_filename:
+        with open(import_filename[0]) as f:
             return json.loads(f.read())
 
     if not sys.stdin.isatty():
