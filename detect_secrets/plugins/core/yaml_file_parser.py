@@ -113,6 +113,17 @@ class YamlFileParser(object):
         )
 
     def get_ignored_lines(self):
+        """
+        Return a set of integers that refer to line numbers that were
+        whitelisted by the user and should be ignored.
+
+        We need to parse the file separately from PyYAML parsing because
+        the parser drops the comments (at least up to version 3.13):
+        https://github.com/yaml/pyyaml/blob/a2d481b8dbd2b352cb001f07091ccf669227290f/lib3/yaml/scanner.py#L749
+
+        :return: set
+        """
+
         ignored_lines = set()
 
         for line_number, line in enumerate(self.content.split('\n'), 1):

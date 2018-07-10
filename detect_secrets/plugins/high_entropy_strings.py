@@ -160,15 +160,16 @@ class HighEntropyStringsPlugin(BasePlugin):
                 item = to_search.pop()
 
                 try:
+                    if '__line__' in item and not item['__line__'] in ignored_lines:
+                        potential_secrets.update(
+                            self.analyze_string(
+                                item['__value__'],
+                                item['__line__'],
+                                filename,
+                            ),
+                        )
+
                     if '__line__' in item:
-                        if not item['__line__'] in ignored_lines:
-                            potential_secrets.update(
-                                self.analyze_string(
-                                    item['__value__'],
-                                    item['__line__'],
-                                    filename,
-                                ),
-                            )
                         continue
 
                     for key in item:
