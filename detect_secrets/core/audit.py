@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import json
+import os
 import subprocess
 import sys
 import textwrap
@@ -31,6 +32,7 @@ def audit_baseline(baseline_filename):
 
         if 'is_secret' not in secret:
             current_secret_index += 1
+
             try:
                 _print_context(
                     filename,
@@ -164,7 +166,7 @@ def _secret_generator(baseline):
                 list(
                     filter(
                         lambda secret: 'is_secret' not in secret,
-                        baseline['results'][filename],
+                        baseline['results'][filename] if os.path.exists(filename) else [],
                     ),
                 ),
             ),
@@ -173,6 +175,9 @@ def _secret_generator(baseline):
     )
 
     for filename, secrets in baseline['results'].items():
+        if not os.path.exists(filename):
+            print('{} does not exist.'.format(filename))
+            continue
         for secret in secrets:
             yield filename, secret, num_secrets_to_parse
 

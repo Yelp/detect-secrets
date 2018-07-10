@@ -24,7 +24,12 @@ class TestAuditBaseline(object):
             assert mock_printer.message == ''
 
     def test_quit_before_making_decision(self, mock_printer):
-        with self.mock_env(['q']) as m:
+        with mock.patch(
+            'detect_secrets.core.audit.os.path.exists',
+            return_value=True,
+        ), self.mock_env(
+            ['q'],
+        ) as m:
             audit.audit_baseline('will_be_mocked')
 
             assert m.call_args[0][1] == self.baseline
@@ -40,7 +45,12 @@ class TestAuditBaseline(object):
         modified_baseline['results']['filenameA'][1]['is_secret'] = False
         modified_baseline['results']['filenameB'][0]['is_secret'] = False
 
-        with self.mock_env(baseline=modified_baseline):
+        with mock.patch(
+            'detect_secrets.core.audit.os.path.exists',
+            return_value=True,
+        ), self.mock_env(
+            baseline=modified_baseline,
+        ):
             audit.audit_baseline('will_be_mocked')
 
         assert mock_printer.message == 'Nothing to audit!\n'
@@ -101,7 +111,13 @@ class TestAuditBaseline(object):
 
     @contextmanager
     def run_logic(self, inputs, modified_baseline=None, input_baseline=None):
-        with self.mock_env(inputs, baseline=input_baseline) as m:
+        with mock.patch(
+            'detect_secrets.core.audit.os.path.exists',
+            return_value=True,
+        ), self.mock_env(
+            inputs,
+            baseline=input_baseline,
+        ) as m:
             audit.audit_baseline('will_be_mocked')
 
             if not modified_baseline:
