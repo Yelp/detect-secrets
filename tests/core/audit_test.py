@@ -24,12 +24,7 @@ class TestAuditBaseline(object):
             assert mock_printer.message == ''
 
     def test_quit_before_making_decision(self, mock_printer):
-        with mock.patch(
-            'detect_secrets.core.audit.os.path.exists',
-            return_value=True,
-        ), self.mock_env(
-            ['q'],
-        ) as m:
+        with self.mock_env(['q']) as m:
             audit.audit_baseline('will_be_mocked')
 
             assert m.call_args[0][1] == self.baseline
@@ -45,12 +40,7 @@ class TestAuditBaseline(object):
         modified_baseline['results']['filenameA'][1]['is_secret'] = False
         modified_baseline['results']['filenameB'][0]['is_secret'] = False
 
-        with mock.patch(
-            'detect_secrets.core.audit.os.path.exists',
-            return_value=True,
-        ), self.mock_env(
-            baseline=modified_baseline,
-        ):
+        with self.mock_env(baseline=modified_baseline):
             audit.audit_baseline('will_be_mocked')
 
         assert mock_printer.message == 'Nothing to audit!\n'
@@ -111,10 +101,7 @@ class TestAuditBaseline(object):
 
     @contextmanager
     def run_logic(self, inputs, modified_baseline=None, input_baseline=None):
-        with mock.patch(
-            'detect_secrets.core.audit.os.path.exists',
-            return_value=True,
-        ), self.mock_env(
+        with self.mock_env(
             inputs,
             baseline=input_baseline,
         ) as m:
@@ -139,7 +126,7 @@ class TestAuditBaseline(object):
             '_get_baseline_from_file',
             return_value=baseline,
         ), mock.patch.object(
-            # We mock this, because we don't really care about clearing
+            # We mock this because we don't really care about clearing
             # screens for test cases.
             audit,
             '_clear_screen',
@@ -150,7 +137,11 @@ class TestAuditBaseline(object):
         ), mock_user_input(
             user_inputs,
         ), mock.patch.object(
-            # We mock this, so we don't need to do any file I/O.
+            # We mock this so we don't modify the baseline.
+            audit,
+            '_clean_baseline_of_nonexistent_files',
+        ), mock.patch.object(
+            # We mock this so we don't need to do any file I/O.
             audit,
             '_save_baseline_to_file',
         ) as m:

@@ -20,10 +20,21 @@ class SecretNotFoundOnSpecifiedLineError(Exception):
     pass
 
 
+def _clean_baseline_of_nonexistent_files(baseline):
+    baseline_wasnt_modified = True
+    for filename in baseline['results'].copy():
+        if not os.path.exists(filename):
+            del baseline['results'][filename]
+            baseline_wasnt_modified = False
+    return baseline_wasnt_modified
+
+
 def audit_baseline(baseline_filename):
     original_baseline = _get_baseline_from_file(baseline_filename)
     if not original_baseline:
         return
+
+    baseline_wasnt_modified = _clean_baseline_of_nonexistent_files(original_baseline)
 
     current_secret_index = 0
     results = defaultdict(list)
@@ -56,7 +67,7 @@ def audit_baseline(baseline_filename):
         _handle_user_decision(decision, secret)
         results[filename].append(secret)
 
-    if current_secret_index == 0:
+    if current_secret_index == 0 and baseline_wasnt_modified:
         print('Nothing to audit!')
         return
 
@@ -166,7 +177,7 @@ def _secret_generator(baseline):
                 list(
                     filter(
                         lambda secret: 'is_secret' not in secret,
-                        baseline['results'][filename] if os.path.exists(filename) else [],
+                        baseline['results'][filename],
                     ),
                 ),
             ),
@@ -175,9 +186,6 @@ def _secret_generator(baseline):
     )
 
     for filename, secrets in baseline['results'].items():
-        if not os.path.exists(filename):
-            print('{} does not exist.'.format(filename))
-            continue
         for secret in secrets:
             yield filename, secret, num_secrets_to_parse
 
