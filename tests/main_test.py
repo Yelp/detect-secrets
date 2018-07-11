@@ -11,7 +11,6 @@ from detect_secrets.core.color import BashColor
 from detect_secrets.main import main
 from testing.factories import secrets_collection_factory
 from testing.mocks import Any
-from testing.mocks import mock_open
 from testing.mocks import mock_printer
 
 
@@ -83,17 +82,52 @@ class TestMain(object):
         )
 
     def test_reads_old_baseline_from_file(self, mock_merge_baseline):
-        with mock_stdin(), mock_open(
-            json.dumps({'key': 'value'}),
-            'detect_secrets.main.open',
-        ) as m:
-            assert main('scan --import old_baseline_file'.split()) == 0
-            assert m.call_args[0][0] == 'old_baseline_file'
+        with mock_stdin(), mock.patch(
+            'detect_secrets.main._read_from_file',
+            return_value={'key': 'value'},
+        ) as m_read, mock.patch(
+            'detect_secrets.main._write_to_file',
+        ) as m_write:
+            assert main('scan --update old_baseline_file'.split()) == 0
+            assert m_read.call_args[0][0] == 'old_baseline_file'
+            assert m_write.call_args[0] == ('old_baseline_file', Any(str))
 
         mock_merge_baseline.assert_called_once_with(
             {'key': 'value'},
             Any(dict),
         )
+
+    @pytest.mark.parametrize(
+        'exclude_param, expected_regex',
+        [
+            (
+                '',
+                '^old_baseline_file$',
+            ),
+            (
+                '--exclude "secrets/.*"',
+                'secrets/.*|^old_baseline_file$',
+            ),
+        ],
+    )
+    def test_old_baseline_ignored_with_update_flag(
+        self,
+        mock_baseline_initialize,
+        exclude_param,
+        expected_regex,
+    ):
+        with mock_stdin(), mock.patch(
+            'detect_secrets.main._read_from_file',
+            return_value={},
+        ), mock.patch(
+            # We don't want to be creating a file during test
+            'detect_secrets.main._write_to_file',
+        ):
+            assert main(
+                'scan --update old_baseline_file {}'.format(
+                    exclude_param,
+                ).split(),
+            ) == 0
 
     @pytest.mark.parametrize(
         'filename, expected_output',

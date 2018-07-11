@@ -107,12 +107,12 @@ class ScanOptions(object):
             help='Pass in regex to specify ignored paths during initialization scan.',
         )
 
-        # Pairing `--import` with `--scan` because it's only used for initialization.
+        # Pairing `--update` with `--scan` because it's only used for initialization.
         self.parser.add_argument(
-            '--import',
+            '--update',
             nargs=1,
             metavar='OLD_BASELINE_FILE',
-            help='Import settings from previous existing baseline.',
+            help='Update existing baseline by importing settings from it.',
             dest='import_filename',
         )
 

@@ -26,13 +26,16 @@ def main(argv=None):
         log.set_debug_level(args.verbose)
 
     if args.action == 'scan':
-        print(
-            json.dumps(
-                _perform_scan(args),
-                indent=2,
-                sort_keys=True,
-            ),
+        output = json.dumps(
+            _perform_scan(args),
+            indent=2,
+            sort_keys=True,
         )
+
+        if args.import_filename:
+            _write_to_file(args.import_filename[0], output)
+        else:
+            print(output)
 
     elif args.action == 'audit':
         audit.audit_baseline(args.filename[0])
@@ -53,6 +56,11 @@ def _perform_scan(args):
     elif old_baseline and old_baseline.get('exclude_regex'):
         args.exclude = old_baseline['exclude_regex']
 
+    # If we have knowledge of an existing baseline file, we should use
+    # that knowledge and *not* scan that file.
+    if args.import_filename and args.exclude:
+        args.exclude += r'|^{}$'.format(args.import_filename[0])
+
     new_baseline = baseline.initialize(
         plugins,
         args.exclude,
@@ -71,11 +79,21 @@ def _perform_scan(args):
 def _get_existing_baseline(import_filename):
     # Favors --import argument over stdin.
     if import_filename:
-        with open(import_filename[0]) as f:
-            return json.loads(f.read())
-
+        return _read_from_file(import_filename[0])
     if not sys.stdin.isatty():
         return json.loads(sys.stdin.read())
+
+
+def _read_from_file(filename):
+    """Used for mocking."""
+    with open(filename[0]) as f:
+        return json.loads(f.read())
+
+
+def _write_to_file(filename, content):
+    """Used for mocking."""
+    with open(filename, 'w') as f:
+        f.write(content)
 
 
 if __name__ == '__main__':
