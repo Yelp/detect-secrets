@@ -57,6 +57,7 @@ def _perform_scan(args):
         plugins,
         args.exclude,
         args.path,
+        args.all_files,
     ).format_for_baseline_output()
 
     if old_baseline:

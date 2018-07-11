@@ -27,11 +27,17 @@ class TestInitializeBaseline(object):
             HexHighEntropyString(3),
         )
 
-    def get_results(self, rootdir='./test_data/files', exclude_regex=None):
+    def get_results(
+        self,
+        rootdir='./test_data/files',
+        exclude_regex=None,
+        scan_all_files=False,
+    ):
         return baseline.initialize(
             self.plugins,
             rootdir=rootdir,
             exclude_regex=exclude_regex,
+            scan_all_files=scan_all_files,
         ).json()
 
     @pytest.mark.parametrize(
@@ -89,6 +95,10 @@ class TestInitializeBaseline(object):
             results = self.get_results('will_be_mocked')
 
         assert len(results['will_be_mocked']) == 1
+
+    def test_scan_all_files(self):
+        results = self.get_results(rootdir='test_data/files', scan_all_files=True)
+        assert len(results.keys()) == 2
 
 
 class TestGetSecretsNotInBaseline(object):
