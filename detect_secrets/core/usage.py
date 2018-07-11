@@ -112,7 +112,7 @@ class ScanOptions(object):
             '--update',
             nargs=1,
             metavar='OLD_BASELINE_FILE',
-            help='Update existing baseline by import settings from it.',
+            help='Update existing baseline by importing settings from it.',
             dest='import_filename',
         )
 
