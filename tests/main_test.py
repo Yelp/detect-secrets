@@ -50,6 +50,7 @@ class TestMain(object):
             Any(tuple),
             None,
             '.',
+            False,
         )
 
     def test_scan_with_rootdir(self, mock_baseline_initialize):
@@ -60,6 +61,7 @@ class TestMain(object):
             Any(tuple),
             None,
             'test_data',
+            False,
         )
 
     def test_scan_with_excludes_flag(self, mock_baseline_initialize):
@@ -70,6 +72,18 @@ class TestMain(object):
             Any(tuple),
             'some_pattern_here',
             '.',
+            False,
+        )
+
+    def test_scan_with_all_files_flag(self, mock_baseline_initialize):
+        with mock_stdin():
+            assert main('scan --all-files'.split()) == 0
+
+        mock_baseline_initialize.assert_called_once_with(
+            Any(tuple),
+            None,
+            '.',
+            True,
         )
 
     def test_reads_from_stdin(self, mock_merge_baseline):

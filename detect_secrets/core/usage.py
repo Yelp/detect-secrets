@@ -116,6 +116,12 @@ class ScanOptions(object):
             dest='import_filename',
         )
 
+        self.parser.add_argument(
+            '--all-files',
+            action='store_true',
+            help='Scan all files recursively (as compared to only scanning git tracked files).',
+        )
+
         return self
 
 

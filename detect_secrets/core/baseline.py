@@ -7,7 +7,7 @@ import subprocess
 from detect_secrets.core.secrets_collection import SecretsCollection
 
 
-def initialize(plugins, exclude_regex=None, rootdir='.'):
+def initialize(plugins, exclude_regex=None, rootdir='.', scan_all_files=False):
     """Scans the entire codebase for high entropy strings, and returns a
     SecretsCollection object.
 
@@ -24,6 +24,8 @@ def initialize(plugins, exclude_regex=None, rootdir='.'):
     if os.path.isfile(rootdir):
         # This option allows for much easier adhoc usage.
         git_files = [rootdir]
+    elif scan_all_files:
+        git_files = _get_files_recursively(rootdir)
     else:
         git_files = _get_git_tracked_files(rootdir)
 
@@ -255,3 +257,15 @@ def _get_git_tracked_files(rootdir='.'):
         return set(git_files.decode('utf-8').split())
     except subprocess.CalledProcessError:
         return None
+
+
+def _get_files_recursively(rootdir):
+    """Sometimes, we want to use this tool with non-git repositories.
+    This function allows us to do so.
+    """
+    output = []
+    for root, dirs, files in os.walk(rootdir):
+        for filename in files:
+            output.append(os.path.join(root, filename))
+
+    return output
