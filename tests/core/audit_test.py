@@ -101,7 +101,10 @@ class TestAuditBaseline(object):
 
     @contextmanager
     def run_logic(self, inputs, modified_baseline=None, input_baseline=None):
-        with self.mock_env(inputs, baseline=input_baseline) as m:
+        with self.mock_env(
+            inputs,
+            baseline=input_baseline,
+        ) as m:
             audit.audit_baseline('will_be_mocked')
 
             if not modified_baseline:
@@ -123,7 +126,7 @@ class TestAuditBaseline(object):
             '_get_baseline_from_file',
             return_value=baseline,
         ), mock.patch.object(
-            # We mock this, because we don't really care about clearing
+            # We mock this because we don't really care about clearing
             # screens for test cases.
             audit,
             '_clear_screen',
@@ -134,7 +137,12 @@ class TestAuditBaseline(object):
         ), mock_user_input(
             user_inputs,
         ), mock.patch.object(
-            # We mock this, so we don't need to do any file I/O.
+            # We mock this so we don't modify the baseline.
+            audit,
+            '_remove_nonexistent_files_from_baseline',
+            return_value=False,
+        ), mock.patch.object(
+            # We mock this so we don't need to do any file I/O.
             audit,
             '_save_baseline_to_file',
         ) as m:
