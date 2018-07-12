@@ -139,7 +139,8 @@ class TestAuditBaseline(object):
         ), mock.patch.object(
             # We mock this so we don't modify the baseline.
             audit,
-            '_clean_baseline_of_nonexistent_files',
+            '_remove_nonexistent_files_from_baseline',
+            return_value=False,
         ), mock.patch.object(
             # We mock this so we don't need to do any file I/O.
             audit,

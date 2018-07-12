@@ -20,21 +20,12 @@ class SecretNotFoundOnSpecifiedLineError(Exception):
     pass
 
 
-def _clean_baseline_of_nonexistent_files(baseline):
-    baseline_wasnt_modified = True
-    for filename in baseline['results'].copy():
-        if not os.path.exists(filename):
-            del baseline['results'][filename]
-            baseline_wasnt_modified = False
-    return baseline_wasnt_modified
-
-
 def audit_baseline(baseline_filename):
     original_baseline = _get_baseline_from_file(baseline_filename)
     if not original_baseline:
         return
 
-    baseline_wasnt_modified = _clean_baseline_of_nonexistent_files(original_baseline)
+    files_removed = _remove_nonexistent_files_from_baseline(original_baseline)
 
     current_secret_index = 0
     results = defaultdict(list)
@@ -67,7 +58,7 @@ def audit_baseline(baseline_filename):
         _handle_user_decision(decision, secret)
         results[filename].append(secret)
 
-    if current_secret_index == 0 and baseline_wasnt_modified:
+    if current_secret_index == 0 and not files_removed:
         print('Nothing to audit!')
         return
 
@@ -77,6 +68,45 @@ def audit_baseline(baseline_filename):
         dict(results),
     )
     _save_baseline_to_file(baseline_filename, original_baseline)
+
+
+def _get_baseline_from_file(filename):  # pragma: no cover
+    try:
+        with open(filename) as f:
+            return json.loads(f.read())
+    except (IOError, json.decoder.JSONDecodeError):
+        print('Not a valid baseline file!', file=sys.stderr)
+        return
+
+
+def _remove_nonexistent_files_from_baseline(baseline):
+    files_removed = False
+    for filename in baseline['results'].copy():
+        if not os.path.exists(filename):
+            del baseline['results'][filename]
+            files_removed = True
+    return files_removed
+
+
+def _secret_generator(baseline):
+    """Generates secrets to audit, from the baseline"""
+    num_secrets_to_parse = sum(
+        map(
+            lambda filename: len(
+                list(
+                    filter(
+                        lambda secret: 'is_secret' not in secret,
+                        baseline['results'][filename],
+                    ),
+                ),
+            ),
+            baseline['results'],
+        ),
+    )
+
+    for filename, secrets in baseline['results'].items():
+        for secret in secrets:
+            yield filename, secret, num_secrets_to_parse
 
 
 def _clear_screen():    # pragma: no cover
@@ -144,20 +174,38 @@ def _print_context(filename, secret, count, total, plugin_settings):   # pragma:
         raise error_obj
 
 
+def _get_user_decision(prompt_secret_decision=True):
+    """
+    :type prompt_secret_decision: bool
+    :param prompt_secret_decision: if False, won't ask to label secret.
+    """
+    allowable_user_input = ['s', 'q']
+    if prompt_secret_decision:
+        allowable_user_input.extend(['y', 'n'])
+
+    user_input = None
+    while user_input not in allowable_user_input:
+        if user_input:
+            print('Invalid input.')
+
+        if 'y' in allowable_user_input:
+            user_input_string = 'Is this a valid secret? (y)es, (n)o, '
+        else:
+            user_input_string = 'What would you like to do? '
+        user_input_string += '(s)kip, (q)uit: '
+
+        user_input = input(user_input_string)
+        if user_input:
+            user_input = user_input[0].lower()
+
+    return user_input
+
+
 def _handle_user_decision(decision, secret):
     if decision == 'y':
         secret['is_secret'] = True
     elif decision == 'n':
         secret['is_secret'] = False
-
-
-def _get_baseline_from_file(filename):  # pragma: no cover
-    try:
-        with open(filename) as f:
-            return json.loads(f.read())
-    except (IOError, json.decoder.JSONDecodeError):
-        print('Not a valid baseline file!', file=sys.stderr)
-        return
 
 
 def _save_baseline_to_file(filename, data):  # pragma: no cover
@@ -167,27 +215,6 @@ def _save_baseline_to_file(filename, data):  # pragma: no cover
             indent=2,
             sort_keys=True,
         ))
-
-
-def _secret_generator(baseline):
-    """Generates secrets to audit, from the baseline"""
-    num_secrets_to_parse = sum(
-        map(
-            lambda filename: len(
-                list(
-                    filter(
-                        lambda secret: 'is_secret' not in secret,
-                        baseline['results'][filename],
-                    ),
-                ),
-            ),
-            baseline['results'],
-        ),
-    )
-
-    for filename, secrets in baseline['results'].items():
-        for secret in secrets:
-            yield filename, secret, num_secrets_to_parse
 
 
 def _get_secret_with_context(
@@ -330,30 +357,3 @@ def _raw_secret_generator(plugin, secret_line):
         with plugin.non_quoted_string_regex(strict=False):
             for raw_secret in plugin.secret_generator(secret_line):
                 yield raw_secret
-
-
-def _get_user_decision(prompt_secret_decision=True):
-    """
-    :type prompt_secret_decision: bool
-    :param prompt_secret_decision: if False, won't ask to label secret.
-    """
-    allowable_user_input = ['s', 'q']
-    if prompt_secret_decision:
-        allowable_user_input.extend(['y', 'n'])
-
-    user_input = None
-    while user_input not in allowable_user_input:
-        if user_input:
-            print('Invalid input.')
-
-        if 'y' in allowable_user_input:
-            user_input_string = 'Is this a valid secret? (y)es, (n)o, '
-        else:
-            user_input_string = 'What would you like to do? '
-        user_input_string += '(s)kip, (q)uit: '
-
-        user_input = input(user_input_string)
-        if user_input:
-            user_input = user_input[0].lower()
-
-    return user_input
