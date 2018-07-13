@@ -7,3 +7,5 @@ list_of_keys:
     - 123
     - 456
     - 234567890a
+
+test_agent::whitelisted_api_key: 'ToCynx5Se4e2PtoZxEhW7lUJcOX15c54'  # pragma: whitelist secret
