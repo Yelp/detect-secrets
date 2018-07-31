@@ -200,6 +200,7 @@ def _create_baseline():
             'test_data/files/file_with_secrets.py': [
                 {
                     'type': 'Base64 High Entropy String',
+                    'is_secret': True,
                     'line_number': 3,
                     'hashed_secret': PotentialSecret.hash_secret(base64_secret),
                 },

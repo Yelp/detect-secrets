@@ -14,7 +14,14 @@ class PotentialSecret(object):
     without actually knowing what the secret is.
     """
 
-    def __init__(self, typ, filename, lineno, secret):
+    def __init__(
+        self,
+        typ,
+        filename,
+        lineno,
+        secret,
+        is_secret=None,
+    ):
         """
         :type typ: str
         :param typ: human-readable secret type, defined by the plugin
@@ -30,11 +37,15 @@ class PotentialSecret(object):
 
         :type secret: str
         :param secret: the actual secret identified
+
+        :type is_secret: bool|None
+        :param is_secret: whether or not the secret is a true- or false- positive
         """
         self.type = typ
         self.filename = filename
         self.lineno = lineno
         self.secret_hash = self.hash_secret(secret)
+        self.is_secret = is_secret
 
         # If two PotentialSecrets have the same values for these fields,
         # they are considered equal. Note that line numbers aren't included
@@ -59,6 +70,9 @@ class PotentialSecret(object):
             'line_number': self.lineno,
             'hashed_secret': self.secret_hash,
         }
+
+        if self.is_secret is not None:
+            attributes['is_secret'] = self.is_secret
 
         return attributes
 
