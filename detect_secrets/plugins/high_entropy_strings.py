@@ -17,6 +17,18 @@ from detect_secrets.plugins.core.ini_file_parser import IniFileParser
 from detect_secrets.plugins.core.yaml_file_parser import YamlFileParser
 
 
+IGNORED_SEQUENTIAL_STRINGS = (
+    (
+        string.ascii_uppercase +
+        string.ascii_uppercase +
+        string.digits +
+        string.ascii_uppercase +
+        string.ascii_uppercase +
+        '+/'
+    ),
+    string.hexdigits.upper() + string.hexdigits.upper(),
+    string.ascii_uppercase + '=/',
+)
 YAML_EXTENSIONS = (
     '.yaml',
     '.yml',
@@ -75,11 +87,15 @@ class HighEntropyStringsPlugin(BasePlugin):
         """Searches string for custom pattern, and captures all high entropy strings that
         match self.regex, with a limit defined as self.entropy_limit.
         """
-
         output = {}
 
         if WHITELIST_REGEX.search(string):
             return output
+
+        uppercased_string = string.upper()
+        for sequential_string in IGNORED_SEQUENTIAL_STRINGS:
+            if uppercased_string in sequential_string:
+                return output
 
         for result in self.secret_generator(string):
             secret = PotentialSecret(self.secret_type, filename, line_num, result)

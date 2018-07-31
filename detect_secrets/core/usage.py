@@ -282,20 +282,20 @@ class PluginOptions(object):
     def _add_custom_limits(self):
         high_entropy_help_text = (
             'Sets the entropy limit for high entropy strings. '
-            'Value must be between 0.0 and 8.0.'
+            'Value must be between 0.0 and 8.0, '
         )
 
         self.parser.add_argument(
             '--base64-limit',
             type=self._argparse_minmax_type,
             nargs='?',
-            help=high_entropy_help_text,
+            help=high_entropy_help_text + 'defaults to 4.5.',
         )
         self.parser.add_argument(
             '--hex-limit',
             type=self._argparse_minmax_type,
             nargs='?',
-            help=high_entropy_help_text,
+            help=high_entropy_help_text + 'defaults to 3.0.',
         )
         return self
 

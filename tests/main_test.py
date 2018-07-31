@@ -172,7 +172,7 @@ class TestMain(object):
                     2:secrets_for_no_one_to_find =
                     3:    hunter2
                     4:    password123
-                    5:    0123456789a
+                    5:    BEEF0123456789a
                 """)[1:-1],
             ),
         ],
