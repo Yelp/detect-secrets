@@ -311,7 +311,7 @@ class SecretsCollection(object):
 
             for secret_hash in self.data[filename]:
                 tmp = self.data[filename][secret_hash].json()
-                del tmp['filename']     # not necessary
+                del tmp['filename']  # not necessary
 
                 output[filename].append(tmp)
 
