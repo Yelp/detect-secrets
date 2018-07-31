@@ -11,7 +11,7 @@
 - Changed `--audit` and `--scan` to `audit` and `scan` ([#51])
 - Changed `scan --import <baseline>` to `scan --update <baseline>` ([#58])
 
-### Fixed
+#### Fixed
 
 - Fixed a bug where the pre-commit code would remove the `is_secret` attribute from audited baselines ([#65])
 - Fixed an `audit` bug where we would crash if a file in the baseline did not exist ([#56])
