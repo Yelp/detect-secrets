@@ -13,8 +13,10 @@
 
 #### Fixed
 
-- Fixed a bug where the pre-commit code would remove the `is_secret` attribute from audited baselines ([#65])
-- Fixed an `audit` bug where we would crash if a file in the baseline did not exist ([#56])
+- Fixed a bug where the pre-commit code would remove the `is_secret` attribute from
+  audited baselines ([#65])
+- Fixed an `audit` bug where we would crash if a file in the baseline did not exist
+  ([#56])
 - Improved the `audit` functionality to handle short files better ([#48])
 
 
@@ -33,9 +35,12 @@
 
 #### Fixed
 
-- [Fixed "leapfrog" edge case](https://github.com/Yelp/detect-secrets/pull/47)
-  for audit functionality.
-- Better numbering system with interactive audit.
+- Fixed "leapfrog" edge case for audit functionality ([#47])
+- Better numbering system with interactive audit
+
+
+[#47]: https://github.com/Yelp/detect-secrets/pull/47
+
 
 ### 0.9.0
 ##### June 27, 2018
@@ -43,16 +48,16 @@
 #### Added
 
 - Better heuristic for `HexHighEntropyStrings`, reducing the false positive rates
-  for large numbers identified in code.
+  for large numbers identified in code
 - Added functionality to audit baseline, to distinguish difference between
-  false and true positives in the baseline file.
-- Added ability to migrate baselines from an older version to a newer version.
+  false and true positives in the baseline file
+- Added ability to migrate baselines from an older version to a newer version
 
 #### Changed
 
 - Got rid of `SensitivityValues` as a means to store plugin configs
 - Simplified logging by removing `CustomLog`
-- Differentiate between Base64HighEntropyStrings and HexHighEntropyStrings through
+- Differentiate between `Base64HighEntropyStrings` and `HexHighEntropyStrings` through
   `secret_type`.
 - Upgraded `PrivateKeyPlugin`: more search parameters, more lines searched,
   and secret hash created using payload (rather than the entire line content)
@@ -62,8 +67,11 @@
 - Baseline always outputs in sorted order now
 - Escape exclude regex statements before compilation
 - Fixed case where details of plugins used were not included in the baseline,
-  when the pre-commit hook updated it.
-  [#32](https://github.com/Yelp/detect-secrets/issues/32)
+  when the pre-commit hook updated it ([#32])
+
+
+[#32]: https://github.com/Yelp/detect-secrets/pull/32
+
 
 ### Prior to 0.9.0
 
