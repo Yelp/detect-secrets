@@ -43,7 +43,9 @@ def _set_debug_level(self, debug_level):
         2: logging.DEBUG,
     }
 
-    self.setLevel(mapping[debug_level])
+    self.setLevel(
+        mapping[min(debug_level, 2)],
+    )
 
 
 log = get_logger()

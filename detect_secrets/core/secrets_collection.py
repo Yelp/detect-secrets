@@ -89,7 +89,8 @@ class SecretsCollection(object):
                     item['type'],
                     filename,
                     item['line_number'],
-                    'will be replaced',
+                    secret='will be replaced',
+                    is_secret=item.get('is_secret'),
                 )
                 secret.secret_hash = item['hashed_secret']
                 result.data[filename][secret] = secret
@@ -111,7 +112,7 @@ class SecretsCollection(object):
 
         :type diff: str
         :param diff: diff string.
-                     Eg. The output of `git diff <fileA> <fileB>`
+                     e.g. The output of `git diff <fileA> <fileB>`
 
         :type baseline_filename: str
         :param baseline_filename: if there are any baseline secrets, then the baseline
@@ -311,7 +312,7 @@ class SecretsCollection(object):
 
             for secret_hash in self.data[filename]:
                 tmp = self.data[filename][secret_hash].json()
-                del tmp['filename']     # not necessary
+                del tmp['filename']  # not necessary
 
                 output[filename].append(tmp)
 
