@@ -19,7 +19,7 @@ class PotentialSecret(object):
         :type typ: str
         :param typ: human-readable secret type, defined by the plugin
                     that generated this PotentialSecret.
-                    Eg. "High Entropy String"
+                    e.g. "High Entropy String"
 
         :type filename: str
         :param filename: name of file that this secret was found
@@ -80,9 +80,7 @@ class PotentialSecret(object):
         return (
             "Secret Type: %s\n"
             "Location:    %s:%d\n"
-            # "Hash:        %s\n"
         ) % (
             self.type,
             self.filename, self.lineno,
-            # self.secret_hash
         )

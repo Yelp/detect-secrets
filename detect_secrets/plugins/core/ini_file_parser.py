@@ -37,7 +37,7 @@ class IniFileParser(object):
 
         :type values: str
         :param values: values for key, in config file. This is plural,
-            because you can have multiple values per key. Eg.
+            because you can have multiple values per key. e.g.
 
             >>> key =
             ...     value1

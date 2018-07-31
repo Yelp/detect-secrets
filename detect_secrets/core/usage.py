@@ -151,7 +151,7 @@ class PluginDescriptor(namedtuple(
         # Classname of plugin; used for initialization
         'classname',
 
-        # Flag to disable plugin. Eg. `--no-hex-string-scan`
+        # Flag to disable plugin. e.g. `--no-hex-string-scan`
         'disable_flag_text',
 
         # Description for disable flag.

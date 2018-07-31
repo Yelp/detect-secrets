@@ -111,7 +111,7 @@ class SecretsCollection(object):
 
         :type diff: str
         :param diff: diff string.
-                     Eg. The output of `git diff <fileA> <fileB>`
+                     e.g. The output of `git diff <fileA> <fileB>`
 
         :type baseline_filename: str
         :param baseline_filename: if there are any baseline secrets, then the baseline
