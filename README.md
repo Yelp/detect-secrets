@@ -28,6 +28,9 @@ regex statements, to identify whether any *new* secret has been committed. This
 way, it avoids the overhead of digging through all git history, as well as the
 need to scan the entire repository every time.
 
+For a look at recent changes, please see the
+[changelog](https://github.com/Yelp/detect-secrets/blob/master/CHANGELOG.md).
+
 ## Example Usage
 
 ### Setting Up a Baseline
