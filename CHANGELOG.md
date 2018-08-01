@@ -27,8 +27,8 @@ If you love detect-secrets, please star our project on GitHub to show your suppo
 
 #### :tada: New Features
 
-- Yaml inline whitelisting support ([#50])
 - Scan `--all-files` option ([#57])
+- Yaml inline whitelisting support ([#50])
 
 #### :boom: Breaking Changes
 
@@ -124,7 +124,7 @@ If you love detect-secrets, please star our project on GitHub to show your suppo
 
 #### :bug: Bugfixes
 
-- Bug fix for PrivateKeyPlugin analyze results' representation ([#15])
+- Fixed PrivateKeyPlugin analyze results' representation ([#15])
 
 [#13]: https://github.com/Yelp/detect-secrets/pull/13
 [#15]: https://github.com/Yelp/detect-secrets/pull/15
