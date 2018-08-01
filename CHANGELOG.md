@@ -78,7 +78,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 - Added ability to migrate baselines from an older version to a newer version
 - Added functionality to audit baseline, to distinguish difference between
-  false and true positives in the baseline file
+  false and true positives in the baseline file ([#44])
 - Upgraded `PrivateKeyPlugin`: more search parameters, more lines searched,
   and secret hash created using payload (rather than the entire line content)
 
@@ -95,7 +95,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 #### :bug: Bugfixes
 
-- Baseline always outputs in sorted order now ([#25])
+- Baseline always outputs in sorted order now, to prevent unnecessary diffs ([#25])
 - Escape exclude regex statements before compilation ([#39])
 - Fixed case where details of plugins used were not included in the baseline,
   when the pre-commit hook updated it ([#40])
@@ -109,6 +109,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#26]: https://github.com/Yelp/detect-secrets/pull/26
 [#39]: https://github.com/Yelp/detect-secrets/pull/39
 [#40]: https://github.com/Yelp/detect-secrets/pull/40
+[#44]: https://github.com/Yelp/detect-secrets/pull/44
 [#46]: https://github.com/Yelp/detect-secrets/pull/46
 
 
@@ -120,8 +121,8 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 #### :telescope: Precision
 
-- Improved scanning of INI config files with HighEntropyString ([#13], [#17])
-- Improved scanning of YAML files with HighEntropyString ([#16])
+- Improved scanning of INI config files with `HighEntropyString` ([#13], [#17])
+- Improved scanning of YAML files with `HighEntropyString` ([#16])
 
 #### :bug: Bugfixes
 
