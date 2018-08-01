@@ -83,6 +83,13 @@ class HighEntropyStringsPlugin(BasePlugin):
 
         return entropy
 
+    def is_sequential_string(self, string):
+        uppercased_string = string.upper()
+        for sequential_string in IGNORED_SEQUENTIAL_STRINGS:
+            if uppercased_string in sequential_string:
+                return True
+        return False
+
     def analyze_string(self, string, line_num, filename):
         """Searches string for custom pattern, and captures all high entropy strings that
         match self.regex, with a limit defined as self.entropy_limit.
@@ -92,12 +99,9 @@ class HighEntropyStringsPlugin(BasePlugin):
         if WHITELIST_REGEX.search(string):
             return output
 
-        uppercased_string = string.upper()
-        for sequential_string in IGNORED_SEQUENTIAL_STRINGS:
-            if uppercased_string in sequential_string:
-                return output
-
         for result in self.secret_generator(string):
+            if self.is_sequential_string(result):
+                continue
             secret = PotentialSecret(self.secret_type, filename, line_num, result)
             output[secret] = secret
 
