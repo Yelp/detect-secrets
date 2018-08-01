@@ -23,6 +23,16 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [@xxxx]: https://github.com/xxxx
 -->
 
+### 0.10.1
+##### August 1st, 2018
+
+#### :bug: Bugfixes
+
+- Fixed a bug where we didn't skip sequential strings when we should have ([#67])
+
+[#67]: https://github.com/Yelp/detect-secrets/pull/67
+
+
 ### 0.10.0
 ##### August 1st, 2018
 
