@@ -87,7 +87,7 @@ def _get_existing_baseline(import_filename):
 
 def _read_from_file(filename):
     """Used for mocking."""
-    with open(filename[0]) as f:
+    with open(filename) as f:
         return json.loads(f.read())
 
 
