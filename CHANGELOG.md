@@ -1,8 +1,8 @@
 # What's New
 
-Thanks to all our contributors, users, and the many people that make detect-secrets possible! :heart:
+Thanks to all our contributors, users, and the many people that make `detect-secrets` possible! :heart:
 
-If you love detect-secrets, please star our project on GitHub to show your support! :star:
+If you love `detect-secrets`, please star our project on GitHub to show your support! :star:
 
 <!--
 # A.B.C
@@ -23,7 +23,8 @@ If you love detect-secrets, please star our project on GitHub to show your suppo
 [@xxxx]: https://github.com/xxxx
 -->
 
-### Unreleased
+### 0.10.0
+##### August 1st, 2018
 
 #### :tada: New Features
 
@@ -59,7 +60,7 @@ If you love detect-secrets, please star our project on GitHub to show your suppo
 
 
 ### 0.9.1
-##### June 28, 2018
+##### June 28th, 2018
 
 #### :bug: Bugfixes
 
@@ -71,7 +72,7 @@ If you love detect-secrets, please star our project on GitHub to show your suppo
 
 
 ### 0.9.0
-##### June 27, 2018
+##### June 27th, 2018
 
 #### :tada: New Features
 
