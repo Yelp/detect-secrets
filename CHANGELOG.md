@@ -1,17 +1,45 @@
+# What's New
+
+Thanks to all our contributors, users, and the many people that make detect-secrets possible! :heart:
+
+If you love detect-secrets, please star our project on GitHub to show your support! :star:
+
+<!--
+# A.B.C
+##### MMM DD, YYYY
+
+#### :newspaper: News
+#### :mega: Release Highlights
+#### :boom: Breaking Changes
+#### :tada: New Features
+#### :sparkles: Usability
+#### :mortar_board: Walkthrough / Help
+#### :performing_arts: Performance
+#### :telescope: Precision
+#### :bug: Bugfixes
+#### :snake: Miscellaneous
+
+[#xxxx]: https://github.com/Yelp/detect-secrets/pull/xxxx
+[@xxxx]: https://github.com/xxxx
+-->
+
 ### Unreleased
 
-#### Added
+#### :tada: New Features
 
 - Yaml inline whitelisting support ([#50])
 - Scan `--all-files` option ([#57])
-- Reduced false-positives caused by sequential strings, e.g. `ABCDEF` ([#64])
 
-#### Changed
+#### :boom: Breaking Changes
 
 - Changed `--audit` and `--scan` to `audit` and `scan` ([#51])
 - Changed `scan --import <baseline>` to `scan --update <baseline>` ([#58])
 
-#### Fixed
+#### :telescope: Precision
+
+- Reduced false-positives caused by sequential strings, e.g. `ABCDEF` ([#64])
+
+#### :bug: Bugfixes
 
 - Fixed a bug where the pre-commit code would remove the `is_secret` attribute from
   audited baselines ([#65])
@@ -33,10 +61,10 @@
 ### 0.9.1
 ##### June 28, 2018
 
-#### Fixed
+#### :bug: Bugfixes
 
+- Fixed numbering system with interactive audit
 - Fixed "leapfrog" edge case for audit functionality ([#47])
-- Better numbering system with interactive audit
 
 
 [#47]: https://github.com/Yelp/detect-secrets/pull/47
@@ -45,45 +73,61 @@
 ### 0.9.0
 ##### June 27, 2018
 
-#### Added
+#### :tada: New Features
 
-- Better heuristic for `HexHighEntropyStrings`, reducing the false positive rates
-  for large numbers identified in code
+- Added ability to migrate baselines from an older version to a newer version
 - Added functionality to audit baseline, to distinguish difference between
   false and true positives in the baseline file
-- Added ability to migrate baselines from an older version to a newer version
-
-#### Changed
-
-- Got rid of `SensitivityValues` as a means to store plugin configs
-- Simplified logging by removing `CustomLog`
-- Differentiate between `Base64HighEntropyStrings` and `HexHighEntropyStrings` through
-  `secret_type`.
 - Upgraded `PrivateKeyPlugin`: more search parameters, more lines searched,
   and secret hash created using payload (rather than the entire line content)
 
-#### Fixed
+#### :boom: Breaking Changes
 
-- Baseline always outputs in sorted order now
-- Escape exclude regex statements before compilation
+- Differentiate between `Base64HighEntropyStrings` and `HexHighEntropyStrings` through
+  `secret_type` ([#26])
+- Got rid of `SensitivityValues` as a means to store plugin configs
+
+#### :telescope: Precision
+
+- Improved the heuristic for `HexHighEntropyStrings`, reducing the false positive rates
+  for large numbers identified in code
+
+#### :bug: Bugfixes
+
+- Baseline always outputs in sorted order now ([#25])
+- Escape exclude regex statements before compilation ([#39])
 - Fixed case where details of plugins used were not included in the baseline,
-  when the pre-commit hook updated it ([#32])
+  when the pre-commit hook updated it ([#40])
+
+#### :snake: Miscellaneous
+
+- Simplified logging by removing `CustomLog` ([#46])
 
 
-[#32]: https://github.com/Yelp/detect-secrets/pull/32
+[#25]: https://github.com/Yelp/detect-secrets/pull/25
+[#26]: https://github.com/Yelp/detect-secrets/pull/26
+[#39]: https://github.com/Yelp/detect-secrets/pull/39
+[#40]: https://github.com/Yelp/detect-secrets/pull/40
+[#46]: https://github.com/Yelp/detect-secrets/pull/46
 
 
-### Prior to 0.9.0
+### Before 0.9.0
 
-#### Added
+#### :tada: New Features
 
-- Setting up Travis CI
+- Allow scanning of non-git files ([#18])
 
-#### Changed
+#### :telescope: Precision
 
-- Allow scanning of non-git files
-- Better scanning of YAML files and INI config files with HighEntropyString
+- Improved scanning of INI config files with HighEntropyString ([#13], [#17])
+- Improved scanning of YAML files with HighEntropyString ([#16])
 
-#### Fixed
+#### :bug: Bugfixes
 
-- Bug fix for PrivateKeyPlugin analyze results' representation
+- Bug fix for PrivateKeyPlugin analyze results' representation ([#15])
+
+[#13]: https://github.com/Yelp/detect-secrets/pull/13
+[#15]: https://github.com/Yelp/detect-secrets/pull/15
+[#16]: https://github.com/Yelp/detect-secrets/pull/16
+[#17]: https://github.com/Yelp/detect-secrets/pull/17
+[#18]: https://github.com/Yelp/detect-secrets/pull/18
