@@ -36,7 +36,7 @@ For a look at recent changes, please see the
 ### Setting Up a Baseline
 
 ```
-$ detect-secrets --scan > .secrets.baseline
+$ detect-secrets scan > .secrets.baseline
 ```
 
 ### Pre-commit Hook
@@ -44,7 +44,7 @@ $ detect-secrets --scan > .secrets.baseline
 ```
 $ cat .pre-commit-config.yaml
 -   repo: git@github.com:Yelp/detect-secrets
-    rev: 0.9.1
+    rev: 0.10.1
     hooks:
     -   id: detect-secrets
         args: ['--baseline', '.secrets.baseline']
@@ -54,7 +54,7 @@ $ cat .pre-commit-config.yaml
 ### Auditing Baseline
 
 ```
-$ detect-secrets --audit .secrets.baseline
+$ detect-secrets audit .secrets.baseline
 ```
 
 ### Upgrading Baselines
@@ -63,8 +63,10 @@ This is only applicable for upgrading baselines that have been created after ver
 For upgrading baselines lower than that version, just recreate it.
 
 ```
-$ detect-secrets --scan < .secrets.baseline > .secrets.baseline.new
+$ detect-secrets scan --upgrade .secrets.baseline
 ```
+
+or
 
 ## Installation
 
