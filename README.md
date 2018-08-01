@@ -63,7 +63,7 @@ This is only applicable for upgrading baselines that have been created after ver
 For upgrading baselines lower than that version, just recreate it.
 
 ```
-$ detect-secrets scan --upgrade .secrets.baseline
+$ detect-secrets scan --update .secrets.baseline
 ```
 
 or
