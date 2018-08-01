@@ -66,8 +66,6 @@ For upgrading baselines lower than that version, just recreate it.
 $ detect-secrets scan --update .secrets.baseline
 ```
 
-or
-
 ## Installation
 
 There are three components that you can setup, depending on your purposes.
