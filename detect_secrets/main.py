@@ -82,7 +82,9 @@ def _get_existing_baseline(import_filename):
     if import_filename:
         return _read_from_file(import_filename[0])
     if not sys.stdin.isatty():
-        return json.loads(sys.stdin.read())
+        stdin = sys.stdin.read().strip()
+        if stdin:
+            return json.loads(stdin)
 
 
 def _read_from_file(filename):
