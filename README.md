@@ -160,7 +160,7 @@ committing secrets.
 One method that this package uses to find secrets is by searching for high
 entropy strings in the codebase. This is calculated through the [Shannon entropy
 formula](http://blog.dkbza.org/2007/05/scanning-data-for-entropy-anomalies.html).
-If the entroy of a given string exceeds the preset amount, the string will be
+If the entropy of a given string exceeds the preset amount, the string will be
 rejected as a potential secret.
 
 This preset amount can be adjusted in several ways:
