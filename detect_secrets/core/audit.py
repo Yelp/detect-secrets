@@ -174,7 +174,7 @@ def _print_context(filename, secret, count, total, plugin_settings):   # pragma:
         raise error_obj
 
 
-def _get_user_decision(prompt_secret_decision=True):
+def _get_user_decision(prompt_secret_decision=True, can_go_back=False):
     """
     :type prompt_secret_decision: bool
     :param prompt_secret_decision: if False, won't ask to label secret.
@@ -182,6 +182,8 @@ def _get_user_decision(prompt_secret_decision=True):
     allowable_user_input = ['s', 'q']
     if prompt_secret_decision:
         allowable_user_input.extend(['y', 'n'])
+    if can_go_back:
+        allowable_user_input.append('b')
 
     user_input = None
     while user_input not in allowable_user_input:
@@ -192,6 +194,8 @@ def _get_user_decision(prompt_secret_decision=True):
             user_input_string = 'Is this a valid secret? (y)es, (n)o, '
         else:
             user_input_string = 'What would you like to do? '
+        if 'b' in allowable_user_input:
+            user_input_string += '(b)ack, '
         user_input_string += '(s)kip, (q)uit: '
 
         user_input = input(user_input_string)

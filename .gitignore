@@ -1,6 +1,7 @@
 *.egg-info
 *.py[co]
 *.sw[op]
+.secrets.baseline
 
 /.coverage
 /.pytest_cache
