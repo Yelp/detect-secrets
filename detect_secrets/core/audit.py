@@ -14,6 +14,7 @@ from .baseline import merge_results
 from .color import BashColor
 from .color import Color
 from .potential_secret import PotentialSecret
+from .bidirectional_iterator import BidirectionalIterator
 
 
 class SecretNotFoundOnSpecifiedLineError(Exception):
@@ -29,7 +30,8 @@ def audit_baseline(baseline_filename):
 
     current_secret_index = 0
     results = defaultdict(list)
-    for filename, secret, total in _secret_generator(original_baseline):
+    secret_iterator = BidirectionalIterator(list(_secret_generator(original_baseline)))
+    for filename, secret, total in secret_iterator:
         _clear_screen()
 
         if 'is_secret' not in secret:
@@ -43,7 +45,7 @@ def audit_baseline(baseline_filename):
                     total,
                     original_baseline['plugins_used'],
                 )
-                decision = _get_user_decision()
+                decision = _get_user_decision(can_step_back=secret_iterator.can_step_back())
             except SecretNotFoundOnSpecifiedLineError:
                 decision = _get_user_decision(prompt_secret_decision=False)
         else:
@@ -54,6 +56,9 @@ def audit_baseline(baseline_filename):
         if decision == 'q':
             print('Quitting...')
             break
+        
+        if decision == 'b':
+            secret_iterator.step_back_on_next_iteration()
 
         _handle_user_decision(decision, secret)
         results[filename].append(secret)
@@ -174,7 +179,7 @@ def _print_context(filename, secret, count, total, plugin_settings):   # pragma:
         raise error_obj
 
 
-def _get_user_decision(prompt_secret_decision=True, can_go_back=False):
+def _get_user_decision(prompt_secret_decision=True, can_step_back=False):
     """
     :type prompt_secret_decision: bool
     :param prompt_secret_decision: if False, won't ask to label secret.
@@ -182,7 +187,7 @@ def _get_user_decision(prompt_secret_decision=True, can_go_back=False):
     allowable_user_input = ['s', 'q']
     if prompt_secret_decision:
         allowable_user_input.extend(['y', 'n'])
-    if can_go_back:
+    if can_step_back:
         allowable_user_input.append('b')
 
     user_input = None
