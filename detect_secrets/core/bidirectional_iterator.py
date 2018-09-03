@@ -18,6 +18,9 @@ class BidirectionalIterator(object):
             raise StopIteration
         return result
 
+    def next(self):
+        self.__next__()
+
     def step_back_on_next_iteration(self):
         self.step_back_once = True
 
