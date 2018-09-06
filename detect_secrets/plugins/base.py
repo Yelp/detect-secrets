@@ -50,6 +50,30 @@ class BasePlugin(object):
         """
         raise NotImplementedError
 
+    def adhoc_scan(self, string):
+        """To support faster discovery, we want the ability to conveniently
+        check what different plugins say regarding a single line/secret. This
+        supports that.
+
+        This is very similar to self.analyze_string, but allows the flexibility
+        for subclasses to add any other notable info (rather than just a
+        PotentialSecret type). e.g. HighEntropyStrings adds their Shannon
+        entropy in which they made their decision.
+
+        :type string: str
+        :param string: the string to analyze
+
+        :rtype: str
+        :returns: descriptive string that fits the format
+            <classname>: <returned-value>
+        """
+        # TODO: Handle multiple secrets on single line.
+        results = self.analyze_string(string, 0, 'does_not_matter')
+        if not results:
+            return 'False'
+        else:
+            return 'True'
+
     @property
     def __dict__(self):
         return {
