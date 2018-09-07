@@ -11,10 +11,10 @@ from collections import defaultdict
 from ..plugins.core import initialize
 from ..plugins.high_entropy_strings import HighEntropyStringsPlugin
 from .baseline import merge_results
+from .bidirectional_iterator import BidirectionalIterator
 from .color import BashColor
 from .color import Color
 from .potential_secret import PotentialSecret
-from .bidirectional_iterator import BidirectionalIterator
 
 
 class SecretNotFoundOnSpecifiedLineError(Exception):
@@ -56,7 +56,7 @@ def audit_baseline(baseline_filename):
         if decision == 'q':
             print('Quitting...')
             break
-        
+
         if decision == 'b':
             secret_iterator.step_back_on_next_iteration()
 
