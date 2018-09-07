@@ -29,45 +29,50 @@ def audit_baseline(baseline_filename):
     files_removed = _remove_nonexistent_files_from_baseline(original_baseline)
 
     current_secret_index = 0
-    results = defaultdict(list)
-    secret_iterator = BidirectionalIterator(list(_secret_generator(original_baseline)))
-    for filename, secret, total in secret_iterator:
+    all_secrets = list(_secret_generator(original_baseline))
+    secrets_with_choices = [
+        (filename, secret) for filename, secret in all_secrets
+        if 'is_secret' not in secret
+    ]
+    total_choices = len(secrets_with_choices)
+    secret_iterator = BidirectionalIterator(secrets_with_choices)
+
+    for filename, secret in secret_iterator:
         _clear_screen()
 
-        if 'is_secret' not in secret:
-            current_secret_index += 1
+        current_secret_index += 1
 
-            try:
-                _print_context(
-                    filename,
-                    secret,
-                    current_secret_index,
-                    total,
-                    original_baseline['plugins_used'],
-                )
-                decision = _get_user_decision(can_step_back=secret_iterator.can_step_back())
-            except SecretNotFoundOnSpecifiedLineError:
-                decision = _get_user_decision(prompt_secret_decision=False)
-        else:
-            # Unfortunately, we need to add skipped secrets in results,
-            # otherwise merge_results won't know how to handle it.
-            decision = 's'
+        try:
+            _print_context(
+                filename,
+                secret,
+                current_secret_index,
+                total_choices,
+                original_baseline['plugins_used'],
+            )
+            decision = _get_user_decision(can_step_back=secret_iterator.can_step_back())
+        except SecretNotFoundOnSpecifiedLineError:
+            decision = _get_user_decision(prompt_secret_decision=False)
 
         if decision == 'q':
             print('Quitting...')
             break
 
         if decision == 'b':
+            current_secret_index -= 2
             secret_iterator.step_back_on_next_iteration()
 
         _handle_user_decision(decision, secret)
-        results[filename].append(secret)
 
     if current_secret_index == 0 and not files_removed:
         print('Nothing to audit!')
         return
 
     print('Saving progress...')
+    results = defaultdict(list)
+    for filename, secret in all_secrets:
+        results[filename].append(secret)
+
     original_baseline['results'] = merge_results(
         original_baseline['results'],
         dict(results),
@@ -95,23 +100,9 @@ def _remove_nonexistent_files_from_baseline(baseline):
 
 def _secret_generator(baseline):
     """Generates secrets to audit, from the baseline"""
-    num_secrets_to_parse = sum(
-        map(
-            lambda filename: len(
-                list(
-                    filter(
-                        lambda secret: 'is_secret' not in secret,
-                        baseline['results'][filename],
-                    ),
-                ),
-            ),
-            baseline['results'],
-        ),
-    )
-
     for filename, secrets in baseline['results'].items():
         for secret in secrets:
-            yield filename, secret, num_secrets_to_parse
+            yield filename, secret
 
 
 def _clear_screen():    # pragma: no cover
