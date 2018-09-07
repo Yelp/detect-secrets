@@ -28,6 +28,7 @@ class TestPluginOptions(object):
             'HexHighEntropyString': {
                 'hex_limit': 3,
             },
+            'BasicAuthDetector': {},
             'Base64HighEntropyString': {
                 'base64_limit': 4.5,
             },

@@ -5,6 +5,7 @@ except ImportError:
     from functools32 import lru_cache
 
 from ..base import BasePlugin
+from ..basic_auth import BasicAuthDetector                  # noqa: F401
 from ..high_entropy_strings import Base64HighEntropyString  # noqa: F401
 from ..high_entropy_strings import HexHighEntropyString     # noqa: F401
 from ..private_key import PrivateKeyDetector                # noqa: F401
