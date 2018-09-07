@@ -206,6 +206,8 @@ def _handle_user_decision(decision, secret):
         secret['is_secret'] = True
     elif decision == 'n':
         secret['is_secret'] = False
+    elif decision == 's' and 'is_secret' in secret:
+        del secret['is_secret']
 
 
 def _save_baseline_to_file(filename, data):  # pragma: no cover
