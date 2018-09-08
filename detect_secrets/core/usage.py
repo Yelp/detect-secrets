@@ -220,6 +220,11 @@ class PluginOptions(object):
             disable_flag_text='--no-private-key-scan',
             disable_help_text='Disables scanning for private keys.',
         ),
+        PluginDescriptor(
+            classname='BasicAuthDetector',
+            disable_flag_text='--no-basic-auth-scan',
+            disable_help_text='Disables scanning for Basic Auth formatted URIs.',
+        ),
     ]
 
     def __init__(self, parser):

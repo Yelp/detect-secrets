@@ -84,6 +84,7 @@ class TestMain(object):
             assert main('scan --string'.split()) == 0
             assert printer_shim.message == textwrap.dedent("""
                 Base64HighEntropyString: False (3.459)
+                BasicAuthDetector      : False
                 HexHighEntropyString   : True  (3.459)
                 PrivateKeyDetector     : False
             """)[1:]
@@ -99,6 +100,7 @@ class TestMain(object):
             assert main('scan --string 012345'.split()) == 0
             assert printer_shim.message == textwrap.dedent("""
                 Base64HighEntropyString: False (2.585)
+                BasicAuthDetector      : False
                 HexHighEntropyString   : False (2.121)
                 PrivateKeyDetector     : False
             """)[1:]
