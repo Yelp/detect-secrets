@@ -92,6 +92,73 @@ class TestAuditBaseline(object):
             'Saving progress...\n'
         )
 
+    def test_go_back_and_change_yes_to_no(self, mock_printer):
+        modified_baseline = deepcopy(self.baseline)
+
+        values_to_inject = [None, False, True]
+        for secrets in modified_baseline['results'].values():
+            for secret in secrets:
+                value = values_to_inject.pop(0)
+                if value is not None:
+                    secret['is_secret'] = value
+
+        self.run_logic(['s', 'y', 'b', 'n', 'y'], modified_baseline)
+
+        assert mock_printer.message == (
+            'Saving progress...\n'
+        )
+
+    def test_go_back_and_change_no_to_yes(self, mock_printer):
+        modified_baseline = deepcopy(self.baseline)
+
+        values_to_inject = [None, True, True]
+        for secrets in modified_baseline['results'].values():
+            for secret in secrets:
+                value = values_to_inject.pop(0)
+                if value is not None:
+                    secret['is_secret'] = value
+
+        self.run_logic(['s', 'n', 'b', 'y', 'y'], modified_baseline)
+
+        assert mock_printer.message == (
+            'Saving progress...\n'
+        )
+
+    def test_go_back_and_change_yes_to_skip(self, mock_printer):
+        modified_baseline = deepcopy(self.baseline)
+
+        values_to_inject = [None, None, True]
+        for secrets in modified_baseline['results'].values():
+            for secret in secrets:
+                value = values_to_inject.pop(0)
+                if value is not None:
+                    secret['is_secret'] = value
+
+        self.run_logic(['s', 'y', 'b', 's', 'y'], modified_baseline)
+
+        assert mock_printer.message == (
+            'Saving progress...\n'
+        )
+
+    def test_go_back_several_steps(self, mock_printer):
+        modified_baseline = deepcopy(self.baseline)
+
+        values_to_inject = [False, False, False]
+        for secrets in modified_baseline['results'].values():
+            for secret in secrets:
+                value = values_to_inject.pop(0)
+                if value is not None:
+                    secret['is_secret'] = value
+
+        self.run_logic(
+            ['s', 'y', 'b', 's', 'b', 'b', 'n', 'n', 'n'],
+            modified_baseline,
+        )
+
+        assert mock_printer.message == (
+            'Saving progress...\n'
+        )
+
     def test_leapfrog_decision(self, mock_printer):
         modified_baseline = deepcopy(self.leapfrog_baseline)
         modified_baseline['results']['filenameA'][1]['is_secret'] = True
