@@ -23,6 +23,23 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [@xxxx]: https://github.com/xxxx
 -->
 
+### 0.10.2
+##### September 12th, 2018
+
+#### :tada: New Features
+
+- Added a (b)ack option to 'Is this a valid secret?' ([#72], thanks [@cleborys])
+- Added a `BasicAuthDetector` plugin ([#74])
+- Added cli functionality to check strings in an adhoc manner ([#73])
+
+#### :bug: Bugfixes
+
+- Added a check to only load json from stdin if it exists ([#69], thanks [@guykisel])
+
+#### :snake: Miscellaneous
+
+- Fixed a typo in the README ([#68], thanks [@whathejoe])
+
 ### 0.10.1
 ##### August 1st, 2018
 
@@ -68,6 +85,15 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#64]: https://github.com/Yelp/detect-secrets/pull/64
 [#65]: https://github.com/Yelp/detect-secrets/pull/65
 
+[#68]: https://github.com/Yelp/detect-secrets/pull/68
+[#69]: https://github.com/Yelp/detect-secrets/pull/69
+[#72]: https://github.com/Yelp/detect-secrets/pull/72
+[#73]: https://github.com/Yelp/detect-secrets/pull/73
+[#74]: https://github.com/Yelp/detect-secrets/pull/74
+
+[@cleborys]: https://github.com/cleborys
+[@guykisel]: https://github.com/guykisel
+[@whathejoe]: https://github.com/whathejoe
 
 ### 0.9.1
 ##### June 28th, 2018
