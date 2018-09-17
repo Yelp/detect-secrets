@@ -1,10 +1,10 @@
 """
 This code was extracted in part from
-https://github.com/pre-commit/pre-commit-hooks. Using similar heuristic logic,
+https://github.com/PyCQA/bandit. Using similar heuristic logic,
 we adapted it to fit our plugin infrastructure, to create an organized,
 concerted effort in detecting all type of secrets in code.
 
-Copyright (c) 2014 pre-commit dev team: Anthony Sottile, Ken Struys
+Copyright (c) 2014 Hewlett-Packard Development Company, L.P.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -31,27 +31,27 @@ from detect_secrets.core.potential_secret import PotentialSecret
 
 
 BLACKLIST = (
-    'BEGIN RSA PRIVATE KEY',
-    'BEGIN DSA PRIVATE KEY',
-    'BEGIN EC PRIVATE KEY',
-    'BEGIN OPENSSH PRIVATE KEY',
-    'BEGIN PRIVATE KEY',
-    'PuTTY-User-Key-File-2',
-    'BEGIN SSH2 ENCRYPTED PRIVATE KEY',
+    'PASS =',
+    'password',
+    'passwd',
+    'pwd',
+    'secret',
+    'secrete',
+    'token',
 )
 
 
-class PrivateKeyDetector(BasePlugin):
+class PasswordDetector(BasePlugin):
     """This checks for private keys by determining whether the blacklisted
     lines are present in the analyzed string.
     """
 
-    secret_type = 'Private Key'
+    secret_type = 'Password'
 
     def analyze_string(self, string, line_num, filename):
         output = {}
 
-        for identifier in self.secret_generator(string):
+        for identifier in self.secret_generator(string.lower()):
             secret = PotentialSecret(
                 self.secret_type,
                 filename,

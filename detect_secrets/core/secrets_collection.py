@@ -251,18 +251,48 @@ class SecretsCollection(object):
                  Caller is responsible for updating the dictionary with
                  results of plugin analysis.
         """
-        results = {}
+        file_results = {}
 
         for plugin in self.plugins:
-            yield results, plugin
+            yield file_results, plugin
 
-        if not results:
+        if not file_results:
             return
 
+        self._remove_password_secrets_if_line_reported_already(
+            file_results,
+        )
+
         if filename not in self.data:
-            self.data[filename] = results
+            self.data[filename] = file_results
         else:
-            self.data[filename].update(results)
+            self.data[filename].update(file_results)
+
+    def _remove_password_secrets_if_line_reported_already(
+        self,
+        file_results,
+    ):
+        """
+        It is often the case that e.g.
+            SUPER_SECRET_VALUE = 'c3VwZXIgbG9uZyBzdHJ'
+        is reported both by the PasswordDetector and another plugin.
+
+        To minimize diff size, we will simply not report findings from
+        the PasswordDetector if another plugin reports a secret on the
+        same line.
+        """
+        password_secrets = list()
+        line_numbers_of_other_plugins = set()
+
+        for secret in file_results:
+            if secret.type == 'Password':
+                password_secrets.append(secret)
+            else:
+                line_numbers_of_other_plugins.add(secret.lineno)
+
+        for password_secret in password_secrets:
+            if password_secret.lineno in line_numbers_of_other_plugins:
+                del file_results[password_secret]
 
     def _extract_secrets_from_file(self, f, filename):
         """Extract secrets from a given file object.

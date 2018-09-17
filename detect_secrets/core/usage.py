@@ -225,6 +225,11 @@ class PluginOptions(object):
             disable_flag_text='--no-basic-auth-scan',
             disable_help_text='Disables scanning for Basic Auth formatted URIs.',
         ),
+        PluginDescriptor(
+            classname='PasswordDetector',
+            disable_flag_text='--no-password-scan',
+            disable_help_text='Disables scanning for passwords.',
+        ),
     ]
 
     def __init__(self, parser):
