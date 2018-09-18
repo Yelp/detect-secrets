@@ -41,9 +41,9 @@ BLACKLIST = (
 )
 
 
-class PasswordDetector(BasePlugin):
-    """This checks for private keys by determining whether the blacklisted
-    lines are present in the analyzed string.
+class KeywordDetector(BasePlugin):
+    """This checks if blacklisted keywords
+    are present in the analyzed string.
     """
 
     secret_type = 'Password'

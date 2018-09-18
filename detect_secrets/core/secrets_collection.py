@@ -259,7 +259,7 @@ class SecretsCollection(object):
         if not file_results:
             return
 
-        self._remove_password_secrets_if_line_reported_already(
+        self._remove_keyword_secrets_if_line_reported_already(
             file_results,
         )
 
@@ -268,17 +268,17 @@ class SecretsCollection(object):
         else:
             self.data[filename].update(file_results)
 
-    def _remove_password_secrets_if_line_reported_already(
+    def _remove_keyword_secrets_if_line_reported_already(
         self,
         file_results,
     ):
         """
         It is often the case that e.g.
             SUPER_SECRET_VALUE = 'c3VwZXIgbG9uZyBzdHJ'
-        is reported both by the PasswordDetector and another plugin.
+        is reported both by the KeywordDetector and another plugin.
 
         To minimize diff size, we will simply not report findings from
-        the PasswordDetector if another plugin reports a secret on the
+        the KeywordDetector if another plugin reports a secret on the
         same line.
         """
         password_secrets = list()

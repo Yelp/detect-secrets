@@ -3,11 +3,11 @@ from __future__ import unicode_literals
 
 import pytest
 
-from detect_secrets.plugins.password import PasswordDetector
+from detect_secrets.plugins.keyword import KeywordDetector
 from testing.mocks import mock_file_object
 
 
-class TestPasswordDetector(object):
+class TestKeywordDetector(object):
 
     @pytest.mark.parametrize(
         'file_content',
@@ -21,7 +21,7 @@ class TestPasswordDetector(object):
         ],
     )
     def test_analyze(self, file_content):
-        logic = PasswordDetector()
+        logic = KeywordDetector()
 
         f = mock_file_object(file_content)
         output = logic.analyze(f, 'mock_filename')
