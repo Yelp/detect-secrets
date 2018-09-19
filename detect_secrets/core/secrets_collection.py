@@ -88,8 +88,8 @@ class SecretsCollection(object):
                 secret = PotentialSecret(
                     item['type'],
                     filename,
-                    item['line_number'],
                     secret='will be replaced',
+                    lineno=item['line_number'],
                     is_secret=item.get('is_secret'),
                 )
                 secret.secret_hash = item['hashed_secret']
@@ -204,7 +204,7 @@ class SecretsCollection(object):
         if type_:
             # Optimized lookup, because we know the type of secret
             # (and therefore, its hash)
-            tmp_secret = PotentialSecret(type_, filename, 0, 'will be overriden')
+            tmp_secret = PotentialSecret(type_, filename, secret='will be overriden')
             tmp_secret.secret_hash = secret
 
             if tmp_secret in self.data[filename]:

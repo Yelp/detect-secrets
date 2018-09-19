@@ -55,8 +55,8 @@ class KeywordDetector(BasePlugin):
             secret = PotentialSecret(
                 self.secret_type,
                 filename,
-                line_num,
                 identifier,
+                line_num,
             )
             output[secret] = secret
 

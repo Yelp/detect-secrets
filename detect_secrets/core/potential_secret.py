@@ -18,30 +18,30 @@ class PotentialSecret(object):
         self,
         typ,
         filename,
-        lineno,
         secret,
+        lineno=0,
         is_secret=None,
     ):
         """
-        :type typ: str
-        :param typ: human-readable secret type, defined by the plugin
+        :type typ: list(str)
+        :param typ: human-readable secret types, defined by the plugins
                     that generated this PotentialSecret.
-                    e.g. "High Entropy String"
+                    e.g. ["High Entropy String"]
 
         :type filename: str
         :param filename: name of file that this secret was found
+
+        :type secret: str
+        :param secret: the actual secret identified
 
         :type lineno: int
         :param lineno: location of secret, within filename.
                        Merely used as a reference for easy triage.
 
-        :type secret: str
-        :param secret: the actual secret identified
-
         :type is_secret: bool|None
         :param is_secret: whether or not the secret is a true- or false- positive
         """
-        self.type = typ
+        self.type = [typ]
         self.filename = filename
         self.lineno = lineno
         self.secret_hash = self.hash_secret(secret)
@@ -87,7 +87,10 @@ class PotentialSecret(object):
 
     def __hash__(self):
         return hash(
-            tuple([getattr(self, x) for x in self.fields_to_compare]),
+            tuple(
+                getattr(self, x)
+                for x in self.fields_to_compare
+            ),
         )
 
     def __str__(self):  # pragma: no cover
