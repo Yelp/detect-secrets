@@ -23,10 +23,10 @@ class PotentialSecret(object):
         is_secret=None,
     ):
         """
-        :type typ: list(str)
+        :type typ: str
         :param typ: human-readable secret types, defined by the plugins
                     that generated this PotentialSecret.
-                    e.g. ["High Entropy String"]
+                    e.g. "High Entropy String"
 
         :type filename: str
         :param filename: name of file that this secret was found
@@ -41,7 +41,7 @@ class PotentialSecret(object):
         :type is_secret: bool|None
         :param is_secret: whether or not the secret is a true- or false- positive
         """
-        self.type = [typ]
+        self.type = typ
         self.filename = filename
         self.lineno = lineno
         self.secret_hash = self.hash_secret(secret)

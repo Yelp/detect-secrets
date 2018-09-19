@@ -259,40 +259,10 @@ class SecretsCollection(object):
         if not file_results:
             return
 
-        self._remove_keyword_secrets_if_line_reported_already(
-            file_results,
-        )
-
         if filename not in self.data:
             self.data[filename] = file_results
         else:
             self.data[filename].update(file_results)
-
-    def _remove_keyword_secrets_if_line_reported_already(
-        self,
-        file_results,
-    ):
-        """
-        It is often the case that e.g.
-            SUPER_SECRET_VALUE = 'c3VwZXIgbG9uZyBzdHJ'
-        is reported both by the KeywordDetector and another plugin.
-
-        To minimize diff size, we will simply not report findings from
-        the KeywordDetector if another plugin reports a secret on the
-        same line.
-        """
-        password_secrets = list()
-        line_numbers_of_other_plugins = set()
-
-        for secret in file_results:
-            if secret.type == 'Password':
-                password_secrets.append(secret)
-            else:
-                line_numbers_of_other_plugins.add(secret.lineno)
-
-        for password_secret in password_secrets:
-            if password_secret.lineno in line_numbers_of_other_plugins:
-                del file_results[password_secret]
 
     def _extract_secrets_from_file(self, f, filename):
         """Extract secrets from a given file object.
