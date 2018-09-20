@@ -321,10 +321,6 @@ def _highlight_secret(secret_line, secret, filename, plugin_settings):
             plugin.secret_type,
             filename,
             secret=raw_secret,
-
-            # This doesn't matter, because PotentialSecret only uses
-            # line numbers for logging, and we're not logging it.
-            lineno=0,
         )
 
         # There could be more than two secrets on the same line.

@@ -93,6 +93,28 @@ class TestScanFile(object):
         line_numbers = [entry.lineno for entry in logic.data['filename']]
         assert set(line_numbers) == set([1, 2, 3])
 
+    def test_reporting_of_password_plugin_secrets_if_reported_already(self):
+        logic = secrets_collection_factory(
+            secrets=[
+                {
+                    'filename': 'filename',
+                    'lineno': 3,
+                },
+            ],
+            plugins=(
+                MockPasswordPluginValue(),
+                MockPluginFileValue(),
+            ),
+        )
+
+        with mock_open('junk text here'):
+            logic.scan_file('filename')
+
+        assert len(logic.data['filename']) == 3
+
+        line_numbers = [entry.lineno for entry in logic.data['filename']]
+        assert set(line_numbers) == set([2, 3])
+
     def test_unicode_decode_error(self, mock_log):
         logic = secrets_collection_factory(
             plugins=(MockPluginFileValue(),),
@@ -203,12 +225,14 @@ class TestGetSecret(object):
     )
     def test_explicit_type_for_optimization(self, type_, is_none):
         with self._mock_secret_hash():
-            logic = secrets_collection_factory(secrets=[
-                {
-                    'filename': 'filename',
-                    'type_': 'type',
-                },
-            ])
+            logic = secrets_collection_factory(
+                secrets=[
+                    {
+                        'filename': 'filename',
+                        'type_': 'type',
+                    },
+                ],
+            )
 
         assert (logic.get_secret('filename', 'secret_hash', type_) is None) == is_none
 
@@ -343,7 +367,7 @@ class MockPluginFixedValue(MockBasePlugin):
     def analyze(self, f, filename):
         # We're not testing the plugin's ability to analyze secrets, so
         # it doesn't matter what we return
-        secret = PotentialSecret('mock fixed value type', filename, 1, 'asdf')
+        secret = PotentialSecret('mock fixed value type', filename, 'asdf', 1)
         return {secret: secret}
 
 
@@ -354,8 +378,19 @@ class MockPluginFileValue(MockBasePlugin):
     def analyze(self, f, filename):
         # We're not testing the plugin's ability to analyze secrets, so
         # it doesn't matter what we return
-        secret = PotentialSecret('mock file value type', filename, 2, f.read().strip())
+        secret = PotentialSecret('mock file value type', filename, f.read().strip(), 2)
         return {secret: secret}
+
+
+class MockPasswordPluginValue(MockBasePlugin):
+
+    secret_type = 'mock_plugin_file_value'
+
+    def analyze(self, f, filename):
+        password_secret = PotentialSecret('Password', filename, f.read().strip(), 2)
+        return {
+            password_secret: password_secret,
+        }
 
 
 MockUnicodeDecodeError = UnicodeDecodeError('encoding type', b'subject', 0, 1, 'exception message')

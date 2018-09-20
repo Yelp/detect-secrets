@@ -22,8 +22,8 @@ class BasicAuthDetector(BasePlugin):
             secret = PotentialSecret(
                 self.secret_type,
                 filename,
-                line_num,
                 result,
+                line_num,
             )
             output[secret] = secret
 

@@ -9,7 +9,7 @@ from testing.factories import potential_secret_factory
 class TestPotentialSecret(object):
 
     @pytest.mark.parametrize(
-        'a,b,is_equal',
+        'a, b, is_equal',
         [
             (
                 potential_secret_factory(lineno=1),

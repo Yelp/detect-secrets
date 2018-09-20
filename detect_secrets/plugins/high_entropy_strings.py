@@ -102,7 +102,7 @@ class HighEntropyStringsPlugin(BasePlugin):
         for result in self.secret_generator(string):
             if self.is_sequential_string(result):
                 continue
-            secret = PotentialSecret(self.secret_type, filename, line_num, result)
+            secret = PotentialSecret(self.secret_type, filename, result, line_num)
             output[secret] = secret
 
         return output

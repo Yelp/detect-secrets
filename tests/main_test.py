@@ -86,6 +86,7 @@ class TestMain(object):
                 Base64HighEntropyString: False (3.459)
                 BasicAuthDetector      : False
                 HexHighEntropyString   : True  (3.459)
+                KeywordDetector        : False
                 PrivateKeyDetector     : False
             """)[1:]
 
@@ -102,6 +103,7 @@ class TestMain(object):
                 Base64HighEntropyString: False (2.585)
                 BasicAuthDetector      : False
                 HexHighEntropyString   : False (2.121)
+                KeywordDetector        : False
                 PrivateKeyDetector     : False
             """)[1:]
 
@@ -179,7 +181,7 @@ class TestMain(object):
             (
                 'test_data/short_files/first_line.py',
                 textwrap.dedent("""
-                    1:secret = 'BEEF0123456789a'
+                    1:seecret = 'BEEF0123456789a'
                     2:skipped_sequential_false_positive = '0123456789a'
                     3:print('second line')
                     4:var = 'third line'
@@ -190,19 +192,19 @@ class TestMain(object):
                 textwrap.dedent("""
                     1:deploy:
                     2:    user: aaronloo
-                    3:    password:
+                    3:    passhword:
                     4:        secure: thequickbrownfoxjumpsoverthelazydog
                     5:    on:
-                    6:        repo: Yelp/detect-secrets
+                    6:        repo: Yelp/detect-sechrets
                 """)[1:-1],
             ),
             (
                 'test_data/short_files/last_line.ini',
                 textwrap.dedent("""
                     1:[some section]
-                    2:secrets_for_no_one_to_find =
+                    2:secreets_for_no_one_to_find =
                     3:    hunter2
-                    4:    password123
+                    4:    passsword123
                     5:    BEEF0123456789a
                 """)[1:-1],
             ),

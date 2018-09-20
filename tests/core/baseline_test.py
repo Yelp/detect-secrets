@@ -178,7 +178,7 @@ class TestGetSecretsNotInBaseline(object):
         results = get_secrets_not_in_baseline(new_findings, baseline)
 
         assert len(results.data['filename']) == 1
-        secretA = PotentialSecret('type', 'filename', 1, 'secret1')
+        secretA = PotentialSecret('type', 'filename', 'secret1', 1)
         assert results.data['filename'][secretA].secret_hash == \
             PotentialSecret.hash_secret('secret1')
         assert baseline.data == backup_baseline
@@ -201,7 +201,7 @@ class TestGetSecretsNotInBaseline(object):
 
         assert len(results.data['filename']) == 1
 
-        secretA = PotentialSecret('type', 'filename', 1, 'secret_new')
+        secretA = PotentialSecret('type', 'filename', 'secret_new', 1)
         assert results.data['filename'][secretA].secret_hash == \
             PotentialSecret.hash_secret('secret_new')
         assert baseline.data == backup_baseline

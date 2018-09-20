@@ -88,8 +88,8 @@ class SecretsCollection(object):
                 secret = PotentialSecret(
                     item['type'],
                     filename,
-                    item['line_number'],
                     secret='will be replaced',
+                    lineno=item['line_number'],
                     is_secret=item.get('is_secret'),
                 )
                 secret.secret_hash = item['hashed_secret']
@@ -204,7 +204,7 @@ class SecretsCollection(object):
         if type_:
             # Optimized lookup, because we know the type of secret
             # (and therefore, its hash)
-            tmp_secret = PotentialSecret(type_, filename, 0, 'will be overriden')
+            tmp_secret = PotentialSecret(type_, filename, secret='will be overriden')
             tmp_secret.secret_hash = secret
 
             if tmp_secret in self.data[filename]:
@@ -251,18 +251,18 @@ class SecretsCollection(object):
                  Caller is responsible for updating the dictionary with
                  results of plugin analysis.
         """
-        results = {}
+        file_results = {}
 
         for plugin in self.plugins:
-            yield results, plugin
+            yield file_results, plugin
 
-        if not results:
+        if not file_results:
             return
 
         if filename not in self.data:
-            self.data[filename] = results
+            self.data[filename] = file_results
         else:
-            self.data[filename].update(results)
+            self.data[filename].update(file_results)
 
     def _extract_secrets_from_file(self, f, filename):
         """Extract secrets from a given file object.
