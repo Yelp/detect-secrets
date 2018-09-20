@@ -4,11 +4,11 @@ from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.core.secrets_collection import SecretsCollection
 
 
-def potential_secret_factory(type_='type', filename='filename', lineno=1, secret='secret'):
+def potential_secret_factory(type_='type', filename='filename', secret='secret', lineno=1):
     """This is only marginally better than creating PotentialSecret objects directly,
     because of default values.
     """
-    return PotentialSecret(type_, filename, lineno, secret)
+    return PotentialSecret(type_, filename, secret, lineno)
 
 
 def secrets_collection_factory(secrets=None, plugins=(), exclude_regex=''):
@@ -51,7 +51,7 @@ def _add_secret(collection, type_='type', secret='secret', filename='filename', 
     tmp_secret = potential_secret_factory(
         type_=type_,
         filename=filename,
-        lineno=lineno,
         secret=secret,
+        lineno=lineno,
     )
     collection.data[filename][tmp_secret] = tmp_secret

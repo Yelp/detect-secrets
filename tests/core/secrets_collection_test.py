@@ -93,7 +93,7 @@ class TestScanFile(object):
         line_numbers = [entry.lineno for entry in logic.data['filename']]
         assert set(line_numbers) == set([1, 2, 3])
 
-    def test_removal_of_password_plugin_secrets_if_reported_already(self):
+    def test_reporting_of_password_plugin_secrets_if_reported_already(self):
         logic = secrets_collection_factory(
             secrets=[
                 {
@@ -110,9 +110,7 @@ class TestScanFile(object):
         with mock_open('junk text here'):
             logic.scan_file('filename')
 
-        # One from only the MockPluginFileValue, and one from existing secret
-        # This is because the MockPasswordPluginValue was not placed into data
-        assert len(logic.data['filename']) == 2
+        assert len(logic.data['filename']) == 3
 
         line_numbers = [entry.lineno for entry in logic.data['filename']]
         assert set(line_numbers) == set([2, 3])
