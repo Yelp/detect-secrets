@@ -139,6 +139,10 @@ The current heuristic searches we implement out of the box include:
 
 * **PrivateKeyDetector**: checks to see if any private keys are committed.
 
+* **BasicAuthDetector**: checks to see if BasicAuth is used e.g. `https://username:password@example.com`
+
+* **KeywordDetector**: checks to see if certain keywords are being used e.g. `password` or `secret`
+
 See [detect_secrets/
 plugins](https://github.com/Yelp/detect-secrets/tree/master/detect_secrets/plugins)
 for more details.
@@ -152,8 +156,8 @@ committing secrets.
 
 ### Things that won't be prevented
 
-* Multi-line secrets.
-* Default passwords (eg. `password = "password"`)
+* Multi-line secrets
+* Default passwords that do not trigger the `KeywordDetector` (e.g. `paaassword = "paaassword"`)
 
 ### Plugin Configuration
 
