@@ -24,7 +24,7 @@ class PotentialSecret(object):
     ):
         """
         :type typ: str
-        :param typ: human-readable secret types, defined by the plugins
+        :param typ: human-readable secret type, defined by the plugin
                     that generated this PotentialSecret.
                     e.g. "High Entropy String"
 
