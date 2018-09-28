@@ -1,4 +1,5 @@
 import json
+import shlex
 import textwrap
 from contextlib import contextmanager
 
@@ -16,11 +17,15 @@ from testing.mocks import mock_printer
 
 @pytest.fixture
 def mock_baseline_initialize():
-    secrets = secrets_collection_factory()
+    def mock_initialize_function(plugins, exclude_regex, *args, **kwargs):
+        return secrets_collection_factory(
+            plugins=plugins,
+            exclude_regex=exclude_regex,
+        )
 
     with mock.patch(
         'detect_secrets.main.baseline.initialize',
-        return_value=secrets,
+        side_effect=mock_initialize_function,
     ) as mock_initialize:
         yield mock_initialize
 
@@ -154,6 +159,10 @@ class TestMain(object):
                 '--exclude "secrets/.*"',
                 'secrets/.*|^old_baseline_file$',
             ),
+            (
+                '--exclude "^old_baseline_file$"',
+                '^old_baseline_file$',
+            ),
         ],
     )
     def test_old_baseline_ignored_with_update_flag(
@@ -168,12 +177,17 @@ class TestMain(object):
         ), mock.patch(
             # We don't want to be creating a file during test
             'detect_secrets.main._write_to_file',
-        ):
+        ) as file_writer:
             assert main(
-                'scan --update old_baseline_file {}'.format(
-                    exclude_param,
-                ).split(),
+                shlex.split(
+                    'scan --update old_baseline_file {}'.format(
+                        exclude_param,
+                    ),
+                ),
             ) == 0
+
+            assert json.loads(file_writer.call_args[0][1])['exclude_regex'] == \
+                expected_regex
 
     @pytest.mark.parametrize(
         'filename, expected_output',

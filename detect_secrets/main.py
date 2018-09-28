@@ -42,6 +42,7 @@ def main(argv=None):
                 _perform_scan(args, plugins),
                 indent=2,
                 sort_keys=True,
+                separators=(',', ': '),
             )
 
             if args.import_filename:
@@ -85,8 +86,12 @@ def _perform_scan(args, plugins):
 
     # If we have knowledge of an existing baseline file, we should use
     # that knowledge and *not* scan that file.
-    if args.import_filename and args.exclude:
-        args.exclude += r'|^{}$'.format(args.import_filename[0])
+    if args.import_filename:
+        payload = '^{}$'.format(args.import_filename[0])
+        if args.exclude and payload not in args.exclude:
+            args.exclude += r'|{}'.format(payload)
+        elif not args.exclude:
+            args.exclude = payload
 
     new_baseline = baseline.initialize(
         plugins,

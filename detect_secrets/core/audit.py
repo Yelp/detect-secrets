@@ -216,6 +216,7 @@ def _save_baseline_to_file(filename, data):  # pragma: no cover
             data,
             indent=2,
             sort_keys=True,
+            separators=(',', ': '),
         ))
 
 

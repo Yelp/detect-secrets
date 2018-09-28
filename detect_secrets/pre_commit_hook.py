@@ -77,6 +77,7 @@ def _write_to_baseline_file(filename, payload):  # pragma: no cover
                 payload,
                 indent=2,
                 sort_keys=True,
+                separators=(',', ': '),
             ),
         )
 

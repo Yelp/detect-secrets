@@ -5,7 +5,7 @@
 /.coverage
 /.pytest_cache
 /.tox
-/venv
+/venv**
 /tmp
 
 .*ignore
