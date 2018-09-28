@@ -42,6 +42,7 @@ def main(argv=None):
                 _perform_scan(args, plugins),
                 indent=2,
                 sort_keys=True,
+                separators=(',', ': '),
             )
 
             if args.import_filename:
