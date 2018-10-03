@@ -7,7 +7,7 @@ from detect_secrets.core.potential_secret import PotentialSecret
 
 
 BASIC_AUTH_REGEX = re.compile(
-    r'.*?://[^:]+:([^@]+)@',
+    r'://[^:]+:([^@]+)@',
 )
 
 
