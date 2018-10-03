@@ -19,7 +19,8 @@ this package is designed with the enterprise client in mind: providing a
 
 This way, you create a
 [separation of concern](https://en.wikipedia.org/wiki/Separation_of_concerns):
-accepting that there may *currently* be secrets hiding in your large repository,
+accepting that there may *currently* be secrets hiding in your large repository
+(this is what we refer to as a _baseline_),
 but preventing this issue from getting any larger, without dealing with the
 potentially gargantuous effort of moving existing secrets away.
 
@@ -39,7 +40,7 @@ For a look at recent changes, please see the
 $ detect-secrets scan > .secrets.baseline
 ```
 
-### Pre-commit Hook
+### pre-commit Hook
 
 ```
 $ cat .pre-commit-config.yaml
@@ -51,7 +52,7 @@ $ cat .pre-commit-config.yaml
         exclude: .*/tests/.*
 ```
 
-### Auditing Baseline
+### Auditing a Baseline
 
 ```
 $ detect-secrets audit .secrets.baseline
@@ -65,6 +66,13 @@ For upgrading baselines lower than that version, just recreate it.
 ```
 $ detect-secrets scan --update .secrets.baseline
 ```
+
+### Command Line
+
+`detect-secrets` is designed to be used as a git pre-commit hook, but you can also invoke `detect-secrets scan [path]` directly (`path` defaults to `.` if not specified).
+
+It should be noted that by default, `detect-secrets scan` only operates on files that are tracked by git. So if you intend to scan files outside of a git repository, you will need to pass the `--all-files` flag.
+
 
 ## Installation
 
