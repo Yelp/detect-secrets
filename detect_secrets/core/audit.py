@@ -277,6 +277,7 @@ def _get_secret_with_context(
 
     output[index_of_secret_in_output] = _highlight_secret(
         output[index_of_secret_in_output],
+        secret_lineno,
         secret,
         filename,
         plugin_settings,
@@ -297,10 +298,13 @@ def _get_secret_with_context(
     )
 
 
-def _highlight_secret(secret_line, secret, filename, plugin_settings):
+def _highlight_secret(secret_line, secret_lineno, secret, filename, plugin_settings):
     """
     :type secret_line: str
-    :param secret_line: the line on whcih the secret is found
+    :param secret_line: the line on which the secret is found
+
+    :type secret_lineno: int
+    :param secret_lineno: secret_line's line number in the source file
 
     :type secret: dict
     :param secret: see caller's docstring
@@ -332,7 +336,7 @@ def _highlight_secret(secret_line, secret, filename, plugin_settings):
         if secret_obj.secret_hash == secret['hashed_secret']:
             break
     else:
-        raise SecretNotFoundOnSpecifiedLineError(secret_line)
+        raise SecretNotFoundOnSpecifiedLineError(secret_lineno)
 
     index_of_secret = secret_line.index(raw_secret)
     return '{}{}{}'.format(
