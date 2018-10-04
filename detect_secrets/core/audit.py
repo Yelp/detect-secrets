@@ -4,7 +4,6 @@ import json
 import os
 import subprocess
 import sys
-import textwrap
 from builtins import input
 from collections import defaultdict
 
@@ -18,7 +17,11 @@ from .potential_secret import PotentialSecret
 
 
 class SecretNotFoundOnSpecifiedLineError(Exception):
-    pass
+    def __init__(self, line):
+        super(SecretNotFoundOnSpecifiedLineError, self).__init__(
+            "ERROR: Secret not found on line {}!\n".format(line) +
+            "Try recreating your baseline to fix this issue.",
+        )
 
 
 def audit_baseline(baseline_filename):
@@ -329,12 +332,7 @@ def _highlight_secret(secret_line, secret, filename, plugin_settings):
         if secret_obj.secret_hash == secret['hashed_secret']:
             break
     else:
-        raise SecretNotFoundOnSpecifiedLineError(
-            textwrap.dedent("""
-                ERROR: Secret not found on specified line number!
-                Try recreating your baseline to fix this issue.
-            """)[1:-1],
-        )
+        raise SecretNotFoundOnSpecifiedLineError(secret_line)
 
     index_of_secret = secret_line.index(raw_secret)
     return '{}{}{}'.format(
