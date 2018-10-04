@@ -23,6 +23,31 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [@xxxx]: https://github.com/xxxx
 -->
 
+### 0.10.3
+##### October 4th, 2018
+
+#### :tada: New Features
+
+- Added a `KeyWordDetector` plugin ([#76])
+
+#### :bug: Bugfixes
+
+- Fixed a bug in `scan --update` where we would append to the baseline exclude regex to itself ([#78])
+- Fixed the regular expression in the `BasicAuthDetector` detector so that it didn't run forever ([#80])
+- Removed trailing whitespace from `scan` output ([#78])
+
+#### :snake: Miscellaneous
+
+- Added command line hints and baseline clarification in the README ([#81], thanks [@JoshuaRLi])
+
+[#76]: https://github.com/Yelp/detect-secrets/pull/76
+[#78]: https://github.com/Yelp/detect-secrets/pull/78
+[#80]: https://github.com/Yelp/detect-secrets/pull/80
+[#81]: https://github.com/Yelp/detect-secrets/pull/81
+
+[@JoshuaRLi]: https://github.com/JoshuaRLi
+
+
 ### 0.10.2
 ##### September 12th, 2018
 
