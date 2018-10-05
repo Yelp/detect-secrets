@@ -424,7 +424,7 @@ class TestPrintContext(object):
             Secrets Left: 1/2
             Filename:     filenameA
             ----------
-            ERROR: Secret not found on specified line number!
+            ERROR: Secret not found on line 15!
             Try recreating your baseline to fix this issue.
             ----------
 
