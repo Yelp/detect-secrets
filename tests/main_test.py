@@ -254,8 +254,8 @@ class TestMain(object):
             main('audit will_be_mocked'.split())
 
             assert printer_shim.message == textwrap.dedent("""
-                Secrets Left: 1/1
-                Filename:     {}
+                Secret 1 of 1
+                Filename: {}
                 ----------
                 {}
                 ----------

@@ -362,8 +362,8 @@ class TestPrintContext(object):
             assert sed_call.call_args[0][0] == 'sed -n 10,20p filenameA'.split()
 
         assert mock_printer.message == textwrap.dedent("""
-            Secrets Left: 1/2
-            Filename:     filenameA
+            Secret 1 of 2
+            Filename: filenameA
             ----------
             10:a
             11:b
@@ -394,8 +394,8 @@ class TestPrintContext(object):
             assert sed_call.call_args[0][0] == 'sed -n 1,6p filenameA'.split()
 
         assert mock_printer.message == textwrap.dedent("""
-            Secrets Left: 1/2
-            Filename:     filenameA
+            Secret 1 of 2
+            Filename: filenameA
             ----------
             1:-----BEGIN PRIVATE KEY-----
             2:e
@@ -421,10 +421,10 @@ class TestPrintContext(object):
             )
 
         assert mock_printer.message == textwrap.dedent("""
-            Secrets Left: 1/2
-            Filename:     filenameA
+            Secret 1 of 2
+            Filename: filenameA
             ----------
-            ERROR: Secret not found on specified line number!
+            ERROR: Secret not found on line 15!
             Try recreating your baseline to fix this issue.
             ----------
 
@@ -450,8 +450,8 @@ class TestPrintContext(object):
             )
 
         assert mock_printer.message == textwrap.dedent("""
-            Secrets Left: 1/2
-            Filename:     filenameB
+            Secret 1 of 2
+            Filename: filenameB
             ----------
             10:a
             11:b

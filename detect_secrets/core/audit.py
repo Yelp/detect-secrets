@@ -4,7 +4,6 @@ import json
 import os
 import subprocess
 import sys
-import textwrap
 from builtins import input
 from collections import defaultdict
 
@@ -18,7 +17,11 @@ from .potential_secret import PotentialSecret
 
 
 class SecretNotFoundOnSpecifiedLineError(Exception):
-    pass
+    def __init__(self, line):
+        super(SecretNotFoundOnSpecifiedLineError, self).__init__(
+            "ERROR: Secret not found on line {}!\n".format(line) +
+            "Try recreating your baseline to fix this issue.",
+        )
 
 
 def audit_baseline(baseline_filename):
@@ -128,27 +131,13 @@ def _print_context(filename, secret, count, total, plugin_settings):   # pragma:
 
     :raises: SecretNotFoundOnSpecifiedLineError
     """
-    secrets_left = '{}/{}'.format(
-        count,
-        total,
-    )
-    print('{} {}\n{} {}'.format(
-        BashColor.color(
-            'Secrets Left:',
-            Color.BOLD,
-        ),
-        BashColor.color(
-            secrets_left,
-            Color.PURPLE,
-        ),
-        BashColor.color(
-            'Filename:    ',
-            Color.BOLD,
-        ),
-        BashColor.color(
-            filename,
-            Color.PURPLE,
-        ),
+    print('{} {} {} {}\n{} {}'.format(
+        BashColor.color('Secret', Color.BOLD),
+        BashColor.color(str(count), Color.PURPLE),
+        BashColor.color('of', Color.BOLD),
+        BashColor.color(str(total), Color.PURPLE),
+        BashColor.color('Filename:', Color.BOLD),
+        BashColor.color(filename, Color.PURPLE),
     ))
     print('-' * 10)
 
@@ -274,6 +263,7 @@ def _get_secret_with_context(
 
     output[index_of_secret_in_output] = _highlight_secret(
         output[index_of_secret_in_output],
+        secret_lineno,
         secret,
         filename,
         plugin_settings,
@@ -294,10 +284,13 @@ def _get_secret_with_context(
     )
 
 
-def _highlight_secret(secret_line, secret, filename, plugin_settings):
+def _highlight_secret(secret_line, secret_lineno, secret, filename, plugin_settings):
     """
     :type secret_line: str
-    :param secret_line: the line on whcih the secret is found
+    :param secret_line: the line on which the secret is found
+
+    :type secret_lineno: int
+    :param secret_lineno: secret_line's line number in the source file
 
     :type secret: dict
     :param secret: see caller's docstring
@@ -329,12 +322,7 @@ def _highlight_secret(secret_line, secret, filename, plugin_settings):
         if secret_obj.secret_hash == secret['hashed_secret']:
             break
     else:
-        raise SecretNotFoundOnSpecifiedLineError(
-            textwrap.dedent("""
-                ERROR: Secret not found on specified line number!
-                Try recreating your baseline to fix this issue.
-            """)[1:-1],
-        )
+        raise SecretNotFoundOnSpecifiedLineError(secret_lineno)
 
     index_of_secret = secret_line.index(raw_secret)
     return '{}{}{}'.format(
