@@ -68,5 +68,5 @@ class KeywordDetector(BasePlugin):
 
     def secret_generator(self, string):
         for line in BLACKLIST:
-            if line in string:
+            if line.lower() in string.lower():
                 yield line

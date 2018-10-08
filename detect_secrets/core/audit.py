@@ -324,11 +324,14 @@ def _highlight_secret(secret_line, secret_lineno, secret, filename, plugin_setti
     else:
         raise SecretNotFoundOnSpecifiedLineError(secret_lineno)
 
-    index_of_secret = secret_line.index(raw_secret)
+    index_of_secret = secret_line.lower().index(raw_secret.lower())
+    end_of_secret = index_of_secret + len(raw_secret)
     return '{}{}{}'.format(
         secret_line[:index_of_secret],
         BashColor.color(
-            raw_secret,
+            # copy the secret out of the line because .lower() from secret
+            # generator may be different from the original value:
+            secret_line[index_of_secret:end_of_secret],
             Color.RED,
         ),
         secret_line[index_of_secret + len(raw_secret):],
