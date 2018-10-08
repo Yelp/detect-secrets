@@ -55,7 +55,7 @@ class KeywordDetector(BasePlugin):
         if WHITELIST_REGEX.search(string):
             return output
 
-        for identifier in self.secret_generator(string.lower()):
+        for identifier in self.secret_generator(string):
             secret = PotentialSecret(
                 self.secret_type,
                 filename,
