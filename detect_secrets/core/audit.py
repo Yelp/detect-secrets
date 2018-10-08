@@ -248,8 +248,12 @@ def _get_secret_with_context(
     if len(output) < end_line - start_line + 1:
         # This handles the case of a short file.
         num_lines_in_file = int(subprocess.check_output([
-            'wc',
-            '-l',
+            # https://stackoverflow.com/a/38870057
+            # - 'wc -l' cannot be used here because if the last char
+            # of the file isn't \n, then the last line isn't counted
+            'grep',
+            '-c',
+            '',
             filename,
         ]).decode('utf-8').split()[0])
 
