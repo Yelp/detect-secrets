@@ -37,6 +37,7 @@ class TestPluginOptions(object):
             'KeywordDetector': {},
             'PrivateKeyDetector': {},
             'AWSKeyDetector': {},
+            'SlackDetector': {},
         }
         assert not hasattr(args, 'no_private_key_scan')
 

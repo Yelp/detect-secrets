@@ -251,6 +251,11 @@ class PluginOptions(object):
             disable_flag_text='--no-aws-key-scan',
             disable_help_text='Disables scanning for AWS keys.',
         ),
+        PluginDescriptor(
+            classname='SlackDetector',
+            disable_flag_text='--no-slack-scan',
+            disable_help_text='Disables scanning for secret slack.',
+        ),
     ]
 
     def __init__(self, parser):
