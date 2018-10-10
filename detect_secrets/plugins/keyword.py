@@ -32,7 +32,9 @@ from detect_secrets.plugins.core.constants import WHITELIST_REGEX
 
 
 BLACKLIST = (
-    'PASS =',
+    # NOTE all values here should be lowercase,
+    # otherwise _secret_generator can fail to match them
+    'pass =',
     'password',
     'passwd',
     'pwd',
@@ -55,7 +57,7 @@ class KeywordDetector(BasePlugin):
         if WHITELIST_REGEX.search(string):
             return output
 
-        for identifier in self.secret_generator(string.lower()):
+        for identifier in self.secret_generator(string):
             secret = PotentialSecret(
                 self.secret_type,
                 filename,
@@ -66,7 +68,10 @@ class KeywordDetector(BasePlugin):
 
         return output
 
-    def secret_generator(self, string):
+    def _secret_generator(self, lowercase_string):
         for line in BLACKLIST:
-            if line in string:
+            if line in lowercase_string:
                 yield line
+
+    def secret_generator(self, string):
+        return self._secret_generator(string.lower())

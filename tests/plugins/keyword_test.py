@@ -18,6 +18,9 @@ class TestKeywordDetector(object):
             (
                 'token = "noentropy"'
             ),
+            (
+                'PASSWORD = "verysimple"'
+            ),
         ],
     )
     def test_analyze(self, file_content):
@@ -28,3 +31,5 @@ class TestKeywordDetector(object):
         assert len(output) == 1
         for potential_secret in output:
             assert 'mock_filename' == potential_secret.filename
+        generated = list(logic.secret_generator(file_content))
+        assert len(generated) == len(output)

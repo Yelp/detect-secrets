@@ -248,8 +248,12 @@ def _get_secret_with_context(
     if len(output) < end_line - start_line + 1:
         # This handles the case of a short file.
         num_lines_in_file = int(subprocess.check_output([
-            'wc',
-            '-l',
+            # https://stackoverflow.com/a/38870057
+            # - 'wc -l' cannot be used here because if the last char
+            # of the file isn't \n, then the last line isn't counted
+            'grep',
+            '-c',
+            '',
             filename,
         ]).decode('utf-8').split()[0])
 
@@ -324,11 +328,14 @@ def _highlight_secret(secret_line, secret_lineno, secret, filename, plugin_setti
     else:
         raise SecretNotFoundOnSpecifiedLineError(secret_lineno)
 
-    index_of_secret = secret_line.index(raw_secret)
+    index_of_secret = secret_line.lower().index(raw_secret.lower())
+    end_of_secret = index_of_secret + len(raw_secret)
     return '{}{}{}'.format(
         secret_line[:index_of_secret],
         BashColor.color(
-            raw_secret,
+            # copy the secret out of the line because .lower() from secret
+            # generator may be different from the original value:
+            secret_line[index_of_secret:end_of_secret],
             Color.RED,
         ),
         secret_line[index_of_secret + len(raw_secret):],
