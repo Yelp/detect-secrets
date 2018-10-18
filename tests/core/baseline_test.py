@@ -1,11 +1,13 @@
 from __future__ import absolute_import
 
+import json
 import random
 
 import mock
 import pytest
 
 from detect_secrets.core import baseline
+from detect_secrets.core.baseline import format_baseline_for_output
 from detect_secrets.core.baseline import get_secrets_not_in_baseline
 from detect_secrets.core.baseline import merge_baseline
 from detect_secrets.core.baseline import merge_results
@@ -512,3 +514,33 @@ class TestMergeResults(object):
             'line_number': random_number,
             'type': 'Test Type',
         }
+
+
+class TestFormatBaselineForOutput(object):
+
+    def test_sorts_by_line_number_then_hash(self):
+        output_string = format_baseline_for_output({
+            'results': {
+                'filename': [
+                    {
+                        'hashed_secret': 'a',
+                        'line_number': 3,
+                    },
+                    {
+                        'hashed_secret': 'z',
+                        'line_number': 2,
+                    },
+                    {
+                        'hashed_secret': 'f',
+                        'line_number': 3,
+                    },
+                ],
+            },
+        })
+
+        ordered_hashes = list(map(
+            lambda x: x['hashed_secret'],
+            json.loads(output_string)['results']['filename'],
+        ))
+
+        assert ordered_hashes == ['z', 'a', 'f']

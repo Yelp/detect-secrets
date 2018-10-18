@@ -235,6 +235,12 @@ def format_baseline_for_output(baseline):
     :type baseline: dict
     :rtype: str
     """
+    for filename, secret_list in baseline['results'].items():
+        baseline['results'][filename] = sorted(
+            secret_list,
+            key=lambda x: (x['line_number'], x['hashed_secret'],),
+        )
+
     return json.dumps(
         baseline,
         indent=2,
