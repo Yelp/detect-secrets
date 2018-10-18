@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import json
 import os
 import re
 import subprocess
@@ -227,6 +228,19 @@ def merge_results(old_results, new_results):
                 break
 
     return new_results
+
+
+def format_baseline_for_output(baseline):
+    """
+    :type baseline: dict
+    :rtype: str
+    """
+    return json.dumps(
+        baseline,
+        indent=2,
+        sort_keys=True,
+        separators=(',', ': '),
+    )
 
 
 def _get_git_tracked_files(rootdir='.'):

@@ -38,11 +38,8 @@ def main(argv=None):
             _scan_string(line, plugins)
 
         else:
-            output = json.dumps(
+            output = baseline.format_baseline_for_output(
                 _perform_scan(args, plugins),
-                indent=2,
-                sort_keys=True,
-                separators=(',', ': '),
             )
 
             if args.import_filename:

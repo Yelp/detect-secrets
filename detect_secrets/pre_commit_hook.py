@@ -6,6 +6,7 @@ import sys
 import textwrap
 
 from detect_secrets import VERSION
+from detect_secrets.core.baseline import format_baseline_for_output
 from detect_secrets.core.baseline import get_secrets_not_in_baseline
 from detect_secrets.core.baseline import update_baseline_with_removed_secrets
 from detect_secrets.core.log import get_logger
@@ -72,14 +73,7 @@ def main(argv=None):
 def _write_to_baseline_file(filename, payload):  # pragma: no cover
     """Breaking this function up for mockability."""
     with open(filename, 'w') as f:
-        f.write(
-            json.dumps(
-                payload,
-                indent=2,
-                sort_keys=True,
-                separators=(',', ': '),
-            ),
-        )
+        f.write(format_baseline_for_output(payload))
 
 
 def get_baseline(baseline_filename):
