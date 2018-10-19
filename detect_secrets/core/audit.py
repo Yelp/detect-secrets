@@ -9,6 +9,7 @@ from collections import defaultdict
 
 from ..plugins.core import initialize
 from ..plugins.high_entropy_strings import HighEntropyStringsPlugin
+from .baseline import format_baseline_for_output
 from .baseline import merge_results
 from .bidirectional_iterator import BidirectionalIterator
 from .color import BashColor
@@ -201,12 +202,7 @@ def _handle_user_decision(decision, secret):
 
 def _save_baseline_to_file(filename, data):  # pragma: no cover
     with open(filename, 'w') as f:
-        f.write(json.dumps(
-            data,
-            indent=2,
-            sort_keys=True,
-            separators=(',', ': '),
-        ))
+        f.write(format_baseline_for_output(data))
 
 
 def _get_secret_with_context(

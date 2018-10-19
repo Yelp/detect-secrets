@@ -35,10 +35,9 @@ def mock_merge_baseline():
     with mock.patch(
         'detect_secrets.main.baseline.merge_baseline',
     ) as m:
-        # This return value doesn't matter, because we're not testing
-        # for it. It just needs to be a dictionary, so it can be properly
-        # JSON dumped.
-        m.return_value = {}
+        # This return value needs to have the `results` key, so that it can
+        # formatted appropriately for output.
+        m.return_value = {'results': {}}
         yield m
 
 
