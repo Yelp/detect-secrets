@@ -26,21 +26,53 @@ THE SOFTWARE.
 """
 from __future__ import absolute_import
 
+import re
+
 from .base import BasePlugin
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.core.constants import WHITELIST_REGEX
 
 
+# Note: All values here should be lowercase
 BLACKLIST = (
-    # NOTE all values here should be lowercase,
-    # otherwise _secret_generator can fail to match them
-    'pass =',
+    'apikey',
+    'api_key',
+    'pass',
     'password',
     'passwd',
-    'pwd',
+    'private_key',
     'secret',
     'secrete',
     'token',
+)
+# Uses lazy quantifiers
+BLACKLIST_REGEX = re.compile(
+    # Followed by double-quotes and a semi-colon
+    # e.g. private_key "something";
+    r'|'.join(
+        '(.*?){}(.*?)"(.*?)";'.format(
+            value,
+        )
+        for value in BLACKLIST
+    ) + '|' +
+    # Followed by a :
+    # e.g. token:
+    r'|'.join(
+        '(.*?){}[:](.*?)'.format(
+            value,
+        )
+        for value in BLACKLIST
+    ) + '|' +
+    # Follwed by an = sign
+    # e.g. my_password =
+    r'|'.join(
+        '(.*?){}(.*?)=(.*?)'.format(
+            value,
+        )
+        for value in BLACKLIST
+    ) +
+    # pwd has to start with pwd, it is too common
+    '|^pwd(.*?)=(.*?)',
 )
 
 
@@ -57,7 +89,8 @@ class KeywordDetector(BasePlugin):
         if WHITELIST_REGEX.search(string):
             return output
 
-        for identifier in self.secret_generator(string):
+        identifier = self.secret_generator(string)
+        if identifier:
             secret = PotentialSecret(
                 self.secret_type,
                 filename,
@@ -68,10 +101,10 @@ class KeywordDetector(BasePlugin):
 
         return output
 
-    def _secret_generator(self, lowercase_string):
-        for line in BLACKLIST:
-            if line in lowercase_string:
-                yield line
-
     def secret_generator(self, string):
-        return self._secret_generator(string.lower())
+        match = BLACKLIST_REGEX.search(
+            string.lower(),
+        )
+        if not match:
+            return None
+        return match.group()

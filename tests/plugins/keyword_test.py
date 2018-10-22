@@ -13,23 +13,79 @@ class TestKeywordDetector(object):
         'file_content',
         [
             (
-                'login_somewhere --http-password hopenobodyfindsthisone\n'
+                'apikey "something";'
+            ),
+            (
+                'token "something";'
+            ),
+            (
+                'apikey:'
+            ),
+            (
+                'the_token:'
+            ),
+            (
+                'my_password ='
+            ),
+            (
+                'some_token_for_something ='
+            ),
+            (
+                'pwd = foo'
+            ),
+            (
+                'private_key "something";'
+            ),
+
+            (
+                'passwordone=foo\n'
+            ),
+            (
+                'API_KEY=hopenobodyfindsthisone\n'
             ),
             (
                 'token = "noentropy"'
             ),
-            (
-                'PASSWORD = "verysimple"'
-            ),
         ],
     )
-    def test_analyze(self, file_content):
+    def test_analyze_positives(self, file_content):
         logic = KeywordDetector()
 
         f = mock_file_object(file_content)
         output = logic.analyze(f, 'mock_filename')
+        print('output is {}'.format(output))
+        for k in output:
+            print(str(k))
         assert len(output) == 1
         for potential_secret in output:
             assert 'mock_filename' == potential_secret.filename
-        generated = list(logic.secret_generator(file_content))
-        assert len(generated) == len(output)
+
+    @pytest.mark.parametrize(
+        'file_content',
+        [
+            (
+                'private_key \'something\';'  # Single-quotes not double-quotes
+            ),
+            (
+                'passwordonefoo\n'  # No = or anything
+            ),
+            (
+                'api_keyhopenobodyfindsthisone:\n'  # Has char's in between api_key and :
+            ),
+            (
+                'my_pwd ='  # Does not start with pwd
+            ),
+            (
+                'token "noentropy;'  # No 2nd double-quote
+            ),
+            (
+                'token noentropy;'  # No quotes
+            ),
+        ],
+    )
+    def test_analyze_negatives(self, file_content):
+        logic = KeywordDetector()
+
+        f = mock_file_object(file_content)
+        output = logic.analyze(f, 'mock_filename')
+        assert len(output) == 0
