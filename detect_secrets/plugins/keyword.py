@@ -51,7 +51,7 @@ BLACKLIST_REGEX = re.compile(
     # e.g. private_key "something";
     # e.g. private_key 'something';
     r'|'.join(
-        '{}(.*?)("|\')(.*?)(\'|");'.format(
+        '{}(.*?)("|\')(\\S*?)(\'|");'.format(
             value,
         )
         for value in BLACKLIST

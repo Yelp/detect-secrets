@@ -64,6 +64,9 @@ class TestKeywordDetector(object):
         'file_content',
         [
             (
+                'private_key \'"no spaces\';'  # Has whitespace in-between
+            ),
+            (
                 'passwordonefoo\n'  # No = or anything
             ),
             (
