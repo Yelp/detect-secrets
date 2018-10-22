@@ -98,8 +98,10 @@ def get_baseline(baseline_filename):
             'The supplied baseline may be incompatible with the current\n'
             'version of detect-secrets. Please recreate your baseline to\n'
             'avoid potential mis-configurations.\n\n'
+            '$ detect-secrets scan --update %s\n\n'
             'Current Version: %s\n'
             'Baseline Version: %s',
+            baseline_filename,
             VERSION,
             baseline_version if baseline_version else '0.0.0',
         )
