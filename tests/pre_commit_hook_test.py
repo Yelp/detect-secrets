@@ -117,6 +117,8 @@ class TestPreCommitHook(object):
             'version of detect-secrets. Please recreate your baseline to\n'
             'avoid potential mis-configurations.\n'
             '\n'
+            '$ detect-secrets scan --update will_be_mocked\n'
+            '\n'
             'Current Version: {}\n'
             'Baseline Version: {}\n'
         ).format(
