@@ -49,8 +49,9 @@ BLACKLIST = (
 BLACKLIST_REGEX = re.compile(
     # Followed by double-quotes and a semi-colon
     # e.g. private_key "something";
+    # e.g. private_key 'something';
     r'|'.join(
-        '(.*?){}(.*?)"(.*?)";'.format(
+        '{}(.*?)("|\')(.*?)(\'|");'.format(
             value,
         )
         for value in BLACKLIST
@@ -58,7 +59,7 @@ BLACKLIST_REGEX = re.compile(
     # Followed by a :
     # e.g. token:
     r'|'.join(
-        '(.*?){}[:](.*?)'.format(
+        '{}:'.format(
             value,
         )
         for value in BLACKLIST
@@ -66,13 +67,13 @@ BLACKLIST_REGEX = re.compile(
     # Follwed by an = sign
     # e.g. my_password =
     r'|'.join(
-        '(.*?){}(.*?)=(.*?)'.format(
+        '{}(.*?)='.format(
             value,
         )
         for value in BLACKLIST
     ) +
-    # pwd has to start with pwd, it is too common
-    '|^pwd(.*?)=(.*?)',
+    # For `pwd` it has to start with pwd after whitespace, it is too common
+    '|\\spwd(.*?)=',
 )
 
 
@@ -89,8 +90,7 @@ class KeywordDetector(BasePlugin):
         if WHITELIST_REGEX.search(string):
             return output
 
-        identifier = self.secret_generator(string)
-        if identifier:
+        for identifier in self.secret_generator(string):
             secret = PotentialSecret(
                 self.secret_type,
                 filename,
@@ -106,5 +106,5 @@ class KeywordDetector(BasePlugin):
             string.lower(),
         )
         if not match:
-            return None
-        return match.group()
+            return []
+        return [match.group()]

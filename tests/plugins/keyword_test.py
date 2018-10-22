@@ -19,6 +19,9 @@ class TestKeywordDetector(object):
                 'token "something";'
             ),
             (
+                'private_key \'"something\';'  # Single-quotes not double-quotes
+            ),
+            (
                 'apikey:'
             ),
             (
@@ -31,7 +34,7 @@ class TestKeywordDetector(object):
                 'some_token_for_something ='
             ),
             (
-                'pwd = foo'
+                '  pwd = foo'
             ),
             (
                 'private_key "something";'
@@ -53,9 +56,6 @@ class TestKeywordDetector(object):
 
         f = mock_file_object(file_content)
         output = logic.analyze(f, 'mock_filename')
-        print('output is {}'.format(output))
-        for k in output:
-            print(str(k))
         assert len(output) == 1
         for potential_secret in output:
             assert 'mock_filename' == potential_secret.filename
@@ -63,9 +63,6 @@ class TestKeywordDetector(object):
     @pytest.mark.parametrize(
         'file_content',
         [
-            (
-                'private_key \'something\';'  # Single-quotes not double-quotes
-            ),
             (
                 'passwordonefoo\n'  # No = or anything
             ),
