@@ -90,7 +90,6 @@ class TestMain(object):
                 Base64HighEntropyString: False (3.459)
                 BasicAuthDetector      : False
                 HexHighEntropyString   : True  (3.459)
-                KeywordDetector        : False
                 PrivateKeyDetector     : False
             """)[1:]
 
@@ -107,7 +106,6 @@ class TestMain(object):
                 Base64HighEntropyString: False (2.585)
                 BasicAuthDetector      : False
                 HexHighEntropyString   : False (2.121)
-                KeywordDetector        : False
                 PrivateKeyDetector     : False
             """)[1:]
 

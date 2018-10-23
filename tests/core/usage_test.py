@@ -32,7 +32,6 @@ class TestPluginOptions(object):
             'Base64HighEntropyString': {
                 'base64_limit': 4.5,
             },
-            'KeywordDetector': {},
             'PrivateKeyDetector': {},
         }
         assert not hasattr(args, 'no_private_key_scan')

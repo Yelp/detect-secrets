@@ -63,8 +63,11 @@ def main(argv=None):
             baseline_collection.format_for_baseline_output(),
         )
 
-        # The pre-commit framework should automatically detect a file change
-        # and print a relevant error message.
+        log.error(
+            'The baseline file was updated.\n'
+            'Probably to keep line numbers of secrets up-to-date.\n'
+            'Please `git add {}`, thank you.\n\n'.format(args.baseline[0]),
+        )
         return 1
 
     return 0
