@@ -329,6 +329,7 @@ class PluginOptions(object):
                 plugin.disable_flag_text,
                 action='store_true',
                 help=plugin.disable_help_text,
+                default=True if plugin.disable_flag_text == '--no-keyword-scan' else False,
             )
 
         return self
