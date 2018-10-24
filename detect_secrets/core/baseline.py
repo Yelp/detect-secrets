@@ -157,6 +157,8 @@ def merge_baseline(old_baseline, new_baseline):
     to the new baseline, and will only work with baselines created
     after v0.9.
 
+    Note: that the exclude regex is handled separately.
+
     :type old_baseline: dict
     :param old_baseline: baseline dict, loaded from previous baseline
 
@@ -174,14 +176,6 @@ def merge_baseline(old_baseline, new_baseline):
 def merge_results(old_results, new_results):
     """Update results in baseline with latest information.
 
-    As a rule of thumb, we want to favor the new results, yet at the same
-    time, transfer non-modified data from the old results set.
-
-    Assumptions:
-        * The list of results in each secret set is in the same order.
-          This means that new_results cannot have *more* results than
-          old_results.
-
     :type old_results: dict
     :param old_results: results of status quo
 
@@ -190,42 +184,21 @@ def merge_results(old_results, new_results):
 
     :rtype: dict
     """
-    for filename, secrets in old_results.items():
+    for filename, old_secrets in old_results.items():
         if filename not in new_results:
-            new_results[filename] = secrets
             continue
 
-        if len(secrets) == len(new_results[filename]):
-            # Assuming that secrets remain in order.
-            for index, secrets_tuple in enumerate(zip(secrets, new_results[filename])):
-                old_secret, new_secret = secrets_tuple
+        for new_secret in new_results[filename]:
+            for old_secret in old_secrets:
                 if old_secret['hashed_secret'] != new_secret['hashed_secret']:
                     # We don't join the two secret sets, because if the later
                     # result set did not discover an old secret, it's probably
                     # moved.
-                    # If it did discover it, then lengths would be different.
                     continue
 
+                # Only propogate 'is_secret' if it's not already there
                 if 'is_secret' in old_secret and 'is_secret' not in new_secret:
-                    # If the new_secret has a label, then go with the later
-                    # version.
-                    new_results[filename][index] = old_secret
-
-            continue
-
-        # Need to figure out starting point. That is, while
-        # len(new_results) < len(old_results), they may not start at the same
-        # place.
-        #
-        # e.g. old_results = A,B,C,D
-        #      new_results = B,C
-        first_secret_hash = new_results[filename][0]['hashed_secret']
-        for index, secret in enumerate(secrets):
-            if secret['hashed_secret'] == first_secret_hash:
-                new_results[filename] = secrets[:index] + \
-                    new_results[filename] + \
-                    secrets[index + len(new_results[filename]):]
-                break
+                    new_secret['is_secret'] = old_secret['is_secret']
 
     return new_results
 
