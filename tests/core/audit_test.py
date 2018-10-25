@@ -500,7 +500,7 @@ class TestGetUserDecision(object):
         [
             (
                 True,
-                'Is this a valid secret? (y)es, (n)o, (s)kip, (q)uit: ',
+                'Is this a valid secret? i.e. not a false-positive (y)es, (n)o, (s)kip, (q)uit: ',
             ),
             (
                 False,
