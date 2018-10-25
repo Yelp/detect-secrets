@@ -188,17 +188,21 @@ def merge_results(old_results, new_results):
         if filename not in new_results:
             continue
 
-        for new_secret in new_results[filename]:
-            for old_secret in old_secrets:
-                if old_secret['hashed_secret'] != new_secret['hashed_secret']:
-                    # We don't join the two secret sets, because if the later
-                    # result set did not discover an old secret, it's probably
-                    # moved.
-                    continue
+        old_secrets_mapping = dict()
+        for old_secret in old_secrets:
+            old_secrets_mapping[old_secret['hashed_secret']] = old_secret
 
-                # Only propogate 'is_secret' if it's not already there
-                if 'is_secret' in old_secret and 'is_secret' not in new_secret:
-                    new_secret['is_secret'] = old_secret['is_secret']
+        for new_secret in new_results[filename]:
+            if new_secret['hashed_secret'] not in old_secrets_mapping:
+                # We don't join the two secret sets, because if the newer
+                # result set did not discover an old secret, it probably
+                # moved.
+                continue
+
+            old_secret = old_secrets_mapping[new_secret['hashed_secret']]
+            # Only propogate 'is_secret' if it's not already there
+            if 'is_secret' in old_secret and 'is_secret' not in new_secret:
+                new_secret['is_secret'] = old_secret['is_secret']
 
     return new_results
 
