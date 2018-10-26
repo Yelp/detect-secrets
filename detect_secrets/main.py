@@ -107,7 +107,7 @@ def _perform_scan(args, plugins):
 
 
 def _get_existing_baseline(import_filename):
-    # Favors --import argument over stdin.
+    # Favors --update argument over stdin.
     if import_filename:
         return _read_from_file(import_filename[0])
     if not sys.stdin.isatty():
