@@ -1,7 +1,7 @@
 coverage
 flake8==3.5.0
 mock
-pre-commit
+pre-commit==1.11.2
 pytest
 pyyaml
 tox==3.1.3
