@@ -122,9 +122,11 @@ def _get_baseline_string_from_file(filename):   # pragma: no cover
 
     except IOError:
         log.error(
-            'Unable to open baseline file: %s.', filename,
+            'Unable to open baseline file: {}\n'
+            'Please create it via\n'
+            '   `detect-secrets scan > {}`\n'
+            .format(filename, filename),
         )
-
         raise
 
 
