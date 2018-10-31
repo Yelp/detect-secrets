@@ -63,8 +63,11 @@ def main(argv=None):
             baseline_collection.format_for_baseline_output(),
         )
 
-        # The pre-commit framework should automatically detect a file change
-        # and print a relevant error message.
+        log.error(
+            'The baseline file was updated.\n'
+            'Probably to keep line numbers of secrets up-to-date.\n'
+            'Please `git add {}`, thank you.\n\n'.format(args.baseline[0]),
+        )
         return 1
 
     return 0
@@ -98,8 +101,10 @@ def get_baseline(baseline_filename):
             'The supplied baseline may be incompatible with the current\n'
             'version of detect-secrets. Please recreate your baseline to\n'
             'avoid potential mis-configurations.\n\n'
+            '$ detect-secrets scan --update %s\n\n'
             'Current Version: %s\n'
             'Baseline Version: %s',
+            baseline_filename,
             VERSION,
             baseline_version if baseline_version else '0.0.0',
         )
@@ -117,9 +122,11 @@ def _get_baseline_string_from_file(filename):   # pragma: no cover
 
     except IOError:
         log.error(
-            'Unable to open baseline file: %s.', filename,
+            'Unable to open baseline file: {}\n'
+            'Please create it via\n'
+            '   `detect-secrets scan > {}`\n'
+            .format(filename, filename),
         )
-
         raise
 
 

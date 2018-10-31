@@ -422,7 +422,7 @@ class TestMergeResults(object):
             ],
         }
 
-        assert merge_results(old_result, {}) == old_result
+        assert merge_results(old_result, {}) == {}
 
     def test_old_results_have_subset_of_new_results(self):
         secretA = self.get_secret()
@@ -446,7 +446,6 @@ class TestMergeResults(object):
         ) == {
             'filenameA': [
                 modified_secretA,
-                secretB,
             ],
         }
 
@@ -480,10 +479,8 @@ class TestMergeResults(object):
             },
         ) == {
             'filename': [
-                secretA,
                 modified_secretB,
                 modified_secretC,
-                secretD,
             ],
         }
 
