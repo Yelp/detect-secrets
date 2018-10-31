@@ -81,6 +81,9 @@ class TestKeywordDetector(object):
         [
             # FOLLOWED_BY_COLON_RE
             (
+                'private_key "";'  # Nothing in the quotes
+            ),
+            (
                 'private_key \'"no spaces\';'  # Has whitespace in-between
             ),
             (
@@ -92,6 +95,13 @@ class TestKeywordDetector(object):
             # FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE
             (
                 'theapikeyforfoo:hopenobodyfindsthisone'  # Characters between apikey and :
+            ),
+            (
+                'theapikey:'  # Nothing after :
+            ),
+            # FOLLOWED_BY_EQUAL_SIGNS_RE
+            (
+                'my_password_for_stuff ='  # Nothing after =
             ),
         ],
     )
