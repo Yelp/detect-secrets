@@ -45,36 +45,29 @@ BLACKLIST = (
     'secrete',
     'token',
 )
-# Uses lazy quantifiers
-BLACKLIST_REGEX = re.compile(
-    # Followed by double-quotes and a semi-colon
-    # e.g. private_key "something";
-    # e.g. private_key 'something';
-    r'|'.join(
-        '{}(.*?)("|\')(\\S*?)(\'|");'.format(
-            value,
-        )
-        for value in BLACKLIST
-    ) + '|' +
-    # Followed by a :
+FOLLOWED_BY_COLON_RE = re.compile(
     # e.g. token:
-    r'|'.join(
-        '{}:'.format(
-            value,
-        )
-        for value in BLACKLIST
-    ) + '|' +
-    # Follwed by an = sign
-    # e.g. my_password =
-    r'|'.join(
-        '{}(.*?)='.format(
-            value,
-        )
-        for value in BLACKLIST
-    ) +
-    # For `pwd` it has to start with pwd after whitespace, it is too common
-    '|\\spwd(.*?)=',
+    r'({}):(\s*?)([^\s]+)'.format(
+        r'|'.join(BLACKLIST),
+    ),
 )
+FOLLOWED_BY_EQUAL_SIGNS_RE = re.compile(
+    # e.g. my_password =
+    r'({})([^\s]*?)(\s*?)=(\s*?)([^\s]+)'.format(
+        r'|'.join(BLACKLIST),
+    ),
+)
+FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE = re.compile(
+    # e.g. private_key "something";
+    r'({})([^\s]*?)(\s*?)("|\')([^\s]+)(\4);'.format(
+        r'|'.join(BLACKLIST),
+    ),
+)
+BLACKLIST_REGEX_TO_GROUP = {
+    FOLLOWED_BY_COLON_RE: 3,
+    FOLLOWED_BY_EQUAL_SIGNS_RE: 5,
+    FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE: 5,
+}
 
 
 class KeywordDetector(BasePlugin):
@@ -102,9 +95,9 @@ class KeywordDetector(BasePlugin):
         return output
 
     def secret_generator(self, string):
-        match = BLACKLIST_REGEX.search(
-            string.lower(),
-        )
-        if not match:
-            return []
-        return [match.group()]
+        lowered_string = string.lower()
+
+        for REGEX, group_number in BLACKLIST_REGEX_TO_GROUP.items():
+            match = REGEX.search(lowered_string)
+            if match:
+                yield match.group(group_number)

@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import pytest
 
+from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.keyword import KeywordDetector
 from testing.mocks import mock_file_object
 
@@ -12,42 +13,53 @@ class TestKeywordDetector(object):
     @pytest.mark.parametrize(
         'file_content',
         [
+            # FOLLOWED_BY_COLON_RE
             (
-                'apikey "something";'
+                'apikey: hopenobodyfindsthisone'
             ),
             (
-                'token "something";'
+                'apikey:hopenobodyfindsthisone'
             ),
             (
-                'private_key \'"something\';'  # Single-quotes not double-quotes
+                'theapikey:hopenobodyfindsthisone'
+            ),
+            # FOLLOWED_BY_EQUAL_SIGNS_RE
+            (
+                'my_password=hopenobodyfindsthisone'
             ),
             (
-                'apikey:'
+                'my_password= hopenobodyfindsthisone'
             ),
             (
-                'the_token:'
+                'my_password =hopenobodyfindsthisone'
             ),
             (
-                'my_password ='
+                'my_password_for_stuff = hopenobodyfindsthisone'
             ),
             (
-                'some_token_for_something ='
+                'my_password_for_stuff =hopenobodyfindsthisone'
             ),
             (
-                '  pwd = foo'
+                'passwordone=hopenobodyfindsthisone\n'
+            ),
+            # FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE
+            (
+                'apikey "hopenobodyfindsthisone";'  # Double-quotes
             ),
             (
-                'private_key "something";'
-            ),
-
-            (
-                'passwordone=foo\n'
+                'fooapikeyfoo "hopenobodyfindsthisone";'  # Double-quotes
             ),
             (
-                'API_KEY=hopenobodyfindsthisone\n'
+                'fooapikeyfoo"hopenobodyfindsthisone";'  # Double-quotes
             ),
             (
-                'token = "noentropy"'
+                'private_key \'hopenobodyfindsthisone\';'  # Single-quotes
+            ),
+            (
+                'fooprivate_keyfoo\'hopenobodyfindsthisone\';'  # Single-quotes
+            ),
+            (
+                'fooprivate_key\'hopenobodyfindsthisone\';'  # Single-quotes
             ),
         ],
     )
@@ -59,27 +71,27 @@ class TestKeywordDetector(object):
         assert len(output) == 1
         for potential_secret in output:
             assert 'mock_filename' == potential_secret.filename
+            assert (
+                potential_secret.secret_hash
+                == PotentialSecret.hash_secret('hopenobodyfindsthisone')
+            )
 
     @pytest.mark.parametrize(
         'file_content',
         [
+            # FOLLOWED_BY_COLON_RE
             (
                 'private_key \'"no spaces\';'  # Has whitespace in-between
             ),
             (
-                'passwordonefoo\n'  # No = or anything
+                'private_key "hopenobodyfindsthisone\';'  # Double-quote does not match single-quote
             ),
             (
-                'api_keyhopenobodyfindsthisone:\n'  # Has char's in between api_key and :
+                'private_key \'hopenobodyfindsthisone";'  # Single-quote does not match double-quote
             ),
+            # FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE
             (
-                'my_pwd ='  # Does not start with pwd
-            ),
-            (
-                'token "noentropy;'  # No 2nd double-quote
-            ),
-            (
-                'token noentropy;'  # No quotes
+                'theapikeyforfoo:hopenobodyfindsthisone'  # Characters between apikey and :
             ),
         ],
     )
