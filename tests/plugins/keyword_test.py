@@ -15,51 +15,69 @@ class TestKeywordDetector(object):
         [
             # FOLLOWED_BY_COLON_RE
             (
-                'apikey: hopenobodyfindsthisone'
+                "'theapikey': 'hopenobodyfinds>-_$#thisone'"
             ),
             (
-                'apikey:hopenobodyfindsthisone'
+                '"theapikey": "hopenobodyfinds>-_$#thisone"'
             ),
             (
-                'theapikey:hopenobodyfindsthisone'
+                'apikey: hopenobodyfinds>-_$#thisone'
+            ),
+            (
+                'apikey:hopenobodyfinds>-_$#thisone'
+            ),
+            (
+                'theapikey:hopenobodyfinds>-_$#thisone'
+            ),
+            (
+                'apikey: "hopenobodyfinds>-_$#thisone"'
+            ),
+            (
+                "apikey:  'hopenobodyfinds>-_$#thisone'"
             ),
             # FOLLOWED_BY_EQUAL_SIGNS_RE
             (
-                'my_password=hopenobodyfindsthisone'
+                'my_password=hopenobodyfinds>-_$#thisone'
             ),
             (
-                'my_password= hopenobodyfindsthisone'
+                'my_password= hopenobodyfinds>-_$#thisone'
             ),
             (
-                'my_password =hopenobodyfindsthisone'
+                'my_password =hopenobodyfinds>-_$#thisone'
             ),
             (
-                'my_password_for_stuff = hopenobodyfindsthisone'
+                'my_password_for_stuff = hopenobodyfinds>-_$#thisone'
             ),
             (
-                'my_password_for_stuff =hopenobodyfindsthisone'
+                'my_password_for_stuff =hopenobodyfinds>-_$#thisone'
             ),
             (
-                'passwordone=hopenobodyfindsthisone\n'
+                'passwordone=hopenobodyfinds>-_$#thisone\n'
+            ),
+            (
+                'passwordone= "hopenobodyfinds>-_$#thisone"\n'
+            ),
+            (
+                'passwordone=\'hopenobodyfinds>-_$#thisone\'\n'
             ),
             # FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE
             (
-                'apikey "hopenobodyfindsthisone";'  # Double-quotes
+                'apikey "hopenobodyfinds>-_$#thisone";'  # Double-quotes
             ),
             (
-                'fooapikeyfoo "hopenobodyfindsthisone";'  # Double-quotes
+                'fooapikeyfoo "hopenobodyfinds>-_$#thisone";'  # Double-quotes
             ),
             (
-                'fooapikeyfoo"hopenobodyfindsthisone";'  # Double-quotes
+                'fooapikeyfoo"hopenobodyfinds>-_$#thisone";'  # Double-quotes
             ),
             (
-                'private_key \'hopenobodyfindsthisone\';'  # Single-quotes
+                'private_key \'hopenobodyfinds>-_$#thisone\';'  # Single-quotes
             ),
             (
-                'fooprivate_keyfoo\'hopenobodyfindsthisone\';'  # Single-quotes
+                'fooprivate_keyfoo\'hopenobodyfinds>-_$#thisone\';'  # Single-quotes
             ),
             (
-                'fooprivate_key\'hopenobodyfindsthisone\';'  # Single-quotes
+                'fooprivate_key\'hopenobodyfinds>-_$#thisone\';'  # Single-quotes
             ),
         ],
     )
@@ -73,7 +91,7 @@ class TestKeywordDetector(object):
             assert 'mock_filename' == potential_secret.filename
             assert (
                 potential_secret.secret_hash
-                == PotentialSecret.hash_secret('hopenobodyfindsthisone')
+                == PotentialSecret.hash_secret('hopenobodyfinds>-_$#thisone')
             )
 
     @pytest.mark.parametrize(
@@ -84,7 +102,10 @@ class TestKeywordDetector(object):
                 'private_key "";'  # Nothing in the quotes
             ),
             (
-                'private_key \'"no spaces\';'  # Has whitespace in-between
+                'private_key \'"no spaces\';'  # Has whitespace in the secret
+            ),
+            (
+                'private_key "fake";'  # 'fake' in the secret
             ),
             (
                 'private_key "hopenobodyfindsthisone\';'  # Double-quote does not match single-quote
@@ -94,14 +115,29 @@ class TestKeywordDetector(object):
             ),
             # FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE
             (
-                'theapikeyforfoo:hopenobodyfindsthisone'  # Characters between apikey and :
+                'theapikey: ""'  # Nothing in the quotes
             ),
             (
-                'theapikey:'  # Nothing after :
+                'theapikey: "somefakekey"'  # 'fake' in the secret
+            ),
+            (
+                'theapikeyforfoo:hopenobodyfindsthisone'  # Characters between apikey and :
             ),
             # FOLLOWED_BY_EQUAL_SIGNS_RE
             (
-                'my_password_for_stuff ='  # Nothing after =
+                'some_key = "real_secret"'  # We cannot make 'key' a Keyword, too noisy
+            ),
+            (
+                'my_password_for_stuff = ""'  # Nothing in the quotes
+            ),
+            (
+                "my_password_for_stuff = ''"  # Nothing in the quotes
+            ),
+            (
+                'my_password_for_stuff = True'  # 'True' is a known false-positive
+            ),
+            (
+                'my_password_for_stuff = "fakesecret"'  # 'fake' in the secret
             ),
         ],
     )

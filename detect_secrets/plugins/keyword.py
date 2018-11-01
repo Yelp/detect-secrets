@@ -45,15 +45,22 @@ BLACKLIST = (
     'secrete',
     'token',
 )
+FALSE_POSITIVES = (
+    "''",
+    '""',
+    'false',
+    'none',
+    'true',
+)
 FOLLOWED_BY_COLON_RE = re.compile(
     # e.g. token:
-    r'({}):(\s*?)([^\s]+)'.format(
+    r'({})(("|\')?):(\s*?)(("|\')?)([^\s]+)(\5)'.format(
         r'|'.join(BLACKLIST),
     ),
 )
 FOLLOWED_BY_EQUAL_SIGNS_RE = re.compile(
     # e.g. my_password =
-    r'({})([^\s]*?)(\s*?)=(\s*?)([^\s]+)'.format(
+    r'({})([^\s]*?)(\s*?)=(\s*?)(("|\')?)([^\s]+)(\5)'.format(
         r'|'.join(BLACKLIST),
     ),
 )
@@ -64,8 +71,8 @@ FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE = re.compile(
     ),
 )
 BLACKLIST_REGEX_TO_GROUP = {
-    FOLLOWED_BY_COLON_RE: 3,
-    FOLLOWED_BY_EQUAL_SIGNS_RE: 5,
+    FOLLOWED_BY_COLON_RE: 7,
+    FOLLOWED_BY_EQUAL_SIGNS_RE: 7,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE: 5,
 }
 
@@ -100,4 +107,10 @@ class KeywordDetector(BasePlugin):
         for REGEX, group_number in BLACKLIST_REGEX_TO_GROUP.items():
             match = REGEX.search(lowered_string)
             if match:
-                yield match.group(group_number)
+                secret = match.group(group_number)
+                if (
+                    secret and
+                    'fake' not in secret and
+                    secret not in FALSE_POSITIVES
+                ):
+                    yield secret

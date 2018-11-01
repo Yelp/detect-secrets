@@ -329,9 +329,7 @@ class PluginOptions(object):
                 plugin.disable_flag_text,
                 action='store_true',
                 help=plugin.disable_help_text,
-                # Temporarily disabling the KeywordDetector
-                # Until we can test its effectiveness on more repositories
-                default=True if plugin.disable_flag_text == '--no-keyword-scan' else False,
+                default=False,
             )
 
         return self
