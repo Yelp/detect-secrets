@@ -192,7 +192,7 @@ class TestMain(object):
             (
                 'test_data/short_files/first_line.py',
                 textwrap.dedent("""
-                    1:seecret = 'BEEF0123456789a'
+                    1:secret = 'BEEF0123456789a'
                     2:skipped_sequential_false_positive = '0123456789a'
                     3:print('second line')
                     4:var = 'third line'
@@ -203,19 +203,19 @@ class TestMain(object):
                 textwrap.dedent("""
                     1:deploy:
                     2:    user: aaronloo
-                    3:    passhword:
+                    3:    password:
                     4:        secure: thequickbrownfoxjumpsoverthelazydog
                     5:    on:
-                    6:        repo: Yelp/detect-sechrets
+                    6:        repo: Yelp/detect-secrets
                 """)[1:-1],
             ),
             (
                 'test_data/short_files/last_line.ini',
                 textwrap.dedent("""
                     1:[some section]
-                    2:secreets_for_no_one_to_find =
+                    2:secrets_for_no_one_to_find =
                     3:    hunter2
-                    4:    passsword123
+                    4:    password123
                     5:    BEEF0123456789a
                 """)[1:-1],
             ),
@@ -231,10 +231,11 @@ class TestMain(object):
             main(['scan', filename])
             baseline = printer_shim.message
 
+        baseline_dict = json.loads(baseline)
         with mock_stdin(), mock.patch(
             # To pipe in printer_shim
             'detect_secrets.core.audit._get_baseline_from_file',
-            return_value=json.loads(baseline),
+            return_value=baseline_dict,
         ), mock.patch(
             # We don't want to clear the pytest testing screen
             'detect_secrets.core.audit._clear_screen',
@@ -251,14 +252,16 @@ class TestMain(object):
             main('audit will_be_mocked'.split())
 
             assert printer_shim.message == textwrap.dedent("""
-                Secret 1 of 1
-                Filename: {}
+                Secret:      1 of 1
+                Filename:    {}
+                Secret Type: {}
                 ----------
                 {}
                 ----------
                 Saving progress...
             """)[1:].format(
                 filename,
+                baseline_dict['results'][filename][0]['type'],
                 expected_output,
             )
 

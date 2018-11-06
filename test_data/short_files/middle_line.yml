@@ -1,6 +1,6 @@
 deploy:
     user: aaronloo
-    passhword:
+    password:
         secure: thequickbrownfoxjumpsoverthelazydog
     on:
-        repo: Yelp/detect-sechrets
+        repo: Yelp/detect-secrets
