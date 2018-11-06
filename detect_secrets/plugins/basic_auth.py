@@ -5,7 +5,7 @@ import re
 from .base import RegexBasedDetector
 
 
-SPECIAL_URL_CHARACTERS = ':/?#[]@'
+SPECIAL_URL_CHARACTERS = ':/?#[]@"\''
 
 
 class BasicAuthDetector(RegexBasedDetector):
