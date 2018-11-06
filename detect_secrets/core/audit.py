@@ -132,13 +132,15 @@ def _print_context(filename, secret, count, total, plugin_settings):   # pragma:
 
     :raises: SecretNotFoundOnSpecifiedLineError
     """
-    print('{} {} {} {}\n{} {}'.format(
-        BashColor.color('Secret', Color.BOLD),
+    print('{} {} {} {}\n{} {}\n{} {}'.format(
+        BashColor.color('Secret:     ', Color.BOLD),
         BashColor.color(str(count), Color.PURPLE),
         BashColor.color('of', Color.BOLD),
         BashColor.color(str(total), Color.PURPLE),
-        BashColor.color('Filename:', Color.BOLD),
+        BashColor.color('Filename:   ', Color.BOLD),
         BashColor.color(filename, Color.PURPLE),
+        BashColor.color('Secret Type:', Color.BOLD),
+        BashColor.color(secret['type'], Color.PURPLE),
     ))
     print('-' * 10)
 
