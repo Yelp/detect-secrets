@@ -164,7 +164,7 @@ def compare_baselines(old_baseline_filename, new_baseline_filename):
             print('Quitting...')
             break
 
-        if decision == 'b':
+        if decision == 'b':     # pragma: no cover
             current_index -= 2
             secret_iterator.step_back_on_next_iteration()
 
