@@ -5,7 +5,8 @@ class Color(Enum):
     NORMAL = '[0m'
     BOLD = '[1m'
 
-    RED = '[41m'
+    RED = '[91m'
+    RED_BACKGROUND = '[41m'
     LIGHT_GREEN = '[92m'
     PURPLE = '[95m'
 

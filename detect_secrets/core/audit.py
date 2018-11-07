@@ -25,6 +25,10 @@ class SecretNotFoundOnSpecifiedLineError(Exception):
         )
 
 
+class RedundantComparisonError(Exception):
+    pass
+
+
 def audit_baseline(baseline_filename):
     original_baseline = _get_baseline_from_file(baseline_filename)
     if not original_baseline:
@@ -32,7 +36,6 @@ def audit_baseline(baseline_filename):
 
     files_removed = _remove_nonexistent_files_from_baseline(original_baseline)
 
-    current_secret_index = 0
     all_secrets = list(_secret_generator(original_baseline))
     secrets_with_choices = [
         (filename, secret) for filename, secret in all_secrets
@@ -41,6 +44,7 @@ def audit_baseline(baseline_filename):
     total_choices = len(secrets_with_choices)
     secret_iterator = BidirectionalIterator(secrets_with_choices)
 
+    current_secret_index = 0
     for filename, secret in secret_iterator:
         _clear_screen()
 
@@ -84,6 +88,87 @@ def audit_baseline(baseline_filename):
     _save_baseline_to_file(baseline_filename, original_baseline)
 
 
+def compare_baselines(old_baseline_filename, new_baseline_filename):
+    """
+    This function enables developers to more easily configure plugin
+    settings, by comparing two generated baselines and highlighting
+    their differences.
+
+    For effective use, a few assumptions are made:
+        1. Baselines are sorted by (filename, line_number, hash).
+           This allows for a deterministic order, when doing a side-by-side
+           comparison.
+
+        2. Baselines are generated for the same codebase snapshot.
+           This means that we won't have cases where secrets are moved around;
+           only added or removed.
+
+    NOTE: We don't want to do a version check, because we want to be able to
+    use this functionality across versions (to see how the new version fares
+    compared to the old one).
+    """
+    if old_baseline_filename == new_baseline_filename:
+        raise RedundantComparisonError
+
+    old_baseline = _get_baseline_from_file(old_baseline_filename)
+    new_baseline = _get_baseline_from_file(new_baseline_filename)
+
+    _remove_nonexistent_files_from_baseline(old_baseline)
+    _remove_nonexistent_files_from_baseline(new_baseline)
+
+    # We aggregate the secrets first, so that we can display a total count.
+    secrets_to_compare = _get_secrets_to_compare(old_baseline, new_baseline)
+    total_reviews = len(secrets_to_compare)
+    current_index = 0
+
+    secret_iterator = BidirectionalIterator(secrets_to_compare)
+    for filename, secret, is_removed in secret_iterator:
+        _clear_screen()
+        current_index += 1
+
+        header = '{}      {}'
+        if is_removed:
+            plugins_used = old_baseline['plugins_used']
+            header = header.format(
+                BashColor.color('Status:', Color.BOLD),
+                '>> {} <<'.format(
+                    BashColor.color('REMOVED', Color.RED),
+                ),
+            )
+        else:
+            plugins_used = new_baseline['plugins_used']
+            header = header.format(
+                BashColor.color('Status:', Color.BOLD),
+                '>> {} <<'.format(
+                    BashColor.color('ADDED', Color.LIGHT_GREEN),
+                ),
+            )
+
+        try:
+            _print_context(
+                filename,
+                secret,
+                current_index,
+                total_reviews,
+                plugins_used,
+                additional_header_lines=header,
+            )
+            decision = _get_user_decision(
+                can_step_back=secret_iterator.can_step_back(),
+                prompt_secret_decision=False,
+            )
+        except SecretNotFoundOnSpecifiedLineError:
+            decision = _get_user_decision(prompt_secret_decision=False)
+
+        if decision == 'q':
+            print('Quitting...')
+            break
+
+        if decision == 'b':
+            current_index -= 2
+            secret_iterator.step_back_on_next_iteration()
+
+
 def _get_baseline_from_file(filename):  # pragma: no cover
     try:
         with open(filename) as f:
@@ -109,11 +194,128 @@ def _secret_generator(baseline):
             yield filename, secret
 
 
+def _get_secrets_to_compare(old_baseline, new_baseline):
+    """
+    :rtype: list(tuple)
+    :param: tuple is in the following format:
+        filename: str; filename where identified secret is found
+        secret: dict; PotentialSecret json representation
+        is_secret_removed: bool; has the secret been removed from the
+            new baseline?
+    """
+    def _check_string(a, b):
+        if a == b:
+            return 0
+        if a < b:
+            return -1
+        return 1
+
+    def _check_secret(a, b):
+        if a == b:
+            return 0
+
+        if a['line_number'] < b['line_number']:
+            return -1
+        elif a['line_number'] > b['line_number']:
+            return 1
+
+        return _check_string(a['hashed_secret'], b['hashed_secret'])
+
+    secrets_to_compare = []
+    for old_filename, new_filename in _comparison_generator(
+        sorted(old_baseline['results'].keys()),
+        sorted(new_baseline['results'].keys()),
+        compare_fn=_check_string,
+    ):
+        if not new_filename:
+            secrets_to_compare += list(
+                map(
+                    lambda x: (old_filename, x, True,),
+                    old_baseline['results'][old_filename],
+                ),
+            )
+            continue
+        elif not old_filename:
+            secrets_to_compare += list(
+                map(
+                    lambda x: (new_filename, x, False,),
+                    new_baseline['results'][new_filename],
+                ),
+            )
+            continue
+
+        for old_secret, new_secret in _comparison_generator(
+            old_baseline['results'][old_filename],
+            new_baseline['results'][new_filename],
+            compare_fn=_check_secret,
+        ):
+            if old_secret == new_secret:
+                # If they are the same, no point flagging it.
+                continue
+
+            if old_secret:
+                secrets_to_compare.append(
+                    (old_filename, old_secret, True,),
+                )
+            else:
+                secrets_to_compare.append(
+                    (new_filename, new_secret, False,),
+                )
+
+    return secrets_to_compare
+
+
+def _comparison_generator(old_list, new_list, compare_fn):
+    """
+    :type old_list: sorted list
+    :type new_list: sorted list
+
+    :type compare_fn: function
+    :param compare_fn:
+        takes two arguments, A and B
+        returns 0 if equal
+        returns -1 if A is less than B
+        else returns 1
+    """
+    old_index = 0
+    new_index = 0
+    while old_index < len(old_list) and new_index < len(new_list):
+        old_value = old_list[old_index]
+        new_value = new_list[new_index]
+
+        status = compare_fn(old_value, new_value)
+        if status == 0:
+            yield (old_value, new_value,)
+            old_index += 1
+            new_index += 1
+        elif status == -1:
+            yield (old_value, None,)
+            old_index += 1
+        else:
+            yield (None, new_value,)
+            new_index += 1
+
+    # Catch leftovers. Only one of these while statements should run.
+    while old_index < len(old_list):
+        yield (old_list[old_index], None,)
+        old_index += 1
+    while new_index < len(new_list):
+        yield (None, new_list[new_index],)
+        new_index += 1
+
+
 def _clear_screen():    # pragma: no cover
     subprocess.call(['clear'])
 
 
-def _print_context(filename, secret, count, total, plugin_settings):   # pragma: no cover
+def _print_context(     # pragma: no cover
+    filename,
+    secret,
+    count,
+    total,
+    plugin_settings,
+    additional_header_lines=None,
+):
     """
     :type filename: str
     :param filename: the file currently scanned.
@@ -130,6 +332,10 @@ def _print_context(filename, secret, count, total, plugin_settings):   # pragma:
     :type plugin_settings: list
     :param plugin_settings: plugins used to create baseline.
 
+    :type additional_header_lines: str
+    :param additional_header_lines: any additional lines to add to the
+        header of the interactive audit display.
+
     :raises: SecretNotFoundOnSpecifiedLineError
     """
     print('{} {} {} {}\n{} {}\n{} {}'.format(
@@ -142,6 +348,9 @@ def _print_context(filename, secret, count, total, plugin_settings):   # pragma:
         BashColor.color('Secret Type:', Color.BOLD),
         BashColor.color(secret['type'], Color.PURPLE),
     ))
+    if additional_header_lines:
+        print(additional_header_lines)
+
     print('-' * 10)
 
     error_obj = None
@@ -334,7 +543,7 @@ def _highlight_secret(secret_line, secret_lineno, secret, filename, plugin_setti
             # copy the secret out of the line because .lower() from secret
             # generator may be different from the original value:
             secret_line[index_of_secret:end_of_secret],
-            Color.RED,
+            Color.RED_BACKGROUND,
         ),
         secret_line[index_of_secret + len(raw_secret):],
     )
