@@ -1,5 +1,8 @@
 [![Build Status](https://travis-ci.org/Yelp/detect-secrets.svg?branch=master)](https://travis-ci.org/Yelp/detect-secrets)
 [![PyPI version](https://badge.fury.io/py/detect-secrets.svg)](https://badge.fury.io/py/detect-secrets)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg)](https://github.com/Yelp/detect-secrets/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+)
+[![AMF](https://img.shields.io/badge/Donate-Charity-orange.svg)](https://www.againstmalaria.com/donation.aspx)
+
 
 # detect-secrets
 
