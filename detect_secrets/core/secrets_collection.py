@@ -66,7 +66,6 @@ class SecretsCollection(object):
             'exclude_regex',
             'plugins_used',
             'results',
-            'version',
         )):
             raise IOError
 
@@ -95,7 +94,11 @@ class SecretsCollection(object):
                 secret.secret_hash = item['hashed_secret']
                 result.data[filename][secret] = secret
 
-        result.version = data['version']
+        result.version = (
+            data['version']
+            if 'version' in data
+            else '0.0.0'
+        )
 
         return result
 

@@ -8,39 +8,47 @@ import subprocess
 from detect_secrets.core.secrets_collection import SecretsCollection
 
 
-def initialize(plugins, exclude_regex=None, rootdir='.', scan_all_files=False):
-    """Scans the entire codebase for high entropy strings, and returns a
+def initialize(
+    plugins,
+    exclude_regex=None,
+    path='.',
+    scan_all_files=False,
+):
+    """Scans the entire codebase for secrets, and returns a
     SecretsCollection object.
 
     :type plugins: tuple of detect_secrets.plugins.base.BasePlugin
     :param plugins: rules to initialize the SecretsCollection with.
 
     :type exclude_regex: str|None
-    :type rootdir: str
+    :type path: str
+    :type scan_all_files: bool
 
     :rtype: SecretsCollection
     """
     output = SecretsCollection(plugins, exclude_regex)
 
-    if os.path.isfile(rootdir):
+    if os.path.isfile(path):
         # This option allows for much easier adhoc usage.
-        git_files = [rootdir]
+        files_to_scan = [path]
     elif scan_all_files:
-        git_files = _get_files_recursively(rootdir)
+        files_to_scan = _get_files_recursively(path)
     else:
-        git_files = _get_git_tracked_files(rootdir)
+        files_to_scan = _get_git_tracked_files(path)
 
-    if not git_files:
+    if not files_to_scan:
         return output
 
     if exclude_regex:
         regex = re.compile(exclude_regex, re.IGNORECASE)
-        git_files = filter(
-            lambda x: not regex.search(x),
-            git_files,
+        files_to_scan = filter(
+            lambda file: (
+                not regex.search(file)
+            ),
+            files_to_scan,
         )
 
-    for file in git_files:
+    for file in files_to_scan:
         output.scan_file(file)
 
     return output
@@ -86,7 +94,7 @@ def get_secrets_not_in_baseline(results, baseline):
     return new_secrets
 
 
-def update_baseline_with_removed_secrets(results, baseline, filelist):
+def trim_baseline_of_removed_secrets(results, baseline, filelist):
     """
     NOTE: filelist is not a comprehensive list of all files in the repo
     (because we can't be sure whether --all-files is passed in as a
@@ -200,7 +208,7 @@ def merge_results(old_results, new_results):
                 continue
 
             old_secret = old_secrets_mapping[new_secret['hashed_secret']]
-            # Only propogate 'is_secret' if it's not already there
+            # Only propagate 'is_secret' if it's not already there
             if 'is_secret' in old_secret and 'is_secret' not in new_secret:
                 new_secret['is_secret'] = old_secret['is_secret']
 

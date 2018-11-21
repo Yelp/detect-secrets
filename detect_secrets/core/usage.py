@@ -32,7 +32,7 @@ class ParserBuilder(object):
             dest='action',
         )
 
-        for action_parser in [ScanOptions, AuditOptions]:
+        for action_parser in (ScanOptions, AuditOptions):
             action_parser(subparser).add_arguments()
 
         return self
@@ -62,7 +62,11 @@ class ParserBuilder(object):
         return self
 
     def _add_filenames_argument(self):
-        self.parser.add_argument('filenames', nargs='*', help='Filenames to check')
+        self.parser.add_argument(
+            'filenames',
+            nargs='*',
+            help='Filenames to check',
+        )
         return self
 
     def _add_set_baseline_argument(self):
