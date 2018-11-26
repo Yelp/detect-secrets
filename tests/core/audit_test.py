@@ -285,6 +285,182 @@ class TestAuditBaseline(object):
         }
 
 
+class TestCompareBaselines(object):
+
+    def setup(self):
+        BashColor.disable_color()
+
+    def teardown(self):
+        BashColor.enable_color()
+
+    def test_raises_error_if_comparing_same_file(self):
+        with pytest.raises(audit.RedundantComparisonError):
+            audit.compare_baselines('foo/bar', 'foo/bar')
+
+    def test_compare(self, mock_printer):
+        with self.mock_env():
+            audit.compare_baselines('baselineA', 'baselineB')
+
+        # Break up the printed messages, because we're only interested
+        # in the headers.
+        headers = []
+        start_capture = True
+        buffer = ''
+        for line in mock_printer.message.splitlines():
+            if line[0] == '-':
+                start_capture = not start_capture
+                continue
+
+            if start_capture:
+                buffer += line + '\n'
+            elif buffer:
+                headers.append(buffer)
+                buffer = ''
+
+        # This comes first, because it's found at line 1.
+        assert headers[0] == textwrap.dedent("""
+            Secret:      1 of 4
+            Filename:    test_data/each_secret.py
+            Secret Type: Hex High Entropy String
+            Status:      >> ADDED <<
+        """)[1:]
+
+        assert headers[1] == textwrap.dedent("""
+            Secret:      2 of 4
+            Filename:    test_data/each_secret.py
+            Secret Type: Base64 High Entropy String
+            Status:      >> REMOVED <<
+        """)[1:]
+
+        # These files come after, because filenames are sorted first
+        assert headers[2] == textwrap.dedent("""
+            Secret:      3 of 4
+            Filename:    test_data/short_files/first_line.py
+            Secret Type: Hex High Entropy String
+            Status:      >> REMOVED <<
+        """)[1:]
+
+        assert headers[3] == textwrap.dedent("""
+            Secret:      4 of 4
+            Filename:    test_data/short_files/last_line.ini
+            Secret Type: Hex High Entropy String
+            Status:      >> ADDED <<
+        """)[1:]
+
+    @contextmanager
+    def mock_env(self):
+        baseline_count = [0]
+
+        def _get_baseline_from_file(_):
+            if baseline_count[0] == 0:
+                baseline_count[0] += 1
+                return self.old_baseline
+            else:
+                return self.new_baseline
+
+        with mock.patch.object(
+            # This mock allows us to have separate baseline values
+            audit,
+            '_get_baseline_from_file',
+            _get_baseline_from_file,
+        ), mock.patch.object(
+            # We don't want this test to clear the screen
+            audit,
+            '_clear_screen',
+        ), mock_user_input(
+            ['s'] * 4,
+        ):
+            yield
+
+    @property
+    def old_baseline(self):
+        return {
+            'plugins_used': [
+                {
+                    'name': 'Base64HighEntropyString',
+                    'base64_limit': 4.5,
+                },
+                {
+                    'name': 'HexHighEntropyString',
+                    'hex_limit': 3,
+                },
+            ],
+            'results': {
+                'file_will_be_removed': [],
+
+                # This file is shared, so the code should check each secret
+                'test_data/each_secret.py': [
+                    # This secret is removed
+                    {
+                        'hashed_secret': '1ca6beea06a87d5f77fa8e4523d0dc1f0965e2ce',
+                        'line_number': 3,
+                        'type': 'Base64 High Entropy String',
+                    },
+
+                    # This is the same secret
+                    {
+                        'hashed_secret': '871deb5e9ff5ce5f777c8d3327511d05f581e755',
+                        'line_number': 4,
+                        'type': 'Hex High Entropy String',
+                    },
+                ],
+
+                # This entire file will be "removed"
+                'test_data/short_files/first_line.py': [
+                    {
+                        'hashed_secret': '0de9a11b3f37872868ca49ecd726c955e25b6e21',
+                        'line_number': 1,
+                        'type': 'Hex High Entropy String',
+                    },
+                ],
+            },
+        }
+
+    @property
+    def new_baseline(self):
+        return {
+            'plugins_used': [
+                {
+                    'name': 'Base64HighEntropyString',
+                    'base64_limit': 5.5,
+                },
+                {
+                    'name': 'HexHighEntropyString',
+                    'hex_limit': 2,
+                },
+            ],
+            'results': {
+                'file_will_be_removed': [],
+
+                # This file is shared, so the code should check each secret
+                'test_data/each_secret.py': [
+                    # This secret is added
+                    {
+                        'hashed_secret': 'a837eb90d815a852f68f56f70b1b3fab24c46c84',
+                        'line_number': 1,
+                        'type': 'Hex High Entropy String',
+                    },
+
+                    # This is the same secret
+                    {
+                        'hashed_secret': '871deb5e9ff5ce5f777c8d3327511d05f581e755',
+                        'line_number': 4,
+                        'type': 'Hex High Entropy String',
+                    },
+                ],
+
+                # This entire file will be "added"
+                'test_data/short_files/last_line.ini': [
+                    {
+                        'hashed_secret': '0de9a11b3f37872868ca49ecd726c955e25b6e21',
+                        'line_number': 5,
+                        'type': 'Hex High Entropy String',
+                    },
+                ],
+            },
+        }
+
+
 class TestPrintContext(object):
 
     def setup(self):

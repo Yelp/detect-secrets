@@ -48,7 +48,24 @@ def main(argv=None):
                 print(output)
 
     elif args.action == 'audit':
-        audit.audit_baseline(args.filename[0])
+        if not args.diff:
+            audit.audit_baseline(args.filename[0])
+            return 0
+
+        if len(args.filename) != 2:
+            print(
+                'Must specify two files to compare!',
+                file=sys.stderr,
+            )
+            return 1
+
+        try:
+            audit.compare_baselines(args.filename[0], args.filename[1])
+        except audit.RedundantComparisonError:
+            print(
+                'No difference, because it\'s the same file!',
+                file=sys.stderr,
+            )
 
     return 0
 

@@ -153,10 +153,20 @@ class AuditOptions(object):
     def add_arguments(self):
         self.parser.add_argument(
             'filename',
-            nargs=1,
+            nargs='+',
             help=(
                 'Audit a given baseline file to distinguish the difference '
                 'between false and true positives.'
+            ),
+        )
+
+        self.parser.add_argument(
+            '--diff',
+            action='store_true',
+            help=(
+                'Allows the comparison of two baseline files, in order to '
+                'effectively distinguish the difference between various '
+                'plugin configurations.'
             ),
         )
 

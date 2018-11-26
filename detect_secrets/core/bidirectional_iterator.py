@@ -10,12 +10,15 @@ class BidirectionalIterator(object):
             self.step_back_once = False
         else:
             self.index += 1
+
         if self.index < 0:
             raise StopIteration
+
         try:
             result = self.collection[self.index]
         except IndexError:
             raise StopIteration
+
         return result
 
     def next(self):
