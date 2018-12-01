@@ -152,6 +152,7 @@ def compare_baselines(old_baseline_filename, new_baseline_filename):
                 total_reviews,
                 plugins_used,
                 additional_header_lines=header,
+                force=is_removed,
             )
             decision = _get_user_decision(
                 can_step_back=secret_iterator.can_step_back(),
@@ -315,6 +316,7 @@ def _print_context(     # pragma: no cover
     total,
     plugin_settings,
     additional_header_lines=None,
+    force=False,
 ):
     """
     :type filename: str
@@ -335,6 +337,10 @@ def _print_context(     # pragma: no cover
     :type additional_header_lines: str
     :param additional_header_lines: any additional lines to add to the
         header of the interactive audit display.
+
+    :type force: bool
+    :param force: if True, will print the lines of code even if it doesn't
+        find the secret expected
 
     :raises: SecretNotFoundOnSpecifiedLineError
     """
@@ -359,6 +365,7 @@ def _print_context(     # pragma: no cover
             filename,
             secret,
             plugin_settings,
+            force=force,
         )
         print(secret_with_context)
     except SecretNotFoundOnSpecifiedLineError as e:
@@ -421,6 +428,7 @@ def _get_secret_with_context(
     secret,
     plugin_settings,
     lines_of_context=5,
+    force=False,
 ):
     """
     Displays the secret, with surrounding lines of code for better context.
@@ -437,6 +445,10 @@ def _get_secret_with_context(
     :type lines_of_context: int
     :param lines_of_context: number of lines displayed before and after
         secret.
+
+    :type force: bool
+    :param force: if True, will print the lines of code even if it doesn't
+        find the secret expected
 
     :raises: SecretNotFoundOnSpecifiedLineError
     """
@@ -472,13 +484,24 @@ def _get_secret_with_context(
     # NOTE: index_of_secret_in_output should *always* be negative.
     index_of_secret_in_output = -trailing_lines_of_context - 1
 
-    output[index_of_secret_in_output] = _highlight_secret(
-        output[index_of_secret_in_output],
-        secret_lineno,
-        secret,
-        filename,
-        plugin_settings,
-    )
+    try:
+        output[index_of_secret_in_output] = _highlight_secret(
+            output[index_of_secret_in_output],
+            secret_lineno,
+            secret,
+            filename,
+            plugin_settings,
+        )
+    except SecretNotFoundOnSpecifiedLineError:
+        if not force:
+            raise
+
+        output[index_of_secret_in_output] = '{}'.format(
+            BashColor.color(
+                output[index_of_secret_in_output],
+                Color.BOLD,
+            ),
+        )
 
     # Adding line numbers
     return '\n'.join(
