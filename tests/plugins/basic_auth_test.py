@@ -11,6 +11,7 @@ class TestBasicAuthDetector(object):
         'payload, should_flag',
         [
             ('https://username:password@yelp.com', True,),
+            ('http://localhost:5000/<%= @variable %>', False,),
         ],
     )
     def test_analyze_string(self, payload, should_flag):

@@ -6,8 +6,12 @@ from .base import BasePlugin
 from detect_secrets.core.potential_secret import PotentialSecret
 
 
+SPECIAL_URL_CHARACTERS = ':/?#[]@'
 BASIC_AUTH_REGEX = re.compile(
-    r'://[^:]+:([^@]+)@',
+    r'://[^{}\s]+:([^{}\s]+)@'.format(
+        re.escape(SPECIAL_URL_CHARACTERS),
+        re.escape(SPECIAL_URL_CHARACTERS),
+    ),
 )
 
 
