@@ -1,6 +1,8 @@
 from abc import ABCMeta
 from abc import abstractmethod
 
+from detect_secrets.plugins.core.constants import WHITELIST_REGEX
+
 
 class BasePlugin(object):
     """This is an abstract class to define Plugins API"""
@@ -23,6 +25,8 @@ class BasePlugin(object):
         """
         potential_secrets = {}
         for line_num, line in enumerate(file.readlines(), start=1):
+            if WHITELIST_REGEX.search(line):
+                continue
             secrets = self.analyze_string(line, line_num, filename)
             potential_secrets.update(secrets)
 
