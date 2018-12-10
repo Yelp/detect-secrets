@@ -5,7 +5,7 @@ from __future__ import absolute_import
 
 import re
 
-from .regexes import RegexBasedDetector
+from .base import RegexBasedDetector
 
 
 class AWSKeyDetector(RegexBasedDetector):
