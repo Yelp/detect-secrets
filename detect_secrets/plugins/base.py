@@ -103,11 +103,11 @@ class RegexBasedDetector(BasePlugin):
     __metaclass__ = ABCMeta
 
     @abstractproperty
-    def secret_type(cls):
+    def secret_type(self):
         return NotImplementedError
 
     @abstractproperty
-    def blacklist(cls):
+    def blacklist(self):
         return NotImplementedError
 
     def analyze_string(self, string, line_num, filename):
