@@ -33,6 +33,7 @@ class TestPluginOptions(object):
                 'base64_limit': 4.5,
             },
             'PrivateKeyDetector': {},
+            'AWSKeyDetector': {},
         }
         assert not hasattr(args, 'no_private_key_scan')
 

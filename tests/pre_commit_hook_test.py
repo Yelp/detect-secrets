@@ -132,6 +132,9 @@ class TestPreCommitHook(object):
             assert current_version == baseline_written['version']
             assert baseline_written['plugins_used'] == [
                 {
+                    'name': 'AWSKeyDetector',
+                },
+                {
                     'base64_limit': 4.5,
                     'name': 'Base64HighEntropyString',
                 },
