@@ -104,11 +104,11 @@ class RegexBasedDetector(BasePlugin):
 
     @abstractproperty
     def secret_type(self):
-        return NotImplementedError
+        raise NotImplementedError
 
     @abstractproperty
     def blacklist(self):
-        return NotImplementedError
+        raise NotImplementedError
 
     def analyze_string(self, string, line_num, filename):
         output = {}
