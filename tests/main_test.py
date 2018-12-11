@@ -87,6 +87,7 @@ class TestMain(object):
         ) as printer_shim:
             assert main('scan --string'.split()) == 0
             assert printer_shim.message == textwrap.dedent("""
+                AWSKeyDetector         : False
                 Base64HighEntropyString: False (3.459)
                 BasicAuthDetector      : False
                 HexHighEntropyString   : True  (3.459)
@@ -103,6 +104,7 @@ class TestMain(object):
         ) as printer_shim:
             assert main('scan --string 012345'.split()) == 0
             assert printer_shim.message == textwrap.dedent("""
+                AWSKeyDetector         : False
                 Base64HighEntropyString: False (2.585)
                 BasicAuthDetector      : False
                 HexHighEntropyString   : False (2.121)

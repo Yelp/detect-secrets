@@ -4,6 +4,7 @@ try:
 except ImportError:
     from functools32 import lru_cache
 
+from ..aws import AWSKeyDetector                            # noqa: F401
 from ..base import BasePlugin
 from ..basic_auth import BasicAuthDetector                  # noqa: F401
 from ..high_entropy_strings import Base64HighEntropyString  # noqa: F401

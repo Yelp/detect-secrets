@@ -244,6 +244,11 @@ class PluginOptions(object):
             disable_flag_text='--no-keyword-scan',
             disable_help_text='Disables scanning for secret keywords.',
         ),
+        PluginDescriptor(
+            classname='AWSKeyDetector',
+            disable_flag_text='--no-aws-key-scan',
+            disable_help_text='Disables scanning for AWS keys.',
+        ),
     ]
 
     def __init__(self, parser):
