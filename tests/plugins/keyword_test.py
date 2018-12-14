@@ -125,7 +125,16 @@ class TestKeywordDetector(object):
             ),
             # FOLLOWED_BY_EQUAL_SIGNS_RE
             (
+                '$password = $input;'  # Skip anything starting with $ in php files
+            ),
+            (
                 'some_key = "real_secret"'  # We cannot make 'key' a Keyword, too noisy
+            ),
+            (
+                'my_password_for_stuff = foo(hey)you'  # Has a ( followed by a )
+            ),
+            (
+                "my_password_for_stuff = request.json_body['hey']"  # Has a [ followed by a ]
             ),
             (
                 'my_password_for_stuff = ""'  # Nothing in the quotes
@@ -139,11 +148,17 @@ class TestKeywordDetector(object):
             (
                 'my_password_for_stuff = "fakesecret"'  # 'fake' in the secret
             ),
+            (
+                'login(username=username, password=password)'  # secret is password)
+            ),
+            (
+                'open(self, password = ""):'  # secrets is ""):
+            ),
         ],
     )
     def test_analyze_negatives(self, file_content):
         logic = KeywordDetector()
 
         f = mock_file_object(file_content)
-        output = logic.analyze(f, 'mock_filename')
+        output = logic.analyze(f, 'mock_filename.php')
         assert len(output) == 0

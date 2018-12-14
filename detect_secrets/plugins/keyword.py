@@ -47,9 +47,14 @@ BLACKLIST = (
 )
 FALSE_POSITIVES = (
     "''",
+    "''):",
     '""',
+    '""):',
     'false',
     'none',
+    'not',
+    'password)',
+    'password},',
     'true',
 )
 FOLLOWED_BY_COLON_RE = re.compile(
@@ -90,7 +95,10 @@ class KeywordDetector(BasePlugin):
         if WHITELIST_REGEX.search(string):
             return output
 
-        for identifier in self.secret_generator(string):
+        for identifier in self.secret_generator(
+            string,
+            is_php_file=filename.endswith('.php'),
+        ):
             secret = PotentialSecret(
                 self.secret_type,
                 filename,
@@ -101,16 +109,49 @@ class KeywordDetector(BasePlugin):
 
         return output
 
-    def secret_generator(self, string):
+    def secret_generator(self, string, is_php_file):
         lowered_string = string.lower()
 
         for REGEX, group_number in BLACKLIST_REGEX_TO_GROUP.items():
             match = REGEX.search(lowered_string)
             if match:
-                secret = match.group(group_number)
-                if (
-                    secret and
-                    'fake' not in secret and
-                    secret not in FALSE_POSITIVES
-                ):
-                    yield secret
+                lowered_secret = match.group(group_number)
+
+                if not lowered_secret:
+                    continue
+
+                if not probably_false_positive(lowered_secret, is_php_file):
+                    yield lowered_secret
+
+
+def probably_false_positive(lowered_secret, is_php_file):
+    if (
+        'fake' in lowered_secret or
+        lowered_secret in FALSE_POSITIVES or
+        # If it is a .php file, do not report $variables
+        (
+            is_php_file and
+            lowered_secret[0] == '$'
+        )
+    ):
+        return True
+
+    # No function calls
+    try:
+        if (
+            lowered_secret.index('(') < lowered_secret.index(')')
+        ):
+            return True
+    except ValueError:
+        pass
+
+    # Skip over e.g. request.json_body['hey']
+    try:
+        if (
+            lowered_secret.index('[') < lowered_secret.index(']')
+        ):
+            return True
+    except ValueError:
+        pass
+
+    return False
