@@ -15,69 +15,69 @@ class TestKeywordDetector(object):
         [
             # FOLLOWED_BY_COLON_RE
             (
-                "'theapikey': 'hopenobodyfinds>-_$#thisone'"
+                "'theapikey': 'hope]nobody[finds>-_$#thisone'"
             ),
             (
-                '"theapikey": "hopenobodyfinds>-_$#thisone"'
+                '"theapikey": "hope]nobody[finds>-_$#thisone"'
             ),
             (
-                'apikey: hopenobodyfinds>-_$#thisone'
+                'apikey: hope]nobody[finds>-_$#thisone'
             ),
             (
-                'apikey:hopenobodyfinds>-_$#thisone'
+                'apikey:hope]nobody[finds>-_$#thisone'
             ),
             (
-                'theapikey:hopenobodyfinds>-_$#thisone'
+                'theapikey:hope]nobody[finds>-_$#thisone'
             ),
             (
-                'apikey: "hopenobodyfinds>-_$#thisone"'
+                'apikey: "hope]nobody[finds>-_$#thisone"'
             ),
             (
-                "apikey:  'hopenobodyfinds>-_$#thisone'"
+                "apikey:  'hope]nobody[finds>-_$#thisone'"
             ),
             # FOLLOWED_BY_EQUAL_SIGNS_RE
             (
-                'my_password=hopenobodyfinds>-_$#thisone'
+                'my_password=hope]nobody[finds>-_$#thisone'
             ),
             (
-                'my_password= hopenobodyfinds>-_$#thisone'
+                'my_password= hope]nobody[finds>-_$#thisone'
             ),
             (
-                'my_password =hopenobodyfinds>-_$#thisone'
+                'my_password =hope]nobody[finds>-_$#thisone'
             ),
             (
-                'my_password_for_stuff = hopenobodyfinds>-_$#thisone'
+                'my_password_for_stuff = hope]nobody[finds>-_$#thisone'
             ),
             (
-                'my_password_for_stuff =hopenobodyfinds>-_$#thisone'
+                'my_password_for_stuff =hope]nobody[finds>-_$#thisone'
             ),
             (
-                'passwordone=hopenobodyfinds>-_$#thisone\n'
+                'passwordone=hope]nobody[finds>-_$#thisone\n'
             ),
             (
-                'passwordone= "hopenobodyfinds>-_$#thisone"\n'
+                'passwordone= "hope]nobody[finds>-_$#thisone"\n'
             ),
             (
-                'passwordone=\'hopenobodyfinds>-_$#thisone\'\n'
+                'passwordone=\'hope]nobody[finds>-_$#thisone\'\n'
             ),
             # FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE
             (
-                'apikey "hopenobodyfinds>-_$#thisone";'  # Double-quotes
+                'apikey "hope]nobody[finds>-_$#thisone";'  # Double-quotes
             ),
             (
-                'fooapikeyfoo "hopenobodyfinds>-_$#thisone";'  # Double-quotes
+                'fooapikeyfoo "hope]nobody[finds>-_$#thisone";'  # Double-quotes
             ),
             (
-                'fooapikeyfoo"hopenobodyfinds>-_$#thisone";'  # Double-quotes
+                'fooapikeyfoo"hope]nobody[finds>-_$#thisone";'  # Double-quotes
             ),
             (
-                'private_key \'hopenobodyfinds>-_$#thisone\';'  # Single-quotes
+                'private_key \'hope]nobody[finds>-_$#thisone\';'  # Single-quotes
             ),
             (
-                'fooprivate_keyfoo\'hopenobodyfinds>-_$#thisone\';'  # Single-quotes
+                'fooprivate_keyfoo\'hope]nobody[finds>-_$#thisone\';'  # Single-quotes
             ),
             (
-                'fooprivate_key\'hopenobodyfinds>-_$#thisone\';'  # Single-quotes
+                'fooprivate_key\'hope]nobody[finds>-_$#thisone\';'  # Single-quotes
             ),
         ],
     )
@@ -91,7 +91,7 @@ class TestKeywordDetector(object):
             assert 'mock_filename' == potential_secret.filename
             assert (
                 potential_secret.secret_hash
-                == PotentialSecret.hash_secret('hopenobodyfinds>-_$#thisone')
+                == PotentialSecret.hash_secret('hope]nobody[finds>-_$#thisone')
             )
 
     @pytest.mark.parametrize(

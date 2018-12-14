@@ -350,7 +350,7 @@ class TestBaselineInputOutput(object):
             assert original[key] == new[key]
 
 
-class MockBasePlugin(BasePlugin):
+class MockBasePlugin(BasePlugin):  # pragma: no cover
     """Abstract testing class, to implement abstract methods."""
 
     def analyze_string(self, value):

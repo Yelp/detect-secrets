@@ -65,7 +65,7 @@ class TestAuditBaseline(object):
     def test_quit_half_way(self, mock_printer):
         modified_baseline = deepcopy(self.baseline)
 
-        for secrets in modified_baseline['results'].values():
+        for secrets in modified_baseline['results'].values():  # pragma: no cover
             secrets[0]['is_secret'] = False
             break
 
@@ -147,8 +147,7 @@ class TestAuditBaseline(object):
         for secrets in modified_baseline['results'].values():
             for secret in secrets:
                 value = values_to_inject.pop(0)
-                if value is not None:
-                    secret['is_secret'] = value
+                secret['is_secret'] = value
 
         self.run_logic(
             ['s', 'y', 'b', 's', 'b', 'b', 'n', 'n', 'n'],
@@ -174,10 +173,7 @@ class TestAuditBaseline(object):
         ) as m:
             audit.audit_baseline('will_be_mocked')
 
-            if not modified_baseline:
-                assert m.call_args[0][1] == self.baseline
-            else:
-                assert m.call_args[0][1] == modified_baseline
+            assert m.call_args[0][1] == modified_baseline
 
     @contextmanager
     def mock_env(self, user_inputs=None, baseline=None):

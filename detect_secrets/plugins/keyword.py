@@ -113,9 +113,7 @@ class KeywordDetector(BasePlugin):
             if match:
                 lowered_secret = match.group(group_number)
 
-                if not lowered_secret:
-                    continue
-
+                # ([^\s]+) guarantees lowered_secret is not ''
                 if not probably_false_positive(lowered_secret, is_php_file):
                     yield lowered_secret
 
