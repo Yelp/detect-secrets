@@ -1,5 +1,9 @@
 from abc import ABCMeta
 from abc import abstractmethod
+from abc import abstractproperty
+
+from detect_secrets.core.potential_secret import PotentialSecret
+from detect_secrets.plugins.core.constants import WHITELIST_REGEX
 
 
 class BasePlugin(object):
@@ -23,6 +27,8 @@ class BasePlugin(object):
         """
         potential_secrets = {}
         for line_num, line in enumerate(file.readlines(), start=1):
+            if WHITELIST_REGEX.search(line):
+                continue
             secrets = self.analyze_string(line, line_num, filename)
             potential_secrets.update(secrets)
 
@@ -82,3 +88,46 @@ class BasePlugin(object):
         return {
             'name': self.__class__.__name__,
         }
+
+
+class RegexBasedDetector(BasePlugin):
+    """Base class for regular-expressed based detectors.
+
+    To create a new regex-based detector, subclass this and set
+    `secret_type` with a description and `blacklist`
+    with a sequence of regular expressions, like:
+
+    class FooDetector(RegexBasedDetector):
+        secret_type = "foo"
+        blacklist = (
+            re.compile(r'foo'),
+        )
+    """
+    __metaclass__ = ABCMeta
+
+    @abstractproperty
+    def secret_type(self):
+        raise NotImplementedError
+
+    @abstractproperty
+    def blacklist(self):
+        raise NotImplementedError
+
+    def analyze_string(self, string, line_num, filename):
+        output = {}
+
+        for identifier in self.secret_generator(string):
+            secret = PotentialSecret(
+                self.secret_type,
+                filename,
+                identifier,
+                line_num,
+            )
+            output[secret] = secret
+
+        return output
+
+    def secret_generator(self, string):
+        for regex in self.blacklist:
+            if regex.search(string):
+                yield regex.pattern

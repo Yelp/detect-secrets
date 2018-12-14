@@ -32,7 +32,7 @@ class ParserBuilder(object):
             dest='action',
         )
 
-        for action_parser in [ScanOptions, AuditOptions]:
+        for action_parser in (ScanOptions, AuditOptions):
             action_parser(subparser).add_arguments()
 
         return self
@@ -62,7 +62,11 @@ class ParserBuilder(object):
         return self
 
     def _add_filenames_argument(self):
-        self.parser.add_argument('filenames', nargs='*', help='Filenames to check')
+        self.parser.add_argument(
+            'filenames',
+            nargs='*',
+            help='Filenames to check',
+        )
         return self
 
     def _add_set_baseline_argument(self):
@@ -149,10 +153,20 @@ class AuditOptions(object):
     def add_arguments(self):
         self.parser.add_argument(
             'filename',
-            nargs=1,
+            nargs='+',
             help=(
                 'Audit a given baseline file to distinguish the difference '
                 'between false and true positives.'
+            ),
+        )
+
+        self.parser.add_argument(
+            '--diff',
+            action='store_true',
+            help=(
+                'Allows the comparison of two baseline files, in order to '
+                'effectively distinguish the difference between various '
+                'plugin configurations.'
             ),
         )
 
@@ -229,6 +243,11 @@ class PluginOptions(object):
             classname='KeywordDetector',
             disable_flag_text='--no-keyword-scan',
             disable_help_text='Disables scanning for secret keywords.',
+        ),
+        PluginDescriptor(
+            classname='AWSKeyDetector',
+            disable_flag_text='--no-aws-key-scan',
+            disable_help_text='Disables scanning for AWS keys.',
         ),
     ]
 

@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 
-import json
 import subprocess
 import sys
 import textwrap
@@ -8,7 +7,7 @@ import textwrap
 from detect_secrets import VERSION
 from detect_secrets.core.baseline import format_baseline_for_output
 from detect_secrets.core.baseline import get_secrets_not_in_baseline
-from detect_secrets.core.baseline import update_baseline_with_removed_secrets
+from detect_secrets.core.baseline import trim_baseline_of_removed_secrets
 from detect_secrets.core.log import get_logger
 from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.core.usage import ParserBuilder
@@ -36,7 +35,8 @@ def main(argv=None):
         # Error logs handled within logic.
         return 1
 
-    results = find_secrets_in_files(args)
+    plugins = initialize.from_parser_builder(args.plugins)
+    results = find_secrets_in_files(args, plugins)
     if baseline_collection:
         original_results = results
         results = get_secrets_not_in_baseline(
@@ -52,12 +52,18 @@ def main(argv=None):
         return 0
 
     # Only attempt baseline modifications if we don't find any new secrets
-    successful_update = update_baseline_with_removed_secrets(
+    baseline_modified = trim_baseline_of_removed_secrets(
         original_results,
         baseline_collection,
         args.filenames,
     )
-    if successful_update:
+
+    if VERSION != baseline_collection.version:
+        baseline_collection.plugins = plugins
+        baseline_collection.version = VERSION
+        baseline_modified = True
+
+    if baseline_modified:
         _write_to_baseline_file(
             args.baseline[0],
             baseline_collection.format_for_baseline_output(),
@@ -87,31 +93,13 @@ def get_baseline(baseline_filename):
     if not baseline_filename:
         return
 
-    raise_exception_if_baseline_file_is_not_up_to_date(baseline_filename)
+    raise_exception_if_baseline_file_is_unstaged(baseline_filename)
 
-    baseline_string = _get_baseline_string_from_file(baseline_filename)
-    baseline_version = json.loads(baseline_string).get('version')
-
-    try:
-        raise_exception_if_baseline_version_is_outdated(
-            baseline_version,
-        )
-    except ValueError:
-        log.error(
-            'The supplied baseline may be incompatible with the current\n'
-            'version of detect-secrets. Please recreate your baseline to\n'
-            'avoid potential mis-configurations.\n\n'
-            '$ detect-secrets scan --update %s\n\n'
-            'Current Version: %s\n'
-            'Baseline Version: %s',
+    return SecretsCollection.load_baseline_from_string(
+        _get_baseline_string_from_file(
             baseline_filename,
-            VERSION,
-            baseline_version if baseline_version else '0.0.0',
-        )
-
-        raise
-
-    return SecretsCollection.load_baseline_from_string(baseline_string)
+        ),
+    )
 
 
 def _get_baseline_string_from_file(filename):   # pragma: no cover
@@ -130,7 +118,7 @@ def _get_baseline_string_from_file(filename):   # pragma: no cover
         raise
 
 
-def raise_exception_if_baseline_file_is_not_up_to_date(filename):
+def raise_exception_if_baseline_file_is_unstaged(filename):
     """We want to make sure that if there are changes to the baseline
     file, they will be included in the commit. This way, we can keep
     our baselines up-to-date.
@@ -161,44 +149,12 @@ def raise_exception_if_baseline_file_is_not_up_to_date(filename):
         raise ValueError
 
 
-def raise_exception_if_baseline_version_is_outdated(version):
-    """
-    Version changes may cause breaking changes with past baselines.
-    Due to this, we want to make sure that the version that the
-    baseline was created with is compatible with the current version
-    of the scanner.
-
-    We use semantic versioning, and check for bumps in the MINOR
-    version (a good compromise, so we can release patches for other
-    non-baseline-related issues, without having all our users
-    recreate their baselines again).
-
-    :type version: str|None
-    :param version: version of baseline
-    :raises: ValueError
-    """
-    if not version:
-        # Baselines created before this change, so by definition,
-        # would be outdated.
-        raise ValueError
-
-    baseline_version = version.split('.')
-    current_version = VERSION.split('.')
-
-    if int(current_version[0]) > int(baseline_version[0]):
-        raise ValueError
-    elif current_version[0] == baseline_version[0] and \
-            int(current_version[1]) > int(baseline_version[1]):
-        raise ValueError
-
-
-def find_secrets_in_files(args):
-    plugins = initialize.from_parser_builder(args.plugins)
+def find_secrets_in_files(args, plugins):
     collection = SecretsCollection(plugins)
 
     for filename in args.filenames:
+        # Don't scan the baseline file
         if filename == args.baseline[0]:
-            # Obviously, don't detect the baseline file
             continue
 
         collection.scan_file(filename)

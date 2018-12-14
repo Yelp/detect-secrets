@@ -30,7 +30,6 @@ import re
 
 from .base import BasePlugin
 from detect_secrets.core.potential_secret import PotentialSecret
-from detect_secrets.plugins.core.constants import WHITELIST_REGEX
 
 
 # Note: All values here should be lowercase
@@ -91,9 +90,6 @@ class KeywordDetector(BasePlugin):
 
     def analyze_string(self, string, line_num, filename):
         output = {}
-
-        if WHITELIST_REGEX.search(string):
-            return output
 
         for identifier in self.secret_generator(
             string,

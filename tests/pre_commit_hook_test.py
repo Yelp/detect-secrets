@@ -97,40 +97,58 @@ class TestPreCommitHook(object):
         'baseline_version, current_version',
         [
             ('', '0.8.8',),
+            ('0.8.8', '0.8.9',),
             ('0.8.8', '0.9.0',),
             ('0.8.8', '1.0.0',),
         ],
     )
-    def test_fails_if_baseline_version_is_outdated(
+    def test_that_baseline_gets_updated(
         self,
         mock_log,
         baseline_version,
         current_version,
     ):
         with _mock_versions(baseline_version, current_version):
-            assert_commit_blocked(
-                '--baseline will_be_mocked',
-            )
+            baseline_string = _create_baseline()
+            modified_baseline = json.loads(baseline_string)
 
-        assert mock_log.error_messages == (
-            'The supplied baseline may be incompatible with the current\n'
-            'version of detect-secrets. Please recreate your baseline to\n'
-            'avoid potential mis-configurations.\n'
-            '\n'
-            '$ detect-secrets scan --update will_be_mocked\n'
-            '\n'
-            'Current Version: {}\n'
-            'Baseline Version: {}\n'
-        ).format(
-            current_version,
-            baseline_version if baseline_version else '0.0.0',
-        )
+            with mock.patch(
+                'detect_secrets.pre_commit_hook._get_baseline_string_from_file',
+                return_value=json.dumps(modified_baseline),
+            ), mock.patch(
+                'detect_secrets.pre_commit_hook._write_to_baseline_file',
+            ) as m:
+                assert_commit_blocked(
+                    '--baseline will_be_mocked test_data/files/file_with_secrets.py',
+                )
 
-    def test_succeeds_if_patch_version_is_different(self):
-        with _mock_versions('0.8.8', '0.8.9'):
-            assert_commit_succeeds(
-                'test_data/files/file_with_no_secrets.py',
-            )
+                baseline_written = m.call_args[0][1]
+
+            original_baseline = json.loads(baseline_string)
+            assert original_baseline['exclude_regex'] == baseline_written['exclude_regex']
+            assert original_baseline['results'] == baseline_written['results']
+
+            # See that we updated the plugins and version
+            assert current_version == baseline_written['version']
+            assert baseline_written['plugins_used'] == [
+                {
+                    'name': 'AWSKeyDetector',
+                },
+                {
+                    'base64_limit': 4.5,
+                    'name': 'Base64HighEntropyString',
+                },
+                {
+                    'name': 'BasicAuthDetector',
+                },
+                {
+                    'hex_limit': 3,
+                    'name': 'HexHighEntropyString',
+                },
+                {
+                    'name': 'PrivateKeyDetector',
+                },
+            ]
 
     def test_writes_new_baseline_if_modified(self):
         baseline_string = _create_baseline()

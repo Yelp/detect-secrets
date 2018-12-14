@@ -11,7 +11,7 @@ from detect_secrets.core.baseline import format_baseline_for_output
 from detect_secrets.core.baseline import get_secrets_not_in_baseline
 from detect_secrets.core.baseline import merge_baseline
 from detect_secrets.core.baseline import merge_results
-from detect_secrets.core.baseline import update_baseline_with_removed_secrets
+from detect_secrets.core.baseline import trim_baseline_of_removed_secrets
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
 from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
@@ -31,19 +31,19 @@ class TestInitializeBaseline(object):
 
     def get_results(
         self,
-        rootdir='./test_data/files',
+        path='./test_data/files',
         exclude_regex=None,
         scan_all_files=False,
     ):
         return baseline.initialize(
             self.plugins,
-            rootdir=rootdir,
+            path=path,
             exclude_regex=exclude_regex,
             scan_all_files=scan_all_files,
         ).json()
 
     @pytest.mark.parametrize(
-        'rootdir',
+        'path',
         [
             './test_data/files',
 
@@ -51,8 +51,8 @@ class TestInitializeBaseline(object):
             'test_data/../test_data/files/tmp/..',
         ],
     )
-    def test_basic_usage(self, rootdir):
-        results = self.get_results(rootdir=rootdir)
+    def test_basic_usage(self, path):
+        results = self.get_results(path=path)
 
         assert len(results.keys()) == 2
         assert len(results['test_data/files/file_with_secrets.py']) == 1
@@ -82,7 +82,7 @@ class TestInitializeBaseline(object):
                 ),
             ),
         ):
-            results = self.get_results(rootdir='will_be_mocked')
+            results = self.get_results(path='will_be_mocked')
 
         assert not results
 
@@ -99,7 +99,7 @@ class TestInitializeBaseline(object):
         assert len(results['will_be_mocked']) == 1
 
     def test_scan_all_files(self):
-        results = self.get_results(rootdir='test_data/files', scan_all_files=True)
+        results = self.get_results(path='test_data/files', scan_all_files=True)
         assert len(results.keys()) == 2
 
 
@@ -229,7 +229,7 @@ class TestUpdateBaselineWithRemovedSecrets(object):
             },
         ])
 
-        is_successful = update_baseline_with_removed_secrets(
+        is_successful = trim_baseline_of_removed_secrets(
             new_findings,
             baseline,
             ['filename'],
@@ -247,7 +247,7 @@ class TestUpdateBaselineWithRemovedSecrets(object):
             },
         ])
 
-        is_successful = update_baseline_with_removed_secrets(
+        is_successful = trim_baseline_of_removed_secrets(
             new_findings,
             baseline,
             [
@@ -272,7 +272,7 @@ class TestUpdateBaselineWithRemovedSecrets(object):
             },
         ])
 
-        is_successful = update_baseline_with_removed_secrets(
+        is_successful = trim_baseline_of_removed_secrets(
             new_findings,
             baseline,
             ['filename'],
@@ -303,7 +303,7 @@ class TestUpdateBaselineWithRemovedSecrets(object):
         new_findings = secrets_collection_factory([results_dict])
         baseline = secrets_collection_factory([baseline_dict])
 
-        assert not update_baseline_with_removed_secrets(
+        assert not trim_baseline_of_removed_secrets(
             new_findings,
             baseline,
             ['filename'],

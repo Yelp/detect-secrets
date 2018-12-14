@@ -7,9 +7,6 @@ import re
 from time import gmtime
 from time import strftime
 
-from unidiff import PatchSet
-from unidiff.errors import UnidiffParseError
-
 from detect_secrets import VERSION
 from detect_secrets.core.log import log
 from detect_secrets.core.potential_secret import PotentialSecret
@@ -66,7 +63,6 @@ class SecretsCollection(object):
             'exclude_regex',
             'plugins_used',
             'results',
-            'version',
         )):
             raise IOError
 
@@ -95,7 +91,11 @@ class SecretsCollection(object):
                 secret.secret_hash = item['hashed_secret']
                 result.data[filename][secret] = secret
 
-        result.version = data['version']
+        result.version = (
+            data['version']
+            if 'version' in data
+            else '0.0.0'
+        )
 
         return result
 
@@ -125,6 +125,11 @@ class SecretsCollection(object):
         :type repo_name: str
         :param repo_name: used for logging only -- the name of the repo
         """
+        # Local imports, so that we don't need to require unidiff for versions of
+        # detect-secrets that don't use it.
+        from unidiff import PatchSet
+        from unidiff.errors import UnidiffParseError
+
         try:
             patch_set = PatchSet.from_string(diff)
         except UnidiffParseError:  # pragma: no cover
