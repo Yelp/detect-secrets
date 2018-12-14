@@ -335,7 +335,7 @@ class TestCompareBaselines(object):
         # These files come after, because filenames are sorted first
         assert headers[2] == textwrap.dedent("""
             Secret:      3 of 4
-            Filename:    test_data/short_files/first_line.py
+            Filename:    test_data/short_files/first_line.php
             Secret Type: Hex High Entropy String
             Status:      >> REMOVED <<
         """)[1:]
@@ -406,7 +406,7 @@ class TestCompareBaselines(object):
                 ],
 
                 # This entire file will be "removed"
-                'test_data/short_files/first_line.py': [
+                'test_data/short_files/first_line.php': [
                     {
                         'hashed_secret': '0de9a11b3f37872868ca49ecd726c955e25b6e21',
                         'line_number': 1,

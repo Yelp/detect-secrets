@@ -194,9 +194,9 @@ class TestMain(object):
         'filename, expected_output',
         [
             (
-                'test_data/short_files/first_line.py',
+                'test_data/short_files/first_line.php',
                 textwrap.dedent("""
-                    1:secret = 'BEEF0123456789a'
+                    1:seecret = 'BEEF0123456789a'
                     2:skipped_sequential_false_positive = '0123456789a'
                     3:print('second line')
                     4:var = 'third line'

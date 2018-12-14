@@ -9,6 +9,7 @@ from collections import defaultdict
 
 from ..plugins.core import initialize
 from ..plugins.high_entropy_strings import HighEntropyStringsPlugin
+from ..plugins.keyword import KeywordDetector
 from .baseline import format_baseline_for_output
 from .baseline import merge_results
 from .bidirectional_iterator import BidirectionalIterator
@@ -518,7 +519,13 @@ def _get_secret_with_context(
     )
 
 
-def _highlight_secret(secret_line, secret_lineno, secret, filename, plugin_settings):
+def _highlight_secret(
+    secret_line,
+    secret_lineno,
+    secret,
+    filename,
+    plugin_settings,
+):
     """
     :type secret_line: str
     :param secret_line: the line on which the secret is found
@@ -544,7 +551,11 @@ def _highlight_secret(secret_line, secret_lineno, secret, filename, plugin_setti
         plugin_settings,
     )
 
-    for raw_secret in _raw_secret_generator(plugin, secret_line):
+    for raw_secret in _raw_secret_generator(
+        plugin,
+        secret_line,
+        is_php_file=filename.endswith('.php'),
+    ):
         secret_obj = PotentialSecret(
             plugin.secret_type,
             filename,
@@ -572,10 +583,14 @@ def _highlight_secret(secret_line, secret_lineno, secret, filename, plugin_setti
     )
 
 
-def _raw_secret_generator(plugin, secret_line):
+def _raw_secret_generator(plugin, secret_line, is_php_file):
     """Generates raw secrets by re-scanning the line, with the specified plugin"""
-    for raw_secret in plugin.secret_generator(secret_line):
-        yield raw_secret
+    if isinstance(plugin, KeywordDetector):
+        for raw_secret in plugin.secret_generator(secret_line, is_php_file):
+            yield raw_secret
+    else:
+        for raw_secret in plugin.secret_generator(secret_line):
+            yield raw_secret
 
     if issubclass(plugin.__class__, HighEntropyStringsPlugin):
         with plugin.non_quoted_string_regex(strict=False):
