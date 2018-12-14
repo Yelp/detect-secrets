@@ -42,7 +42,6 @@ BLACKLIST = (
     'private_key',
     'secret',
     'secrete',
-    'token',
 )
 FALSE_POSITIVES = (
     "''",
@@ -64,7 +63,7 @@ FOLLOWED_BY_COLON_RE = re.compile(
 )
 FOLLOWED_BY_EQUAL_SIGNS_RE = re.compile(
     # e.g. my_password =
-    r'({})([^\s]*?)(\s*?)=(\s*?)(("|\')?)([^\s]+)(\5)'.format(
+    r'({})()(\s*?)=(\s*?)(("|\')?)([^\s]+)(\5)'.format(
         r'|'.join(BLACKLIST),
     ),
 )

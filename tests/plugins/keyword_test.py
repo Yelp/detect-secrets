@@ -46,19 +46,19 @@ class TestKeywordDetector(object):
                 'my_password =hope]nobody[finds>-_$#thisone'
             ),
             (
-                'my_password_for_stuff = hope]nobody[finds>-_$#thisone'
+                'my_password = hope]nobody[finds>-_$#thisone'
             ),
             (
-                'my_password_for_stuff =hope]nobody[finds>-_$#thisone'
+                'my_password =hope]nobody[finds>-_$#thisone'
             ),
             (
-                'passwordone=hope]nobody[finds>-_$#thisone\n'
+                'the_password=hope]nobody[finds>-_$#thisone\n'
             ),
             (
-                'passwordone= "hope]nobody[finds>-_$#thisone"\n'
+                'the_password= "hope]nobody[finds>-_$#thisone"\n'
             ),
             (
-                'passwordone=\'hope]nobody[finds>-_$#thisone\'\n'
+                'the_password=\'hope]nobody[finds>-_$#thisone\'\n'
             ),
             # FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE
             (
@@ -131,22 +131,22 @@ class TestKeywordDetector(object):
                 'some_key = "real_secret"'  # We cannot make 'key' a Keyword, too noisy
             ),
             (
-                'my_password_for_stuff = foo(hey)you'  # Has a ( followed by a )
+                'my_password = foo(hey)you'  # Has a ( followed by a )
             ),
             (
-                "my_password_for_stuff = request.json_body['hey']"  # Has a [ followed by a ]
+                "my_password = request.json_body['hey']"  # Has a [ followed by a ]
             ),
             (
-                'my_password_for_stuff = ""'  # Nothing in the quotes
+                'my_password = ""'  # Nothing in the quotes
             ),
             (
-                "my_password_for_stuff = ''"  # Nothing in the quotes
+                "my_password = ''"  # Nothing in the quotes
             ),
             (
-                'my_password_for_stuff = True'  # 'True' is a known false-positive
+                'my_password = True'  # 'True' is a known false-positive
             ),
             (
-                'my_password_for_stuff = "fakesecret"'  # 'fake' in the secret
+                'my_password = "fakesecret"'  # 'fake' in the secret
             ),
             (
                 'login(username=username, password=password)'  # secret is password)
