@@ -126,5 +126,5 @@ class RegexBasedDetector(BasePlugin):
 
     def secret_generator(self, string):
         for regex in self.blacklist:
-            if regex.search(string):
-                yield regex.pattern
+            for match in regex.findall(string):
+                yield match
