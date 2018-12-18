@@ -47,5 +47,6 @@ class PrivateKeyDetector(RegexBasedDetector):
             r'BEGIN PRIVATE KEY',
             r'PuTTY-User-Key-File-2',
             r'BEGIN SSH2 ENCRYPTED PRIVATE KEY',
+            r'BEGIN PGP PRIVATE KEY BLOCK',
         )
     ]
