@@ -1,6 +1,6 @@
 import yaml
 
-from detect_secrets.plugins.core.constants import WHITELIST_REGEX
+from detect_secrets.plugins.core.constants import WHITELIST_REGEXES
 
 
 class YamlFileParser(object):
@@ -127,7 +127,7 @@ class YamlFileParser(object):
         ignored_lines = set()
 
         for line_number, line in enumerate(self.content.split('\n'), 1):
-            if WHITELIST_REGEX.search(line):
+            if any(regex.search(line) for regex in WHITELIST_REGEXES):
                 ignored_lines.add(line_number)
 
         return ignored_lines

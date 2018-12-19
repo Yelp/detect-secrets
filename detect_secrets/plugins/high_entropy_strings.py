@@ -12,7 +12,7 @@ import yaml
 
 from .base import BasePlugin
 from detect_secrets.core.potential_secret import PotentialSecret
-from detect_secrets.plugins.core.constants import WHITELIST_REGEX
+from detect_secrets.plugins.core.constants import WHITELIST_REGEXES
 from detect_secrets.plugins.core.ini_file_parser import IniFileParser
 from detect_secrets.plugins.core.yaml_file_parser import YamlFileParser
 
@@ -96,7 +96,7 @@ class HighEntropyStringsPlugin(BasePlugin):
         """
         output = {}
 
-        if WHITELIST_REGEX.search(string):
+        if any(regex.search(string) for regex in WHITELIST_REGEXES):
             return output
 
         for result in self.secret_generator(string):

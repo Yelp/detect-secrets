@@ -3,7 +3,7 @@ from abc import abstractmethod
 from abc import abstractproperty
 
 from detect_secrets.core.potential_secret import PotentialSecret
-from detect_secrets.plugins.core.constants import WHITELIST_REGEX
+from detect_secrets.plugins.core.constants import WHITELIST_REGEXES
 
 
 class BasePlugin(object):
@@ -27,7 +27,7 @@ class BasePlugin(object):
         """
         potential_secrets = {}
         for line_num, line in enumerate(file.readlines(), start=1):
-            if WHITELIST_REGEX.search(line):
+            if any(regex.search(line) for regex in WHITELIST_REGEXES):
                 continue
             secrets = self.analyze_string(line, line_num, filename)
             potential_secrets.update(secrets)
