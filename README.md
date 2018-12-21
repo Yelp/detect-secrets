@@ -168,7 +168,7 @@ committing secrets.
 ### Things that won't be prevented
 
 * Multi-line secrets
-* Default passwords that do not trigger the `KeywordDetector` (e.g. `paaassword = "paaassword"`)
+* Default passwords that do not trigger the `KeywordDetector` (e.g. `login = "hunter2"`)
 
 ### Plugin Configuration
 
