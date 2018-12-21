@@ -55,7 +55,7 @@ class HighEntropyStringsPlugin(BasePlugin):
             (self._analyze_ini_file(), configparser.Error,),
             (self._analyze_yaml_file, yaml.YAMLError,),
             (super(HighEntropyStringsPlugin, self).analyze, Exception,),
-            (self._analyze_ini_file(True), configparser.Error,),
+            (self._analyze_ini_file(add_header=True), configparser.Error,),
         )
 
         for analyze_function, exception_class in file_type_analyzers:

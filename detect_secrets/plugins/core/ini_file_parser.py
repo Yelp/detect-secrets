@@ -13,8 +13,14 @@ class IniFileParser(object):
         else:
             # This supports environment variables, or other files that look
             # like config files, without a section header.
-            content = file.read()
-            self.parser.read_string('[global]\n' + content)
+            content = '[global]\n' + file.read()
+
+            try:
+                # python2.7 compatible
+                self.parser.read_string(unicode(content))
+            except NameError:
+                # python3 compatible
+                self.parser.read_string(content)
 
         # Hacky way to keep track of line location
         file.seek(0)
