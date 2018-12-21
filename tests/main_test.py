@@ -8,11 +8,11 @@ import pytest
 
 from detect_secrets import main as main_module
 from detect_secrets.core import audit as audit_module
-from detect_secrets.core.color import BashColor
 from detect_secrets.main import main
 from testing.factories import secrets_collection_factory
 from testing.mocks import Any
 from testing.mocks import mock_printer
+from testing.util import uncolor
 
 
 @pytest.fixture
@@ -86,7 +86,7 @@ class TestMain(object):
             main_module,
         ) as printer_shim:
             assert main('scan --string'.split()) == 0
-            assert printer_shim.message == textwrap.dedent("""
+            assert uncolor(printer_shim.message) == textwrap.dedent("""
                 AWSKeyDetector         : False
                 Base64HighEntropyString: False (3.459)
                 BasicAuthDetector      : False
@@ -103,7 +103,7 @@ class TestMain(object):
             main_module,
         ) as printer_shim:
             assert main('scan --string 012345'.split()) == 0
-            assert printer_shim.message == textwrap.dedent("""
+            assert uncolor(printer_shim.message) == textwrap.dedent("""
                 AWSKeyDetector         : False
                 Base64HighEntropyString: False (2.585)
                 BasicAuthDetector      : False
@@ -224,8 +224,6 @@ class TestMain(object):
         ],
     )
     def test_audit_short_file(self, filename, expected_output):
-        BashColor.disable_color()
-
         with mock_stdin(), mock_printer(
             # To extract the baseline output
             main_module,
@@ -253,7 +251,7 @@ class TestMain(object):
         ) as printer_shim:
             main('audit will_be_mocked'.split())
 
-            assert printer_shim.message == textwrap.dedent("""
+            assert uncolor(printer_shim.message) == textwrap.dedent("""
                 Secret:      1 of 1
                 Filename:    {}
                 Secret Type: {}
@@ -266,8 +264,6 @@ class TestMain(object):
                 baseline_dict['results'][filename][0]['type'],
                 expected_output,
             )
-
-        BashColor.enable_color()
 
 
 @contextmanager
