@@ -12,7 +12,6 @@ import yaml
 
 from .base import BasePlugin
 from detect_secrets.core.potential_secret import PotentialSecret
-from detect_secrets.plugins.core.constants import WHITELIST_REGEX
 from detect_secrets.plugins.core.ini_file_parser import IniFileParser
 from detect_secrets.plugins.core.yaml_file_parser import YamlFileParser
 
@@ -101,9 +100,6 @@ class HighEntropyStringsPlugin(BasePlugin):
         match self.regex, with a limit defined as self.entropy_limit.
         """
         output = {}
-
-        if WHITELIST_REGEX.search(string):
-            return output
 
         for result in self.secret_generator(string):
             if self.is_sequential_string(result):
