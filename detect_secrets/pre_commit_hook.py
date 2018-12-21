@@ -175,7 +175,7 @@ def pretty_print_diagnostics(secrets):
 def _print_warning_header():
     message = (
         'Potential secrets about to be committed to git repo! Please rectify '
-        'or explicitly ignore with `pragma: whitelist secret` comment.'
+        'or explicitly ignore with an inline `pragma: whitelist secret` comment.'
     )
 
     log.error(textwrap.fill(message))
@@ -191,7 +191,7 @@ def _print_secrets_found(secrets):
 def _print_mitigation_suggestions():
     suggestions = [
         'For information about putting your secrets in a safer place, please ask in #security',
-        'Mark false positives with `# pragma: whitelist secret`',
+        'Mark false positives with an inline `pragma: whitelist secret` comment',
         'Commit with `--no-verify` if this is a one-time false positive',
     ]
 

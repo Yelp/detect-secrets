@@ -94,8 +94,11 @@ class HighEntropyStringsTest(object):
         'content_to_format',
         [
             # Test inline annotation for whitelisting
-            "'{secret}' # pragma: whitelist secret",
-
+            "'{secret}'  # pragma: whitelist secret",
+            "'{secret}'  // pragma: whitelist secret",
+            "'{secret}'  /* pragma: whitelist secret */",
+            "'{secret}'  ' pragma: whitelist secret",
+            "'{secret}'  -- pragma: whitelist secret",
             # Not a string
             "{secret}",
         ],
