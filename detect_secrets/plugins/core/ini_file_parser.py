@@ -13,7 +13,7 @@ class IniFileParser(object):
 
         # Hacky way to keep track of line location
         file.seek(0)
-        self.lines = list(map(lambda x: x.strip(), file.readlines()))
+        self.lines = list(map(str.strip, file.readlines()))
         self.line_offset = 0
 
     def iterator(self):
@@ -123,10 +123,7 @@ class IniFileParser(object):
             2. For all other values, ignore blank lines.
         Then, we can parse through, and look for values only.
         """
-        values_list = values.splitlines()
-        return values_list[:1] + list(
-            filter(
-                lambda x: x,
-                values_list[1:],
-            ),
-        )
+        lines = values.splitlines()
+        values_list = lines[:1]
+        values_list.extend(filter(None, lines[1:]))
+        return values_list
