@@ -6,10 +6,23 @@ class IniFileParser(object):
 
     _comment_regex = re.compile(r'\s*[;#]')
 
-    def __init__(self, file):
+    def __init__(self, file, add_header=False):
         self.parser = configparser.ConfigParser()
         self.parser.optionxform = str
-        self.parser.read_file(file)
+
+        if not add_header:
+            self.parser.read_file(file)
+        else:
+            # This supports environment variables, or other files that look
+            # like config files, without a section header.
+            content = '[global]\n' + file.read()
+
+            try:
+                # python2.7 compatible
+                self.parser.read_string(unicode(content))
+            except NameError:
+                # python3 compatible
+                self.parser.read_string(content)
 
         # Hacky way to keep track of line location
         file.seek(0)

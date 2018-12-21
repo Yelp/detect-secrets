@@ -3,7 +3,7 @@ credentials:
     other_value_here: 1234567890a
     nested:
         value: AKIAabcdefghijklmnop
-        value: abcdefghijklmnop
+        other_value: abcdefghijklmnop
 list_of_keys:
     - 123
     - 456
