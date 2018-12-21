@@ -13,7 +13,7 @@ class IniFileParser(object):
 
         # Hacky way to keep track of line location
         file.seek(0)
-        self.lines = list(map(str.strip, file.readlines()))
+        self.lines = [line.strip() for line in file.readlines()]
         self.line_offset = 0
 
     def iterator(self):
