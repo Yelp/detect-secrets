@@ -108,6 +108,25 @@ class HighEntropyStringsTest(object):
 
         assert len(results) == 0
 
+    def test_entropy_lower_limit(self):
+        with pytest.raises(ValueError):
+            Base64HighEntropyString(-1)
+
+    def test_entropy_upper_limit(self):
+        with pytest.raises(ValueError):
+            Base64HighEntropyString(15)
+
+
+class TestBase64HighEntropyStrings(HighEntropyStringsTest):
+
+    def setup(self):
+        super(TestBase64HighEntropyStrings, self).setup(
+            # Testing default limit, as suggested by truffleHog.
+            Base64HighEntropyString(4.5),
+            'c3VwZXIgc2VjcmV0IHZhbHVl',     # too short for high entropy
+            'c3VwZXIgbG9uZyBzdHJpbmcgc2hvdWxkIGNhdXNlIGVub3VnaCBlbnRyb3B5',
+        )
+
     def test_ini_file(self):
         # We're testing two files here, because we want to make sure that
         # the HighEntropyStrings regex is reset back to normal after
@@ -148,31 +167,25 @@ class HighEntropyStringsTest(object):
         with open('test_data/config.yaml') as f:
             secrets = plugin.analyze(f, 'test_data/config.yaml')
 
-        assert len(secrets.values()) == 1
+        assert len(secrets.values()) == 2
         for secret in secrets.values():
             location = str(secret).splitlines()[1]
             assert location in (
                 'Location:    test_data/config.yaml:3',
+                'Location:    test_data/config.yaml:5',
             )
 
-    def test_entropy_lower_limit(self):
-        with pytest.raises(ValueError):
-            Base64HighEntropyString(-1)
+    def test_env_file(self):
+        plugin = Base64HighEntropyString(4.5)
+        with open('test_data/config.env') as f:
+            secrets = plugin.analyze(f, 'test_data/config.env')
 
-    def test_entropy_upper_limit(self):
-        with pytest.raises(ValueError):
-            Base64HighEntropyString(15)
-
-
-class TestBase64HighEntropyStrings(HighEntropyStringsTest):
-
-    def setup(self):
-        super(TestBase64HighEntropyStrings, self).setup(
-            # Testing default limit, as suggested by truffleHog.
-            Base64HighEntropyString(4.5),
-            'c3VwZXIgc2VjcmV0IHZhbHVl',     # too short for high entropy
-            'c3VwZXIgbG9uZyBzdHJpbmcgc2hvdWxkIGNhdXNlIGVub3VnaCBlbnRyb3B5',
-        )
+        assert len(secrets.values()) == 1
+        for secret in secrets.values():
+            location = str(secret).splitlines()[1]
+            assert location in (
+                'Location:    test_data/config.env:1',
+            )
 
 
 class TestHexHighEntropyStrings(HighEntropyStringsTest):
