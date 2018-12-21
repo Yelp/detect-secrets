@@ -4,6 +4,8 @@ import re
 
 class IniFileParser(object):
 
+    _comment_regex = re.compile(r'\s*[;#]')
+
     def __init__(self, file):
         self.parser = configparser.ConfigParser()
         self.parser.optionxform = str
@@ -56,42 +58,31 @@ class IniFileParser(object):
         output = []
         lines_modified = False
 
-        first_line_regex = re.compile(r'^\s*{}[ :=]+{}'.format(
-            re.escape(key),
-            re.escape(values_list[current_value_list_index]),
-        ))
-        comment_regex = re.compile(r'\s*[;#]')
         for index, line in enumerate(self.lines):
+            # Check ignored lines before checking values, because
+            # you can write comments *after* the value.
+            if not line.strip() or self._comment_regex.match(line):
+                continue
+
             if current_value_list_index == 0:
+                first_line_regex = re.compile(r'^\s*{}[ :=]+{}'.format(
+                    re.escape(key),
+                    re.escape(values_list[current_value_list_index]),
+                ))
                 if first_line_regex.match(line):
                     output.append((
                         values_list[current_value_list_index],
                         self.line_offset + index + 1,
                     ))
-
                     current_value_list_index += 1
-
-                continue
-
-            # Check ignored lines before checking values, because
-            # you can write comments *after* the value.
-
-            # Ignore blank lines
-            if not line.strip():
-                continue
-
-            # Ignore comments
-            if comment_regex.match(line):
                 continue
 
             if current_value_list_index == len(values_list):
                 if index == 0:
-                    index = 1       # don't want to count the same line again
-
+                    index = 1  # don't want to count the same line again
                 self.line_offset += index
                 self.lines = self.lines[index:]
                 lines_modified = True
-
                 break
             else:
                 output.append((
