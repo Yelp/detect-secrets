@@ -9,9 +9,9 @@ import mock
 import pytest
 
 from detect_secrets.core import audit
-from detect_secrets.core.color import BashColor
 from testing.factories import potential_secret_factory
 from testing.mocks import mock_printer as mock_printer_base
+from testing.util import uncolor
 
 
 class TestAuditBaseline(object):
@@ -287,12 +287,6 @@ class TestAuditBaseline(object):
 
 class TestCompareBaselines(object):
 
-    def setup(self):
-        BashColor.disable_color()
-
-    def teardown(self):
-        BashColor.enable_color()
-
     def test_raises_error_if_comparing_same_file(self):
         with pytest.raises(audit.RedundantComparisonError):
             audit.compare_baselines('foo/bar', 'foo/bar')
@@ -318,14 +312,14 @@ class TestCompareBaselines(object):
                 buffer = ''
 
         # This comes first, because it's found at line 1.
-        assert headers[0] == textwrap.dedent("""
+        assert uncolor(headers[0]) == textwrap.dedent("""
             Secret:      1 of 4
             Filename:    test_data/each_secret.py
             Secret Type: Hex High Entropy String
             Status:      >> ADDED <<
         """)[1:]
 
-        assert headers[1] == textwrap.dedent("""
+        assert uncolor(headers[1]) == textwrap.dedent("""
             Secret:      2 of 4
             Filename:    test_data/each_secret.py
             Secret Type: Base64 High Entropy String
@@ -333,14 +327,14 @@ class TestCompareBaselines(object):
         """)[1:]
 
         # These files come after, because filenames are sorted first
-        assert headers[2] == textwrap.dedent("""
+        assert uncolor(headers[2]) == textwrap.dedent("""
             Secret:      3 of 4
             Filename:    test_data/short_files/first_line.py
             Secret Type: Hex High Entropy String
             Status:      >> REMOVED <<
         """)[1:]
 
-        assert headers[3] == textwrap.dedent("""
+        assert uncolor(headers[3]) == textwrap.dedent("""
             Secret:      4 of 4
             Filename:    test_data/short_files/last_line.ini
             Secret Type: Hex High Entropy String
@@ -463,12 +457,6 @@ class TestCompareBaselines(object):
 
 class TestPrintContext(object):
 
-    def setup(self):
-        BashColor.disable_color()
-
-    def teardown(self):
-        BashColor.enable_color()
-
     def run_logic(self, secret=None, secret_lineno=15, settings=None):
         # Setup default arguments
         if not secret:
@@ -537,7 +525,7 @@ class TestPrintContext(object):
 
             assert sed_call.call_args[0][0] == 'sed -n 10,20p filenameA'.split()
 
-        assert mock_printer.message == textwrap.dedent("""
+        assert uncolor(mock_printer.message) == textwrap.dedent("""
             Secret:      1 of 2
             Filename:    filenameA
             Secret Type: Private Key
@@ -570,7 +558,7 @@ class TestPrintContext(object):
 
             assert sed_call.call_args[0][0] == 'sed -n 1,6p filenameA'.split()
 
-        assert mock_printer.message == textwrap.dedent("""
+        assert uncolor(mock_printer.message) == textwrap.dedent("""
             Secret:      1 of 2
             Filename:    filenameA
             Secret Type: Private Key
@@ -598,7 +586,7 @@ class TestPrintContext(object):
                 ).json(),
             )
 
-        assert mock_printer.message == textwrap.dedent("""
+        assert uncolor(mock_printer.message) == textwrap.dedent("""
             Secret:      1 of 2
             Filename:    filenameA
             Secret Type: Private Key
@@ -628,7 +616,7 @@ class TestPrintContext(object):
                 ],
             )
 
-        assert mock_printer.message == textwrap.dedent("""
+        assert uncolor(mock_printer.message) == textwrap.dedent("""
             Secret:      1 of 2
             Filename:    filenameB
             Secret Type: Hex High Entropy String
