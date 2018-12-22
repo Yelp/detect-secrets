@@ -242,9 +242,6 @@ class TestMain(object):
     def test_audit_diff_not_enough_files(self):
         assert main('audit --diff fileA'.split()) == 1
 
-    def test_audit_diff_not_enough_files(self):
-        assert main('audit --diff fileA'.split()) == 1
-
     def test_audit_same_file(self):
         with mock_printer(main_module) as printer_shim:
             assert main('audit --diff .secrets.baseline .secrets.baseline'.split()) == 0
