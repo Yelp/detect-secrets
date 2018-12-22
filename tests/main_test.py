@@ -249,6 +249,7 @@ class TestMain(object):
                 'No difference, because it\'s the same file!'
             )
 
+
 @contextmanager
 def mock_stdin(response=None):
     if not response:
