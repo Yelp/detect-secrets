@@ -133,7 +133,7 @@ def _get_existing_baseline(import_filename):
             return json.loads(stdin)
 
 
-def _read_from_file(filename):
+def _read_from_file(filename):  # pragma: no cover
     """Used for mocking."""
     with open(filename) as f:
         return json.loads(f.read())
