@@ -22,6 +22,8 @@ class TestKeywordDetector(object):
             'apikey: "ho)pe]nob(ody[finds>-_$#thisone"',
             "apikey:  'ho)pe]nob(ody[finds>-_$#thisone'",
             # FOLLOWED_BY_EQUAL_SIGNS_RE
+            'some_dict["secret"] = "ho)pe]nob(ody[finds>-_$#thisone"',
+            "some_dict['secret'] = ho)pe]nob(ody[finds>-_$#thisone",
             'my_password=ho)pe]nob(ody[finds>-_$#thisone',
             'my_password= ho)pe]nob(ody[finds>-_$#thisone',
             'my_password =ho)pe]nob(ody[finds>-_$#thisone',
@@ -61,6 +63,7 @@ class TestKeywordDetector(object):
             'apikey: "hope]nobody[finds>-_$#thisone"',
             "apikey:  'hope]nobody[finds>-_$#thisone'",
             # FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_RE
+            'some_dict["secret"] = "hope]nobody[finds>-_$#thisone"',
             'the_password= "hope]nobody[finds>-_$#thisone"\n',
             'the_password=\'hope]nobody[finds>-_$#thisone\'\n',
             # FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE
@@ -119,38 +122,39 @@ class TestKeywordDetector(object):
         assert len(output) == 0
 
     @pytest.mark.parametrize(
-        'file_content',
+        'secret_starting_with_dollar_sign',
         [
             # FOLLOWED_BY_EQUAL_SIGNS_RE
-            '$password = $input;',  # Skip anything starting with $ in php files
+            '$password = $input;',
         ],
     )
-    def test_analyze_php_negatives(self, file_content):
+    def test_analyze_php_negatives(self, secret_starting_with_dollar_sign):
         logic = KeywordDetector()
 
-        f = mock_file_object(file_content)
+        f = mock_file_object(secret_starting_with_dollar_sign)
         output = logic.analyze(f, 'mock_filename.php')
         assert len(output) == 0
 
     @pytest.mark.parametrize(
-        'file_content',
+        'secret_with_no_quote',
         [
             # FOLLOWED_BY_COLON_QUOTES_REQUIRED_RE
-            'apikey: hope]nobody[finds>-_$#thisone',  # No quotes
-            'apikey:hope]nobody[finds>-_$#thisone',  # No quotes
-            'theapikey:hope]nobody[finds>-_$#thisone',  # No quotes
+            'apikey: hope]nobody[finds>-_$#thisone',
+            'apikey:hope]nobody[finds>-_$#thisone',
+            'theapikey:hope]nobody[finds>-_$#thisone',
             # FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_RE
-            'my_password=hope]nobody[finds>-_$#thisone',  # No quotes
-            'my_password= hope]nobody[finds>-_$#thisone',  # No quotes
-            'my_password =hope]nobody[finds>-_$#thisone',  # No quotes
-            'my_password = hope]nobody[finds>-_$#thisone',  # No quotes
-            'my_password =hope]nobody[finds>-_$#thisone',  # No quotes
-            'the_password=hope]nobody[finds>-_$#thisone\n',  # No quotes
+            "some_dict['secret'] = hope]nobody[finds>-_$#thisone",
+            'my_password=hope]nobody[finds>-_$#thisone',
+            'my_password= hope]nobody[finds>-_$#thisone',
+            'my_password =hope]nobody[finds>-_$#thisone',
+            'my_password = hope]nobody[finds>-_$#thisone',
+            'my_password =hope]nobody[finds>-_$#thisone',
+            'the_password=hope]nobody[finds>-_$#thisone\n',
         ],
     )
-    def test_analyze_python_negatives(self, file_content):
+    def test_analyze_python_negatives(self, secret_with_no_quote):
         logic = KeywordDetector()
 
-        f = mock_file_object(file_content)
+        f = mock_file_object(secret_with_no_quote)
         output = logic.analyze(f, 'mock_filename.py')
         assert len(output) == 0

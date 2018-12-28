@@ -75,13 +75,13 @@ FOLLOWED_BY_COLON_QUOTES_REQUIRED_RE = re.compile(
 )
 FOLLOWED_BY_EQUAL_SIGNS_RE = re.compile(
     # e.g. my_password = bar
-    r'({})()(\s*?)=(\s*?)(("|\')?)([^\s]+)(\5)'.format(
+    r'({})((\'|")])?()(\s*?)=(\s*?)(("|\')?)([^\s]+)(\7)'.format(
         r'|'.join(BLACKLIST),
     ),
 )
 FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_RE = re.compile(
     # e.g. my_password = "bar"
-    r'({})()(\s*?)=(\s*?)(("|\'))([^\s]+)(\5)'.format(
+    r'({})((\'|")])?()(\s*?)=(\s*?)(("|\'))([^\s]+)(\7)'.format(
         r'|'.join(BLACKLIST),
     ),
 )
@@ -93,12 +93,12 @@ FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE = re.compile(
 )
 BLACKLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_COLON_RE: 7,
-    FOLLOWED_BY_EQUAL_SIGNS_RE: 7,
+    FOLLOWED_BY_EQUAL_SIGNS_RE: 9,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE: 5,
 }
 PYTHON_BLACKLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_COLON_QUOTES_REQUIRED_RE: 7,
-    FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_RE: 7,
+    FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_RE: 9,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE: 5,
 }
 
@@ -169,13 +169,13 @@ class KeywordDetector(BasePlugin):
 
 def probably_false_positive(lowered_secret, filetype):
     if (
-        'fake' in lowered_secret or
-        'self.' in lowered_secret or
-        lowered_secret in FALSE_POSITIVES or
+        'fake' in lowered_secret
+        or 'self.' in lowered_secret
+        or lowered_secret in FALSE_POSITIVES or
         # If it is a .php file, do not report $variables
         (
-            filetype == FileType.PHP and
-            lowered_secret[0] == '$'
+            filetype == FileType.PHP
+            and lowered_secret[0] == '$'
         )
     ):
         return True
