@@ -14,8 +14,8 @@ from ..plugins.keyword import KeywordDetector
 from .baseline import format_baseline_for_output
 from .baseline import merge_results
 from .bidirectional_iterator import BidirectionalIterator
-from .color import BashColor
-from .color import Color
+from .color import AnsiColor
+from .color import colorize
 from .potential_secret import PotentialSecret
 
 
@@ -132,17 +132,17 @@ def compare_baselines(old_baseline_filename, new_baseline_filename):
         if is_removed:
             plugins_used = old_baseline['plugins_used']
             header = header.format(
-                BashColor.color('Status:', Color.BOLD),
+                colorize('Status:', AnsiColor.BOLD),
                 '>> {} <<'.format(
-                    BashColor.color('REMOVED', Color.RED),
+                    colorize('REMOVED', AnsiColor.RED),
                 ),
             )
         else:
             plugins_used = new_baseline['plugins_used']
             header = header.format(
-                BashColor.color('Status:', Color.BOLD),
+                colorize('Status:', AnsiColor.BOLD),
                 '>> {} <<'.format(
-                    BashColor.color('ADDED', Color.LIGHT_GREEN),
+                    colorize('ADDED', AnsiColor.LIGHT_GREEN),
                 ),
             )
 
@@ -347,14 +347,14 @@ def _print_context(     # pragma: no cover
     :raises: SecretNotFoundOnSpecifiedLineError
     """
     print('{} {} {} {}\n{} {}\n{} {}'.format(
-        BashColor.color('Secret:     ', Color.BOLD),
-        BashColor.color(str(count), Color.PURPLE),
-        BashColor.color('of', Color.BOLD),
-        BashColor.color(str(total), Color.PURPLE),
-        BashColor.color('Filename:   ', Color.BOLD),
-        BashColor.color(filename, Color.PURPLE),
-        BashColor.color('Secret Type:', Color.BOLD),
-        BashColor.color(secret['type'], Color.PURPLE),
+        colorize('Secret:     ', AnsiColor.BOLD),
+        colorize(str(count), AnsiColor.PURPLE),
+        colorize('of', AnsiColor.BOLD),
+        colorize(str(total), AnsiColor.PURPLE),
+        colorize('Filename:   ', AnsiColor.BOLD),
+        colorize(filename, AnsiColor.PURPLE),
+        colorize('Secret Type:', AnsiColor.BOLD),
+        colorize(secret['type'], AnsiColor.PURPLE),
     ))
     if additional_header_lines:
         print(additional_header_lines)
@@ -499,9 +499,9 @@ def _get_secret_with_context(
             raise
 
         output[index_of_secret_in_output] = '{}'.format(
-            BashColor.color(
+            colorize(
                 output[index_of_secret_in_output],
-                Color.BOLD,
+                AnsiColor.BOLD,
             ),
         )
 
@@ -509,9 +509,9 @@ def _get_secret_with_context(
     return '\n'.join(
         map(
             lambda x: '{}:{}'.format(
-                BashColor.color(
+                colorize(
                     str(int(x[0]) + start_line),
-                    Color.LIGHT_GREEN,
+                    AnsiColor.LIGHT_GREEN,
                 ),
                 x[1],
             ),
@@ -574,11 +574,11 @@ def _highlight_secret(
     end_of_secret = index_of_secret + len(raw_secret)
     return '{}{}{}'.format(
         secret_line[:index_of_secret],
-        BashColor.color(
+        colorize(
             # copy the secret out of the line because .lower() from secret
             # generator may be different from the original value:
             secret_line[index_of_secret:end_of_secret],
-            Color.RED_BACKGROUND,
+            AnsiColor.RED_BACKGROUND,
         ),
         secret_line[index_of_secret + len(raw_secret):],
     )

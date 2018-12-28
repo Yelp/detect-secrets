@@ -127,7 +127,7 @@ class YamlFileParser(object):
         ignored_lines = set()
 
         for line_number, line in enumerate(self.content.split('\n'), 1):
-            if WHITELIST_REGEX.search(line):
+            if WHITELIST_REGEX['yaml'].search(line):
                 ignored_lines.add(line_number)
 
         return ignored_lines

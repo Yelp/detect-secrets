@@ -4,14 +4,29 @@ import re
 
 class IniFileParser(object):
 
-    def __init__(self, file):
+    _comment_regex = re.compile(r'\s*[;#]')
+
+    def __init__(self, file, add_header=False):
         self.parser = configparser.ConfigParser()
         self.parser.optionxform = str
-        self.parser.read_file(file)
+
+        if not add_header:
+            self.parser.read_file(file)
+        else:
+            # This supports environment variables, or other files that look
+            # like config files, without a section header.
+            content = '[global]\n' + file.read()
+
+            try:
+                # python2.7 compatible
+                self.parser.read_string(unicode(content))
+            except NameError:
+                # python3 compatible
+                self.parser.read_string(content)
 
         # Hacky way to keep track of line location
         file.seek(0)
-        self.lines = list(map(lambda x: x.strip(), file.readlines()))
+        self.lines = [line.strip() for line in file.readlines()]
         self.line_offset = 0
 
     def iterator(self):
@@ -56,42 +71,31 @@ class IniFileParser(object):
         output = []
         lines_modified = False
 
-        first_line_regex = re.compile(r'^\s*{}[ :=]+{}'.format(
-            re.escape(key),
-            re.escape(values_list[current_value_list_index]),
-        ))
-        comment_regex = re.compile(r'\s*[;#]')
         for index, line in enumerate(self.lines):
+            # Check ignored lines before checking values, because
+            # you can write comments *after* the value.
+            if not line.strip() or self._comment_regex.match(line):
+                continue
+
             if current_value_list_index == 0:
+                first_line_regex = re.compile(r'^\s*{}[ :=]+{}'.format(
+                    re.escape(key),
+                    re.escape(values_list[current_value_list_index]),
+                ))
                 if first_line_regex.match(line):
                     output.append((
                         values_list[current_value_list_index],
                         self.line_offset + index + 1,
                     ))
-
                     current_value_list_index += 1
-
-                continue
-
-            # Check ignored lines before checking values, because
-            # you can write comments *after* the value.
-
-            # Ignore blank lines
-            if not line.strip():
-                continue
-
-            # Ignore comments
-            if comment_regex.match(line):
                 continue
 
             if current_value_list_index == len(values_list):
                 if index == 0:
-                    index = 1       # don't want to count the same line again
-
+                    index = 1  # don't want to count the same line again
                 self.line_offset += index
                 self.lines = self.lines[index:]
                 lines_modified = True
-
                 break
             else:
                 output.append((
@@ -132,10 +136,7 @@ class IniFileParser(object):
             2. For all other values, ignore blank lines.
         Then, we can parse through, and look for values only.
         """
-        values_list = values.splitlines()
-        return values_list[:1] + list(
-            filter(
-                lambda x: x,
-                values_list[1:],
-            ),
-        )
+        lines = values.splitlines()
+        values_list = lines[:1]
+        values_list.extend(filter(None, lines[1:]))
+        return values_list

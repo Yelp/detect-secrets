@@ -92,7 +92,7 @@ either the client-side pre-commit hook, or the server-side secret scanner.
 3. **Secrets Baseline**, to whitelist pre-existing secrets in the repository,
    so that they won't be continuously caught through scan iterations.
 
-### Client-side Pre-commit Hook
+### Client-side `pre-commit` Hook
 
 See [pre-commit](https://github.com/pre-commit/pre-commit) for instructions
 to install the pre-commit framework. The example usage above has a sample
@@ -119,26 +119,21 @@ as your pre-commit hook, and server-side secret scanner!
 
 #### Inline Whitelisting
 
-Another way of whitelisting secrets is through the inline comment
-`# pragma: whitelist secret`.
+To tell `detect-secrets` to ignore a particular line of code, simply append an
+inline `pragma: whitelist secret` comment. For example:
 
-For example:
-
+```python
+API_KEY = "blah-blah-but-actually-not-secret"  # pragma: whitelist secret
+print('hello world')
 ```
-API_KEY = "blah-blah-but-actually-not-secret" # pragma: whitelist secret
 
-def main():
-    print('hello world')
-
-if __name__ == '__main__'
-    main()
-```
+Inline commenting syntax for a multitude of languages is supported.
 
 This may be a convenient way for you to whitelist secrets, without having to
 regenerate the entire baseline again. Furthermore, this makes the whitelisted
 secrets easily searchable, auditable, and maintainable.
 
-## Current Supported Plugins
+## Currently Supported Plugins
 
 The current heuristic searches we implement out of the box include:
 
@@ -158,7 +153,7 @@ See [detect_secrets/
 plugins](https://github.com/Yelp/detect-secrets/tree/master/detect_secrets/plugins)
 for more details.
 
-## A Few Caveats
+## Caveats
 
 This is not meant to be a sure-fire solution to prevent secrets from entering
 the codebase. Only proper developer education can truly do that. This pre-commit
@@ -168,7 +163,7 @@ committing secrets.
 ### Things that won't be prevented
 
 * Multi-line secrets
-* Default passwords that do not trigger the `KeywordDetector` (e.g. `paaassword = "paaassword"`)
+* Default passwords that do not trigger the `KeywordDetector` (e.g. `login = "hunter2"`)
 
 ### Plugin Configuration
 

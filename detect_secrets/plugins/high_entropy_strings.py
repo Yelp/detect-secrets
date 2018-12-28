@@ -12,7 +12,6 @@ import yaml
 
 from .base import BasePlugin
 from detect_secrets.core.potential_secret import PotentialSecret
-from detect_secrets.plugins.core.constants import WHITELIST_REGEX
 from detect_secrets.plugins.core.ini_file_parser import IniFileParser
 from detect_secrets.plugins.core.yaml_file_parser import YamlFileParser
 
@@ -52,17 +51,23 @@ class HighEntropyStringsPlugin(BasePlugin):
 
     def analyze(self, file, filename):
         file_type_analyzers = (
-            (self._analyze_ini_file, configparser.Error,),
+            (self._analyze_ini_file(), configparser.Error,),
             (self._analyze_yaml_file, yaml.YAMLError,),
+            (super(HighEntropyStringsPlugin, self).analyze, Exception,),
+            (self._analyze_ini_file(add_header=True), configparser.Error,),
         )
 
         for analyze_function, exception_class in file_type_analyzers:
             try:
-                return analyze_function(file, filename)
+                output = analyze_function(file, filename)
+                if output:
+                    return output
             except exception_class:
-                file.seek(0)
+                pass
 
-        return super(HighEntropyStringsPlugin, self).analyze(file, filename)
+            file.seek(0)
+
+        return {}
 
     def calculate_shannon_entropy(self, data):
         """Returns the entropy of a given string.
@@ -95,9 +100,6 @@ class HighEntropyStringsPlugin(BasePlugin):
         match self.regex, with a limit defined as self.entropy_limit.
         """
         output = {}
-
-        if WHITELIST_REGEX.search(string):
-            return output
 
         for result in self.secret_generator(string):
             if self.is_sequential_string(result):
@@ -158,21 +160,24 @@ class HighEntropyStringsPlugin(BasePlugin):
         finally:
             self.regex = old_regex
 
-    def _analyze_ini_file(self, file, filename):
+    def _analyze_ini_file(self, add_header=False):
         """
         :returns: same format as super().analyze()
         """
-        potential_secrets = {}
+        def wrapped(file, filename):
+            potential_secrets = {}
 
-        with self.non_quoted_string_regex():
-            for value, lineno in IniFileParser(file).iterator():
-                potential_secrets.update(self.analyze_string(
-                    value,
-                    lineno,
-                    filename,
-                ))
+            with self.non_quoted_string_regex():
+                for value, lineno in IniFileParser(file, add_header).iterator():
+                    potential_secrets.update(self.analyze_string(
+                        value,
+                        lineno,
+                        filename,
+                    ))
 
-        return potential_secrets
+            return potential_secrets
+
+        return wrapped
 
     def _analyze_yaml_file(self, file, filename):
         """

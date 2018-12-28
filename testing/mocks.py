@@ -135,7 +135,7 @@ def mock_printer(obj):
         def __init__(self):
             self.clear()
 
-        def add(self, message):
+        def add(self, message, *args, **kwargs):
             self.message += str(message) + '\n'
 
         def clear(self):

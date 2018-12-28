@@ -8,37 +8,11 @@ import pytest
 
 from detect_secrets import main as main_module
 from detect_secrets.core import audit as audit_module
-from detect_secrets.core.color import BashColor
 from detect_secrets.main import main
 from testing.factories import secrets_collection_factory
 from testing.mocks import Any
 from testing.mocks import mock_printer
-
-
-@pytest.fixture
-def mock_baseline_initialize():
-    def mock_initialize_function(plugins, exclude_regex, *args, **kwargs):
-        return secrets_collection_factory(
-            plugins=plugins,
-            exclude_regex=exclude_regex,
-        )
-
-    with mock.patch(
-        'detect_secrets.main.baseline.initialize',
-        side_effect=mock_initialize_function,
-    ) as mock_initialize:
-        yield mock_initialize
-
-
-@pytest.fixture
-def mock_merge_baseline():
-    with mock.patch(
-        'detect_secrets.main.baseline.merge_baseline',
-    ) as m:
-        # This return value needs to have the `results` key, so that it can
-        # formatted appropriately for output.
-        m.return_value = {'results': {}}
-        yield m
+from testing.util import uncolor
 
 
 class TestMain(object):
@@ -86,7 +60,7 @@ class TestMain(object):
             main_module,
         ) as printer_shim:
             assert main('scan --string'.split()) == 0
-            assert printer_shim.message == textwrap.dedent("""
+            assert uncolor(printer_shim.message) == textwrap.dedent("""
                 AWSKeyDetector         : False
                 Base64HighEntropyString: False (3.459)
                 BasicAuthDetector      : False
@@ -104,7 +78,7 @@ class TestMain(object):
             main_module,
         ) as printer_shim:
             assert main('scan --string 012345'.split()) == 0
-            assert printer_shim.message == textwrap.dedent("""
+            assert uncolor(printer_shim.message) == textwrap.dedent("""
                 AWSKeyDetector         : False
                 Base64HighEntropyString: False (2.585)
                 BasicAuthDetector      : False
@@ -226,8 +200,6 @@ class TestMain(object):
         ],
     )
     def test_audit_short_file(self, filename, expected_output):
-        BashColor.disable_color()
-
         with mock_stdin(), mock_printer(
             # To extract the baseline output
             main_module,
@@ -255,7 +227,7 @@ class TestMain(object):
         ) as printer_shim:
             main('audit will_be_mocked'.split())
 
-            assert printer_shim.message == textwrap.dedent("""
+            assert uncolor(printer_shim.message) == textwrap.dedent("""
                 Secret:      1 of 1
                 Filename:    {}
                 Secret Type: {}
@@ -269,7 +241,15 @@ class TestMain(object):
                 expected_output,
             )
 
-        BashColor.enable_color()
+    def test_audit_diff_not_enough_files(self):
+        assert main('audit --diff fileA'.split()) == 1
+
+    def test_audit_same_file(self):
+        with mock_printer(main_module) as printer_shim:
+            assert main('audit --diff .secrets.baseline .secrets.baseline'.split()) == 0
+            assert printer_shim.message.strip() == (
+                'No difference, because it\'s the same file!'
+            )
 
 
 @contextmanager
@@ -284,3 +264,29 @@ def mock_stdin(response=None):
             m.stdin.isatty.return_value = False
             m.stdin.read.return_value = response
             yield
+
+
+@pytest.fixture
+def mock_baseline_initialize():
+    def mock_initialize_function(plugins, exclude_regex, *args, **kwargs):
+        return secrets_collection_factory(
+            plugins=plugins,
+            exclude_regex=exclude_regex,
+        )
+
+    with mock.patch(
+        'detect_secrets.main.baseline.initialize',
+        side_effect=mock_initialize_function,
+    ) as mock_initialize:
+        yield mock_initialize
+
+
+@pytest.fixture
+def mock_merge_baseline():
+    with mock.patch(
+        'detect_secrets.main.baseline.merge_baseline',
+    ) as m:
+        # This return value needs to have the `results` key, so that it can
+        # formatted appropriately for output.
+        m.return_value = {'results': {}}
+        yield m
