@@ -368,7 +368,7 @@ class PluginOptions(object):
         """This just emulates argparse's underlying logic.
 
         :type flag_text: str
-        :param flag_text: eg. `--no-hex-string-scan`
+        :param flag_text: e.g. `--no-hex-string-scan`
         :return: `no_hex_string_scan`
         """
         return flag_text[2:].replace('-', '_')
