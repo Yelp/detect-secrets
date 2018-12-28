@@ -9,6 +9,7 @@ from collections import defaultdict
 
 from ..plugins.core import initialize
 from ..plugins.high_entropy_strings import HighEntropyStringsPlugin
+from ..plugins.keyword import determine_file_type
 from ..plugins.keyword import KeywordDetector
 from .baseline import format_baseline_for_output
 from .baseline import merge_results
@@ -554,7 +555,7 @@ def _highlight_secret(
     for raw_secret in _raw_secret_generator(
         plugin,
         secret_line,
-        is_php_file=filename.endswith('.php'),
+        filetype=determine_file_type(filename),
     ):
         secret_obj = PotentialSecret(
             plugin.secret_type,
@@ -583,10 +584,10 @@ def _highlight_secret(
     )
 
 
-def _raw_secret_generator(plugin, secret_line, is_php_file):
+def _raw_secret_generator(plugin, secret_line, filetype):
     """Generates raw secrets by re-scanning the line, with the specified plugin"""
     if isinstance(plugin, KeywordDetector):
-        for raw_secret in plugin.secret_generator(secret_line, is_php_file):
+        for raw_secret in plugin.secret_generator(secret_line, filetype=filetype):
             yield raw_secret
     else:
         for raw_secret in plugin.secret_generator(secret_line):

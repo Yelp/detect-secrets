@@ -27,6 +27,7 @@ THE SOFTWARE.
 from __future__ import absolute_import
 
 import re
+from enum import Enum
 
 from .base import BasePlugin
 from detect_secrets.core.potential_secret import PotentialSecret
@@ -36,7 +37,8 @@ from detect_secrets.core.potential_secret import PotentialSecret
 BLACKLIST = (
     'apikey',
     'api_key',
-    'pass',
+    'aws_secret_access_key',
+    'db_pass',
     'password',
     'passwd',
     'private_key',
@@ -49,21 +51,37 @@ FALSE_POSITIVES = (
     '""',
     '""):',
     'false',
+    'false):',
     'none',
+    'none,',
+    'none}',
     'not',
     'password)',
     'password},',
     'true',
+    'true):',
 )
 FOLLOWED_BY_COLON_RE = re.compile(
-    # e.g. token:
+    # e.g. api_key: foo
     r'({})(("|\')?):(\s*?)(("|\')?)([^\s]+)(\5)'.format(
         r'|'.join(BLACKLIST),
     ),
 )
+FOLLOWED_BY_COLON_QUOTES_REQUIRED_RE = re.compile(
+    # e.g. api_key: "foo"
+    r'({})(("|\')?):(\s*?)(("|\'))([^\s]+)(\5)'.format(
+        r'|'.join(BLACKLIST),
+    ),
+)
 FOLLOWED_BY_EQUAL_SIGNS_RE = re.compile(
-    # e.g. my_password =
+    # e.g. my_password = bar
     r'({})()(\s*?)=(\s*?)(("|\')?)([^\s]+)(\5)'.format(
+        r'|'.join(BLACKLIST),
+    ),
+)
+FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_RE = re.compile(
+    # e.g. my_password = "bar"
+    r'({})()(\s*?)=(\s*?)(("|\'))([^\s]+)(\5)'.format(
         r'|'.join(BLACKLIST),
     ),
 )
@@ -78,6 +96,30 @@ BLACKLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_EQUAL_SIGNS_RE: 7,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE: 5,
 }
+PYTHON_BLACKLIST_REGEX_TO_GROUP = {
+    FOLLOWED_BY_COLON_QUOTES_REQUIRED_RE: 7,
+    FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_RE: 7,
+    FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE: 5,
+}
+
+
+class FileType(Enum):
+    PYTHON = 1
+    PHP = 2
+    OTHER = 3
+
+
+def determine_file_type(filename):
+    """
+    :param filename: str
+
+    :rtype: FileType
+    """
+    if filename.endswith('.py'):
+        return FileType.PYTHON
+    elif filename.endswith('.php'):
+        return FileType.PHP
+    return FileType.OTHER
 
 
 class KeywordDetector(BasePlugin):
@@ -85,14 +127,14 @@ class KeywordDetector(BasePlugin):
     are present in the analyzed string.
     """
 
-    secret_type = 'Password'
+    secret_type = 'Secret Keyword'
 
     def analyze_string(self, string, line_num, filename):
         output = {}
 
         for identifier in self.secret_generator(
             string,
-            is_php_file=filename.endswith('.php'),
+            filetype=determine_file_type(filename),
         ):
             secret = PotentialSecret(
                 self.secret_type,
@@ -104,26 +146,35 @@ class KeywordDetector(BasePlugin):
 
         return output
 
-    def secret_generator(self, string, is_php_file):
+    def secret_generator(self, string, filetype):
         lowered_string = string.lower()
 
-        for REGEX, group_number in BLACKLIST_REGEX_TO_GROUP.items():
+        if filetype == FileType.PYTHON:
+            blacklist_RE_to_group = PYTHON_BLACKLIST_REGEX_TO_GROUP
+        else:
+            blacklist_RE_to_group = BLACKLIST_REGEX_TO_GROUP
+
+        for REGEX, group_number in blacklist_RE_to_group.items():
             match = REGEX.search(lowered_string)
             if match:
                 lowered_secret = match.group(group_number)
 
                 # ([^\s]+) guarantees lowered_secret is not ''
-                if not probably_false_positive(lowered_secret, is_php_file):
+                if not probably_false_positive(
+                    lowered_secret,
+                    filetype=filetype,
+                ):
                     yield lowered_secret
 
 
-def probably_false_positive(lowered_secret, is_php_file):
+def probably_false_positive(lowered_secret, filetype):
     if (
         'fake' in lowered_secret or
+        'self.' in lowered_secret or
         lowered_secret in FALSE_POSITIVES or
         # If it is a .php file, do not report $variables
         (
-            is_php_file and
+            filetype == FileType.PHP and
             lowered_secret[0] == '$'
         )
     ):
