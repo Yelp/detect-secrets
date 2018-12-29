@@ -167,7 +167,7 @@ def compare_baselines(old_baseline_filename, new_baseline_filename):
             print('Quitting...')
             break
 
-        if decision == 'b':     # pragma: no cover
+        if decision == 'b':  # pragma: no cover
             current_index -= 2
             secret_iterator.step_back_on_next_iteration()
 
@@ -307,11 +307,11 @@ def _comparison_generator(old_list, new_list, compare_fn):
         new_index += 1
 
 
-def _clear_screen():    # pragma: no cover
+def _clear_screen():  # pragma: no cover
     subprocess.call(['clear'])
 
 
-def _print_context(     # pragma: no cover
+def _print_context(  # pragma: no cover
     filename,
     secret,
     count,
