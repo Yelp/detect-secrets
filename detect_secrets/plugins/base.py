@@ -53,6 +53,9 @@ class BasePlugin(object):
 
         :type string: str
         :param string: the secret to scan
+
+        :rtype: iter
+        :returns: Of all the identifiers found
         """
         raise NotImplementedError
 

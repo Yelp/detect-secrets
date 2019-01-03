@@ -32,6 +32,7 @@ class TestPluginOptions(object):
             'Base64HighEntropyString': {
                 'base64_limit': 4.5,
             },
+            'KeywordDetector': {},
             'PrivateKeyDetector': {},
             'AWSKeyDetector': {},
         }

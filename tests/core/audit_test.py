@@ -65,7 +65,7 @@ class TestAuditBaseline(object):
     def test_quit_half_way(self, mock_printer):
         modified_baseline = deepcopy(self.baseline)
 
-        for secrets in modified_baseline['results'].values():
+        for secrets in modified_baseline['results'].values():  # pragma: no cover
             secrets[0]['is_secret'] = False
             break
 
@@ -147,8 +147,7 @@ class TestAuditBaseline(object):
         for secrets in modified_baseline['results'].values():
             for secret in secrets:
                 value = values_to_inject.pop(0)
-                if value is not None:
-                    secret['is_secret'] = value
+                secret['is_secret'] = value
 
         self.run_logic(
             ['s', 'y', 'b', 's', 'b', 'b', 'n', 'n', 'n'],
@@ -174,10 +173,7 @@ class TestAuditBaseline(object):
         ) as m:
             audit.audit_baseline('will_be_mocked')
 
-            if not modified_baseline:
-                assert m.call_args[0][1] == self.baseline
-            else:
-                assert m.call_args[0][1] == modified_baseline
+            assert m.call_args[0][1] == modified_baseline
 
     @contextmanager
     def mock_env(self, user_inputs=None, baseline=None):
@@ -329,7 +325,7 @@ class TestCompareBaselines(object):
         # These files come after, because filenames are sorted first
         assert uncolor(headers[2]) == textwrap.dedent("""
             Secret:      3 of 4
-            Filename:    test_data/short_files/first_line.py
+            Filename:    test_data/short_files/first_line.php
             Secret Type: Hex High Entropy String
             Status:      >> REMOVED <<
         """)[1:]
@@ -400,7 +396,7 @@ class TestCompareBaselines(object):
                 ],
 
                 # This entire file will be "removed"
-                'test_data/short_files/first_line.py': [
+                'test_data/short_files/first_line.php': [
                     {
                         'hashed_secret': '0de9a11b3f37872868ca49ecd726c955e25b6e21',
                         'line_number': 1,
@@ -597,7 +593,7 @@ class TestPrintContext(object):
 
         """)[1:-1]
 
-    def test_secret_in_yaml_file(self, mock_printer):
+    def test_hex_high_entropy_secret_in_yaml_file(self, mock_printer):
         with self._mock_sed_call(
             line_containing_secret='api key: 123456789a',
         ):
@@ -627,6 +623,44 @@ class TestPrintContext(object):
             13:d
             14:e
             15:api key: 123456789a
+            16:e
+            17:d
+            18:c
+            19:b
+            20:a
+            ----------
+
+        """)[1:-1]
+
+    def test_keyword_secret_in_yaml_file(self, mock_printer):
+        with self._mock_sed_call(
+            line_containing_secret='api_key: yerba',
+        ):
+            self.run_logic(
+                secret=potential_secret_factory(
+                    type_='Secret Keyword',
+                    filename='filenameB',
+                    secret='yerba',
+                    lineno=15,
+                ).json(),
+                settings=[
+                    {
+                        'name': 'KeywordDetector',
+                    },
+                ],
+            )
+
+        assert uncolor(mock_printer.message) == textwrap.dedent("""
+            Secret:      1 of 2
+            Filename:    filenameB
+            Secret Type: Secret Keyword
+            ----------
+            10:a
+            11:b
+            12:c
+            13:d
+            14:e
+            15:api_key: yerba
             16:e
             17:d
             18:c

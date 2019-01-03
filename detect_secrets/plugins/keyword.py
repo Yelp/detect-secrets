@@ -26,21 +26,119 @@ THE SOFTWARE.
 """
 from __future__ import absolute_import
 
+import re
+from enum import Enum
+
 from .base import BasePlugin
 from detect_secrets.core.potential_secret import PotentialSecret
 
 
+# Note: All values here should be lowercase
 BLACKLIST = (
-    # NOTE all values here should be lowercase,
-    # otherwise _secret_generator can fail to match them
-    'pass =',
+    'apikey',
+    'api_key',
+    'aws_secret_access_key',
+    'db_pass',
     'password',
     'passwd',
-    'pwd',
+    'private_key',
     'secret',
     'secrete',
-    'token',
 )
+FALSE_POSITIVES = (
+    "''",
+    "''):",
+    "')",
+    "'this",
+    '""',
+    '""):',
+    '")',
+    '<a',
+    '#pass',
+    '#password',
+    '<aws_secret_access_key>',
+    '<password>',
+    'dummy_secret',
+    'false',
+    'false):',
+    'none',
+    'none,',
+    'none}',
+    'not',
+    'null,',
+    'password)',
+    'password,',
+    'password},',
+    'string,',
+    'string}',
+    'string}}',
+    'test-access-key',
+    'true',
+    'true):',
+    '{',
+)
+FOLLOWED_BY_COLON_RE = re.compile(
+    # e.g. api_key: foo
+    r'({})(("|\')?):(\s*?)(("|\')?)([^\s]+)(\5)'.format(
+        r'|'.join(BLACKLIST),
+    ),
+)
+FOLLOWED_BY_COLON_QUOTES_REQUIRED_RE = re.compile(
+    # e.g. api_key: "foo"
+    r'({})(("|\')?):(\s*?)(("|\'))([^\s]+)(\5)'.format(
+        r'|'.join(BLACKLIST),
+    ),
+)
+FOLLOWED_BY_EQUAL_SIGNS_RE = re.compile(
+    # e.g. my_password = bar
+    r'({})((\'|")])?()(\s*?)=(\s*?)(("|\')?)([^\s]+)(\7)'.format(
+        r'|'.join(BLACKLIST),
+    ),
+)
+FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_RE = re.compile(
+    # e.g. my_password = "bar"
+    r'({})((\'|")])?()(\s*?)=(\s*?)(("|\'))([^\s]+)(\7)'.format(
+        r'|'.join(BLACKLIST),
+    ),
+)
+FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE = re.compile(
+    # e.g. private_key "something";
+    r'({})([^\s]*?)(\s*?)("|\')([^\s]+)(\4);'.format(
+        r'|'.join(BLACKLIST),
+    ),
+)
+BLACKLIST_REGEX_TO_GROUP = {
+    FOLLOWED_BY_COLON_RE: 7,
+    FOLLOWED_BY_EQUAL_SIGNS_RE: 9,
+    FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE: 5,
+}
+PYTHON_BLACKLIST_REGEX_TO_GROUP = {
+    FOLLOWED_BY_COLON_QUOTES_REQUIRED_RE: 7,
+    FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_RE: 9,
+    FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE: 5,
+}
+
+
+class FileType(Enum):
+    JAVASCRIPT = 0
+    PHP = 1
+    PYTHON = 2
+    OTHER = 3
+
+
+def determine_file_type(filename):
+    """
+    :param filename: str
+
+    :rtype: FileType
+    """
+    if filename.endswith('.js'):
+        return FileType.JAVASCRIPT
+    elif filename.endswith('.py'):
+        return FileType.PYTHON
+    elif filename.endswith('.php'):
+        return FileType.PHP
+    return FileType.OTHER
 
 
 class KeywordDetector(BasePlugin):
@@ -48,12 +146,15 @@ class KeywordDetector(BasePlugin):
     are present in the analyzed string.
     """
 
-    secret_type = 'Password'
+    secret_type = 'Secret Keyword'
 
     def analyze_string(self, string, line_num, filename):
         output = {}
 
-        for identifier in self.secret_generator(string):
+        for identifier in self.secret_generator(
+            string,
+            filetype=determine_file_type(filename),
+        ):
             secret = PotentialSecret(
                 self.secret_type,
                 filename,
@@ -64,10 +165,71 @@ class KeywordDetector(BasePlugin):
 
         return output
 
-    def _secret_generator(self, lowercase_string):
-        for line in BLACKLIST:
-            if line in lowercase_string:
-                yield line
+    def secret_generator(self, string, filetype):
+        lowered_string = string.lower()
 
-    def secret_generator(self, string):
-        return self._secret_generator(string.lower())
+        if filetype == FileType.PYTHON:
+            blacklist_RE_to_group = PYTHON_BLACKLIST_REGEX_TO_GROUP
+        else:
+            blacklist_RE_to_group = BLACKLIST_REGEX_TO_GROUP
+
+        for REGEX, group_number in blacklist_RE_to_group.items():
+            match = REGEX.search(lowered_string)
+            if match:
+                lowered_secret = match.group(group_number)
+
+                # ([^\s]+) guarantees lowered_secret is not ''
+                if not probably_false_positive(
+                    lowered_secret,
+                    filetype=filetype,
+                ):
+                    yield lowered_secret
+
+
+def probably_false_positive(lowered_secret, filetype):
+    if (
+        'fake' in lowered_secret
+        or 'forgot' in lowered_secret
+        or lowered_secret in FALSE_POSITIVES
+        or (
+            filetype == FileType.JAVASCRIPT
+            and (
+                lowered_secret.startswith('this.')
+                or lowered_secret.startswith('fs.read')
+                or lowered_secret == 'new'
+            )
+        ) or (  # If it is a .php file, do not report $variables
+            filetype == FileType.PHP
+            and lowered_secret[0] == '$'
+        )
+    ):
+        return True
+
+    # Heuristic for no function calls
+    try:
+        if (
+            lowered_secret.index('(') < lowered_secret.index(')')
+        ):
+            return True
+    except ValueError:
+        pass
+
+    # Heuristic for e.g. request.json_body['hey']
+    try:
+        if (
+            lowered_secret.index('[') < lowered_secret.index(']')
+        ):
+            return True
+    except ValueError:
+        pass
+
+    # Heuristic for e.g. ${link}
+    try:
+        if (
+            lowered_secret.index('${') < lowered_secret.index('}')
+        ):
+            return True
+    except ValueError:
+        pass
+
+    return False

@@ -19,7 +19,7 @@ def mock_git_calls(subprocess_namespace, cases):
     :type cases: iterable(SubprocessMock)
     :type subprocess_namespace: str
     :param subprocess_namespace: should be the namespace referring to check_output.
-        Eg. `detect_secrets.pre_commit_hook.subprocess.check_output`
+        E.g. `detect_secrets.pre_commit_hook.subprocess.check_output`
     """
     # We need to use a dictionary, because python2.7 does not support
     # the `nonlocal` keyword (and needs to share scope with

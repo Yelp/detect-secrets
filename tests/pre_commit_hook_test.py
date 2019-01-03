@@ -146,6 +146,9 @@ class TestPreCommitHook(object):
                     'name': 'HexHighEntropyString',
                 },
                 {
+                    'name': 'KeywordDetector',
+                },
+                {
                     'name': 'PrivateKeyDetector',
                 },
             ]

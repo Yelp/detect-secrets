@@ -348,9 +348,7 @@ class PluginOptions(object):
                 plugin.disable_flag_text,
                 action='store_true',
                 help=plugin.disable_help_text,
-                # Temporarily disabling the KeywordDetector
-                # Until we can test its effectiveness on more repositories
-                default=True if plugin.disable_flag_text == '--no-keyword-scan' else False,
+                default=False,
             )
 
         return self
@@ -370,7 +368,7 @@ class PluginOptions(object):
         """This just emulates argparse's underlying logic.
 
         :type flag_text: str
-        :param flag_text: eg. `--no-hex-string-scan`
+        :param flag_text: e.g. `--no-hex-string-scan`
         :return: `no_hex_string_scan`
         """
         return flag_text[2:].replace('-', '_')

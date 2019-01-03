@@ -176,7 +176,7 @@ rejected as a potential secret.
 This preset amount can be adjusted in several ways:
 
 * Specifying it within the config file, for server scanning.
-* Specifying it with command line flags (eg. `--base64-limit`)
+* Specifying it with command line flags (e.g. `--base64-limit`)
 
 Lowering these limits will identify more potential secrets, but also create
 more false positives. Adjust these limits to suit your needs.

@@ -102,7 +102,7 @@ def get_baseline(baseline_filename):
     )
 
 
-def _get_baseline_string_from_file(filename):   # pragma: no cover
+def _get_baseline_string_from_file(filename):  # pragma: no cover
     """Breaking this function up for mockability."""
     try:
         with open(filename) as f:
