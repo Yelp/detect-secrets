@@ -48,18 +48,34 @@ BLACKLIST = (
 FALSE_POSITIVES = (
     "''",
     "''):",
+    "')",
+    "'this",
     '""',
     '""):',
+    '")',
+    '<a',
+    '#pass',
+    '#password',
+    '<aws_secret_access_key>',
+    '<password>',
+    'dummy_secret',
     'false',
     'false):',
     'none',
     'none,',
     'none}',
     'not',
+    'null,',
     'password)',
+    'password,',
     'password},',
+    'string,',
+    'string}',
+    'string}}',
+    'test-access-key',
     'true',
     'true):',
+    '{',
 )
 FOLLOWED_BY_COLON_RE = re.compile(
     # e.g. api_key: foo
@@ -104,8 +120,9 @@ PYTHON_BLACKLIST_REGEX_TO_GROUP = {
 
 
 class FileType(Enum):
-    PYTHON = 1
-    PHP = 2
+    JAVASCRIPT = 0
+    PHP = 1
+    PYTHON = 2
     OTHER = 3
 
 
@@ -115,7 +132,9 @@ def determine_file_type(filename):
 
     :rtype: FileType
     """
-    if filename.endswith('.py'):
+    if filename.endswith('.js'):
+        return FileType.JAVASCRIPT
+    elif filename.endswith('.py'):
         return FileType.PYTHON
     elif filename.endswith('.php'):
         return FileType.PHP
@@ -170,17 +189,23 @@ class KeywordDetector(BasePlugin):
 def probably_false_positive(lowered_secret, filetype):
     if (
         'fake' in lowered_secret
-        or 'self.' in lowered_secret
-        or lowered_secret in FALSE_POSITIVES or
-        # If it is a .php file, do not report $variables
-        (
+        or 'forgot' in lowered_secret
+        or lowered_secret in FALSE_POSITIVES
+        or (
+            filetype == FileType.JAVASCRIPT
+            and (
+                lowered_secret.startswith('this.')
+                or lowered_secret.startswith('fs.read')
+                or lowered_secret == 'new'
+            )
+        ) or (  # If it is a .php file, do not report $variables
             filetype == FileType.PHP
             and lowered_secret[0] == '$'
         )
     ):
         return True
 
-    # No function calls
+    # Heuristic for no function calls
     try:
         if (
             lowered_secret.index('(') < lowered_secret.index(')')
@@ -189,10 +214,19 @@ def probably_false_positive(lowered_secret, filetype):
     except ValueError:
         pass
 
-    # Skip over e.g. request.json_body['hey']
+    # Heuristic for e.g. request.json_body['hey']
     try:
         if (
             lowered_secret.index('[') < lowered_secret.index(']')
+        ):
+            return True
+    except ValueError:
+        pass
+
+    # Heuristic for e.g. ${link}
+    try:
+        if (
+            lowered_secret.index('${') < lowered_secret.index('}')
         ):
             return True
     except ValueError:
