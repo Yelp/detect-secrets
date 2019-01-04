@@ -11,7 +11,7 @@ from detect_secrets.core.baseline import trim_baseline_of_removed_secrets
 from detect_secrets.core.log import get_logger
 from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.core.usage import ParserBuilder
-from detect_secrets.plugins.core import initialize
+from detect_secrets.plugins.common import initialize
 
 
 log = get_logger(format_string='%(message)s')

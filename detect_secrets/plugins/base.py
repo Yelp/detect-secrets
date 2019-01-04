@@ -3,7 +3,7 @@ from abc import abstractmethod
 from abc import abstractproperty
 
 from detect_secrets.core.potential_secret import PotentialSecret
-from detect_secrets.plugins.core.constants import WHITELIST_REGEXES
+from detect_secrets.plugins.common.constants import WHITELIST_REGEXES
 
 
 class BasePlugin(object):

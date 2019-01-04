@@ -7,9 +7,9 @@ import sys
 from builtins import input
 from collections import defaultdict
 
-from ..plugins.core import initialize
+from ..plugins.common import initialize
+from ..plugins.common.filetype import determine_file_type
 from ..plugins.high_entropy_strings import HighEntropyStringsPlugin
-from ..plugins.keyword import determine_file_type
 from ..plugins.keyword import KeywordDetector
 from .baseline import format_baseline_for_output
 from .baseline import merge_results

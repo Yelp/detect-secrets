@@ -1,5 +1,6 @@
 import re
 
+
 WHITELIST_REGEXES = [
     re.compile(r)
     for r in [
