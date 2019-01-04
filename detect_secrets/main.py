@@ -9,7 +9,7 @@ from detect_secrets.core import audit
 from detect_secrets.core import baseline
 from detect_secrets.core.log import log
 from detect_secrets.core.usage import ParserBuilder
-from detect_secrets.plugins.core import initialize
+from detect_secrets.plugins.common import initialize
 
 
 def parse_args(argv):

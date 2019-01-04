@@ -10,7 +10,7 @@ from time import strftime
 from detect_secrets import VERSION
 from detect_secrets.core.log import log
 from detect_secrets.core.potential_secret import PotentialSecret
-from detect_secrets.plugins.core import initialize
+from detect_secrets.plugins.common import initialize
 
 
 class SecretsCollection(object):

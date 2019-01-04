@@ -12,8 +12,8 @@ import yaml
 
 from .base import BasePlugin
 from detect_secrets.core.potential_secret import PotentialSecret
-from detect_secrets.plugins.core.ini_file_parser import IniFileParser
-from detect_secrets.plugins.core.yaml_file_parser import YamlFileParser
+from detect_secrets.plugins.common.ini_file_parser import IniFileParser
+from detect_secrets.plugins.common.yaml_file_parser import YamlFileParser
 
 
 IGNORED_SEQUENTIAL_STRINGS = (
@@ -109,7 +109,7 @@ class HighEntropyStringsPlugin(BasePlugin):
 
         return output
 
-    def secret_generator(self, string):
+    def secret_generator(self, string, *args, **kwargs):
         # There may be multiple strings on the same line
         results = self.regex.findall(string)
         for result in results:
