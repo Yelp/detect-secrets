@@ -65,7 +65,7 @@ class TestAuditBaseline(object):
     def test_quit_half_way(self, mock_printer):
         modified_baseline = deepcopy(self.baseline)
 
-        for secrets in modified_baseline['results'].values():  # pragma: no cover
+        for secrets in modified_baseline['results'].values():  # pragma: no cover (Always runs)
             secrets[0]['is_secret'] = False
             break
 
