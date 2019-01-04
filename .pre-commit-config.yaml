@@ -1,9 +1,9 @@
+repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    sha: v0.9.1
+    rev: v2.1.0
     hooks:
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
-    -   id: autopep8-wrapper
     -   id: check-docstring-first
     -   id: debug-statements
     -   id: name-tests-test
@@ -12,11 +12,15 @@
         args: ['--max-line-length', '100']
         exclude: ^test_data/
 -   repo: https://github.com/asottile/reorder_python_imports
-    sha: v0.3.5
+    rev: v1.3.4
     hooks:
     -   id: reorder-python-imports
         language_version: python3
 -   repo: https://github.com/asottile/add-trailing-comma
-    sha: v0.6.4
+    rev: v0.7.1
     hooks:
     -   id: add-trailing-comma
+-   repo: https://github.com/pre-commit/mirrors-autopep8
+    rev: v1.4.3
+    hooks:
+    -   id: autopep8
