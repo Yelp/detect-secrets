@@ -65,6 +65,7 @@ FALSE_POSITIVES = (
     'none,',
     'none}',
     'not',
+    'null',
     'null,',
     'password)',
     'password,',
