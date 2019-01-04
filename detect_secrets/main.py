@@ -7,6 +7,7 @@ import sys
 
 from detect_secrets.core import audit
 from detect_secrets.core import baseline
+from detect_secrets.core.common import write_baseline_to_file
 from detect_secrets.core.log import log
 from detect_secrets.core.usage import ParserBuilder
 from detect_secrets.plugins.core import initialize
@@ -43,7 +44,10 @@ def main(argv=None):
             )
 
             if args.import_filename:
-                _write_to_file(args.import_filename[0], output)
+                write_baseline_to_file(
+                    args.import_filename[0],
+                    output,
+                )
             else:
                 print(output)
 
@@ -137,12 +141,6 @@ def _read_from_file(filename):  # pragma: no cover
     """Used for mocking."""
     with open(filename) as f:
         return json.loads(f.read())
-
-
-def _write_to_file(filename, content):
-    """Used for mocking."""
-    with open(filename, 'w') as f:
-        f.write(content)
 
 
 if __name__ == '__main__':

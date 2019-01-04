@@ -231,7 +231,7 @@ def format_baseline_for_output(baseline):
         indent=2,
         sort_keys=True,
         separators=(',', ': '),
-    ) + '\n'
+    )
 
 
 def _get_git_tracked_files(rootdir='.'):

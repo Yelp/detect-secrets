@@ -112,7 +112,7 @@ class TestMain(object):
             'detect_secrets.main._read_from_file',
             return_value={'key': 'value'},
         ) as m_read, mock.patch(
-            'detect_secrets.main._write_to_file',
+            'detect_secrets.main.write_baseline_to_file',
         ) as m_write:
             assert main('scan --update old_baseline_file'.split()) == 0
             assert m_read.call_args[0][0] == 'old_baseline_file'
@@ -151,7 +151,7 @@ class TestMain(object):
             return_value={},
         ), mock.patch(
             # We don't want to be creating a file during test
-            'detect_secrets.main._write_to_file',
+            'detect_secrets.main.write_baseline_to_file',
         ) as file_writer:
             assert main(
                 shlex.split(
@@ -221,7 +221,7 @@ class TestMain(object):
             return_value='s',
         ), mock.patch(
             # We don't want to write an actual file
-            'detect_secrets.core.audit._save_baseline_to_file',
+            'detect_secrets.core.audit.write_baseline_to_file',
         ), mock_printer(
             audit_module,
         ) as printer_shim:

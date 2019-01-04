@@ -116,7 +116,7 @@ class TestPreCommitHook(object):
                 'detect_secrets.pre_commit_hook._get_baseline_string_from_file',
                 return_value=json.dumps(modified_baseline),
             ), mock.patch(
-                'detect_secrets.pre_commit_hook._write_to_baseline_file',
+                'detect_secrets.pre_commit_hook.write_baseline_to_file',
             ) as m:
                 assert_commit_blocked(
                     '--baseline will_be_mocked test_data/files/file_with_secrets.py',
@@ -162,7 +162,7 @@ class TestPreCommitHook(object):
             'detect_secrets.pre_commit_hook._get_baseline_string_from_file',
             return_value=json.dumps(modified_baseline),
         ), mock.patch(
-            'detect_secrets.pre_commit_hook._write_to_baseline_file',
+            'detect_secrets.pre_commit_hook.write_baseline_to_file',
         ) as m:
             assert_commit_blocked(
                 '--baseline will_be_mocked test_data/files/file_with_secrets.py',
