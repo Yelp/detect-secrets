@@ -1,6 +1,6 @@
 import yaml
 
-from detect_secrets.plugins.core.constants import WHITELIST_REGEX
+from .constants import WHITELIST_REGEX
 
 
 class YamlFileParser(object):

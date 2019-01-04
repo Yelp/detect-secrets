@@ -27,9 +27,10 @@ THE SOFTWARE.
 from __future__ import absolute_import
 
 import re
-from enum import Enum
 
 from .base import BasePlugin
+from .common.filetype import determine_file_type
+from .common.filetype import FileType
 from detect_secrets.core.potential_secret import PotentialSecret
 
 
@@ -118,28 +119,6 @@ PYTHON_BLACKLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_RE: 9,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE: 5,
 }
-
-
-class FileType(Enum):
-    JAVASCRIPT = 0
-    PHP = 1
-    PYTHON = 2
-    OTHER = 3
-
-
-def determine_file_type(filename):
-    """
-    :param filename: str
-
-    :rtype: FileType
-    """
-    if filename.endswith('.js'):
-        return FileType.JAVASCRIPT
-    elif filename.endswith('.py'):
-        return FileType.PYTHON
-    elif filename.endswith('.php'):
-        return FileType.PHP
-    return FileType.OTHER
 
 
 class KeywordDetector(BasePlugin):
