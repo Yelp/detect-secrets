@@ -47,7 +47,7 @@ class BasePlugin(object):
         raise NotImplementedError
 
     @abstractmethod
-    def secret_generator(self, string):
+    def secret_generator(self, string, *args, **kwargs):
         """Flags secrets in a given string, and yields the raw secret value.
         Used in self.analyze_string for PotentialSecret creation.
 
@@ -127,7 +127,7 @@ class RegexBasedDetector(BasePlugin):
 
         return output
 
-    def secret_generator(self, string):
+    def secret_generator(self, string, *args, **kwargs):
         for regex in self.blacklist:
             for match in regex.findall(string):
                 yield match

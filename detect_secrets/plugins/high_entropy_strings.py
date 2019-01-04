@@ -109,7 +109,7 @@ class HighEntropyStringsPlugin(BasePlugin):
 
         return output
 
-    def secret_generator(self, string):
+    def secret_generator(self, string, *args, **kwargs):
         # There may be multiple strings on the same line
         results = self.regex.findall(string)
         for result in results:
