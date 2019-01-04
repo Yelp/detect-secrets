@@ -170,7 +170,7 @@ class TestMain(object):
             (
                 'test_data/short_files/first_line.php',
                 textwrap.dedent("""
-                    1:seecret = 'BEEF0123456789a'
+                    1:secret = 'notHighEnoughEntropy'
                     2:skipped_sequential_false_positive = '0123456789a'
                     3:print('second line')
                     4:var = 'third line'
