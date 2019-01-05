@@ -207,7 +207,7 @@ class TestAuditBaseline(object):
         ), mock.patch.object(
             # We mock this so we don't need to do any file I/O.
             audit,
-            '_save_baseline_to_file',
+            'write_baseline_to_file',
         ) as m:
             yield m
 

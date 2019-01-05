@@ -10,11 +10,11 @@ from collections import defaultdict
 from ..plugins.common import initialize
 from ..plugins.common.filetype import determine_file_type
 from ..plugins.high_entropy_strings import HighEntropyStringsPlugin
-from .baseline import format_baseline_for_output
 from .baseline import merge_results
 from .bidirectional_iterator import BidirectionalIterator
 from .color import AnsiColor
 from .color import colorize
+from .common import write_baseline_to_file
 from .potential_secret import PotentialSecret
 
 
@@ -86,7 +86,10 @@ def audit_baseline(baseline_filename):
         original_baseline['results'],
         dict(results),
     )
-    _save_baseline_to_file(baseline_filename, original_baseline)
+    write_baseline_to_file(
+        baseline_filename,
+        original_baseline,
+    )
 
 
 def compare_baselines(old_baseline_filename, new_baseline_filename):
@@ -417,11 +420,6 @@ def _handle_user_decision(decision, secret):
         secret['is_secret'] = False
     elif decision == 's' and 'is_secret' in secret:
         del secret['is_secret']
-
-
-def _save_baseline_to_file(filename, data):  # pragma: no cover
-    with open(filename, 'w') as f:
-        f.write(format_baseline_for_output(data))
 
 
 def _get_secret_with_context(
