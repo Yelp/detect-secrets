@@ -39,17 +39,22 @@ def main(argv=None):
             _scan_string(line, plugins)
 
         else:
-            output = baseline.format_baseline_for_output(
-                _perform_scan(args, plugins),
+            baseline_dict = _perform_scan(
+                args,
+                plugins,
             )
 
             if args.import_filename:
                 write_baseline_to_file(
-                    args.import_filename[0],
-                    output,
+                    filename=args.import_filename[0],
+                    data=baseline_dict,
                 )
             else:
-                print(output)
+                print(
+                    baseline.format_baseline_for_output(
+                        baseline_dict,
+                    ),
+                )
 
     elif args.action == 'audit':
         if not args.diff:
@@ -94,6 +99,12 @@ def _scan_string(line, plugins):
 
 
 def _perform_scan(args, plugins):
+    """
+    :param args: output of `argparse.ArgumentParser.parse_args`
+    :param plugins: tuple of initialized plugins
+
+    :rtype: dict
+    """
     old_baseline = _get_existing_baseline(args.import_filename)
 
     # Favors --exclude argument over existing baseline's regex (if exists)

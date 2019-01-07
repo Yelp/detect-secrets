@@ -27,7 +27,7 @@ class TestAuditBaseline(object):
         with self.mock_env(['q']) as m:
             audit.audit_baseline('will_be_mocked')
 
-            assert m.call_args[0][1] == self.baseline
+            assert m.call_args[1]['data'] == self.baseline
 
         assert mock_printer.message == (
             'Quitting...\n'
@@ -56,7 +56,10 @@ class TestAuditBaseline(object):
             for secret in secrets:
                 secret['is_secret'] = values_to_inject.pop(0)
 
-        self.run_logic(['y', 'n', 'n'], modified_baseline)
+        self.run_logic(
+            inputs=['y', 'n', 'n'],
+            modified_baseline=modified_baseline,
+        )
 
         assert mock_printer.message == (
             'Saving progress...\n'
@@ -69,7 +72,10 @@ class TestAuditBaseline(object):
             secrets[0]['is_secret'] = False
             break
 
-        self.run_logic(['n', 'q'], modified_baseline)
+        self.run_logic(
+            inputs=['n', 'q'],
+            modified_baseline=modified_baseline,
+        )
 
         assert mock_printer.message == (
             'Quitting...\n'
@@ -86,7 +92,10 @@ class TestAuditBaseline(object):
                 if value:
                     secret['is_secret'] = value
 
-        self.run_logic(['s', 'y', 'y'], modified_baseline)
+        self.run_logic(
+            inputs=['s', 'y', 'y'],
+            modified_baseline=modified_baseline,
+        )
 
         assert mock_printer.message == (
             'Saving progress...\n'
@@ -102,7 +111,10 @@ class TestAuditBaseline(object):
                 if value is not None:
                     secret['is_secret'] = value
 
-        self.run_logic(['s', 'y', 'b', 'n', 'y'], modified_baseline)
+        self.run_logic(
+            inputs=['s', 'y', 'b', 'n', 'y'],
+            modified_baseline=modified_baseline,
+        )
 
         assert mock_printer.message == (
             'Saving progress...\n'
@@ -118,7 +130,10 @@ class TestAuditBaseline(object):
                 if value is not None:
                     secret['is_secret'] = value
 
-        self.run_logic(['s', 'n', 'b', 'y', 'y'], modified_baseline)
+        self.run_logic(
+            inputs=['s', 'n', 'b', 'y', 'y'],
+            modified_baseline=modified_baseline,
+        )
 
         assert mock_printer.message == (
             'Saving progress...\n'
@@ -134,7 +149,10 @@ class TestAuditBaseline(object):
                 if value is not None:
                     secret['is_secret'] = value
 
-        self.run_logic(['s', 'y', 'b', 's', 'y'], modified_baseline)
+        self.run_logic(
+            inputs=['s', 'y', 'b', 's', 'y'],
+            modified_baseline=modified_baseline,
+        )
 
         assert mock_printer.message == (
             'Saving progress...\n'
@@ -150,8 +168,8 @@ class TestAuditBaseline(object):
                 secret['is_secret'] = value
 
         self.run_logic(
-            ['s', 'y', 'b', 's', 'b', 'b', 'n', 'n', 'n'],
-            modified_baseline,
+            inputs=['s', 'y', 'b', 's', 'b', 'b', 'n', 'n', 'n'],
+            modified_baseline=modified_baseline,
         )
 
         assert mock_printer.message == (
@@ -163,7 +181,11 @@ class TestAuditBaseline(object):
         modified_baseline['results']['filenameA'][1]['is_secret'] = True
         modified_baseline['results']['filenameA'][3]['is_secret'] = True
 
-        self.run_logic(['y', 'y'], modified_baseline, self.leapfrog_baseline)
+        self.run_logic(
+            inputs=['y', 'y'],
+            modified_baseline=modified_baseline,
+            input_baseline=self.leapfrog_baseline,
+        )
 
     @contextmanager
     def run_logic(self, inputs, modified_baseline=None, input_baseline=None):
@@ -173,7 +195,7 @@ class TestAuditBaseline(object):
         ) as m:
             audit.audit_baseline('will_be_mocked')
 
-            assert m.call_args[0][1] == modified_baseline
+            assert m.call_args[1]['data'] == modified_baseline
 
     @contextmanager
     def mock_env(self, user_inputs=None, baseline=None):

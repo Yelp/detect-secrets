@@ -122,7 +122,7 @@ class TestPreCommitHook(object):
                     '--baseline will_be_mocked test_data/files/file_with_secrets.py',
                 )
 
-                baseline_written = m.call_args[0][1]
+                baseline_written = m.call_args[1]['data']
 
             original_baseline = json.loads(baseline_string)
             assert original_baseline['exclude_regex'] == baseline_written['exclude_regex']
@@ -168,7 +168,7 @@ class TestPreCommitHook(object):
                 '--baseline will_be_mocked test_data/files/file_with_secrets.py',
             )
 
-            baseline_written = m.call_args[0][1]
+            baseline_written = m.call_args[1]['data']
 
         original_baseline = json.loads(baseline_string)
         assert original_baseline['exclude_regex'] == baseline_written['exclude_regex']

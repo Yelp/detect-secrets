@@ -65,8 +65,8 @@ def main(argv=None):
 
     if baseline_modified:
         write_baseline_to_file(
-            args.baseline[0],
-            baseline_collection.format_for_baseline_output(),
+            filename=args.baseline[0],
+            data=baseline_collection.format_for_baseline_output(),
         )
 
         log.error(
