@@ -116,7 +116,8 @@ class TestMain(object):
         ) as m_write:
             assert main('scan --update old_baseline_file'.split()) == 0
             assert m_read.call_args[0][0] == 'old_baseline_file'
-            assert m_write.call_args[0] == ('old_baseline_file', Any(str))
+            assert m_write.call_args[1]['filename'] == 'old_baseline_file'
+            assert m_write.call_args[1]['data'] == Any(dict)
 
         mock_merge_baseline.assert_called_once_with(
             {'key': 'value'},
@@ -161,8 +162,10 @@ class TestMain(object):
                 ),
             ) == 0
 
-            assert json.loads(file_writer.call_args[0][1])['exclude_regex'] == \
+            assert (
+                file_writer.call_args[1]['data']['exclude_regex'] ==
                 expected_regex
+            )
 
     @pytest.mark.parametrize(
         'filename, expected_output',

@@ -172,6 +172,8 @@ def merge_baseline(old_baseline, new_baseline):
 
     :type new_baseline: dict
     :param new_baseline: most recent scan
+
+    :rtype: dict
     """
     new_baseline['results'] = merge_results(
         old_baseline['results'],

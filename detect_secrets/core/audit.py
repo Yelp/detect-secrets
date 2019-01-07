@@ -87,8 +87,8 @@ def audit_baseline(baseline_filename):
         dict(results),
     )
     write_baseline_to_file(
-        baseline_filename,
-        original_baseline,
+        filename=baseline_filename,
+        data=original_baseline,
     )
 
 
