@@ -23,17 +23,95 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [@xxxx]: https://github.com/xxxx
 -->
 
+### 0.11.4
+##### January 7th, 2019
+
+#### :bug: Bugfixes
+- Fixed a `TypeError` bug introduced in [#111]  ([#116])
+
+[#116]: https://github.com/Yelp/detect-secrets/pull/116
+
+### 0.11.3
+##### January 4th, 2019
+
+#### :bug: Bugfixes
+- Fixed a bug where we were adding an extra-newline in `detect-secrets scan` output ([#111])
+
+#### :snake: Miscellaneous
+
+- Reorganized the code, mainly creating a `common/` directory ([#113])
+
+[#111]: https://github.com/Yelp/detect-secrets/pull/111
+[#113]: https://github.com/Yelp/detect-secrets/pull/113
+
+### 0.11.2
+##### January 4th, 2019
+
+#### :telescope: Precision
+
+- [Added `null` to the `FALSE_POSITIVES` tuple for `KeywordDetector` plugin, so we do not alert off of it](https://github.com/Yelp/detect-secrets/commit/58df82ce37d64f22cb885960c2031b5f8ebe4b75)
+
+### 0.11.1
+##### January 4th, 2019
+
+#### :tada: New Features
+
+- Turned the `KeywordDetector` plugin back on, with new regexes and accuracy improvements ([#86])
+- Added an `AWSAccessKeyDetector` plugin ([#100])
+- Added the ability to scan `.ini` types files that do not have a header ([#106])
+
+[#86]: https://github.com/Yelp/detect-secrets/pull/86
+[#100]: https://github.com/Yelp/detect-secrets/pull/100
+[#106]: https://github.com/Yelp/detect-secrets/pull/106
+
+#### :telescope: Precision
+
+- Add blacklisting of PGP private key headers in `PrivateKeyDetector` plugin ([#104])
+- Reduced false-positives by improving `BasicAuthDetector` plugin regex ([#98])
+
+[#104]: https://github.com/Yelp/detect-secrets/pull/104
+
+#### :bug: Bugfixes
+- Fixed a bug where we were not showing removed lines in the `audit` functionality ([#98])
+
+[#98]: https://github.com/Yelp/detect-secrets/pull/98
+
+#### :snake: Miscellaneous
+
+- Added whitelist directive regexes to match against inline comment syntaxes in more languages ([#105])
+- Refactored various detectors to use `RegexBasedDetector` ([#103])
+- Refactored the `BashColor` singleton into the `colorize` function ([#109])
+- Small improvements to existing file parsers ([#107])
+- Refactored the `BasePlugin` to use the `WHITELIST_REGEX` ([#99])
+- Removed `unidiff` from standard dependencies ([#101])
+
+[#99]: https://github.com/Yelp/detect-secrets/pull/99
+[#101]: https://github.com/Yelp/detect-secrets/pull/101
+[#103]: https://github.com/Yelp/detect-secrets/pull/103
+[#105]: https://github.com/Yelp/detect-secrets/pull/105
+[#107]: https://github.com/Yelp/detect-secrets/pull/107
+[#109]: https://github.com/Yelp/detect-secrets/pull/109
+
+
+### 0.11.0
+
+...
+
+### 0.10.5
+
+...
+
 ### 0.10.3
 ##### October 4th, 2018
 
 #### :tada: New Features
 
-- Added a `KeyWordDetector` plugin ([#76])
+- Added a `KeywordDetector` plugin, that was horrible and regretful ([#76])
 
 #### :bug: Bugfixes
 
 - Fixed a bug in `scan --update` where we would append to the baseline exclude regex to itself ([#78])
-- Fixed the regular expression in the `BasicAuthDetector` detector so that it didn't run forever ([#80])
+- Fixed the regular expression in the `BasicAuthDetector` plugin so that it didn't run forever ([#80])
 - Removed trailing whitespace from `scan` output ([#78])
 
 #### :snake: Miscellaneous
@@ -187,7 +265,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 #### :bug: Bugfixes
 
-- Fixed PrivateKeyPlugin analyze results' representation ([#15])
+- Fixed `PrivateKeyDetector` plugin analyze results' representation ([#15])
 
 [#13]: https://github.com/Yelp/detect-secrets/pull/13
 [#15]: https://github.com/Yelp/detect-secrets/pull/15
