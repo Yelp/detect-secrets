@@ -18,6 +18,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 #### :telescope: Precision
 #### :bug: Bugfixes
 #### :snake: Miscellaneous
+#### :art: Display Changes
 
 [#xxxx]: https://github.com/Yelp/detect-secrets/pull/xxxx
 [@xxxx]: https://github.com/xxxx
@@ -94,12 +95,63 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 
 ### 0.11.0
+##### November 26th, 2018
 
-...
+#### :tada: New Features
+
+- Made the pre-commit hook automatically update the baseline ([#96])
+- Added the `audit --diff` functionality ([#95])
+
+[#95]: https://github.com/Yelp/detect-secrets/pull/95
+[#96]: https://github.com/Yelp/detect-secrets/pull/96
+
+#### :art: Display Changes
+
+- Added display of secret type in audit functionality ([#94])
+
+[#94]: https://github.com/Yelp/detect-secrets/pull/94
+
 
 ### 0.10.5
+##### October 30th, 2018
 
-...
+#### :art: Display Changes
+
+- Added a "Please git add the baseline" message ([#89])
+- Improved the "Unable to open baseline file" message ([#91])
+
+[#91]: https://github.com/Yelp/detect-secrets/pull/91
+
+#### :bug: Bugfixes
+
+- Update `scan --update` results to only propagate `is_secret` of new secrets  ([#90])
+
+[#90]: https://github.com/Yelp/detect-secrets/pull/90
+
+
+### 0.10.4
+##### October 23rd, 2018
+
+#### :boom: Breaking Changes
+- Disabled `KeywordDetector` plugin temporarily ([#89])
+
+#### :art: Display Changes
+
+- Ordered baseline hashes, for better diffs ([#84])
+- Added a "Please git add the baseline" message ([#89])
+- Improved error messages for pre-commit hook ([#85])
+
+[#84]: https://github.com/Yelp/detect-secrets/pull/84
+[#89]: https://github.com/Yelp/detect-secrets/pull/89
+[#85]: https://github.com/Yelp/detect-secrets/pull/85
+
+#### :bug: Bugfixes
+
+- Fixed a couple bugs in the `audit` functionality, one for small files and the other case-sensitivity in the `KeywordDetector` plugin ([#83], thanks [@jkozera])
+
+[#83]: https://github.com/Yelp/detect-secrets/pull/83
+[@jkozera]: https://github.com/jkozera
+
 
 ### 0.10.3
 ##### October 4th, 2018
