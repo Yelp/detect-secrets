@@ -219,6 +219,7 @@ class PluginOptions(object):
             disable_help_text='Disables scanning for hex high entropy strings',
             related_args=[
                 ('--hex-limit', 3,),
+                ('--hex-high-entropy-exclude', None,),
             ],
         ),
         PluginDescriptor(
@@ -227,6 +228,7 @@ class PluginOptions(object):
             disable_help_text='Disables scanning for base64 high entropy strings',
             related_args=[
                 ('--base64-limit', 4.5,),
+                ('--base64-high-entropy-exclude', None,),
             ],
         ),
         PluginDescriptor(
@@ -264,6 +266,7 @@ class PluginOptions(object):
     def add_arguments(self):
         self._add_custom_limits()
         self._add_opt_out_options()
+        self._add_high_entropy_excludes()
 
         return self
 
@@ -340,7 +343,18 @@ class PluginOptions(object):
             nargs='?',
             help=high_entropy_help_text + 'defaults to 3.0.',
         )
-        return self
+
+    def _add_high_entropy_excludes(self):
+        self.parser.add_argument(
+            '--base64-high-entropy-exclude',
+            type=str,
+            help='Pass in regex to exclude false positives found by base 64 high-entropy detector.',
+        )
+        self.parser.add_argument(
+            '--hex-high-entropy-exclude',
+            type=str,
+            help='Pass in regex to exclude false positives found by hex high-entropy detector.',
+        )
 
     def _add_opt_out_options(self):
         for plugin in self.all_plugins:
@@ -350,8 +364,6 @@ class PluginOptions(object):
                 help=plugin.disable_help_text,
                 default=False,
             )
-
-        return self
 
     def _argparse_minmax_type(self, string):
         """Custom type for argparse to enforce value limits"""

@@ -18,12 +18,12 @@ from detect_secrets.plugins.common.yaml_file_parser import YamlFileParser
 
 IGNORED_SEQUENTIAL_STRINGS = (
     (
-        string.ascii_uppercase +
-        string.ascii_uppercase +
-        string.digits +
-        string.ascii_uppercase +
-        string.ascii_uppercase +
-        '+/'
+        string.ascii_uppercase
+        + string.ascii_uppercase
+        + string.digits
+        + string.ascii_uppercase
+        + string.ascii_uppercase
+        + '+/'
     ),
     string.hexdigits.upper() + string.hexdigits.upper(),
     string.ascii_uppercase + '=/',
@@ -39,7 +39,7 @@ class HighEntropyStringsPlugin(BasePlugin):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, charset, limit, *args):
+    def __init__(self, charset, limit, high_entropy_exclude, *args):
         if limit < 0 or limit > 8:
             raise ValueError(
                 'The limit set for HighEntropyStrings must be between 0.0 and 8.0',
@@ -48,6 +48,13 @@ class HighEntropyStringsPlugin(BasePlugin):
         self.charset = charset
         self.entropy_limit = limit
         self.regex = re.compile(r'([\'"])([%s]+)(\1)' % charset)
+
+        self.high_entropy_exclude = None
+        if high_entropy_exclude:
+            self.high_entropy_exclude = re.compile(
+                high_entropy_exclude,
+                re.IGNORECASE,
+            )
 
     def analyze(self, file, filename):
         file_type_analyzers = (
@@ -100,6 +107,12 @@ class HighEntropyStringsPlugin(BasePlugin):
         match self.regex, with a limit defined as self.entropy_limit.
         """
         output = {}
+
+        if (
+            self.high_entropy_exclude
+            and self.high_entropy_exclude.search(string)
+        ):
+            return output
 
         for result in self.secret_generator(string):
             if self.is_sequential_string(result):
@@ -227,10 +240,11 @@ class HexHighEntropyString(HighEntropyStringsPlugin):
 
     secret_type = 'Hex High Entropy String'
 
-    def __init__(self, hex_limit, **kwargs):
+    def __init__(self, hex_limit, hex_high_entropy_exclude=None, **kwargs):
         super(HexHighEntropyString, self).__init__(
-            string.hexdigits,
-            hex_limit,
+            charset=string.hexdigits,
+            limit=hex_limit,
+            high_entropy_exclude=hex_high_entropy_exclude,
         )
 
     @property
@@ -278,10 +292,11 @@ class Base64HighEntropyString(HighEntropyStringsPlugin):
 
     secret_type = 'Base64 High Entropy String'
 
-    def __init__(self, base64_limit, **kwargs):
+    def __init__(self, base64_limit, base64_high_entropy_exclude=None, **kwargs):
         super(Base64HighEntropyString, self).__init__(
-            string.ascii_letters + string.digits + '+/=',
-            base64_limit,
+            charset=string.ascii_letters + string.digits + '+/=',
+            limit=base64_limit,
+            high_entropy_exclude=base64_high_entropy_exclude,
         )
 
     @property

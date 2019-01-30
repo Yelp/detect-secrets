@@ -11,6 +11,9 @@ from detect_secrets.plugins.high_entropy_strings import HighEntropyStringsPlugin
 from testing.mocks import mock_file_object
 
 
+HIGH_ENTROPY_EXCLUDE = '(CanonicalUser)'
+
+
 class HighEntropyStringsTest(object):
     """
     Some explaining should be done regarding the "enforced" format of the parametrized
@@ -99,6 +102,8 @@ class HighEntropyStringsTest(object):
             "'{secret}'  /* pragma: whitelist secret */",
             "'{secret}'  ' pragma: whitelist secret",
             "'{secret}'  -- pragma: whitelist secret",
+            # Test high entropy exclude regex
+            '"CanonicalUser": "{secret}"',
             # Not a string
             "{secret}",
         ],
@@ -125,7 +130,10 @@ class TestBase64HighEntropyStrings(HighEntropyStringsTest):
     def setup(self):
         super(TestBase64HighEntropyStrings, self).setup(
             # Testing default limit, as suggested by truffleHog.
-            Base64HighEntropyString(4.5),
+            Base64HighEntropyString(
+                base64_limit=4.5,
+                base64_high_entropy_exclude=HIGH_ENTROPY_EXCLUDE,
+            ),
             'c3VwZXIgc2VjcmV0IHZhbHVl',     # too short for high entropy
             'c3VwZXIgbG9uZyBzdHJpbmcgc2hvdWxkIGNhdXNlIGVub3VnaCBlbnRyb3B5',
         )
@@ -196,15 +204,19 @@ class TestHexHighEntropyStrings(HighEntropyStringsTest):
     def setup(self):
         super(TestHexHighEntropyStrings, self).setup(
             # Testing default limit, as suggested by truffleHog.
-            HexHighEntropyString(3),
+            HexHighEntropyString(
+                hex_limit=3,
+                hex_high_entropy_exclude=HIGH_ENTROPY_EXCLUDE,
+            ),
             'aaaaaa',
             '2b00042f7481c7b056c4b410d28f33cf',
         )
 
     def test_discounts_when_all_numbers(self):
         original_scanner = HighEntropyStringsPlugin(
-            string.hexdigits,
-            3,
+            charset=string.hexdigits,
+            limit=3,
+            high_entropy_exclude=HIGH_ENTROPY_EXCLUDE,
         )
 
         # This makes sure discounting works.
