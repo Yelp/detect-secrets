@@ -46,7 +46,7 @@ BLACKLIST = (
     'secret',
     'secrete',
 )
-FALSE_POSITIVES = (
+FALSE_POSITIVES = {
     "''",
     "''):",
     "')",
@@ -86,7 +86,7 @@ FALSE_POSITIVES = (
     'true,',
     'true;',
     '{',
-)
+}
 FOLLOWED_BY_COLON_RE = re.compile(
     # e.g. api_key: foo
     r'({})(("|\')?):(\s*?)(("|\')?)([^\s]+)(\5)'.format(
