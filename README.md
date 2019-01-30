@@ -112,6 +112,7 @@ repository for installation instructions.
 
 ```
 $ pip install detect-secrets
+✨🍰✨
 ```
 
 Remember to initialize your baseline with the same plugin configurations
