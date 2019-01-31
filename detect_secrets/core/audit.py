@@ -466,13 +466,24 @@ def _get_secret_with_context(
     with codecs.open(filename, encoding='utf-8') as file:
         output = list(itertools.islice(file.read().splitlines(), start_line, end_line))
 
-    output[index_of_secret_in_output] = _highlight_secret(
-        output[index_of_secret_in_output],
-        secret['line_number'],
-        secret,
-        filename,
-        plugin_settings,
-    )
+    try:
+        output[index_of_secret_in_output] = _highlight_secret(
+            output[index_of_secret_in_output],
+            secret['line_number'],
+            secret,
+            filename,
+            plugin_settings,
+        )
+    except SecretNotFoundOnSpecifiedLineError:
+        if not force:
+            raise
+
+        output[index_of_secret_in_output] = '{}'.format(
+            colorize(
+                output[index_of_secret_in_output],
+                AnsiColor.BOLD,
+            ),
+        )
 
     # Adding line numbers
     return '\n'.join(
