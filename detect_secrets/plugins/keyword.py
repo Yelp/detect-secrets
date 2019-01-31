@@ -77,6 +77,7 @@ FALSE_POSITIVES = {
     'password},',
     'some_key',
     'string,',
+    'string?',
     'string}',
     'string}}',
     'test-access-key',
