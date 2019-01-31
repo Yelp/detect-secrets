@@ -27,10 +27,12 @@ class TestPluginOptions(object):
         assert args.plugins == {
             'HexHighEntropyString': {
                 'hex_limit': 3,
+                'hex_high_entropy_exclude': None,
             },
             'BasicAuthDetector': {},
             'Base64HighEntropyString': {
                 'base64_limit': 4.5,
+                'base64_high_entropy_exclude': None,
             },
             'KeywordDetector': {},
             'PrivateKeyDetector': {},
