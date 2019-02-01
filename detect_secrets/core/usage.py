@@ -254,7 +254,7 @@ class PluginOptions(object):
         PluginDescriptor(
             classname='SlackDetector',
             disable_flag_text='--no-slack-scan',
-            disable_help_text='Disables scanning for secret slack.',
+            disable_help_text='Disables scanning for Slack tokens.',
         ),
     ]
 
