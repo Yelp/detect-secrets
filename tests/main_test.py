@@ -219,6 +219,9 @@ class TestMain(object):
                     {
                         "name": "PrivateKeyDetector",
                     },
+                    {
+                        "name": "SlackDetector",
+                    },
                 ],
             ),
             (  # remove some plugins from all plugins
@@ -243,6 +246,9 @@ class TestMain(object):
                     },
                     {
                         "name": "KeywordDetector",
+                    },
+                    {
+                        "name": "SlackDetector",
                     },
                 ],
             ),
@@ -311,6 +317,9 @@ class TestMain(object):
                     },
                     {
                         "name": "PrivateKeyDetector",
+                    },
+                    {
+                        "name": "SlackDetector",
                     },
                 ],
             ),
