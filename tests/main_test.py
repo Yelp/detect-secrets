@@ -67,6 +67,7 @@ class TestMain(object):
                 HexHighEntropyString   : True  (3.459)
                 KeywordDetector        : False
                 PrivateKeyDetector     : False
+                SlackDetector          : False
             """)[1:]
 
         mock_baseline_initialize.assert_not_called()
@@ -85,6 +86,7 @@ class TestMain(object):
                 HexHighEntropyString   : False (2.121)
                 KeywordDetector        : False
                 PrivateKeyDetector     : False
+                SlackDetector          : False
             """)[1:]
 
     def test_scan_with_all_files_flag(self, mock_baseline_initialize):
