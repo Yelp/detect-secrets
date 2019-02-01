@@ -40,11 +40,6 @@ def main(argv=None):
             _scan_string(line, plugins)
 
         else:
-            if args.import_filename:
-                plugins = initialize.merge_plugin_from_baseline(
-                    _get_plugin_from_baseline(args.import_filename), args,
-                )
-
             baseline_dict = _perform_scan(args, plugins)
 
             if args.import_filename:
@@ -82,8 +77,7 @@ def main(argv=None):
     return 0
 
 
-def _get_plugin_from_baseline(baseline_file):
-    old_baseline = _get_existing_baseline(baseline_file)
+def _get_plugin_from_baseline(old_baseline):
     plugins = []
     if old_baseline and "plugins_used" in old_baseline:
         secrets_collection = SecretsCollection.load_baseline_from_dict(old_baseline)
@@ -118,6 +112,10 @@ def _perform_scan(args, plugins):
     :rtype: dict
     """
     old_baseline = _get_existing_baseline(args.import_filename)
+    if old_baseline:
+        plugins = initialize.merge_plugin_from_baseline(
+            _get_plugin_from_baseline(old_baseline), args,
+        )
 
     # Favors --exclude argument over existing baseline's regex (if exists)
     if args.exclude:

@@ -42,13 +42,13 @@ def merge_plugin_from_baseline(baseline_plugins, args):
     if args.use_all_plugins:
         plugins = from_parser_builder(args.plugins)
     elif args.disabled_plugins:  # strip some plugins off baseline
-        plugins = _merge_plugin_from_baseline(baseline_plugins, args)
+        plugins = _trim_disabled_plugins_from_baseline(baseline_plugins, args)
     else:
         plugins = baseline_plugins
     return plugins
 
 
-def _merge_plugin_from_baseline(baseline_plugins, args):
+def _trim_disabled_plugins_from_baseline(baseline_plugins, args):
     merged_plugins_dict = {vars(plugin)['name']: plugin for plugin in baseline_plugins}
     for plugin_name in args.disabled_plugins:
         if plugin_name in merged_plugins_dict:

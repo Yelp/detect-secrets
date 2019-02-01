@@ -45,7 +45,7 @@ class TestPreCommitHook(object):
         assert_commit_succeeds('test_data/files/file_with_no_secrets.py')
 
     @pytest.mark.parametrize(
-        ' has_result, use_private_key_scan,, hook_command, commit_result',
+        'has_result, use_private_key_scan, hook_command, commit_succeeds',
         [
             # basic case
             (True, True, '--baseline will_be_mocked test_data/files/file_with_secrets.py', True),
@@ -75,7 +75,7 @@ class TestPreCommitHook(object):
         has_result,
         use_private_key_scan,
         hook_command,
-        commit_result,
+        commit_succeeds,
     ):
         """This just checks if the baseline is loaded, and acts appropriately.
         More detailed baseline tests are in their own separate test suite.
@@ -87,7 +87,7 @@ class TestPreCommitHook(object):
                 use_private_key_scan=use_private_key_scan,
             ),
         ):
-            if commit_result:
+            if commit_succeeds:
                 assert_commit_succeeds(hook_command)
             else:
                 assert_commit_blocked(hook_command)
