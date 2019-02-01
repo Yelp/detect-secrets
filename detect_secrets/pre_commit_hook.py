@@ -36,6 +36,12 @@ def main(argv=None):
         return 1
 
     plugins = initialize.from_parser_builder(args.plugins)
+
+    # Merge plugin from baseline
+    if baseline_collection:
+        plugins = initialize.merge_plugin_from_baseline(baseline_collection.plugins, args)
+        baseline_collection.plugins = plugins
+
     results = find_secrets_in_files(args, plugins)
     if baseline_collection:
         original_results = results
@@ -59,7 +65,6 @@ def main(argv=None):
     )
 
     if VERSION != baseline_collection.version:
-        baseline_collection.plugins = plugins
         baseline_collection.version = VERSION
         baseline_modified = True
 

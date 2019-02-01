@@ -283,7 +283,7 @@ class TestBaselineInputOutput(object):
 
     def test_load_baseline_from_string(self, mock_gmtime):
         """
-        We use load_baseline_from_string as a proxy to testing _load_baseline_from_dict,
+        We use load_baseline_from_string as a proxy to testing load_baseline_from_dict,
         because it's the most entry into the private function.
         """
         original = self.get_baseline_dict(mock_gmtime)

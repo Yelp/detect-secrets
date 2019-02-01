@@ -9,6 +9,7 @@ from detect_secrets.core import audit
 from detect_secrets.core import baseline
 from detect_secrets.core.common import write_baseline_to_file
 from detect_secrets.core.log import log
+from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.core.usage import ParserBuilder
 from detect_secrets.plugins.common import initialize
 
@@ -39,10 +40,12 @@ def main(argv=None):
             _scan_string(line, plugins)
 
         else:
-            baseline_dict = _perform_scan(
-                args,
-                plugins,
-            )
+            if args.import_filename:
+                plugins = initialize.merge_plugin_from_baseline(
+                    _get_plugin_from_baseline(args.import_filename), args,
+                )
+
+            baseline_dict = _perform_scan(args, plugins)
 
             if args.import_filename:
                 write_baseline_to_file(
@@ -77,6 +80,15 @@ def main(argv=None):
             )
 
     return 0
+
+
+def _get_plugin_from_baseline(baseline_file):
+    old_baseline = _get_existing_baseline(baseline_file)
+    plugins = []
+    if old_baseline and "plugins_used" in old_baseline:
+        secrets_collection = SecretsCollection.load_baseline_from_dict(old_baseline)
+        plugins = secrets_collection.plugins
+    return plugins
 
 
 def _scan_string(line, plugins):

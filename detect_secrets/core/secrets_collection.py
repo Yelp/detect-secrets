@@ -43,13 +43,13 @@ class SecretsCollection(object):
         :raises: IOError
         """
         try:
-            return cls._load_baseline_from_dict(json.loads(string))
+            return cls.load_baseline_from_dict(json.loads(string))
         except (IOError, ValueError):
             log.error('Incorrectly formatted baseline!')
             raise
 
     @classmethod
-    def _load_baseline_from_dict(cls, data):
+    def load_baseline_from_dict(cls, data):
         """Initializes a SecretsCollection object from dictionary.
 
         :type data: dict

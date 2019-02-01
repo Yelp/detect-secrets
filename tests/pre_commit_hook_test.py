@@ -53,7 +53,70 @@ class TestPreCommitHook(object):
             return_value=_create_baseline(),
         ):
             assert_commit_succeeds(
-                '--baseline will_be_mocked test_data/files/file_with_secrets.py',
+                '--baseline will_be_mocked --use-all-plugins test_data/files/file_with_secrets.py',
+            )
+
+    def test_no_overwrite_pass_when_baseline_did_not_use_scanner(self):
+        """Default scanner excluded from baseline would pass check
+        """
+        with mock.patch(
+            'detect_secrets.pre_commit_hook._get_baseline_string_from_file',
+            return_value=_create_baseline_no_private_key_detect(),
+        ):
+            assert_commit_succeeds(
+                '--baseline will_be_mocked'
+                + ' test_data/files/private_key',
+            )
+
+    def test_no_overwrite_quit_when_baseline_use_scanner(self):
+        """Non default scanner used in baseline would fail check
+        """
+        with mock.patch(
+            'detect_secrets.pre_commit_hook._get_baseline_string_from_file',
+            return_value=_create_baseline_use_base64_string_detect_no_results(),
+        ):
+            assert_commit_blocked(
+                '--baseline will_be_mocked'
+                + ' test_data/files/file_with_secrets.py',
+            )
+
+    def test_overwrite_pass_with_baseline(self):
+        """Baseline option would fail, but CLI overwrite
+        with --no-xxx-scan option would pass check
+        """
+        with mock.patch(
+            'detect_secrets.pre_commit_hook._get_baseline_string_from_file',
+            return_value=_create_baseline_no_results(),
+        ):
+            assert_commit_succeeds(
+                '--baseline will_be_mocked --no-base64-string-scan'
+                + ' test_data/files/file_with_secrets.py',
+            )
+
+    def test_all_plugin_overwrite_pass_with_baseline(self):
+        """Baseline option would fail, but CLI overwrite
+        with --no-xxx-scan and --use-all-plugins options would pass check
+        """
+        with mock.patch(
+            'detect_secrets.pre_commit_hook._get_baseline_string_from_file',
+            return_value=_create_baseline_no_results(),
+        ):
+            assert_commit_succeeds(
+                '--baseline will_be_mocked --use-all-plugins --no-base64-string-scan'
+                + ' test_data/files/file_with_secrets.py',
+            )
+
+    def test_overwrite_fail_with_baseline(self):
+        """Baseline option would pass, but CLI overwrite
+        with --use-all-plugins option would fail check
+        """
+        with mock.patch(
+            'detect_secrets.pre_commit_hook._get_baseline_string_from_file',
+            return_value=_create_baseline_no_private_key_detect(),
+        ):
+            assert_commit_blocked(
+                '--baseline will_be_mocked --use-all-plugins'
+                + ' test_data/files/private_key',
             )
 
     def test_quit_early_if_bad_baseline(self, mock_get_baseline):
@@ -71,8 +134,8 @@ class TestPreCommitHook(object):
     def test_ignore_baseline_file(self, mock_get_baseline):
         mock_get_baseline.return_value = secrets_collection_factory()
 
-        assert_commit_blocked('test_data/baseline.file')
-        assert_commit_succeeds('--baseline baseline.file baseline.file')
+        assert_commit_blocked('--use-all-plugins test_data/baseline.file')
+        assert_commit_succeeds('--use-all-plugins --baseline baseline.file baseline.file')
 
     def test_quit_if_baseline_is_changed_but_not_staged(self, mock_log):
         with mock_git_calls(
@@ -119,7 +182,8 @@ class TestPreCommitHook(object):
                 'detect_secrets.pre_commit_hook.write_baseline_to_file',
             ) as m:
                 assert_commit_blocked(
-                    '--baseline will_be_mocked test_data/files/file_with_secrets.py',
+                    '--baseline will_be_mocked --use-all-plugins'
+                    + ' test_data/files/file_with_secrets.py',
                 )
 
                 baseline_written = m.call_args[1]['data']
@@ -168,7 +232,7 @@ class TestPreCommitHook(object):
             'detect_secrets.pre_commit_hook.write_baseline_to_file',
         ) as m:
             assert_commit_blocked(
-                '--baseline will_be_mocked test_data/files/file_with_secrets.py',
+                '--baseline will_be_mocked --use-all-plugins test_data/files/file_with_secrets.py',
             )
 
             baseline_written = m.call_args[1]['data']
@@ -237,6 +301,42 @@ def _create_baseline():
 
     return json.dumps(
         baseline,
+        indent=2,
+        sort_keys=True,
+    )
+
+
+def _create_baseline_no_private_key_detect():
+    output = json.loads(_create_baseline())
+    output["plugins_used"].pop(-1)
+    return json.dumps(
+        output,
+        indent=2,
+        sort_keys=True,
+    )
+
+
+def _create_baseline_use_base64_string_detect_no_results():
+    output = json.loads(_create_baseline())
+    output["plugins_used"].append(
+        {
+            "base64_limit": 4.5,
+            "name": "Base64HighEntropyString",
+        },
+    )
+    output["results"] = {}
+    return json.dumps(
+        output,
+        indent=2,
+        sort_keys=True,
+    )
+
+
+def _create_baseline_no_results():
+    output = json.loads(_create_baseline())
+    output["results"] = {}
+    return json.dumps(
+        output,
         indent=2,
         sort_keys=True,
     )
