@@ -76,6 +76,7 @@ FALSE_POSITIVES = {
     'password)',
     'password,',
     'password},',
+    'redacted',
     'some_key',
     'string,',
     'string?',
