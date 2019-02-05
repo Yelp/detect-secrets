@@ -309,6 +309,7 @@ class PluginOptions(object):
 
         active_plugins = {}
         disabled_plugins = {}
+        param_from_default = {}
 
         for plugin in PluginOptions.all_plugins:
             arg_name = PluginOptions._convert_flag_text_to_argument_name(
@@ -342,6 +343,7 @@ class PluginOptions(object):
 
                 if default_value and related_args[arg_name] is None:
                     related_args[arg_name] = default_value
+                    param_from_default[arg_name] = True
 
             active_plugins.update({
                 plugin.classname: related_args,
@@ -349,6 +351,7 @@ class PluginOptions(object):
 
         args.plugins = active_plugins
         args.disabled_plugins = disabled_plugins
+        args.param_from_default = param_from_default
 
     def _add_custom_limits(self):
         high_entropy_help_text = (

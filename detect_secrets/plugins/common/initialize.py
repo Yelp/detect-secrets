@@ -32,28 +32,64 @@ def from_parser_builder(plugins_dict):
 
 
 def merge_plugin_from_baseline(baseline_plugins, args):
-    # if --use-all-plugins
-    #   include all parsed plugins
-    # else
-    #   include all baseline plugins
-    #   remove all disabled plugins
+    """
+    :type baseline_plugins: tuple of BasePlugin
+    :param baseline_plugins: BasePlugin instances from baseline file
 
-    plugins = []
+    :type args: dict
+    :param args: diction of arguments parsed from usage
+
+    param priority: input param > baseline param > default
+
+    :Returns tuple of initialized plugins
+    """
+    def _remove_key(d, key):
+        r = dict(d)
+        r.pop(key)
+        return r
+    baseline_plugins_dict = {
+        vars(plugin)["name"]: _remove_key(vars(plugin), "name")
+        for plugin in baseline_plugins
+    }
+
+    # Use input plugin as starting point
     if args.use_all_plugins:
-        plugins = from_parser_builder(args.plugins)
-    elif args.disabled_plugins:  # strip some plugins off baseline
-        plugins = _trim_disabled_plugins_from_baseline(baseline_plugins, args)
-    else:
-        plugins = baseline_plugins
-    return plugins
+        # input param and default param are used
+        plugins_dict = dict(args.plugins)
 
+        # baseline param priority > default
+        for plugin_name, plugin_params in list(baseline_plugins_dict.items()):
+            for param_name, param_value in list(plugin_params.items()):
+                from_default = args.param_from_default.get(param_name, False)
+                if from_default:
+                    try:
+                        plugins_dict[plugin_name][param_name] = param_value
+                    except KeyError as key:
+                        # baseline has option not in all plugins
+                        print("error:", key)
 
-def _trim_disabled_plugins_from_baseline(baseline_plugins, args):
-    merged_plugins_dict = {vars(plugin)['name']: plugin for plugin in baseline_plugins}
-    for plugin_name in args.disabled_plugins:
-        if plugin_name in merged_plugins_dict:
-            merged_plugins_dict.pop(plugin_name)
-    return merged_plugins_dict.values()
+        return from_parser_builder(plugins_dict)
+
+    # Use baseline plugin as starting point
+    plugins_dict = baseline_plugins_dict
+    if args.disabled_plugins:
+        for plugin_name in args.disabled_plugins:
+            if plugin_name in plugins_dict:
+                plugins_dict.pop(plugin_name)
+
+    # input param priority > baseline
+    input_plugins_dict = dict(args.plugins)
+    for plugin_name, plugin_params in list(input_plugins_dict.items()):
+        for param_name, param_value in list(plugin_params.items()):
+            from_default = args.param_from_default.get(param_name, False)
+            if from_default is False:
+                try:
+                    plugins_dict[plugin_name][param_name] = param_value
+                except KeyError as key:
+                    # TODO output error
+                    print("error:", key)
+
+    return from_parser_builder(plugins_dict)
 
 
 def from_plugin_classname(plugin_classname, **kwargs):

@@ -203,7 +203,7 @@ class TestMain(object):
                         "name": "AWSKeyDetector",
                     },
                     {
-                        "base64_limit": 4.5,
+                        "base64_limit": 1.5,
                         "name": "Base64HighEntropyString",
                     },
                     {
@@ -273,7 +273,7 @@ class TestMain(object):
                     },
                 ],
             ),
-            (  # ignore overwriten option from CLI when not using --use-all-plugins
+            (  # overwrite base limit from CLI
                 [
                     {
                         "base64_limit": 3.5,
@@ -282,12 +282,25 @@ class TestMain(object):
                         "name": "PrivateKeyDetector",
                     },
                 ],
-                '--base64-limit=4.5',
+                '--base64-limit=5.5',
                 [
                     {
-                        "base64_limit": 3.5,
+                        "base64_limit": 5.5,
                         "name": "Base64HighEntropyString",
                     },
+                    {
+                        "name": "PrivateKeyDetector",
+                    },
+                ],
+            ),
+            (  # does not overwrite base limit from CLI if baseline not using the plugin
+                [
+                    {
+                        "name": "PrivateKeyDetector",
+                    },
+                ],
+                '--base64-limit=4.5',
+                [
                     {
                         "name": "PrivateKeyDetector",
                     },
@@ -303,13 +316,43 @@ class TestMain(object):
                         "name": "PrivateKeyDetector",
                     },
                 ],
-                '--use-all-plugins --base64-limit=4.5 --no-hex-string-scan --no-keyword-scan',
+                '--use-all-plugins --base64-limit=5.5 --no-hex-string-scan --no-keyword-scan',
                 [
                     {
                         "name": "AWSKeyDetector",
                     },
                     {
-                        "base64_limit": 4.5,
+                        "base64_limit": 5.5,
+                        "name": "Base64HighEntropyString",
+                    },
+                    {
+                        "name": "BasicAuthDetector",
+                    },
+                    {
+                        "name": "PrivateKeyDetector",
+                    },
+                    {
+                        "name": "SlackDetector",
+                    },
+                ],
+            ),
+            (  # use plugin limit from baseline when using --use-all-plugins and no input limit
+                [
+                    {
+                        "base64_limit": 2.5,
+                        "name": "Base64HighEntropyString",
+                    },
+                    {
+                        "name": "PrivateKeyDetector",
+                    },
+                ],
+                '--use-all-plugins --no-hex-string-scan --no-keyword-scan',
+                [
+                    {
+                        "name": "AWSKeyDetector",
+                    },
+                    {
+                        "base64_limit": 2.5,
                         "name": "Base64HighEntropyString",
                     },
                     {
@@ -350,8 +393,6 @@ class TestMain(object):
                 ),
             ) == 0
 
-            print("Used:", file_writer.call_args[1]['data']['plugins_used'])
-            print("Wrote:", plugins_wrote)
             assert file_writer.call_args[1]['data']['plugins_used'] == \
                 plugins_wrote
 
