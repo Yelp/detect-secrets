@@ -10,7 +10,7 @@ def add_use_all_plugins_argument(parser):
     parser.add_argument(
         '--use-all-plugins',
         action='store_true',
-        help='Use all available plugins to scan files',
+        help='Use all available plugins to scan files.',
     )
 
 

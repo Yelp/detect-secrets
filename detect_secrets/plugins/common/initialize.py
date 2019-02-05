@@ -64,9 +64,11 @@ def merge_plugin_from_baseline(baseline_plugins, args):
                 if from_default:
                     try:
                         plugins_dict[plugin_name][param_name] = param_value
-                    except KeyError as key:
-                        # baseline has option not in all plugins
-                        print("error:", key)
+                    except KeyError:
+                        log.warning(
+                            'Baseline contain plugin %s which is not in all plugins! Ignoring...'
+                            % (plugin_name),
+                        )
 
         return from_parser_builder(plugins_dict)
 
@@ -85,9 +87,11 @@ def merge_plugin_from_baseline(baseline_plugins, args):
             if from_default is False:
                 try:
                     plugins_dict[plugin_name][param_name] = param_value
-                except KeyError as key:
-                    # TODO output error
-                    print("error:", key)
+                except KeyError:
+                    log.warning(
+                        '%s specified, but %s not configured! Ignoring...'
+                        % ("".join(["--", param_name.replace("_", "-")]), plugin_name),
+                    )
 
     return from_parser_builder(plugins_dict)
 
