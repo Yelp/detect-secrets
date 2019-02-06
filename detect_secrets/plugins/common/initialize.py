@@ -13,6 +13,7 @@ from ..keyword import KeywordDetector                       # noqa: F401
 from ..private_key import PrivateKeyDetector                # noqa: F401
 from ..slack import SlackDetector                           # noqa: F401
 from detect_secrets.core.log import log
+from detect_secrets.core.usage import PluginOptions
 
 
 def from_parser_builder(plugins_dict):
@@ -60,7 +61,7 @@ def merge_plugin_from_baseline(baseline_plugins, args):
         # baseline param priority > default
         for plugin_name, plugin_params in list(baseline_plugins_dict.items()):
             for param_name, param_value in list(plugin_params.items()):
-                from_default = args.param_from_default.get(param_name, False)
+                from_default = args.is_using_default_value.get(param_name, False)
                 if from_default:
                     try:
                         plugins_dict[plugin_name][param_name] = param_value
@@ -74,8 +75,9 @@ def merge_plugin_from_baseline(baseline_plugins, args):
 
     # Use baseline plugin as starting point
     plugins_dict = baseline_plugins_dict
-    if args.disabled_plugins:
-        for plugin_name in args.disabled_plugins:
+    disabled_plugins = PluginOptions.get_disabled_plugins(args)
+    if disabled_plugins:
+        for plugin_name in disabled_plugins:
             if plugin_name in plugins_dict:
                 plugins_dict.pop(plugin_name)
 
@@ -83,7 +85,7 @@ def merge_plugin_from_baseline(baseline_plugins, args):
     input_plugins_dict = dict(args.plugins)
     for plugin_name, plugin_params in list(input_plugins_dict.items()):
         for param_name, param_value in list(plugin_params.items()):
-            from_default = args.param_from_default.get(param_name, False)
+            from_default = args.is_using_default_value.get(param_name, False)
             if from_default is False:
                 try:
                     plugins_dict[plugin_name][param_name] = param_value

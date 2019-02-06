@@ -291,6 +291,14 @@ class PluginOptions(object):
         return self
 
     @staticmethod
+    def get_disabled_plugins(args):
+        return [
+            plugin.classname
+            for plugin in PluginOptions.all_plugins
+            if plugin.classname not in args.plugins
+        ]
+
+    @staticmethod
     def consolidate_args(args):
         """There are many argument fields related to configuring plugins.
         This function consolidates all of them, and saves the consolidated
@@ -308,8 +316,7 @@ class PluginOptions(object):
             return
 
         active_plugins = {}
-        disabled_plugins = {}
-        param_from_default = {}
+        is_using_default_value = {}
 
         for plugin in PluginOptions.all_plugins:
             arg_name = PluginOptions._convert_flag_text_to_argument_name(
@@ -320,9 +327,6 @@ class PluginOptions(object):
             is_disabled = getattr(args, arg_name, False)
             delattr(args, arg_name)
             if is_disabled:
-                disabled_plugins.update({
-                    plugin.classname: {},
-                })
                 continue
 
             # Consolidate related args
@@ -343,15 +347,14 @@ class PluginOptions(object):
 
                 if default_value and related_args[arg_name] is None:
                     related_args[arg_name] = default_value
-                    param_from_default[arg_name] = True
+                    is_using_default_value[arg_name] = True
 
             active_plugins.update({
                 plugin.classname: related_args,
             })
 
         args.plugins = active_plugins
-        args.disabled_plugins = disabled_plugins
-        args.param_from_default = param_from_default
+        args.is_using_default_value = is_using_default_value
 
     def _add_custom_limits(self):
         high_entropy_help_text = (
