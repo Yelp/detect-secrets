@@ -59,8 +59,8 @@ def merge_plugin_from_baseline(baseline_plugins, args):
         plugins_dict = dict(args.plugins)
 
         # baseline param priority > default
-        for plugin_name, plugin_params in list(baseline_plugins_dict.items()):
-            for param_name, param_value in list(plugin_params.items()):
+        for plugin_name, plugin_params in baseline_plugins_dict.items():
+            for param_name, param_value in plugin_params.items():
                 from_default = args.is_using_default_value.get(param_name, False)
                 if from_default:
                     try:
@@ -74,17 +74,17 @@ def merge_plugin_from_baseline(baseline_plugins, args):
         return from_parser_builder(plugins_dict)
 
     # Use baseline plugin as starting point
-    plugins_dict = baseline_plugins_dict
     disabled_plugins = PluginOptions.get_disabled_plugins(args)
-    if disabled_plugins:
-        for plugin_name in disabled_plugins:
-            if plugin_name in plugins_dict:
-                plugins_dict.pop(plugin_name)
+    plugins_dict = {
+        plugin_name: plugin_params
+        for plugin_name, plugin_params in baseline_plugins_dict.items()
+        if plugin_name not in disabled_plugins
+    }
 
     # input param priority > baseline
     input_plugins_dict = dict(args.plugins)
-    for plugin_name, plugin_params in list(input_plugins_dict.items()):
-        for param_name, param_value in list(plugin_params.items()):
+    for plugin_name, plugin_params in input_plugins_dict.items():
+        for param_name, param_value in plugin_params.items():
             from_default = args.is_using_default_value.get(param_name, False)
             if from_default is False:
                 try:
