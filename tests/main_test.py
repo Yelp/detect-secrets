@@ -7,6 +7,7 @@ import mock
 import pytest
 
 from detect_secrets import main as main_module
+from detect_secrets import VERSION
 from detect_secrets.core import audit as audit_module
 from detect_secrets.main import main
 from testing.factories import secrets_collection_factory
@@ -165,9 +166,235 @@ class TestMain(object):
             ) == 0
 
             assert (
-                file_writer.call_args[1]['data']['exclude_regex'] ==
-                expected_regex
+                file_writer.call_args[1]['data']['exclude_regex']
+                == expected_regex
             )
+
+    @pytest.mark.parametrize(
+        'plugins_used, plugins_overwriten, plugins_wrote',
+        [
+            (  # remove some plugins from baseline
+                [
+                    {
+                        "base64_limit": 4.5,
+                        "name": "Base64HighEntropyString",
+                    },
+                    {
+                        "name": "PrivateKeyDetector",
+                    },
+                ],
+                '--no-base64-string-scan --no-keyword-scan',
+                [
+                    {
+                        "name": "PrivateKeyDetector",
+                    },
+                ],
+            ),
+            (  # all plugins
+                [
+                    {
+                        "base64_limit": 1.5,
+                        "name": "Base64HighEntropyString",
+                    },
+                ],
+                '--use-all-plugins',
+                [
+                    {
+                        "name": "AWSKeyDetector",
+                    },
+                    {
+                        "base64_limit": 1.5,
+                        "name": "Base64HighEntropyString",
+                    },
+                    {
+                        "name": "BasicAuthDetector",
+                    },
+                    {
+                        "hex_limit": 3,
+                        "name": "HexHighEntropyString",
+                    },
+                    {
+                        "name": "KeywordDetector",
+                    },
+                    {
+                        "name": "PrivateKeyDetector",
+                    },
+                    {
+                        "name": "SlackDetector",
+                    },
+                ],
+            ),
+            (  # remove some plugins from all plugins
+                [
+                    {
+                        "base64_limit": 4.5,
+                        "name": "Base64HighEntropyString",
+                    },
+                ],
+
+                '--use-all-plugins --no-base64-string-scan --no-private-key-scan',
+                [
+                    {
+                        "name": "AWSKeyDetector",
+                    },
+                    {
+                        "name": "BasicAuthDetector",
+                    },
+                    {
+                        "hex_limit": 3,
+                        "name": "HexHighEntropyString",
+                    },
+                    {
+                        "name": "KeywordDetector",
+                    },
+                    {
+                        "name": "SlackDetector",
+                    },
+                ],
+            ),
+            (  # use same plugin list from baseline
+                [
+                    {
+                        "base64_limit": 3.5,
+                        "name": "Base64HighEntropyString",
+                    },
+                    {
+                        "name": "PrivateKeyDetector",
+                    },
+                ],
+                '',
+                [
+                    {
+                        "base64_limit": 3.5,
+                        "name": "Base64HighEntropyString",
+                    },
+                    {
+                        "name": "PrivateKeyDetector",
+                    },
+                ],
+            ),
+            (  # overwrite base limit from CLI
+                [
+                    {
+                        "base64_limit": 3.5,
+                        "name": "Base64HighEntropyString",
+                    }, {
+                        "name": "PrivateKeyDetector",
+                    },
+                ],
+                '--base64-limit=5.5',
+                [
+                    {
+                        "base64_limit": 5.5,
+                        "name": "Base64HighEntropyString",
+                    },
+                    {
+                        "name": "PrivateKeyDetector",
+                    },
+                ],
+            ),
+            (  # does not overwrite base limit from CLI if baseline not using the plugin
+                [
+                    {
+                        "name": "PrivateKeyDetector",
+                    },
+                ],
+                '--base64-limit=4.5',
+                [
+                    {
+                        "name": "PrivateKeyDetector",
+                    },
+                ],
+            ),
+            (  # use overwriten option from CLI only when using --use-all-plugins
+                [
+                    {
+                        "base64_limit": 3.5,
+                        "name": "Base64HighEntropyString",
+                    },
+                    {
+                        "name": "PrivateKeyDetector",
+                    },
+                ],
+                '--use-all-plugins --base64-limit=5.5 --no-hex-string-scan --no-keyword-scan',
+                [
+                    {
+                        "name": "AWSKeyDetector",
+                    },
+                    {
+                        "base64_limit": 5.5,
+                        "name": "Base64HighEntropyString",
+                    },
+                    {
+                        "name": "BasicAuthDetector",
+                    },
+                    {
+                        "name": "PrivateKeyDetector",
+                    },
+                    {
+                        "name": "SlackDetector",
+                    },
+                ],
+            ),
+            (  # use plugin limit from baseline when using --use-all-plugins and no input limit
+                [
+                    {
+                        "base64_limit": 2.5,
+                        "name": "Base64HighEntropyString",
+                    },
+                    {
+                        "name": "PrivateKeyDetector",
+                    },
+                ],
+                '--use-all-plugins --no-hex-string-scan --no-keyword-scan',
+                [
+                    {
+                        "name": "AWSKeyDetector",
+                    },
+                    {
+                        "base64_limit": 2.5,
+                        "name": "Base64HighEntropyString",
+                    },
+                    {
+                        "name": "BasicAuthDetector",
+                    },
+                    {
+                        "name": "PrivateKeyDetector",
+                    },
+                    {
+                        "name": "SlackDetector",
+                    },
+                ],
+            ),
+        ],
+    )
+    def test_plugin_from_old_baseline_respected_with_update_flag(
+        self,
+        mock_baseline_initialize,
+        plugins_used, plugins_overwriten, plugins_wrote,
+    ):
+        with mock_stdin(), mock.patch(
+            'detect_secrets.main._read_from_file',
+            return_value={
+                "plugins_used": plugins_used,
+                "results": {},
+                "version": VERSION,
+                "exclude_regex": "",
+            },
+        ), mock.patch(
+            # We don't want to be creating a file during test
+            'detect_secrets.main.write_baseline_to_file',
+        ) as file_writer:
+            assert main(
+                shlex.split(
+                    'scan --update old_baseline_file {}'.format(
+                        plugins_overwriten,
+                    ),
+                ),
+            ) == 0
+
+            assert file_writer.call_args[1]['data']['plugins_used'] == \
+                plugins_wrote
 
     @pytest.mark.parametrize(
         'filename, expected_output',

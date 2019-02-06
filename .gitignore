@@ -5,8 +5,10 @@
 /.coverage
 /.pytest_cache
 /.tox
-/venv**
+/venv*
 /tmp
 
 .*ignore
 !.gitignore
+.python-version
+.vscode

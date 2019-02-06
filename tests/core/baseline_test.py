@@ -424,6 +424,30 @@ class TestMergeResults(object):
 
         assert merge_results(old_result, {}) == {}
 
+    def test_old_results_have_diff_type_will_carry_over(self):
+        secretA = self.get_secret()
+        secretA["type"] = "different type"
+        secretB = self.get_secret()
+
+        assert merge_results(
+            {
+                'filenameA': [
+                    secretA,
+                ],
+            },
+            {
+                'filenameA': [
+                    secretA,
+                    secretB,
+                ],
+            },
+        ) == {
+            'filenameA': [
+                secretA,
+                secretB,
+            ],
+        }
+
     def test_old_results_have_subset_of_new_results(self):
         secretA = self.get_secret()
         secretB = self.get_secret()

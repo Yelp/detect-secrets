@@ -6,6 +6,14 @@ from collections import namedtuple
 from detect_secrets import VERSION
 
 
+def add_use_all_plugins_argument(parser):
+    parser.add_argument(
+        '--use-all-plugins',
+        action='store_true',
+        help='Use all available plugins to scan files.',
+    )
+
+
 class ParserBuilder(object):
 
     def __init__(self):
@@ -21,7 +29,8 @@ class ParserBuilder(object):
 
     def add_pre_commit_arguments(self):
         self._add_filenames_argument()\
-            ._add_set_baseline_argument()
+            ._add_set_baseline_argument()\
+            ._add_use_all_plugins_argument()
 
         PluginOptions(self.parser).add_arguments()
 
@@ -78,6 +87,9 @@ class ParserBuilder(object):
         )
         return self
 
+    def _add_use_all_plugins_argument(self):
+        add_use_all_plugins_argument(self.parser)
+
 
 class ScanOptions(object):
 
@@ -121,6 +133,9 @@ class ScanOptions(object):
             help='Update existing baseline by importing settings from it.',
             dest='import_filename',
         )
+
+        # Pairing `--update` with `--use-all-plugins` to overwrite plugins list from baseline
+        add_use_all_plugins_argument(self.parser)
 
         self.parser.add_argument(
             '--all-files',
@@ -276,6 +291,14 @@ class PluginOptions(object):
         return self
 
     @staticmethod
+    def get_disabled_plugins(args):
+        return [
+            plugin.classname
+            for plugin in PluginOptions.all_plugins
+            if plugin.classname not in args.plugins
+        ]
+
+    @staticmethod
     def consolidate_args(args):
         """There are many argument fields related to configuring plugins.
         This function consolidates all of them, and saves the consolidated
@@ -293,6 +316,7 @@ class PluginOptions(object):
             return
 
         active_plugins = {}
+        is_using_default_value = {}
 
         for plugin in PluginOptions.all_plugins:
             arg_name = PluginOptions._convert_flag_text_to_argument_name(
@@ -300,7 +324,7 @@ class PluginOptions(object):
             )
 
             # Remove disabled plugins
-            is_disabled = getattr(args, arg_name)
+            is_disabled = getattr(args, arg_name, False)
             delattr(args, arg_name)
             if is_disabled:
                 continue
@@ -323,12 +347,14 @@ class PluginOptions(object):
 
                 if default_value and related_args[arg_name] is None:
                     related_args[arg_name] = default_value
+                    is_using_default_value[arg_name] = True
 
             active_plugins.update({
                 plugin.classname: related_args,
             })
 
         args.plugins = active_plugins
+        args.is_using_default_value = is_using_default_value
 
     def _add_custom_limits(self):
         high_entropy_help_text = (

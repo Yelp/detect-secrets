@@ -44,17 +44,53 @@ class TestPreCommitHook(object):
     def test_file_no_secrets(self):
         assert_commit_succeeds('test_data/files/file_with_no_secrets.py')
 
-    def test_baseline(self):
+    @pytest.mark.parametrize(
+        'has_result, use_private_key_scan, hook_command, commit_succeeds',
+        [
+            # basic case
+            (True, True, '--baseline will_be_mocked test_data/files/file_with_secrets.py', True),
+            # test_no_overwrite_pass_when_baseline_did_not_use_scanner
+            (True, False, '--baseline will_be_mocked test_data/files/private_key', True),
+            # test_no_overwrite_quit_when_baseline_use_scanner
+            (False, True, '--baseline will_be_mocked test_data/files/file_with_secrets.py', False),
+            # test_overwrite_pass_with_baseline
+            (
+                False, True, '--baseline will_be_mocked '
+                + '--no-base64-string-scan test_data/files/file_with_secrets.py', True,
+            ),
+            # test_all_plugin_overwrite_pass_with_baseline
+            (
+                False, True, '--baseline will_be_mocked --use-all-plugins '
+                + '--no-base64-string-scan test_data/files/file_with_secrets.py', True,
+            ),
+            # test_overwrite_fail_with_baseline
+            (
+                True, False, '--baseline will_be_mocked '
+                + '--use-all-plugins test_data/files/private_key', False,
+            ),
+        ],
+    )
+    def test_baseline(
+        self,
+        has_result,
+        use_private_key_scan,
+        hook_command,
+        commit_succeeds,
+    ):
         """This just checks if the baseline is loaded, and acts appropriately.
         More detailed baseline tests are in their own separate test suite.
         """
         with mock.patch(
             'detect_secrets.pre_commit_hook._get_baseline_string_from_file',
-            return_value=_create_baseline(),
+            return_value=_create_baseline(
+                has_result=has_result,
+                use_private_key_scan=use_private_key_scan,
+            ),
         ):
-            assert_commit_succeeds(
-                '--baseline will_be_mocked test_data/files/file_with_secrets.py',
-            )
+            if commit_succeeds:
+                assert_commit_succeeds(hook_command)
+            else:
+                assert_commit_blocked(hook_command)
 
     def test_quit_early_if_bad_baseline(self, mock_get_baseline):
         mock_get_baseline.side_effect = IOError
@@ -71,8 +107,8 @@ class TestPreCommitHook(object):
     def test_ignore_baseline_file(self, mock_get_baseline):
         mock_get_baseline.return_value = secrets_collection_factory()
 
-        assert_commit_blocked('test_data/baseline.file')
-        assert_commit_succeeds('--baseline baseline.file baseline.file')
+        assert_commit_blocked('--use-all-plugins test_data/baseline.file')
+        assert_commit_succeeds('--use-all-plugins --baseline baseline.file baseline.file')
 
     def test_quit_if_baseline_is_changed_but_not_staged(self, mock_log):
         with mock_git_calls(
@@ -119,7 +155,8 @@ class TestPreCommitHook(object):
                 'detect_secrets.pre_commit_hook.write_baseline_to_file',
             ) as m:
                 assert_commit_blocked(
-                    '--baseline will_be_mocked test_data/files/file_with_secrets.py',
+                    '--baseline will_be_mocked --use-all-plugins' +
+                    ' test_data/files/file_with_secrets.py',
                 )
 
                 baseline_written = m.call_args[1]['data']
@@ -208,7 +245,7 @@ def _mock_versions(baseline_version, current_version):
         yield
 
 
-def _create_baseline():
+def _create_baseline(has_result=True, use_private_key_scan=True):
     base64_secret = 'c3VwZXIgbG9uZyBzdHJpbmcgc2hvdWxkIGNhdXNlIGVub3VnaCBlbnRyb3B5'
     baseline = {
         'generated_at': 'does_not_matter',
@@ -217,6 +254,10 @@ def _create_baseline():
             {
                 'name': 'HexHighEntropyString',
                 'hex_limit': 3,
+            },
+            {
+                'name': 'Base64HighEntropyString',
+                'base64_limit': 4.5,
             },
             {
                 'name': 'PrivateKeyDetector',
@@ -234,6 +275,12 @@ def _create_baseline():
         },
         'version': VERSION,
     }
+
+    if not use_private_key_scan:
+        baseline["plugins_used"].pop(-1)
+
+    if not has_result:
+        baseline["results"] = {}
 
     return json.dumps(
         baseline,
