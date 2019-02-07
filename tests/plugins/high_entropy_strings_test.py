@@ -100,10 +100,17 @@ class HighEntropyStringsTest(object):
         [
             # Test inline annotation for whitelisting
             "'{secret}'  # pragma: whitelist secret",
+            "'{secret}' #  pragma: whitelist secret",
             "'{secret}'  // pragma: whitelist secret",
+            "'{secret}' //  pragma: whitelist secret",
             "'{secret}'  /* pragma: whitelist secret */",
+            "'{secret}' /*  pragma: whitelist secret  */",
             "'{secret}'  ' pragma: whitelist secret",
+            "'{secret}' '  pragma: whitelist secret",
             "'{secret}'  -- pragma: whitelist secret",
+            "'{secret}' --  pragma: whitelist secret",
+            # Test high entropy exclude regex
+            '"CanonicalUser": "{secret}"',
             # Not a string
             "{secret}",
         ],
