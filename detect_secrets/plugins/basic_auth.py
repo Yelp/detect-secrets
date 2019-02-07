@@ -5,7 +5,8 @@ import re
 from .base import RegexBasedDetector
 
 
-SPECIAL_URL_CHARACTERS = ':/?#[]@"\''
+RESERVED_CHARACTERS = ':/?#[]@'
+SUB_DELIMITER_CHARACTERS = '!$&\';'  # and anything else we might need
 
 
 class BasicAuthDetector(RegexBasedDetector):
@@ -14,8 +15,8 @@ class BasicAuthDetector(RegexBasedDetector):
     blacklist = [
         re.compile(
             r'://[^{}\s]+:([^{}\s]+)@'.format(
-                re.escape(SPECIAL_URL_CHARACTERS),
-                re.escape(SPECIAL_URL_CHARACTERS),
+                re.escape(RESERVED_CHARACTERS + SUB_DELIMITER_CHARACTERS),
+                re.escape(RESERVED_CHARACTERS + SUB_DELIMITER_CHARACTERS),
             ),
         ),
     ]
