@@ -18,7 +18,8 @@ log = get_logger(format_string='%(message)s')
 
 
 def parse_args(argv):
-    return ParserBuilder().add_pre_commit_arguments()\
+    return ParserBuilder()\
+        .add_pre_commit_arguments()\
         .parse_args(argv)
 
 
@@ -35,11 +36,17 @@ def main(argv=None):
         # Error logs handled within logic.
         return 1
 
-    plugins = initialize.from_parser_builder(args.plugins)
+    plugins = initialize.from_parser_builder(
+        args.plugins,
+        exclude_lines_re=args.exclude_lines,
+    )
 
     # Merge plugin from baseline
     if baseline_collection:
-        plugins = initialize.merge_plugin_from_baseline(baseline_collection.plugins, args)
+        plugins = initialize.merge_plugin_from_baseline(
+            baseline_collection.plugins,
+            args,
+        )
         baseline_collection.plugins = plugins
 
     results = find_secrets_in_files(args, plugins)

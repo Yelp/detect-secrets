@@ -6,6 +6,14 @@ from collections import namedtuple
 from detect_secrets import VERSION
 
 
+def add_exclude_lines_argument(parser):
+    parser.add_argument(
+        '--exclude-lines',
+        type=str,
+        help='Pass in regex to specify lines to ignore during scan.',
+    )
+
+
 def add_use_all_plugins_argument(parser):
     parser.add_argument(
         '--use-all-plugins',
@@ -25,11 +33,10 @@ class ParserBuilder(object):
         self._add_verbosity_argument()\
             ._add_version_argument()
 
-        return self
-
     def add_pre_commit_arguments(self):
         self._add_filenames_argument()\
             ._add_set_baseline_argument()\
+            ._add_exclude_lines_argument()\
             ._add_use_all_plugins_argument()
 
         PluginOptions(self.parser).add_arguments()
@@ -87,6 +94,10 @@ class ParserBuilder(object):
         )
         return self
 
+    def _add_exclude_lines_argument(self):
+        add_exclude_lines_argument(self.parser)
+        return self
+
     def _add_use_all_plugins_argument(self):
         add_use_all_plugins_argument(self.parser)
 
@@ -117,11 +128,15 @@ class ScanOptions(object):
             ),
         )
 
-        # Pairing `--exclude` with `--scan` because it's only used for the initialization.
+        # Pairing `--exclude-lines` to both pre-commit and `--scan`
+        # because it can be used for both.
+        add_exclude_lines_argument(self.parser)
+
+        # Pairing `--exclude-files` with `--scan` because it's only used for the initialization.
         # The pre-commit hook framework already has an `exclude` option that can be used instead.
         self.parser.add_argument(
-            '--exclude',
-            nargs=1,
+            '--exclude-files',
+            type=str,
             help='Pass in regex to specify ignored paths during initialization scan.',
         )
 
@@ -155,7 +170,6 @@ class ScanOptions(object):
                 'plugins\' verdict.'
             ),
         )
-        return self
 
 
 class AuditOptions(object):
@@ -371,7 +385,6 @@ class PluginOptions(object):
             nargs='?',
             help=high_entropy_help_text + 'defaults to 3.0.',
         )
-        return self
 
     def _add_opt_out_options(self):
         for plugin in self.all_plugins:
@@ -381,8 +394,6 @@ class PluginOptions(object):
                 help=plugin.disable_help_text,
                 default=False,
             )
-
-        return self
 
     def _argparse_minmax_type(self, string):
         """Custom type for argparse to enforce value limits"""

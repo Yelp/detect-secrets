@@ -26,10 +26,11 @@ class TestMain(object):
             assert main(['scan']) == 0
 
         mock_baseline_initialize.assert_called_once_with(
-            Any(tuple),
-            None,
-            '.',
-            False,
+            plugins=Any(tuple),
+            exclude_files_re=None,
+            exclude_lines_re=None,
+            path='.',
+            scan_all_files=False,
         )
 
     def test_scan_with_rootdir(self, mock_baseline_initialize):
@@ -37,21 +38,25 @@ class TestMain(object):
             assert main('scan test_data'.split()) == 0
 
         mock_baseline_initialize.assert_called_once_with(
-            Any(tuple),
-            None,
-            'test_data',
-            False,
+            plugins=Any(tuple),
+            exclude_files_re=None,
+            exclude_lines_re=None,
+            path='test_data',
+            scan_all_files=False,
         )
 
-    def test_scan_with_excludes_flag(self, mock_baseline_initialize):
+    def test_scan_with_exclude_args(self, mock_baseline_initialize):
         with mock_stdin():
-            assert main('scan --exclude some_pattern_here'.split()) == 0
+            assert main(
+                'scan --exclude-files some_pattern_here --exclude-lines other_patt'.split(),
+            ) == 0
 
         mock_baseline_initialize.assert_called_once_with(
-            Any(tuple),
-            'some_pattern_here',
-            '.',
-            False,
+            plugins=Any(tuple),
+            exclude_files_re='some_pattern_here',
+            exclude_lines_re='other_patt',
+            path='.',
+            scan_all_files=False,
         )
 
     def test_scan_string_basic(self, mock_baseline_initialize):
@@ -95,10 +100,11 @@ class TestMain(object):
             assert main('scan --all-files'.split()) == 0
 
         mock_baseline_initialize.assert_called_once_with(
-            Any(tuple),
-            None,
-            '.',
-            True,
+            plugins=Any(tuple),
+            exclude_files_re=None,
+            exclude_lines_re=None,
+            path='.',
+            scan_all_files=True,
         )
 
     def test_reads_from_stdin(self, mock_merge_baseline):
@@ -128,18 +134,18 @@ class TestMain(object):
         )
 
     @pytest.mark.parametrize(
-        'exclude_param, expected_regex',
+        'exclude_files_arg, expected_regex',
         [
             (
                 '',
                 '^old_baseline_file$',
             ),
             (
-                '--exclude "secrets/.*"',
+                '--exclude-files "secrets/.*"',
                 'secrets/.*|^old_baseline_file$',
             ),
             (
-                '--exclude "^old_baseline_file$"',
+                '--exclude-files "^old_baseline_file$"',
                 '^old_baseline_file$',
             ),
         ],
@@ -147,7 +153,7 @@ class TestMain(object):
     def test_old_baseline_ignored_with_update_flag(
         self,
         mock_baseline_initialize,
-        exclude_param,
+        exclude_files_arg,
         expected_regex,
     ):
         with mock_stdin(), mock.patch(
@@ -160,13 +166,13 @@ class TestMain(object):
             assert main(
                 shlex.split(
                     'scan --update old_baseline_file {}'.format(
-                        exclude_param,
+                        exclude_files_arg,
                     ),
                 ),
             ) == 0
 
             assert (
-                file_writer.call_args[1]['data']['exclude_regex']
+                file_writer.call_args[1]['data']['exclude']['files']
                 == expected_regex
             )
 
@@ -379,7 +385,10 @@ class TestMain(object):
                 "plugins_used": plugins_used,
                 "results": {},
                 "version": VERSION,
-                "exclude_regex": "",
+                "exclude": {
+                    'files': '',
+                    'lines': '',
+                },
             },
         ), mock.patch(
             # We don't want to be creating a file during test
@@ -500,10 +509,10 @@ def mock_stdin(response=None):
 
 @pytest.fixture
 def mock_baseline_initialize():
-    def mock_initialize_function(plugins, exclude_regex, *args, **kwargs):
+    def mock_initialize_function(plugins, exclude_files_re, *args, **kwargs):
         return secrets_collection_factory(
             plugins=plugins,
-            exclude_regex=exclude_regex,
+            exclude_files_re=exclude_files_re,
         )
 
     with mock.patch(

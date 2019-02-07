@@ -16,7 +16,7 @@ from detect_secrets.core.log import log
 from detect_secrets.core.usage import PluginOptions
 
 
-def from_parser_builder(plugins_dict):
+def from_parser_builder(plugins_dict, exclude_lines_re):
     """
     :param plugins_dict: plugins dictionary received from ParserBuilder.
         See example in tests.core.usage_test.
@@ -26,6 +26,7 @@ def from_parser_builder(plugins_dict):
     for plugin_name in plugins_dict:
         output.append(from_plugin_classname(
             plugin_name,
+            exclude_lines_re=exclude_lines_re,
             **plugins_dict[plugin_name]
         ))
 
@@ -67,6 +68,7 @@ def merge_plugin_from_baseline(baseline_plugins, args):
         r = dict(d)
         r.pop(key)
         return r
+
     baseline_plugins_dict = {
         vars(plugin)["name"]: _remove_key(vars(plugin), "name")
         for plugin in baseline_plugins
@@ -91,7 +93,10 @@ def merge_plugin_from_baseline(baseline_plugins, args):
                     % (plugin_name),
                 )
 
-        return from_parser_builder(plugins_dict)
+        return from_parser_builder(
+            plugins_dict,
+            exclude_lines_re=args.exclude_lines,
+        )
 
     # Use baseline plugin as starting point
     disabled_plugins = PluginOptions.get_disabled_plugins(args)
@@ -116,14 +121,20 @@ def merge_plugin_from_baseline(baseline_plugins, args):
                 % ("".join(["--", param_name.replace("_", "-")]), plugin_name),
             )
 
-    return from_parser_builder(plugins_dict)
+    return from_parser_builder(
+        plugins_dict,
+        exclude_lines_re=args.exclude_lines,
+    )
 
 
-def from_plugin_classname(plugin_classname, **kwargs):
+def from_plugin_classname(plugin_classname, exclude_lines_re=None, **kwargs):
     """Initializes a plugin class, given a classname and kwargs.
 
     :type plugin_classname: str
     :param plugin_classname: subclass of BasePlugin
+
+    :type exclude_lines_re: str|None
+    :param exclude_lines_re: subclass of BasePlugin
     """
     klass = globals()[plugin_classname]
 
@@ -132,7 +143,7 @@ def from_plugin_classname(plugin_classname, **kwargs):
         raise TypeError
 
     try:
-        instance = klass(**kwargs)
+        instance = klass(exclude_lines_re=exclude_lines_re, **kwargs)
     except TypeError:
         log.warning(
             'Unable to initialize plugin!',
@@ -144,6 +155,8 @@ def from_plugin_classname(plugin_classname, **kwargs):
 
 def from_secret_type(secret_type, settings):
     """
+    Note: Only called from audit.py
+
     :type secret_type: str
     :param secret_type: unique identifier for plugin type
 
