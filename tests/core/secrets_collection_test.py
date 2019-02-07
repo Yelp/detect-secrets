@@ -179,7 +179,9 @@ class TestScanDiff(object):
     def load_from_diff(self, existing_secrets=None, baseline_filename='', exclude_files_re=''):
         collection = secrets_collection_factory(
             secrets=existing_secrets,
-            plugins=(HexHighEntropyString(3),),
+            plugins=(
+                HexHighEntropyString(hex_limit=3),
+            ),
             exclude_files_re=exclude_files_re,
         )
 

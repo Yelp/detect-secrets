@@ -59,22 +59,46 @@ class TestMain(object):
             scan_all_files=False,
         )
 
-    def test_scan_string_basic(self, mock_baseline_initialize):
+    @pytest.mark.parametrize(
+        'string, expected_base64_result, expected_hex_result',
+        [
+            (
+                '012345678ab',
+                'False (3.459)',
+                'True  (3.459)',
+            ),
+            (
+                'Benign',
+                'False (2.252)',
+                'False',
+            ),
+        ],
+    )
+    def test_scan_string_basic(
+        self,
+        mock_baseline_initialize,
+        string,
+        expected_base64_result,
+        expected_hex_result,
+    ):
         with mock_stdin(
-            '012345678ab',
+            string,
         ), mock_printer(
             main_module,
         ) as printer_shim:
             assert main('scan --string'.split()) == 0
             assert uncolor(printer_shim.message) == textwrap.dedent("""
                 AWSKeyDetector         : False
-                Base64HighEntropyString: False (3.459)
+                Base64HighEntropyString: {}
                 BasicAuthDetector      : False
-                HexHighEntropyString   : True  (3.459)
+                HexHighEntropyString   : {}
                 KeywordDetector        : False
                 PrivateKeyDetector     : False
                 SlackDetector          : False
-            """)[1:]
+            """.format(
+                expected_base64_result,
+                expected_hex_result,
+            ))[1:]
 
         mock_baseline_initialize.assert_not_called()
 

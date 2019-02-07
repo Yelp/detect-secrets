@@ -6,9 +6,11 @@ class IniFileParser(object):
 
     _comment_regex = re.compile(r'\s*[;#]')
 
-    def __init__(self, file, add_header=False):
+    def __init__(self, file, add_header=False, exclude_lines_re=None):
         self.parser = configparser.ConfigParser()
         self.parser.optionxform = str
+
+        self.exclude_lines_re = exclude_lines_re
 
         if not add_header:
             self.parser.read_file(file)
@@ -75,6 +77,12 @@ class IniFileParser(object):
             # Check ignored lines before checking values, because
             # you can write comments *after* the value.
             if not line.strip() or self._comment_regex.match(line):
+                continue
+
+            if (
+                self.exclude_lines_re
+                and self.exclude_lines_re.search(line)
+            ):
                 continue
 
             if current_value_list_index == 0:

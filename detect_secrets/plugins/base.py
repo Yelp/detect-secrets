@@ -1,3 +1,4 @@
+import re
 from abc import ABCMeta
 from abc import abstractmethod
 from abc import abstractproperty
@@ -12,9 +13,15 @@ class BasePlugin(object):
     __metaclass__ = ABCMeta
     secret_type = None
 
-    def __init__(self, **kwargs):
+    def __init__(self, exclude_lines_re=None, **kwargs):
         if not self.secret_type:
             raise ValueError('Plugins need to declare a secret_type.')
+
+        self.exclude_lines_re = None
+        if exclude_lines_re:
+            self.exclude_lines_re = re.compile(
+                exclude_lines_re,
+            )
 
     def analyze(self, file, filename):
         """
@@ -28,6 +35,11 @@ class BasePlugin(object):
         potential_secrets = {}
         for line_num, line in enumerate(file.readlines(), start=1):
             if any(regex.search(line) for regex in WHITELIST_REGEXES):
+                continue
+            if (
+                self.exclude_lines_re
+                and self.exclude_lines_re.search(line)
+            ):
                 continue
             secrets = self.analyze_string(line, line_num, filename)
             potential_secrets.update(secrets)

@@ -1,7 +1,7 @@
 """Intelligent initialization of plugins."""
 try:
     from functools import lru_cache
-except ImportError:
+except ImportError:  # pragma: no cover
     from functools32 import lru_cache
 
 from ..aws import AWSKeyDetector                            # noqa: F401

@@ -50,6 +50,11 @@ class HighEntropyStringsTest(object):
                 "'{secret}'",
                 True,
             ),
+            # Matches exclude_lines_re
+            (
+                "CanonicalUser: {secret}",
+                False,
+            ),
         ],
     )
     def test_pattern(self, content_to_format, should_be_caught):
@@ -125,9 +130,12 @@ class TestBase64HighEntropyStrings(HighEntropyStringsTest):
     def setup(self):
         super(TestBase64HighEntropyStrings, self).setup(
             # Testing default limit, as suggested by truffleHog.
-            Base64HighEntropyString(4.5),
-            'c3VwZXIgc2VjcmV0IHZhbHVl',     # too short for high entropy
-            'c3VwZXIgbG9uZyBzdHJpbmcgc2hvdWxkIGNhdXNlIGVub3VnaCBlbnRyb3B5',
+            logic=Base64HighEntropyString(
+                base64_limit=4.5,
+                exclude_lines_re='(CanonicalUser)',
+            ),
+            non_secret_string='c3VwZXIgc2VjcmV0IHZhbHVl',  # too short for high entropy
+            secret_string='c3VwZXIgbG9uZyBzdHJpbmcgc2hvdWxkIGNhdXNlIGVub3VnaCBlbnRyb3B5',
         )
 
     def test_ini_file(self):
@@ -165,7 +173,10 @@ class TestBase64HighEntropyStrings(HighEntropyStringsTest):
         assert count == 7
 
     def test_yaml_file(self):
-        plugin = Base64HighEntropyString(3)
+        plugin = Base64HighEntropyString(
+            base64_limit=3,
+            exclude_lines_re='(CanonicalUser)',
+        )
 
         with open('test_data/config.yaml') as f:
             secrets = plugin.analyze(f, 'test_data/config.yaml')
@@ -175,7 +186,7 @@ class TestBase64HighEntropyStrings(HighEntropyStringsTest):
             location = str(secret).splitlines()[1]
             assert location in (
                 'Location:    test_data/config.yaml:3',
-                'Location:    test_data/config.yaml:5',
+                'Location:    test_data/config.yaml:6',
             )
 
     def test_env_file(self):
@@ -196,15 +207,19 @@ class TestHexHighEntropyStrings(HighEntropyStringsTest):
     def setup(self):
         super(TestHexHighEntropyStrings, self).setup(
             # Testing default limit, as suggested by truffleHog.
-            HexHighEntropyString(3),
-            'aaaaaa',
-            '2b00042f7481c7b056c4b410d28f33cf',
+            logic=HexHighEntropyString(
+                hex_limit=3,
+                exclude_lines_re='(CanonicalUser)',
+            ),
+            non_secret_string='aaaaaa',
+            secret_string='2b00042f7481c7b056c4b410d28f33cf',
         )
 
     def test_discounts_when_all_numbers(self):
         original_scanner = HighEntropyStringsPlugin(
-            string.hexdigits,
-            3,
+            charset=string.hexdigits,
+            limit=3,
+            exclude_lines_re=None,
         )
 
         # This makes sure discounting works.
