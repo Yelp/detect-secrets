@@ -37,16 +37,17 @@ class PrivateKeyDetector(RegexBasedDetector):
     """
 
     secret_type = 'Private Key'
+
     blacklist = [
         re.compile(regexp)
         for regexp in (
-            r'BEGIN RSA PRIVATE KEY',
             r'BEGIN DSA PRIVATE KEY',
             r'BEGIN EC PRIVATE KEY',
             r'BEGIN OPENSSH PRIVATE KEY',
-            r'BEGIN PRIVATE KEY',
-            r'PuTTY-User-Key-File-2',
-            r'BEGIN SSH2 ENCRYPTED PRIVATE KEY',
             r'BEGIN PGP PRIVATE KEY BLOCK',
+            r'BEGIN PRIVATE KEY',
+            r'BEGIN RSA PRIVATE KEY',
+            r'BEGIN SSH2 ENCRYPTED PRIVATE KEY',
+            r'PuTTY-User-Key-File-2',
         )
     ]

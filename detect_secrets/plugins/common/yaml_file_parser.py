@@ -38,9 +38,15 @@ class YamlFileParser(object):
     This parsing method is inspired by https://stackoverflow.com/a/13319530.
     """
 
-    def __init__(self, file, exclude_lines_re=None):
+    def __init__(self, file, exclude_lines_regex=None):
+        """
+        :type file: file object
+
+        :type exclude_lines_regex: regex object
+        :param exclude_lines_regex: optional regex for ignored lines.
+        """
         self.content = file.read()
-        self.exclude_lines_re = exclude_lines_re
+        self.exclude_lines_regex = exclude_lines_regex
 
         self.loader = yaml.SafeLoader(self.content)
         self.loader.compose_node = self._compose_node_shim
@@ -131,8 +137,8 @@ class YamlFileParser(object):
                 WHITELIST_REGEX['yaml'].search(line)
 
                 or (
-                    self.exclude_lines_re and
-                    self.exclude_lines_re.search(line)
+                    self.exclude_lines_regex and
+                    self.exclude_lines_regex.search(line)
                 )
             ):
                 ignored_lines.add(line_number)

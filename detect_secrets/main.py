@@ -33,7 +33,7 @@ def main(argv=None):
         # we want to get the latest updates.
         plugins = initialize.from_parser_builder(
             args.plugins,
-            exclude_lines_re=args.exclude_lines,
+            exclude_lines_regex=args.exclude_lines,
         )
         if args.string:
             line = args.string
@@ -140,8 +140,8 @@ def _perform_scan(args, plugins):
 
     new_baseline = baseline.initialize(
         plugins=plugins,
-        exclude_files_re=args.exclude_files,
-        exclude_lines_re=args.exclude_lines,
+        exclude_files_regex=args.exclude_files,
+        exclude_lines_regex=args.exclude_lines,
         path=args.path,
         scan_all_files=args.all_files,
     ).format_for_baseline_output()
@@ -188,12 +188,12 @@ def _add_baseline_to_exclude_files(args):
     """
     Modifies args.exclude_files in-place.
     """
-    baseline_name_re = r'^{}$'.format(args.import_filename[0])
+    baseline_name_regex = r'^{}$'.format(args.import_filename[0])
 
     if not args.exclude_files:
-        args.exclude_files = baseline_name_re
-    elif baseline_name_re not in args.exclude_files:
-        args.exclude_files += r'|{}'.format(baseline_name_re)
+        args.exclude_files = baseline_name_regex
+    elif baseline_name_regex not in args.exclude_files:
+        args.exclude_files += r'|{}'.format(baseline_name_regex)
 
 
 if __name__ == '__main__':

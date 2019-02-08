@@ -12,6 +12,7 @@ SUB_DELIMITER_CHARACTERS = '!$&\';'  # and anything else we might need
 class BasicAuthDetector(RegexBasedDetector):
 
     secret_type = 'Basic Auth Credentials'
+
     blacklist = [
         re.compile(
             r'://[^{}\s]+:([^{}\s]+)@'.format(

@@ -39,7 +39,9 @@ class HighEntropyStringsPlugin(BasePlugin):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, charset, limit, exclude_lines_re, *args):
+    secret_type = 'High Entropy String'
+
+    def __init__(self, charset, limit, exclude_lines_regex, *args):
         if limit < 0 or limit > 8:
             raise ValueError(
                 'The limit set for HighEntropyStrings must be between 0.0 and 8.0',
@@ -48,11 +50,10 @@ class HighEntropyStringsPlugin(BasePlugin):
         self.charset = charset
         self.entropy_limit = limit
         self.regex = re.compile(r'([\'"])([%s]+)(\1)' % charset)
-        self.exclude_lines_re = None
-        if exclude_lines_re:
-            self.exclude_lines_re = re.compile(
-                exclude_lines_re,
-            )
+
+        super(HighEntropyStringsPlugin, self).__init__(
+            exclude_lines_regex=exclude_lines_regex,
+        )
 
     def analyze(self, file, filename):
         file_type_analyzers = (
@@ -93,21 +94,21 @@ class HighEntropyStringsPlugin(BasePlugin):
 
         return entropy
 
-    def is_sequential_string(self, string):
+    def _is_sequential_string(self, string):
         uppercased_string = string.upper()
         for sequential_string in IGNORED_SEQUENTIAL_STRINGS:
             if uppercased_string in sequential_string:
                 return True
         return False
 
-    def analyze_string(self, string, line_num, filename):
+    def _analyze_string(self, string, line_num, filename):
         """Searches string for custom pattern, and captures all high entropy strings that
         match self.regex, with a limit defined as self.entropy_limit.
         """
         output = {}
 
         for result in self.secret_generator(string):
-            if self.is_sequential_string(result):
+            if self._is_sequential_string(result):
                 continue
             secret = PotentialSecret(self.secret_type, filename, result, line_num)
             output[secret] = secret
@@ -180,7 +181,7 @@ class HighEntropyStringsPlugin(BasePlugin):
                 for value, lineno in IniFileParser(
                     file,
                     add_header,
-                    self.exclude_lines_re,
+                    exclude_lines_regex=self.exclude_lines_regex,
                 ).iterator():
                     potential_secrets.update(self.analyze_string(
                         value,
@@ -204,7 +205,7 @@ class HighEntropyStringsPlugin(BasePlugin):
 
         parser = YamlFileParser(
             file,
-            self.exclude_lines_re,
+            exclude_lines_regex=self.exclude_lines_regex,
         )
         data = parser.json()
         ignored_lines = parser.get_ignored_lines()
@@ -239,15 +240,15 @@ class HighEntropyStringsPlugin(BasePlugin):
 
 
 class HexHighEntropyString(HighEntropyStringsPlugin):
-    """HighEntropyStringsPlugin for hex strings"""
+    """HighEntropyStringsPlugin for hex encoded strings"""
 
     secret_type = 'Hex High Entropy String'
 
-    def __init__(self, hex_limit, exclude_lines_re=None, **kwargs):
+    def __init__(self, hex_limit, exclude_lines_regex=None, **kwargs):
         super(HexHighEntropyString, self).__init__(
             charset=string.hexdigits,
             limit=hex_limit,
-            exclude_lines_re=exclude_lines_re,
+            exclude_lines_regex=exclude_lines_regex,
         )
 
     @property
@@ -295,11 +296,11 @@ class Base64HighEntropyString(HighEntropyStringsPlugin):
 
     secret_type = 'Base64 High Entropy String'
 
-    def __init__(self, base64_limit, exclude_lines_re=None, **kwargs):
+    def __init__(self, base64_limit, exclude_lines_regex=None, **kwargs):
         super(Base64HighEntropyString, self).__init__(
             charset=string.ascii_letters + string.digits + '+/=',
             limit=base64_limit,
-            exclude_lines_re=exclude_lines_re,
+            exclude_lines_regex=exclude_lines_regex,
         )
 
     @property

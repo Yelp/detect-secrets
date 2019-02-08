@@ -27,8 +27,8 @@ class TestMain(object):
 
         mock_baseline_initialize.assert_called_once_with(
             plugins=Any(tuple),
-            exclude_files_re=None,
-            exclude_lines_re=None,
+            exclude_files_regex=None,
+            exclude_lines_regex=None,
             path='.',
             scan_all_files=False,
         )
@@ -39,8 +39,8 @@ class TestMain(object):
 
         mock_baseline_initialize.assert_called_once_with(
             plugins=Any(tuple),
-            exclude_files_re=None,
-            exclude_lines_re=None,
+            exclude_files_regex=None,
+            exclude_lines_regex=None,
             path='test_data',
             scan_all_files=False,
         )
@@ -53,8 +53,8 @@ class TestMain(object):
 
         mock_baseline_initialize.assert_called_once_with(
             plugins=Any(tuple),
-            exclude_files_re='some_pattern_here',
-            exclude_lines_re='other_patt',
+            exclude_files_regex='some_pattern_here',
+            exclude_lines_regex='other_patt',
             path='.',
             scan_all_files=False,
         )
@@ -125,8 +125,8 @@ class TestMain(object):
 
         mock_baseline_initialize.assert_called_once_with(
             plugins=Any(tuple),
-            exclude_files_re=None,
-            exclude_lines_re=None,
+            exclude_files_regex=None,
+            exclude_lines_regex=None,
             path='.',
             scan_all_files=True,
         )
@@ -533,10 +533,10 @@ def mock_stdin(response=None):
 
 @pytest.fixture
 def mock_baseline_initialize():
-    def mock_initialize_function(plugins, exclude_files_re, *args, **kwargs):
+    def mock_initialize_function(plugins, exclude_files_regex, *args, **kwargs):
         return secrets_collection_factory(
             plugins=plugins,
-            exclude_files_re=exclude_files_re,
+            exclude_files_regex=exclude_files_regex,
         )
 
     with mock.patch(

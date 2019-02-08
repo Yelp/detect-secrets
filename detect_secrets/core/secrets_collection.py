@@ -93,7 +93,7 @@ class SecretsCollection(object):
             plugin_classname = plugin.pop('name')
             plugins.append(initialize.from_plugin_classname(
                 plugin_classname,
-                exclude_lines_re=result.exclude_lines,
+                exclude_lines_regex=result.exclude_lines,
                 **plugin
             ))
         result.plugins = tuple(plugins)

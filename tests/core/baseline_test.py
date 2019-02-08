@@ -32,13 +32,13 @@ class TestInitializeBaseline(object):
     def get_results(
         self,
         path='./test_data/files',
-        exclude_files_re=None,
+        exclude_files_regex=None,
         scan_all_files=False,
     ):
         return baseline.initialize(
             self.plugins,
             path=path,
-            exclude_files_re=exclude_files_re,
+            exclude_files_regex=exclude_files_regex,
             scan_all_files=scan_all_files,
         ).json()
 
@@ -59,13 +59,13 @@ class TestInitializeBaseline(object):
         assert len(results['test_data/files/tmp/file_with_secrets.py']) == 2
 
     def test_exclude_regex(self):
-        results = self.get_results(exclude_files_re='tmp*')
+        results = self.get_results(exclude_files_regex='tmp*')
 
         assert len(results.keys()) == 1
         assert 'test_data/files/file_with_secrets.py' in results
 
     def test_exclude_regex_at_root_level(self):
-        results = self.get_results(exclude_files_re='file_with_secrets.py')
+        results = self.get_results(exclude_files_regex='file_with_secrets.py')
 
         # All files_with_secrets.py should be ignored, both at the root
         # level, and the nested file in tmp.

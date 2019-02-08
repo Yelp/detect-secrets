@@ -170,19 +170,19 @@ class TestScanDiff(object):
 
     def test_exclude_regex_skips_files_appropriately(self):
         secrets = self.load_from_diff(
-            exclude_files_re='tests/*',
+            exclude_files_regex='tests/*',
         ).format_for_baseline_output()['results']
 
         assert len(secrets) == 2
         assert 'tests/core/secrets_collection_test.py' not in secrets
 
-    def load_from_diff(self, existing_secrets=None, baseline_filename='', exclude_files_re=''):
+    def load_from_diff(self, existing_secrets=None, baseline_filename='', exclude_files_regex=''):
         collection = secrets_collection_factory(
             secrets=existing_secrets,
             plugins=(
                 HexHighEntropyString(hex_limit=3),
             ),
-            exclude_files_re=exclude_files_re,
+            exclude_files_regex=exclude_files_regex,
         )
 
         with open('test_data/sample.diff') as f:
@@ -278,18 +278,22 @@ class TestBaselineInputOutput(object):
                 HexHighEntropyString(3),
                 PrivateKeyDetector(),
             ),
-            exclude_files_re='foo',
+            exclude_files_regex='foo',
         )
 
     def test_output(self, mock_gmtime):
-        assert self.logic.format_for_baseline_output() == self.get_new_baseline_dict(mock_gmtime)
+        assert (
+            self.logic.format_for_baseline_output()
 
-    def test_old_load_baseline_from_string(self, mock_gmtime):
+            == self.get_point_twelve_and_later_baseline_dict(mock_gmtime)
+        )
+
+    def test_load_baseline_from_string_with_pre_point_twelve_string(self, mock_gmtime):
         """
         We use load_baseline_from_string as a proxy to testing load_baseline_from_dict,
         because it's the most entry into the private function.
         """
-        old_original = self.get_old_baseline_dict(mock_gmtime)
+        old_original = self.get_pre_point_twelve_old_baseline_dict(mock_gmtime)
 
         secrets = SecretsCollection.load_baseline_from_string(
             json.dumps(old_original),
@@ -300,12 +304,12 @@ class TestBaselineInputOutput(object):
         assert secrets['exclude']['lines'] is None
         assert old_original['results'] == secrets['results']
 
-    def test_new_load_baseline_from_string(self, mock_gmtime):
+    def test_load_baseline_from_string_with_point_twelve_and_later_string(self, mock_gmtime):
         """
         We use load_baseline_from_string as a proxy to testing load_baseline_from_dict,
         because it's the most entry into the private function.
         """
-        original = self.get_new_baseline_dict(mock_gmtime)
+        original = self.get_point_twelve_and_later_baseline_dict(mock_gmtime)
 
         secrets = SecretsCollection.load_baseline_from_string(
             json.dumps(original),
@@ -334,15 +338,17 @@ class TestBaselineInputOutput(object):
             )
         assert mock_log.error_messages == 'Incorrectly formatted baseline!\n'
 
-    def get_new_baseline_dict(self, gmtime):
+    def get_point_twelve_and_later_baseline_dict(self, gmtime):
+        # In v0.12.0 `exclude_regex` got replaced by `exclude`
         baseline = self._get_baseline_dict(gmtime)
         baseline['exclude'] = {}
         baseline['exclude']['files'] = 'foo'
         baseline['exclude']['lines'] = None
         return baseline
 
-    def get_old_baseline_dict(self, gmtime):
+    def get_pre_point_twelve_old_baseline_dict(self, gmtime):
         baseline = self._get_baseline_dict(gmtime)
+        # In v0.12.0 `exclude_regex` got replaced by `exclude`
         baseline['exclude_regex'] = 'foo'
         return baseline
 
@@ -390,7 +396,7 @@ class TestBaselineInputOutput(object):
 class MockBasePlugin(BasePlugin):  # pragma: no cover
     """Abstract testing class, to implement abstract methods."""
 
-    def analyze_string(self, value):
+    def _analyze_string(self, value):
         pass
 
     def secret_generator(self, string):

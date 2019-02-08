@@ -11,16 +11,21 @@ class BasePlugin(object):
     """This is an abstract class to define Plugins API"""
 
     __metaclass__ = ABCMeta
+
     secret_type = None
 
-    def __init__(self, exclude_lines_re=None, **kwargs):
+    def __init__(self, exclude_lines_regex=None, **kwargs):
+        """
+        :type exclude_lines_regex: str|None
+        :param exclude_lines_regex: optional regex for ignored lines.
+        """
         if not self.secret_type:
             raise ValueError('Plugins need to declare a secret_type.')
 
-        self.exclude_lines_re = None
-        if exclude_lines_re:
-            self.exclude_lines_re = re.compile(
-                exclude_lines_re,
+        self.exclude_lines_regex = None
+        if exclude_lines_regex:
+            self.exclude_lines_regex = re.compile(
+                exclude_lines_regex,
             )
 
     def analyze(self, file, filename):
@@ -34,20 +39,40 @@ class BasePlugin(object):
         """
         potential_secrets = {}
         for line_num, line in enumerate(file.readlines(), start=1):
-            if any(regex.search(line) for regex in WHITELIST_REGEXES):
-                continue
-            if (
-                self.exclude_lines_re
-                and self.exclude_lines_re.search(line)
-            ):
-                continue
             secrets = self.analyze_string(line, line_num, filename)
             potential_secrets.update(secrets)
 
         return potential_secrets
 
-    @abstractmethod
     def analyze_string(self, string, line_num, filename):
+        """
+        :param string:    string; the line to analyze
+        :param line_num:  integer; line number that is currently being analyzed
+        :param filename:  string; name of file being analyzed
+        :returns:         dictionary
+
+        NOTE: line_num and filename are used for PotentialSecret creation only.
+        """
+        if (
+            any(
+                whitelist_regex.search(string) for whitelist_regex in WHITELIST_REGEXES
+            )
+
+            or (
+                self.exclude_lines_regex and
+                self.exclude_lines_regex.search(string)
+            )
+        ):
+            return {}
+
+        return self._analyze_string(
+            string,
+            line_num,
+            filename,
+        )
+
+    @abstractmethod
+    def _analyze_string(self, string, line_num, filename):
         """
         :param string:    string; the line to analyze
         :param line_num:  integer; line number that is currently being analyzed
@@ -103,14 +128,16 @@ class BasePlugin(object):
 
 
 class RegexBasedDetector(BasePlugin):
-    """Base class for regular-expressed based detectors.
+    """Base class for regular-expression based detectors.
 
     To create a new regex-based detector, subclass this and set
     `secret_type` with a description and `blacklist`
     with a sequence of regular expressions, like:
 
     class FooDetector(RegexBasedDetector):
+
         secret_type = "foo"
+
         blacklist = (
             re.compile(r'foo'),
         )
@@ -125,7 +152,7 @@ class RegexBasedDetector(BasePlugin):
     def blacklist(self):
         raise NotImplementedError
 
-    def analyze_string(self, string, line_num, filename):
+    def _analyze_string(self, string, line_num, filename):
         output = {}
 
         for identifier in self.secret_generator(string):

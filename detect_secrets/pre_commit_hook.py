@@ -38,7 +38,7 @@ def main(argv=None):
 
     plugins = initialize.from_parser_builder(
         args.plugins,
-        exclude_lines_re=args.exclude_lines,
+        exclude_lines_regex=args.exclude_lines,
     )
 
     # Merge plugin from baseline

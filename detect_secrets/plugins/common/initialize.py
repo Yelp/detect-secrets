@@ -16,17 +16,21 @@ from detect_secrets.core.log import log
 from detect_secrets.core.usage import PluginOptions
 
 
-def from_parser_builder(plugins_dict, exclude_lines_re):
+def from_parser_builder(plugins_dict, exclude_lines_regex):
     """
     :param plugins_dict: plugins dictionary received from ParserBuilder.
         See example in tests.core.usage_test.
+
+    :type exclude_lines_regex: str|None
+    :param exclude_lines_regex: optional regex for ignored lines.
+
     :returns: tuple of initialized plugins
     """
     output = []
     for plugin_name in plugins_dict:
         output.append(from_plugin_classname(
             plugin_name,
-            exclude_lines_re=exclude_lines_re,
+            exclude_lines_regex=exclude_lines_regex,
             **plugins_dict[plugin_name]
         ))
 
@@ -95,7 +99,7 @@ def merge_plugin_from_baseline(baseline_plugins, args):
 
         return from_parser_builder(
             plugins_dict,
-            exclude_lines_re=args.exclude_lines,
+            exclude_lines_regex=args.exclude_lines,
         )
 
     # Use baseline plugin as starting point
@@ -123,18 +127,18 @@ def merge_plugin_from_baseline(baseline_plugins, args):
 
     return from_parser_builder(
         plugins_dict,
-        exclude_lines_re=args.exclude_lines,
+        exclude_lines_regex=args.exclude_lines,
     )
 
 
-def from_plugin_classname(plugin_classname, exclude_lines_re=None, **kwargs):
+def from_plugin_classname(plugin_classname, exclude_lines_regex=None, **kwargs):
     """Initializes a plugin class, given a classname and kwargs.
 
     :type plugin_classname: str
-    :param plugin_classname: subclass of BasePlugin
+    :param plugin_classname: subclass of BasePlugin.
 
-    :type exclude_lines_re: str|None
-    :param exclude_lines_re: subclass of BasePlugin
+    :type exclude_lines_regex: str|None
+    :param exclude_lines_regex: optional regex for ignored lines.
     """
     klass = globals()[plugin_classname]
 
@@ -143,7 +147,7 @@ def from_plugin_classname(plugin_classname, exclude_lines_re=None, **kwargs):
         raise TypeError
 
     try:
-        instance = klass(exclude_lines_re=exclude_lines_re, **kwargs)
+        instance = klass(exclude_lines_regex=exclude_lines_regex, **kwargs)
     except TypeError:
         log.warning(
             'Unable to initialize plugin!',

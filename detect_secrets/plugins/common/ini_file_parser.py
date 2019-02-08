@@ -6,11 +6,20 @@ class IniFileParser(object):
 
     _comment_regex = re.compile(r'\s*[;#]')
 
-    def __init__(self, file, add_header=False, exclude_lines_re=None):
+    def __init__(self, file, add_header=False, exclude_lines_regex=None):
+        """
+        :type file: file object
+
+        :type add_header: bool
+        :param add_header: whether or not to add a top-level [global] header.
+
+        :type exclude_lines_regex: regex object
+        :param exclude_lines_regex: optional regex for ignored lines.
+        """
         self.parser = configparser.ConfigParser()
         self.parser.optionxform = str
 
-        self.exclude_lines_re = exclude_lines_re
+        self.exclude_lines_regex = exclude_lines_regex
 
         if not add_header:
             self.parser.read_file(file)
@@ -80,8 +89,8 @@ class IniFileParser(object):
                 continue
 
             if (
-                self.exclude_lines_re
-                and self.exclude_lines_re.search(line)
+                self.exclude_lines_regex
+                and self.exclude_lines_regex.search(line)
             ):
                 continue
 

@@ -40,7 +40,7 @@ class HighEntropyStringsTest(object):
         self.secret = secret_string
 
     @pytest.mark.parametrize(
-        'content_to_format,should_be_caught',
+        'content_to_format, should_be_caught',
         [
             (
                 "'{non_secret}'",
@@ -50,7 +50,7 @@ class HighEntropyStringsTest(object):
                 "'{secret}'",
                 True,
             ),
-            # Matches exclude_lines_re
+            # Matches exclude_lines_regex
             (
                 "CanonicalUser: {secret}",
                 False,
@@ -67,10 +67,10 @@ class HighEntropyStringsTest(object):
 
         results = self.logic.analyze(f, 'does_not_matter')
 
-        assert len(results) == bool(should_be_caught)
+        assert len(results) == should_be_caught
 
     @pytest.mark.parametrize(
-        'content_to_format,expected_results',
+        'content_to_format, expected_results',
         [
             (
                 'String #1: "{non_secret}"; String #2: "{secret}"',
@@ -139,7 +139,7 @@ class TestBase64HighEntropyStrings(HighEntropyStringsTest):
             # Testing default limit, as suggested by truffleHog.
             logic=Base64HighEntropyString(
                 base64_limit=4.5,
-                exclude_lines_re='(CanonicalUser)',
+                exclude_lines_regex='CanonicalUser',
             ),
             non_secret_string='c3VwZXIgc2VjcmV0IHZhbHVl',  # too short for high entropy
             secret_string='c3VwZXIgbG9uZyBzdHJpbmcgc2hvdWxkIGNhdXNlIGVub3VnaCBlbnRyb3B5',
@@ -182,7 +182,7 @@ class TestBase64HighEntropyStrings(HighEntropyStringsTest):
     def test_yaml_file(self):
         plugin = Base64HighEntropyString(
             base64_limit=3,
-            exclude_lines_re='(CanonicalUser)',
+            exclude_lines_regex='CanonicalUser',
         )
 
         with open('test_data/config.yaml') as f:
@@ -216,7 +216,7 @@ class TestHexHighEntropyStrings(HighEntropyStringsTest):
             # Testing default limit, as suggested by truffleHog.
             logic=HexHighEntropyString(
                 hex_limit=3,
-                exclude_lines_re='(CanonicalUser)',
+                exclude_lines_regex='CanonicalUser',
             ),
             non_secret_string='aaaaaa',
             secret_string='2b00042f7481c7b056c4b410d28f33cf',
@@ -226,7 +226,7 @@ class TestHexHighEntropyStrings(HighEntropyStringsTest):
         original_scanner = HighEntropyStringsPlugin(
             charset=string.hexdigits,
             limit=3,
-            exclude_lines_re=None,
+            exclude_lines_regex=None,
         )
 
         # This makes sure discounting works.
