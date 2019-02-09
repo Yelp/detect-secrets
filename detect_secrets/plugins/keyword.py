@@ -139,7 +139,7 @@ class KeywordDetector(BasePlugin):
 
     secret_type = 'Secret Keyword'
 
-    def _analyze_string(self, string, line_num, filename):
+    def analyze_string_content(self, string, line_num, filename):
         output = {}
 
         for identifier in self.secret_generator(

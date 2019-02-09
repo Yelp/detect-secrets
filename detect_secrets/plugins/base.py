@@ -65,14 +65,14 @@ class BasePlugin(object):
         ):
             return {}
 
-        return self._analyze_string(
+        return self.analyze_string_content(
             string,
             line_num,
             filename,
         )
 
     @abstractmethod
-    def _analyze_string(self, string, line_num, filename):
+    def analyze_string_content(self, string, line_num, filename):
         """
         :param string:    string; the line to analyze
         :param line_num:  integer; line number that is currently being analyzed
@@ -152,7 +152,7 @@ class RegexBasedDetector(BasePlugin):
     def blacklist(self):
         raise NotImplementedError
 
-    def _analyze_string(self, string, line_num, filename):
+    def analyze_string_content(self, string, line_num, filename):
         output = {}
 
         for identifier in self.secret_generator(string):

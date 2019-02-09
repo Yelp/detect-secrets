@@ -396,7 +396,7 @@ class TestBaselineInputOutput(object):
 class MockBasePlugin(BasePlugin):  # pragma: no cover
     """Abstract testing class, to implement abstract methods."""
 
-    def _analyze_string(self, value):
+    def analyze_string_content(self, value):
         pass
 
     def secret_generator(self, string):

@@ -101,7 +101,7 @@ class HighEntropyStringsPlugin(BasePlugin):
                 return True
         return False
 
-    def _analyze_string(self, string, line_num, filename):
+    def analyze_string_content(self, string, line_num, filename):
         """Searches string for custom pattern, and captures all high entropy strings that
         match self.regex, with a limit defined as self.entropy_limit.
         """
