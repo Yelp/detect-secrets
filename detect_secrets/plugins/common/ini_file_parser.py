@@ -17,23 +17,26 @@ class IniFileParser(object):
         :param exclude_lines_regex: optional regex for ignored lines.
         """
         self.parser = configparser.ConfigParser()
-        self.parser.optionxform = str
+        try:
+            # python2.7 compatible
+            self.parser.optionxform = unicode
+        except NameError:
+            self.parser.optionxform = str
 
         self.exclude_lines_regex = exclude_lines_regex
 
-        if not add_header:
-            self.parser.read_file(file)
-        else:
+        content = file.read()
+        if add_header:
             # This supports environment variables, or other files that look
             # like config files, without a section header.
-            content = '[global]\n' + file.read()
+            content = '[global]\n' + content
 
-            try:
-                # python2.7 compatible
-                self.parser.read_string(unicode(content))
-            except NameError:
-                # python3 compatible
-                self.parser.read_string(content)
+        try:
+            # python2.7 compatible
+            self.parser.read_string(unicode(content))
+        except NameError:
+            # python3 compatible
+            self.parser.read_string(content)
 
         # Hacky way to keep track of line location
         file.seek(0)
