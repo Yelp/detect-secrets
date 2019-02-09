@@ -15,7 +15,8 @@ from detect_secrets.plugins.common import initialize
 
 
 def parse_args(argv):
-    return ParserBuilder().add_console_use_arguments() \
+    return ParserBuilder()\
+        .add_console_use_arguments()\
         .parse_args(argv)
 
 
@@ -30,7 +31,10 @@ def main(argv=None):
     if args.action == 'scan':
         # Plugins are *always* rescanned with fresh settings, because
         # we want to get the latest updates.
-        plugins = initialize.from_parser_builder(args.plugins)
+        plugins = initialize.from_parser_builder(
+            args.plugins,
+            exclude_lines_regex=args.exclude_lines,
+        )
         if args.string:
             line = args.string
 
@@ -117,26 +121,29 @@ def _perform_scan(args, plugins):
             _get_plugin_from_baseline(old_baseline), args,
         )
 
-    # Favors --exclude argument over existing baseline's regex (if exists)
-    if args.exclude:
-        args.exclude = args.exclude[0]
-    elif old_baseline and old_baseline.get('exclude_regex'):
-        args.exclude = old_baseline['exclude_regex']
+    # Favors `--exclude-files` and `--exclude-lines` CLI arguments
+    # over existing baseline's regexes (if given)
+    if old_baseline:
+        if not args.exclude_files:
+            args.exclude_files = _get_exclude_files(old_baseline)
+
+        if (
+            not args.exclude_lines
+            and old_baseline.get('exclude')
+        ):
+            args.exclude_lines = old_baseline['exclude']['lines']
 
     # If we have knowledge of an existing baseline file, we should use
-    # that knowledge and *not* scan that file.
+    # that knowledge and add it to our exclude_files regex.
     if args.import_filename:
-        payload = '^{}$'.format(args.import_filename[0])
-        if args.exclude and payload not in args.exclude:
-            args.exclude += r'|{}'.format(payload)
-        elif not args.exclude:
-            args.exclude = payload
+        _add_baseline_to_exclude_files(args)
 
     new_baseline = baseline.initialize(
-        plugins,
-        args.exclude,
-        args.path,
-        args.all_files,
+        plugins=plugins,
+        exclude_files_regex=args.exclude_files,
+        exclude_lines_regex=args.exclude_lines,
+        path=args.path,
+        scan_all_files=args.all_files,
     ).format_for_baseline_output()
 
     if old_baseline:
@@ -162,6 +169,31 @@ def _read_from_file(filename):  # pragma: no cover
     """Used for mocking."""
     with open(filename) as f:
         return json.loads(f.read())
+
+
+def _get_exclude_files(old_baseline):
+    """
+    Older versions of detect-secrets always had an `exclude_regex` key,
+    this was replaced by the `files` key under an `exclude` key in v0.12.0
+
+    :rtype: str|None
+    """
+    if old_baseline.get('exclude'):
+        return old_baseline['exclude']['files']
+    if old_baseline.get('exclude_regex'):
+        return old_baseline['exclude_regex']
+
+
+def _add_baseline_to_exclude_files(args):
+    """
+    Modifies args.exclude_files in-place.
+    """
+    baseline_name_regex = r'^{}$'.format(args.import_filename[0])
+
+    if not args.exclude_files:
+        args.exclude_files = baseline_name_regex
+    elif baseline_name_regex not in args.exclude_files:
+        args.exclude_files += r'|{}'.format(baseline_name_regex)
 
 
 if __name__ == '__main__':

@@ -10,7 +10,8 @@ from detect_secrets.core.secrets_collection import SecretsCollection
 
 def initialize(
     plugins,
-    exclude_regex=None,
+    exclude_files_regex=None,
+    exclude_lines_regex=None,
     path='.',
     scan_all_files=False,
 ):
@@ -20,13 +21,18 @@ def initialize(
     :type plugins: tuple of detect_secrets.plugins.base.BasePlugin
     :param plugins: rules to initialize the SecretsCollection with.
 
-    :type exclude_regex: str|None
+    :type exclude_files_regex: str|None
+    :type exclude_lines_regex: str|None
     :type path: str
     :type scan_all_files: bool
 
     :rtype: SecretsCollection
     """
-    output = SecretsCollection(plugins, exclude_regex)
+    output = SecretsCollection(
+        plugins,
+        exclude_files=exclude_files_regex,
+        exclude_lines=exclude_lines_regex,
+    )
 
     if os.path.isfile(path):
         # This option allows for much easier adhoc usage.
@@ -39,11 +45,11 @@ def initialize(
     if not files_to_scan:
         return output
 
-    if exclude_regex:
-        regex = re.compile(exclude_regex, re.IGNORECASE)
+    if exclude_files_regex:
+        exclude_files_regex = re.compile(exclude_files_regex, re.IGNORECASE)
         files_to_scan = filter(
             lambda file: (
-                not regex.search(file)
+                not exclude_files_regex.search(file)
             ),
             files_to_scan,
         )
@@ -66,13 +72,13 @@ def get_secrets_not_in_baseline(results, baseline):
     :rtype: SecretsCollection
     :returns: SecretsCollection of new results (filtering out baseline)
     """
-    regex = None
-    if baseline.exclude_regex:
-        regex = re.compile(baseline.exclude_regex, re.IGNORECASE)
+    exclude_files_regex = None
+    if baseline.exclude_files:
+        exclude_files_regex = re.compile(baseline.exclude_files, re.IGNORECASE)
 
     new_secrets = SecretsCollection()
     for filename in results.data:
-        if regex and regex.search(filename):
+        if exclude_files_regex and exclude_files_regex.search(filename):
             continue
 
         if filename not in baseline.data:

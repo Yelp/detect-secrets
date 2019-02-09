@@ -90,45 +90,45 @@ FALSE_POSITIVES = {
     'true;',
     '{',
 }
-FOLLOWED_BY_COLON_RE = re.compile(
+FOLLOWED_BY_COLON_REGEX = re.compile(
     # e.g. api_key: foo
     r'({})(("|\')?):(\s*?)(("|\')?)([^\s]+)(\5)'.format(
         r'|'.join(BLACKLIST),
     ),
 )
-FOLLOWED_BY_COLON_QUOTES_REQUIRED_RE = re.compile(
+FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX = re.compile(
     # e.g. api_key: "foo"
     r'({})(("|\')?):(\s*?)(("|\'))([^\s]+)(\5)'.format(
         r'|'.join(BLACKLIST),
     ),
 )
-FOLLOWED_BY_EQUAL_SIGNS_RE = re.compile(
+FOLLOWED_BY_EQUAL_SIGNS_REGEX = re.compile(
     # e.g. my_password = bar
     r'({})((\'|")])?()(\s*?)=(\s*?)(("|\')?)([^\s]+)(\7)'.format(
         r'|'.join(BLACKLIST),
     ),
 )
-FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_RE = re.compile(
+FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
     # e.g. my_password = "bar"
     r'({})((\'|")])?()(\s*?)=(\s*?)(("|\'))([^\s]+)(\7)'.format(
         r'|'.join(BLACKLIST),
     ),
 )
-FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE = re.compile(
+FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX = re.compile(
     # e.g. private_key "something";
     r'({})([^\s]*?)(\s*?)("|\')([^\s]+)(\4);'.format(
         r'|'.join(BLACKLIST),
     ),
 )
 BLACKLIST_REGEX_TO_GROUP = {
-    FOLLOWED_BY_COLON_RE: 7,
-    FOLLOWED_BY_EQUAL_SIGNS_RE: 9,
-    FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE: 5,
+    FOLLOWED_BY_COLON_REGEX: 7,
+    FOLLOWED_BY_EQUAL_SIGNS_REGEX: 9,
+    FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 5,
 }
 PYTHON_BLACKLIST_REGEX_TO_GROUP = {
-    FOLLOWED_BY_COLON_QUOTES_REQUIRED_RE: 7,
-    FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_RE: 9,
-    FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE: 5,
+    FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX: 7,
+    FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 9,
+    FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 5,
 }
 
 
@@ -139,7 +139,7 @@ class KeywordDetector(BasePlugin):
 
     secret_type = 'Secret Keyword'
 
-    def analyze_string(self, string, line_num, filename):
+    def analyze_string_content(self, string, line_num, filename):
         output = {}
 
         for identifier in self.secret_generator(
@@ -160,12 +160,12 @@ class KeywordDetector(BasePlugin):
         lowered_string = string.lower()
 
         if filetype == FileType.PYTHON:
-            blacklist_RE_to_group = PYTHON_BLACKLIST_REGEX_TO_GROUP
+            blacklist_regex_to_group = PYTHON_BLACKLIST_REGEX_TO_GROUP
         else:
-            blacklist_RE_to_group = BLACKLIST_REGEX_TO_GROUP
+            blacklist_regex_to_group = BLACKLIST_REGEX_TO_GROUP
 
-        for REGEX, group_number in blacklist_RE_to_group.items():
-            match = REGEX.search(lowered_string)
+        for blacklist_regex, group_number in blacklist_regex_to_group.items():
+            match = blacklist_regex.search(lowered_string)
             if match:
                 lowered_secret = match.group(group_number)
 

@@ -145,7 +145,7 @@ class TestPreCommitHook(object):
         current_version,
     ):
         with _mock_versions(baseline_version, current_version):
-            baseline_string = _create_baseline()
+            baseline_string = _create_old_baseline()
             modified_baseline = json.loads(baseline_string)
 
             with mock.patch(
@@ -162,7 +162,7 @@ class TestPreCommitHook(object):
                 baseline_written = m.call_args[1]['data']
 
             original_baseline = json.loads(baseline_string)
-            assert original_baseline['exclude_regex'] == baseline_written['exclude_regex']
+            assert original_baseline['exclude_regex'] == baseline_written['exclude']['files']
             assert original_baseline['results'] == baseline_written['results']
 
             # See that we updated the plugins and version
@@ -211,7 +211,7 @@ class TestPreCommitHook(object):
             baseline_written = m.call_args[1]['data']
 
         original_baseline = json.loads(baseline_string)
-        assert original_baseline['exclude_regex'] == baseline_written['exclude_regex']
+        assert original_baseline['exclude']['files'] == baseline_written['exclude']['files']
         assert original_baseline['results'] == baseline_written['results']
 
 
@@ -245,11 +245,45 @@ def _mock_versions(baseline_version, current_version):
         yield
 
 
+def _create_old_baseline(has_result=True, use_private_key_scan=True):
+    """
+    Baselines before v0.12.0 had an exclude_regex field
+    """
+    baseline = _create_baseline_template(
+        has_result=has_result,
+        use_private_key_scan=use_private_key_scan,
+    )
+    baseline['exclude_regex'] = ''
+    return json.dumps(
+        baseline,
+        indent=2,
+        sort_keys=True,
+    )
+
+
 def _create_baseline(has_result=True, use_private_key_scan=True):
+    """
+    Baselines in v0.12.0 and after have an exclude field with files and lines
+    """
+    baseline = _create_baseline_template(
+        has_result=has_result,
+        use_private_key_scan=use_private_key_scan,
+    )
+    baseline['exclude'] = {
+        'files': '',
+        'lines': '',
+    }
+    return json.dumps(
+        baseline,
+        indent=2,
+        sort_keys=True,
+    )
+
+
+def _create_baseline_template(has_result, use_private_key_scan):
     base64_secret = 'c3VwZXIgbG9uZyBzdHJpbmcgc2hvdWxkIGNhdXNlIGVub3VnaCBlbnRyb3B5'
     baseline = {
         'generated_at': 'does_not_matter',
-        'exclude_regex': '',
         'plugins_used': [
             {
                 'name': 'HexHighEntropyString',
@@ -282,8 +316,4 @@ def _create_baseline(has_result=True, use_private_key_scan=True):
     if not has_result:
         baseline["results"] = {}
 
-    return json.dumps(
-        baseline,
-        indent=2,
-        sort_keys=True,
-    )
+    return baseline

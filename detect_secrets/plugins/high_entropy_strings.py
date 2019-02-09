@@ -18,12 +18,12 @@ from detect_secrets.plugins.common.yaml_file_parser import YamlFileParser
 
 IGNORED_SEQUENTIAL_STRINGS = (
     (
-        string.ascii_uppercase
-        + string.ascii_uppercase
-        + string.digits
-        + string.ascii_uppercase
-        + string.ascii_uppercase
-        + '+/'
+        string.ascii_uppercase +
+        string.ascii_uppercase +
+        string.digits +
+        string.ascii_uppercase +
+        string.ascii_uppercase +
+        '+/'
     ),
     string.hexdigits.upper() + string.hexdigits.upper(),
     string.ascii_uppercase + '=/',
@@ -39,7 +39,9 @@ class HighEntropyStringsPlugin(BasePlugin):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, charset, limit, high_entropy_exclude, *args):
+    secret_type = 'High Entropy String'
+
+    def __init__(self, charset, limit, exclude_lines_regex, *args):
         if limit < 0 or limit > 8:
             raise ValueError(
                 'The limit set for HighEntropyStrings must be between 0.0 and 8.0',
@@ -49,12 +51,9 @@ class HighEntropyStringsPlugin(BasePlugin):
         self.entropy_limit = limit
         self.regex = re.compile(r'([\'"])([%s]+)(\1)' % charset)
 
-        self.high_entropy_exclude = None
-        if high_entropy_exclude:
-            self.high_entropy_exclude = re.compile(
-                high_entropy_exclude,
-                re.IGNORECASE,
-            )
+        super(HighEntropyStringsPlugin, self).__init__(
+            exclude_lines_regex=exclude_lines_regex,
+        )
 
     def analyze(self, file, filename):
         file_type_analyzers = (
@@ -95,27 +94,21 @@ class HighEntropyStringsPlugin(BasePlugin):
 
         return entropy
 
-    def is_sequential_string(self, string):
+    def _is_sequential_string(self, string):
         uppercased_string = string.upper()
         for sequential_string in IGNORED_SEQUENTIAL_STRINGS:
             if uppercased_string in sequential_string:
                 return True
         return False
 
-    def analyze_string(self, string, line_num, filename):
+    def analyze_string_content(self, string, line_num, filename):
         """Searches string for custom pattern, and captures all high entropy strings that
         match self.regex, with a limit defined as self.entropy_limit.
         """
         output = {}
 
-        if (
-            self.high_entropy_exclude
-            and self.high_entropy_exclude.search(string)
-        ):
-            return output
-
         for result in self.secret_generator(string):
-            if self.is_sequential_string(result):
+            if self._is_sequential_string(result):
                 continue
             secret = PotentialSecret(self.secret_type, filename, result, line_num)
             output[secret] = secret
@@ -138,7 +131,11 @@ class HighEntropyStringsPlugin(BasePlugin):
         # Since it's an individual string, it's just bad UX to require quotes
         # around the expected secret.
         with self.non_quoted_string_regex():
-            results = self.analyze_string(string, 0, 'does_not_matter')
+            results = self.analyze_string(
+                string,
+                line_num=0,
+                filename='does_not_matter',
+            )
 
             # NOTE: Trailing space allows for nicer formatting
             output = 'False' if not results else 'True '
@@ -181,7 +178,11 @@ class HighEntropyStringsPlugin(BasePlugin):
             potential_secrets = {}
 
             with self.non_quoted_string_regex():
-                for value, lineno in IniFileParser(file, add_header).iterator():
+                for value, lineno in IniFileParser(
+                    file,
+                    add_header,
+                    exclude_lines_regex=self.exclude_lines_regex,
+                ).iterator():
                     potential_secrets.update(self.analyze_string(
                         value,
                         lineno,
@@ -202,7 +203,10 @@ class HighEntropyStringsPlugin(BasePlugin):
             # we use this heuristic to quit early if appropriate.
             raise yaml.YAMLError
 
-        parser = YamlFileParser(file)
+        parser = YamlFileParser(
+            file,
+            exclude_lines_regex=self.exclude_lines_regex,
+        )
         data = parser.json()
         ignored_lines = parser.get_ignored_lines()
         potential_secrets = {}
@@ -236,15 +240,15 @@ class HighEntropyStringsPlugin(BasePlugin):
 
 
 class HexHighEntropyString(HighEntropyStringsPlugin):
-    """HighEntropyStringsPlugin for hex strings"""
+    """HighEntropyStringsPlugin for hex encoded strings"""
 
     secret_type = 'Hex High Entropy String'
 
-    def __init__(self, hex_limit, hex_high_entropy_exclude=None, **kwargs):
+    def __init__(self, hex_limit, exclude_lines_regex=None, **kwargs):
         super(HexHighEntropyString, self).__init__(
             charset=string.hexdigits,
             limit=hex_limit,
-            high_entropy_exclude=hex_high_entropy_exclude,
+            exclude_lines_regex=exclude_lines_regex,
         )
 
     @property
@@ -292,11 +296,11 @@ class Base64HighEntropyString(HighEntropyStringsPlugin):
 
     secret_type = 'Base64 High Entropy String'
 
-    def __init__(self, base64_limit, base64_high_entropy_exclude=None, **kwargs):
+    def __init__(self, base64_limit, exclude_lines_regex=None, **kwargs):
         super(Base64HighEntropyString, self).__init__(
             charset=string.ascii_letters + string.digits + '+/=',
             limit=base64_limit,
-            high_entropy_exclude=base64_high_entropy_exclude,
+            exclude_lines_regex=exclude_lines_regex,
         )
 
     @property

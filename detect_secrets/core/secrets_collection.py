@@ -15,13 +15,21 @@ from detect_secrets.plugins.common import initialize
 
 class SecretsCollection(object):
 
-    def __init__(self, plugins=(), exclude_regex=''):
+    def __init__(
+        self,
+        plugins=(),
+        exclude_files=None,
+        exclude_lines=None,
+    ):
         """
         :type plugins: tuple of detect_secrets.plugins.base.BasePlugin
         :param plugins: rules to determine whether a string is a secret
 
-        :type exclude_regex: str
-        :param exclude_regex: for optional regex for ignored paths.
+        :type exclude_files: str|None
+        :param exclude_files: optional regex for ignored paths.
+
+        :type exclude_lines: str|None
+        :param exclude_lines: optional regex for ignored lines.
 
         :type version: str
         :param version: version of detect-secrets that SecretsCollection
@@ -29,7 +37,8 @@ class SecretsCollection(object):
         """
         self.data = {}
         self.plugins = plugins
-        self.exclude_regex = exclude_regex
+        self.exclude_files = exclude_files
+        self.exclude_lines = exclude_lines
         self.version = VERSION
 
     @classmethod
@@ -59,20 +68,32 @@ class SecretsCollection(object):
         :raises: IOError
         """
         result = SecretsCollection()
+
         if not all(key in data for key in (
-            'exclude_regex',
             'plugins_used',
             'results',
         )):
             raise IOError
 
-        result.exclude_regex = data['exclude_regex']
+        # In v0.12.0 `exclude_regex` got replaced by `exclude`
+        if not any(key in data for key in (
+            'exclude',
+            'exclude_regex',
+        )):
+            raise IOError
+
+        if 'exclude_regex' in data:
+            result.exclude_files = data['exclude_regex']
+        else:
+            result.exclude_files = data['exclude']['files']
+            result.exclude_lines = data['exclude']['lines']
 
         plugins = []
         for plugin in data['plugins_used']:
             plugin_classname = plugin.pop('name')
             plugins.append(initialize.from_plugin_classname(
                 plugin_classname,
+                exclude_lines_regex=result.exclude_lines,
                 **plugin
             ))
         result.plugins = tuple(plugins)
@@ -141,13 +162,13 @@ class SecretsCollection(object):
             log.error(alert)
             raise
 
-        if self.exclude_regex:
-            regex = re.compile(self.exclude_regex, re.IGNORECASE)
+        if self.exclude_files:
+            regex = re.compile(self.exclude_files, re.IGNORECASE)
 
         for patch_file in patch_set:
             filename = patch_file.path
-            # If the file matches the exclude_regex, we skip it
-            if self.exclude_regex and regex.search(filename):
+            # If the file matches the exclude_files, we skip it
+            if self.exclude_files and regex.search(filename):
                 continue
 
             if filename == baseline_filename:
@@ -241,7 +262,10 @@ class SecretsCollection(object):
 
         return {
             'generated_at': strftime("%Y-%m-%dT%H:%M:%SZ", gmtime()),
-            'exclude_regex': self.exclude_regex,
+            'exclude': {
+                'files': self.exclude_files,
+                'lines': self.exclude_lines,
+            },
             'plugins_used': plugins_used,
             'results': results,
             'version': self.version,

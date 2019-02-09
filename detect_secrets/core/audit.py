@@ -464,7 +464,13 @@ def _get_secret_with_context(
         index_of_secret_in_output = lines_of_context
 
     with codecs.open(filename, encoding='utf-8') as file:
-        output = list(itertools.islice(file.read().splitlines(), start_line, end_line))
+        output = list(
+            itertools.islice(
+                file.read().splitlines(),
+                start_line,
+                end_line,
+            ),
+        )
 
     try:
         output[index_of_secret_in_output] = _highlight_secret(

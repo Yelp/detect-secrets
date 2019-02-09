@@ -11,9 +11,6 @@ from detect_secrets.plugins.high_entropy_strings import HighEntropyStringsPlugin
 from testing.mocks import mock_file_object
 
 
-HIGH_ENTROPY_EXCLUDE = '(CanonicalUser)'
-
-
 class HighEntropyStringsTest(object):
     """
     Some explaining should be done regarding the "enforced" format of the parametrized
@@ -43,7 +40,7 @@ class HighEntropyStringsTest(object):
         self.secret = secret_string
 
     @pytest.mark.parametrize(
-        'content_to_format,should_be_caught',
+        'content_to_format, should_be_caught',
         [
             (
                 "'{non_secret}'",
@@ -52,6 +49,11 @@ class HighEntropyStringsTest(object):
             (
                 "'{secret}'",
                 True,
+            ),
+            # Matches exclude_lines_regex
+            (
+                "CanonicalUser: {secret}",
+                False,
             ),
         ],
     )
@@ -65,10 +67,10 @@ class HighEntropyStringsTest(object):
 
         results = self.logic.analyze(f, 'does_not_matter')
 
-        assert len(results) == bool(should_be_caught)
+        assert len(results) == should_be_caught
 
     @pytest.mark.parametrize(
-        'content_to_format,expected_results',
+        'content_to_format, expected_results',
         [
             (
                 'String #1: "{non_secret}"; String #2: "{secret}"',
@@ -135,12 +137,12 @@ class TestBase64HighEntropyStrings(HighEntropyStringsTest):
     def setup(self):
         super(TestBase64HighEntropyStrings, self).setup(
             # Testing default limit, as suggested by truffleHog.
-            Base64HighEntropyString(
+            logic=Base64HighEntropyString(
                 base64_limit=4.5,
-                base64_high_entropy_exclude=HIGH_ENTROPY_EXCLUDE,
+                exclude_lines_regex='CanonicalUser',
             ),
-            'c3VwZXIgc2VjcmV0IHZhbHVl',     # too short for high entropy
-            'c3VwZXIgbG9uZyBzdHJpbmcgc2hvdWxkIGNhdXNlIGVub3VnaCBlbnRyb3B5',
+            non_secret_string='c3VwZXIgc2VjcmV0IHZhbHVl',  # too short for high entropy
+            secret_string='c3VwZXIgbG9uZyBzdHJpbmcgc2hvdWxkIGNhdXNlIGVub3VnaCBlbnRyb3B5',
         )
 
     def test_ini_file(self):
@@ -178,7 +180,10 @@ class TestBase64HighEntropyStrings(HighEntropyStringsTest):
         assert count == 7
 
     def test_yaml_file(self):
-        plugin = Base64HighEntropyString(3)
+        plugin = Base64HighEntropyString(
+            base64_limit=3,
+            exclude_lines_regex='CanonicalUser',
+        )
 
         with open('test_data/config.yaml') as f:
             secrets = plugin.analyze(f, 'test_data/config.yaml')
@@ -188,7 +193,7 @@ class TestBase64HighEntropyStrings(HighEntropyStringsTest):
             location = str(secret).splitlines()[1]
             assert location in (
                 'Location:    test_data/config.yaml:3',
-                'Location:    test_data/config.yaml:5',
+                'Location:    test_data/config.yaml:6',
             )
 
     def test_env_file(self):
@@ -209,19 +214,19 @@ class TestHexHighEntropyStrings(HighEntropyStringsTest):
     def setup(self):
         super(TestHexHighEntropyStrings, self).setup(
             # Testing default limit, as suggested by truffleHog.
-            HexHighEntropyString(
+            logic=HexHighEntropyString(
                 hex_limit=3,
-                hex_high_entropy_exclude=HIGH_ENTROPY_EXCLUDE,
+                exclude_lines_regex='CanonicalUser',
             ),
-            'aaaaaa',
-            '2b00042f7481c7b056c4b410d28f33cf',
+            non_secret_string='aaaaaa',
+            secret_string='2b00042f7481c7b056c4b410d28f33cf',
         )
 
     def test_discounts_when_all_numbers(self):
         original_scanner = HighEntropyStringsPlugin(
             charset=string.hexdigits,
             limit=3,
-            high_entropy_exclude=HIGH_ENTROPY_EXCLUDE,
+            exclude_lines_regex=None,
         )
 
         # This makes sure discounting works.

@@ -7,7 +7,8 @@ from detect_secrets.plugins.base import BasePlugin
 
 def test_fails_if_no_secret_type_defined():
     class MockPlugin(BasePlugin):  # pragma: no cover
-        def analyze_string(self, *args, **kwargs):
+
+        def analyze_string_content(self, *args, **kwargs):
             pass
 
         def secret_generator(self, *args, **kwargs):

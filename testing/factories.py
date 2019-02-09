@@ -11,18 +11,21 @@ def potential_secret_factory(type_='type', filename='filename', secret='secret',
     return PotentialSecret(type_, filename, secret, lineno)
 
 
-def secrets_collection_factory(secrets=None, plugins=(), exclude_regex=''):
+def secrets_collection_factory(secrets=None, plugins=(), exclude_files_regex=None):
     """
     :type secrets: list(dict)
     :param secrets: list of params to pass to add_secret.
                     E.g. [ {'secret': 'blah'}, ]
 
     :type plugins: tuple
-    :type exclude_regex: str
+    :type exclude_files_regex: str|None
 
     :rtype: SecretsCollection
     """
-    collection = SecretsCollection(plugins, exclude_regex)
+    collection = SecretsCollection(
+        plugins,
+        exclude_files=exclude_files_regex,
+    )
 
     if plugins:
         collection.plugins = plugins
