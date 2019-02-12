@@ -24,6 +24,53 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [@xxxx]: https://github.com/xxxx
 -->
 
+### 0.12.0
+##### February 11th, 2019
+
+#### :tada: New Features
+
+- Added a `SlackDetector` plugin ([#122], thanks [@killuazhu])
+- Added a `--use-all-plugins` argument to `--update` that adds all plugins to the baseline ([#124], thanks [@killuazhu])
+- Added `--exclude-files` and `--exclude-lines` arguments to `scan` ([#127])
+
+#### :boom: Breaking Changes
+
+- Removed the `--exclude` CLI scan argument ([#127])
+
+#### :telescope: Precision
+
+- Reduced false-positives by excluding more characters (`!$&\';`) in the `BasicAuthDetector` regex ([#126], [#123], thanks [@killuazhu])
+- Added more to the `FALSE_POSITIVES` dict for `KeywordDetector` plugin, **including** `password` ([#118])
+
+#### :bug: Bugfixes
+
+- Fixed a bug where `--update` was adding all plugins to the baseline, instead of respecting the plugins used in the baseline ([#124], thanks [@killuazhu])
+- Fixed an uncaught `UnicodeEncodeError` exception when scanning non-ini files (e.g. markdown) containing unicode ([#128], thanks [@killuazhu])
+- Fixed a bug where non-ini files (e.g. markdown) containing unicode caused a `UnicodeEncodeError` exception in the `audit` functionality ([#129], thanks [@killuazhu])
+- Fixed a bug where non-posix end of line characters caused a "Secret not found on line...." error in the `audit` functionality ([#120], thanks [@killuazhu])
+- Fixed a bug where `scan_diff`, called by [`detect-secrets-server`](https://github.com/Yelp/detect-secrets-server), was ignoring inline `pragma: whitelist secret` comments ([#127])
+
+#### :snake: Miscellaneous
+
+- Relaxed the number of spaces before inline `pragma: whitelist secret` comment ([#125], thanks [@killuazhu]]
+- Added Python 3.7 to Travis CI and `tox.ini` testing ([#114], thanks [@cclauss])
+- [Increased minimum test coverage from 97% to 98%](https://github.com/Yelp/detect-secrets/commit/876b523366057f8c0da14a36e3c972c3e74dfb77)
+
+[#114]: https://github.com/Yelp/detect-secrets/pull/114
+[#118]: https://github.com/Yelp/detect-secrets/pull/118
+[#120]: https://github.com/Yelp/detect-secrets/pull/120
+[#122]: https://github.com/Yelp/detect-secrets/pull/122
+[#123]: https://github.com/Yelp/detect-secrets/pull/123
+[#124]: https://github.com/Yelp/detect-secrets/pull/124
+[#125]: https://github.com/Yelp/detect-secrets/pull/125
+[#126]: https://github.com/Yelp/detect-secrets/pull/126
+[#127]: https://github.com/Yelp/detect-secrets/pull/127
+[#128]: https://github.com/Yelp/detect-secrets/pull/128
+[#129]: https://github.com/Yelp/detect-secrets/pull/129
+[@cclauss]: https://github.com/cclauss
+[@killuazhu]: https://github.com/killuazhu
+
+
 ### 0.11.4
 ##### January 7th, 2019
 
@@ -31,6 +78,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 - Fixed a `TypeError` bug introduced in [#111]  ([#116])
 
 [#116]: https://github.com/Yelp/detect-secrets/pull/116
+
 
 ### 0.11.3
 ##### January 4th, 2019
@@ -45,12 +93,14 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#111]: https://github.com/Yelp/detect-secrets/pull/111
 [#113]: https://github.com/Yelp/detect-secrets/pull/113
 
+
 ### 0.11.2
 ##### January 4th, 2019
 
 #### :telescope: Precision
 
 - [Added `null` to the `FALSE_POSITIVES` tuple for `KeywordDetector` plugin, so we do not alert off of it](https://github.com/Yelp/detect-secrets/commit/58df82ce37d64f22cb885960c2031b5f8ebe4b75)
+
 
 ### 0.11.1
 ##### January 4th, 2019
@@ -162,7 +212,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 #### :bug: Bugfixes
 
-- Fixed a bug in `scan --update` where we would append to the baseline exclude regex to itself ([#78])
+- Fixed a bug in `scan --update` where we would append the baseline exclude regex to itself ([#78])
 - Fixed the regular expression in the `BasicAuthDetector` plugin so that it didn't run forever ([#80])
 - Removed trailing whitespace from `scan` output ([#78])
 
@@ -185,7 +235,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 - Added a (b)ack option to 'Is this a valid secret?' ([#72], thanks [@cleborys])
 - Added a `BasicAuthDetector` plugin ([#74])
-- Added cli functionality to check strings in an adhoc manner ([#73])
+- Added CLI functionality to check strings in an adhoc manner ([#73])
 
 #### :bug: Bugfixes
 
@@ -249,6 +299,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [@cleborys]: https://github.com/cleborys
 [@guykisel]: https://github.com/guykisel
 [@whathejoe]: https://github.com/whathejoe
+
 
 ### 0.9.1
 ##### June 28th, 2018
