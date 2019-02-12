@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import string
 import textwrap
@@ -681,6 +682,39 @@ class TestPrintContext(object):
             18:c
             19:b
             20:a
+            ----------
+
+        """)[1:-1]
+
+    def test_unicode_in_output(self, mock_printer):
+        # Instead of mocking open, read from file with
+        # unicode in it to mimic the audit error
+        self.run_logic(
+            secret=potential_secret_factory(
+                type_='Base64 High Entropy String',
+                filename="test_data/config.md",
+                secret='ToCynx5Se4e2PtoZxEhW7lUJcOX15c54',
+                lineno=10,
+            ).json(),
+            settings=[
+                {
+                    "base64_limit": 4.5,
+                    "name": "Base64HighEntropyString",
+                },
+            ],
+        )
+
+        assert uncolor(mock_printer.message) == textwrap.dedent("""
+            Secret:      1 of 2
+            Filename:    test_data/config.md
+            Secret Type: Base64 High Entropy String
+            ----------
+            5:Test Unicode in non ini file would not fail on python 2.7.
+            6:
+            7:\u256D\u2500 diagnose
+            8:\u2570\u00BB ssh to server x:22324241234423414
+            9:
+            10:key="ToCynx5Se4e2PtoZxEhW7lUJcOX15c54"
             ----------
 
         """)[1:-1]

@@ -136,7 +136,11 @@ def mock_printer(obj):
             self.clear()
 
         def add(self, message, *args, **kwargs):
-            self.message += str(message) + '\n'
+            try:
+                # For python 2.x compatible
+                self.message += unicode(message) + '\n'
+            except NameError:
+                self.message += str(message) + '\n'
 
         def clear(self):
             self.message = ''
