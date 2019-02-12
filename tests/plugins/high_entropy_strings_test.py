@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import codecs
 import string
 
 import pytest
@@ -145,39 +146,54 @@ class TestBase64HighEntropyStrings(HighEntropyStringsTest):
             secret_string='c3VwZXIgbG9uZyBzdHJpbmcgc2hvdWxkIGNhdXNlIGVub3VnaCBlbnRyb3B5',
         )
 
-    def test_ini_file(self):
+    @pytest.mark.parametrize(
+        'filename, secrets',
+        [
+            (
+                'test_data/config.ini',
+                [
+                    'Location:    test_data/config.ini:2',
+                    'Location:    test_data/config.ini:6',
+                    'Location:    test_data/config.ini:10',
+                    'Location:    test_data/config.ini:15',
+                    'Location:    test_data/config.ini:21',
+                    'Location:    test_data/config.ini:22', ],
+            ),
+            (
+                'test_data/files/file_with_secrets.py',
+                ['Location:    test_data/files/file_with_secrets.py:3', ],
+            ),
+            # Mark down files with colons and unicode charaters preceding the
+            # colon on the line would cause the scanner to fail and exit on
+            # 2.7 due to ini parser being used on non-markdown files
+            # this test case ensure that scanning can complete and find
+            # high entropy issues
+            (
+                'test_data/config.md',
+                ['Location:    test_data/config.md:10', ],
+            ),
+        ],
+    )
+    def test_ini_file(self, filename, secrets):
         # We're testing two files here, because we want to make sure that
         # the HighEntropyStrings regex is reset back to normal after
         # scanning the ini file.
-        filenames = [
-            'test_data/config.ini',
-            'test_data/files/file_with_secrets.py',
-        ]
 
         plugin = Base64HighEntropyString(3)
 
         accumulated_secrets = {}
-        for filename in filenames:
-            with open(filename) as f:
-                accumulated_secrets.update(
-                    plugin.analyze(f, filename),
-                )
+        with codecs.open(filename, encoding='utf-8') as f:
+            accumulated_secrets.update(
+                plugin.analyze(f, filename),
+            )
 
         count = 0
         for secret in accumulated_secrets.values():
             location = str(secret).splitlines()[1]
-            assert location in (
-                'Location:    test_data/config.ini:2',
-                'Location:    test_data/config.ini:6',
-                'Location:    test_data/config.ini:10',
-                'Location:    test_data/config.ini:15',
-                'Location:    test_data/config.ini:21',
-                'Location:    test_data/config.ini:22',
-                'Location:    test_data/files/file_with_secrets.py:3',
-            )
+            assert location in secrets
             count += 1
 
-        assert count == 7
+        assert count == len(secrets)
 
     def test_yaml_file(self):
         plugin = Base64HighEntropyString(
