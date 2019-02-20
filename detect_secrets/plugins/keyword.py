@@ -139,19 +139,24 @@ class KeywordDetector(BasePlugin):
 
     secret_type = 'Secret Keyword'
 
+    def __init__(self, keyword_exclude=None, **kwargs):
+        super(KeywordDetector, self).__init__(
+            keyword_exclude=keyword_exclude,
+        )
+
     def analyze_string_content(self, string, line_num, filename):
         output = {}
-
-        for identifier in self.secret_generator(
-            string,
-            filetype=determine_file_type(filename),
-        ):
-            secret = PotentialSecret(
-                self.secret_type,
-                filename,
-                identifier,
-                line_num,
-            )
+        if keyword_exclude and keyword_exclude != string:
+            for identifier in self.secret_generator(
+                string,
+                filetype=determine_file_type(filename),
+            ):
+                secret = PotentialSecret(
+                    self.secret_type,
+                    filename,
+                    identifier,
+                    line_num,
+                )
             output[secret] = secret
 
         return output

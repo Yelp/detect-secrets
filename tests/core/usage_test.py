@@ -32,7 +32,9 @@ class TestPluginOptions(object):
             'Base64HighEntropyString': {
                 'base64_limit': 4.5,
             },
-            'KeywordDetector': {},
+            'KeywordDetector': {
+                'keyword_exclude': None
+            },
             'PrivateKeyDetector': {},
             'AWSKeyDetector': {},
             'SlackDetector': {},
@@ -59,7 +61,8 @@ class TestPluginOptions(object):
         if expected_value is not None:
             args = self.parse_args(argument_string)
 
-            assert args.plugins['HexHighEntropyString']['hex_limit'] == expected_value
+            assert args.plugins['HexHighEntropyString'][
+                'hex_limit'] == expected_value
         else:
             with pytest.raises(SystemExit):
                 self.parse_args(argument_string)
