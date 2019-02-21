@@ -168,7 +168,7 @@ class KeywordDetector(BasePlugin):
                 identifier,
                 line_num,
             )
-        output[secret] = secret
+            output[secret] = secret
 
         return output
 
