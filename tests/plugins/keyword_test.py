@@ -34,31 +34,31 @@ STANDARD_NEGATIVES = [
 ]
 STANDARD_POSITIVES = {
     # FOLLOWED_BY_COLON_RE
-    "'theapikey': 'h}o)p${e]nob(ody[finds>-_$#thisone'",
-    '"theapikey": "h}o)p${e]nob(ody[finds>-_$#thisone"',
-    'apikey: h}o)p${e]nob(ody[finds>-_$#thisone',
-    'apikey:h}o)p${e]nob(ody[finds>-_$#thisone',
-    'theapikey:h}o)p${e]nob(ody[finds>-_$#thisone',
-    'apikey: "h}o)p${e]nob(ody[finds>-_$#thisone"',
-    "apikey:  'h}o)p${e]nob(ody[finds>-_$#thisone'",
+    "'theapikey': '{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
+    '"theapikey": "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+    'apikey: {{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+    'apikey:{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+    'theapikey:{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+    'apikey: "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+    "apikey:  '{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
     # FOLLOWED_BY_EQUAL_SIGNS_RE
-    'some_dict["secret"] = "h}o)p${e]nob(ody[finds>-_$#thisone"',
-    "some_dict['secret'] = h}o)p${e]nob(ody[finds>-_$#thisone",
-    'my_password=h}o)p${e]nob(ody[finds>-_$#thisone',
-    'my_password= h}o)p${e]nob(ody[finds>-_$#thisone',
-    'my_password =h}o)p${e]nob(ody[finds>-_$#thisone',
-    'my_password = h}o)p${e]nob(ody[finds>-_$#thisone',
-    'my_password =h}o)p${e]nob(ody[finds>-_$#thisone',
-    'the_password=h}o)p${e]nob(ody[finds>-_$#thisone\n',
-    'the_password= "h}o)p${e]nob(ody[finds>-_$#thisone"\n',
-    'the_password=\'h}o)p${e]nob(ody[finds>-_$#thisone\'\n',
+    'some_dict["secret"] = "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+    "some_dict['secret'] = {{h}o)p${e]nob(ody[finds>-_$#thisone}}",
+    'my_password={{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+    'my_password= {{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+    'my_password ={{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+    'my_password = {{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+    'my_password ={{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+    'the_password={{h}o)p${e]nob(ody[finds>-_$#thisone}}\n',
+    'the_password= "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"\n',
+    'the_password=\'{{h}o)p${e]nob(ody[finds>-_$#thisone}}\'\n',
     # FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE
-    'apikey "h}o)p${e]nob(ody[finds>-_$#thisone";',  # Double-quotes
-    'fooapikeyfoo "h}o)p${e]nob(ody[finds>-_$#thisone";',  # Double-quotes
-    'fooapikeyfoo"h}o)p${e]nob(ody[finds>-_$#thisone";',  # Double-quotes
-    'private_key \'h}o)p${e]nob(ody[finds>-_$#thisone\';',  # Single-quotes
-    'fooprivate_keyfoo\'h}o)p${e]nob(ody[finds>-_$#thisone\';',  # Single-quotes
-    'fooprivate_key\'h}o)p${e]nob(ody[finds>-_$#thisone\';',  # Single-quotes
+    'apikey "{{h}o)p${e]nob(ody[finds>-_$#thisone}}";',  # Double-quotes
+    'fooapikeyfoo "{{h}o)p${e]nob(ody[finds>-_$#thisone}}";',  # Double-quotes
+    'fooapikeyfoo"{{h}o)p${e]nob(ody[finds>-_$#thisone}}";',  # Double-quotes
+    'private_key \'{{h}o)p${e]nob(ody[finds>-_$#thisone}}\';',  # Single-quotes
+    'fooprivate_keyfoo\'{{h}o)p${e]nob(ody[finds>-_$#thisone}}\';',  # Single-quotes
+    'fooprivate_key\'{{h}o)p${e]nob(ody[finds>-_$#thisone}}\';',  # Single-quotes
 }
 
 
@@ -77,100 +77,141 @@ class TestKeywordDetector(object):
         for potential_secret in output:
             assert 'mock_filename' == potential_secret.filename
             assert (
-                potential_secret.secret_hash
-                == PotentialSecret.hash_secret('h}o)p${e]nob(ody[finds>-_$#thisone')
+                potential_secret.secret_hash ==
+                PotentialSecret.hash_secret('{{h}o)p${e]nob(ody[finds>-_$#thisone}}')
+            )
+
+    @pytest.mark.parametrize(
+        'file_content, file_extension',
+        (
+            (positive, file_extension)
+            for positive in (
+                STANDARD_POSITIVES - {
+                    # FOLLOWED_BY_COLON_QUOTES_REQUIRED_RE
+                    'apikey: {{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+                    'apikey:{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+                    'theapikey:{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+                    # FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_RE
+                    "some_dict['secret'] = {{h}o)p${e]nob(ody[finds>-_$#thisone}}",
+                    'my_password={{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+                    'my_password= {{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+                    'my_password ={{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+                    'my_password = {{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+                    'my_password ={{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+                    'the_password={{h}o)p${e]nob(ody[finds>-_$#thisone}}\n',
+                }
+            ) for file_extension in (
+                '.cls',
+                '.py',
+            )
+        ),
+    )
+    def test_analyze_quotes_required_positives(self, file_content, file_extension):
+        logic = KeywordDetector()
+
+        f = mock_file_object(file_content)
+        mock_filename = 'mock_filename{}'.format(file_extension)
+        output = logic.analyze(f, mock_filename)
+        assert len(output) == 1
+        for potential_secret in output:
+            assert mock_filename == potential_secret.filename
+            assert (
+                potential_secret.secret_hash ==
+                PotentialSecret.hash_secret('{{h}o)p${e]nob(ody[finds>-_$#thisone}}')
             )
 
     @pytest.mark.parametrize(
         'file_content',
-        STANDARD_POSITIVES - {
-            # FOLLOWED_BY_COLON_QUOTES_REQUIRED_RE
-            'apikey: h}o)p${e]nob(ody[finds>-_$#thisone',
-            'apikey:h}o)p${e]nob(ody[finds>-_$#thisone',
-            'theapikey:h}o)p${e]nob(ody[finds>-_$#thisone',
-            # FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_RE
-            "some_dict['secret'] = h}o)p${e]nob(ody[finds>-_$#thisone",
-            'my_password=h}o)p${e]nob(ody[finds>-_$#thisone',
-            'my_password= h}o)p${e]nob(ody[finds>-_$#thisone',
-            'my_password =h}o)p${e]nob(ody[finds>-_$#thisone',
-            'my_password = h}o)p${e]nob(ody[finds>-_$#thisone',
-            'my_password =h}o)p${e]nob(ody[finds>-_$#thisone',
-            'the_password=h}o)p${e]nob(ody[finds>-_$#thisone\n',
-        },
+        STANDARD_NEGATIVES,
     )
-    def test_analyze_python_positives(self, file_content):
+    def test_analyze_standard_negatives(self, file_content):
         logic = KeywordDetector()
 
         f = mock_file_object(file_content)
-        output = logic.analyze(f, 'mock_filename.py')
-        assert len(output) == 1
-        for potential_secret in output:
-            assert 'mock_filename.py' == potential_secret.filename
-            assert (
-                potential_secret.secret_hash
-                == PotentialSecret.hash_secret('h}o)p${e]nob(ody[finds>-_$#thisone')
-            )
-
-    @pytest.mark.parametrize(
-        'negative',
-        STANDARD_NEGATIVES,
-    )
-    def test_analyze_standard_negatives(self, negative):
-        logic = KeywordDetector()
-
-        f = mock_file_object(negative)
         output = logic.analyze(f, 'mock_filename.foo')
         assert len(output) == 0
 
     @pytest.mark.parametrize(
-        'js_negative',
+        'file_content',
         STANDARD_NEGATIVES + [
             # FOLLOWED_BY_COLON_RE
             'apiKey: this.apiKey,',
             "apiKey: fs.readFileSync('foo',",
         ],
     )
-    def test_analyze_javascript_negatives(self, js_negative):
+    def test_analyze_javascript_negatives(self, file_content):
         logic = KeywordDetector()
 
-        f = mock_file_object(js_negative)
+        f = mock_file_object(file_content)
         output = logic.analyze(f, 'mock_filename.js')
         assert len(output) == 0
 
     @pytest.mark.parametrize(
-        'secret_starting_with_dollar_sign',
+        'file_content',
         STANDARD_NEGATIVES + [
             # FOLLOWED_BY_EQUAL_SIGNS_RE
             '$password = $input;',
         ],
     )
-    def test_analyze_php_negatives(self, secret_starting_with_dollar_sign):
+    def test_analyze_php_negatives(self, file_content):
         logic = KeywordDetector()
 
-        f = mock_file_object(secret_starting_with_dollar_sign)
+        f = mock_file_object(file_content)
         output = logic.analyze(f, 'mock_filename.php')
         assert len(output) == 0
 
     @pytest.mark.parametrize(
-        'secret_with_no_quote',
-        STANDARD_NEGATIVES + [
-            # FOLLOWED_BY_COLON_QUOTES_REQUIRED_RE
-            'apikey: hope]nobody[finds>-_$#thisone',
-            'apikey:hope]nobody[finds>-_$#thisone',
-            'theapikey:hope]nobody[finds>-_$#thisone',
-            # FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_RE
-            "some_dict['secret'] = hope]nobody[finds>-_$#thisone",
-            'my_password=hope]nobody[finds>-_$#thisone',
-            'my_password= hope]nobody[finds>-_$#thisone',
-            'my_password =hope]nobody[finds>-_$#thisone',
-            'my_password = hope]nobody[finds>-_$#thisone',
-            'my_password =hope]nobody[finds>-_$#thisone',
-            'the_password=hope]nobody[finds>-_$#thisone\n',
-        ],
+        'file_content, file_extension',
+        (
+            (negative, file_extension)
+            for negative in (
+                STANDARD_NEGATIVES + [
+                    # FOLLOWED_BY_COLON_QUOTES_REQUIRED_RE
+                    'apikey: hope]nobody[finds>-_$#thisone',
+                    'apikey:hope]nobody[finds>-_$#thisone',
+                    'theapikey:hope]nobody[finds>-_$#thisone',
+                    # FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_RE
+                    "some_dict['secret'] = hope]nobody[finds>-_$#thisone",
+                    'my_password=hope]nobody[finds>-_$#thisone',
+                    'my_password= hope]nobody[finds>-_$#thisone',
+                    'my_password =hope]nobody[finds>-_$#thisone',
+                    'my_password = hope]nobody[finds>-_$#thisone',
+                    'my_password =hope]nobody[finds>-_$#thisone',
+                    'the_password=hope]nobody[finds>-_$#thisone\n',
+                ]
+            ) for file_extension in (
+                '.cls',
+                '.py',
+            )
+        ),
     )
-    def test_analyze_python_negatives(self, secret_with_no_quote):
+    def test_analyze_quotes_required_negatives(self, file_content, file_extension):
         logic = KeywordDetector()
 
-        f = mock_file_object(secret_with_no_quote)
-        output = logic.analyze(f, 'mock_filename.py')
+        f = mock_file_object(file_content)
+        output = logic.analyze(
+            f,
+            'mock_filename{}'.format(file_extension),
+        )
+        assert len(output) == 0
+
+    @pytest.mark.parametrize(
+        'file_content, file_extension',
+        (
+            (yaml_negative, file_extension)
+            for yaml_negative in STANDARD_POSITIVES
+            for file_extension in (
+                '.yaml',
+                '.yml',
+            )
+        ),
+    )
+    def test_analyze_yaml_negatives(self, file_content, file_extension):
+        logic = KeywordDetector()
+
+        f = mock_file_object(file_content)
+        output = logic.analyze(
+            f,
+            'mock_filename{}'.format(file_extension),
+        )
         assert len(output) == 0
