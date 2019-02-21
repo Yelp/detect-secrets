@@ -81,7 +81,7 @@ class ParserBuilder(object):
         self.parser.add_argument(
             'filenames',
             nargs='*',
-            help='Filenames to check',
+            help='Filenames to check.',
         )
         return self
 
@@ -427,5 +427,5 @@ class PluginOptions(object):
         self.parser.add_argument(
             '--keyword-exclude',
             type=str,
-            help='Pass in regex to exclude false positives found by keyword detector',
+            help='Pass in regex to exclude false positives found by keyword detector.',
         )
