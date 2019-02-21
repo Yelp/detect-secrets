@@ -149,13 +149,11 @@ class KeywordDetector(BasePlugin):
 
     secret_type = 'Secret Keyword'
 
-    def __init__(
-        self, keyword_exclude=None,
-        exclude_lines_regex=None, **kwargs
-    ):
+    def __init__(self, keyword_exclude=None, exclude_lines_regex=None, **kwargs):
         super(KeywordDetector, self).__init__(
             exclude_lines_regex,
         )
+
         self.keyword_exclude = None
         if keyword_exclude:
             self.keyword_exclude = re.compile(

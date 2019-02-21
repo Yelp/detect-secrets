@@ -82,6 +82,17 @@ class TestKeywordDetector(object):
             )
 
     @pytest.mark.parametrize(
+        'file_content',
+        STANDARD_POSITIVES,
+    )
+    def test_analyze_with_line_exclude(self, file_content):
+        logic = KeywordDetector(keyword_exclude='thisone')
+
+        f = mock_file_object(file_content)
+        output = logic.analyze(f, 'mock_filename.foo')
+        assert len(output) == 0
+
+    @pytest.mark.parametrize(
         'file_content, file_extension',
         (
             (positive, file_extension)
