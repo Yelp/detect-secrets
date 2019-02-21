@@ -133,14 +133,16 @@ class ScanOptions(object):
         add_exclude_lines_argument(self.parser)
 
         # Pairing `--exclude-files` with `--scan` because it's only used for the initialization.
-        # The pre-commit hook framework already has an `exclude` option that can be used instead.
+        # The pre-commit hook framework already has an `exclude` option that can
+        # be used instead.
         self.parser.add_argument(
             '--exclude-files',
             type=str,
             help='Pass in regex to specify ignored paths during initialization scan.',
         )
 
-        # Pairing `--update` with `--scan` because it's only used for initialization.
+        # Pairing `--update` with `--scan` because it's only used for
+        # initialization.
         self.parser.add_argument(
             '--update',
             nargs=1,
@@ -149,7 +151,8 @@ class ScanOptions(object):
             dest='import_filename',
         )
 
-        # Pairing `--update` with `--use-all-plugins` to overwrite plugins list from baseline
+        # Pairing `--update` with `--use-all-plugins` to overwrite plugins list
+        # from baseline
         add_use_all_plugins_argument(self.parser)
 
         self.parser.add_argument(
@@ -228,6 +231,7 @@ class PluginDescriptor(namedtuple(
         'related_args',
     ],
 )):
+
     def __new__(cls, related_args=None, **kwargs):
         if not related_args:
             related_args = []
@@ -272,6 +276,9 @@ class PluginOptions(object):
             classname='KeywordDetector',
             disable_flag_text='--no-keyword-scan',
             disable_help_text='Disables scanning for secret keywords.',
+            related_args=[
+                ('--keyword-exclude', None),
+            ],
         ),
         PluginDescriptor(
             classname='AWSKeyDetector',
@@ -298,6 +305,7 @@ class PluginOptions(object):
     def add_arguments(self):
         self._add_custom_limits()
         self._add_opt_out_options()
+        self._add_keyword_exclude()
 
         return self
 
@@ -414,3 +422,10 @@ class PluginOptions(object):
         :return: `no_hex_string_scan`
         """
         return flag_text[2:].replace('-', '_')
+
+    def _add_keyword_exclude(self):
+        self.parser.add_argument(
+            '--keyword-exclude',
+            type=str,
+            help='Pass in regex to exclude false positives found by keyword detector',
+        )
