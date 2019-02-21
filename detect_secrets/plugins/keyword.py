@@ -153,22 +153,22 @@ class KeywordDetector(BasePlugin):
 
     def analyze_string_content(self, string, line_num, filename):
         output = {}
-            if (
-                self.keyword_exclude
-                and self.keyword_exclude.search(string)
-            ):
-                return output
-            for identifier in self.secret_generator(
-                string,
-                filetype=determine_file_type(filename),
-            ):
-                secret = PotentialSecret(
-                    self.secret_type,
-                    filename,
-                    identifier,
-                    line_num,
-                )
-            output[secret] = secret
+        if (
+            self.keyword_exclude
+            and self.keyword_exclude.search(string)
+        ):
+            return output
+        for identifier in self.secret_generator(
+            string,
+            filetype=determine_file_type(filename),
+        ):
+            secret = PotentialSecret(
+                self.secret_type,
+                filename,
+                identifier,
+                line_num,
+            )
+        output[secret] = secret
 
         return output
 
