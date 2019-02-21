@@ -139,14 +139,25 @@ class KeywordDetector(BasePlugin):
 
     secret_type = 'Secret Keyword'
 
-    def __init__(self, keyword_exclude=None, **kwargs):
+    def __init__(self, keyword_exclude=None,
+                 exclude_lines_regex=None, **kwargs):
         super(KeywordDetector, self).__init__(
-            keyword_exclude=keyword_exclude,
+            exclude_lines_regex,
         )
+        self.keyword_exclude = None
+        if keyword_exclude:
+            self.keyword_exclude = re.compile(
+                keyword_exclude,
+                re.IGNORECASE,
+            )
 
     def analyze_string_content(self, string, line_num, filename):
         output = {}
-        if keyword_exclude and keyword_exclude != string:
+            if (
+                self.keyword_exclude
+                and self.keyword_exclude.search(string)
+            ):
+                return output
             for identifier in self.secret_generator(
                 string,
                 filetype=determine_file_type(filename),

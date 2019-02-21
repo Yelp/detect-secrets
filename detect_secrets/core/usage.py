@@ -276,7 +276,7 @@ class PluginOptions(object):
             classname='KeywordDetector',
             disable_flag_text='--no-keyword-scan',
             disable_help_text='Disables scanning for secret keywords.',
-            relate_args=[
+            related_args=[
                 ('--keyword-exclude', None),
             ],
         ),
@@ -427,5 +427,5 @@ class PluginOptions(object):
         self.parser.add_argument(
             '--keyword-exclude',
             type=str,
-            help='Pass in regex to exclude false positives found by keyword exclude',
+            help='Pass in regex to exclude false positives found by keyword detector',
         )
