@@ -477,7 +477,7 @@ def _get_secret_with_context(
             AnsiColor.BOLD,
         )
 
-    return str(snippet.add_line_numbers())
+    return snippet.add_line_numbers()
 
 
 def get_raw_secret_value(
