@@ -16,7 +16,7 @@ from detect_secrets.core.log import log
 from detect_secrets.core.usage import PluginOptions
 
 
-def from_parser_builder(plugins_dict, exclude_lines_regex):
+def from_parser_builder(plugins_dict, exclude_lines_regex=None):
     """
     :param plugins_dict: plugins dictionary received from ParserBuilder.
         See example in tests.core.usage_test.
