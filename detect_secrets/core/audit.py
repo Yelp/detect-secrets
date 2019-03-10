@@ -1,8 +1,6 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import codecs
-import itertools
 import json
 import os
 import subprocess
@@ -15,6 +13,7 @@ from ..plugins.common.filetype import determine_file_type
 from ..plugins.high_entropy_strings import HighEntropyStringsPlugin
 from .baseline import merge_results
 from .bidirectional_iterator import BidirectionalIterator
+from .code_snippet import CodeSnippetHighlighter
 from .color import AnsiColor
 from .color import colorize
 from .common import write_baseline_to_file
@@ -454,92 +453,59 @@ def _get_secret_with_context(
 
     :raises: SecretNotFoundOnSpecifiedLineError
     """
-    secret_line_idx = secret['line_number'] - 1
-    end_line = secret_line_idx + lines_of_context + 1
-
-    if secret_line_idx <= lines_of_context:
-        start_line = 0
-        index_of_secret_in_output = secret_line_idx
-    else:
-        start_line = secret_line_idx - lines_of_context
-        index_of_secret_in_output = lines_of_context
-
-    with codecs.open(filename, encoding='utf-8') as file:
-        output = list(
-            itertools.islice(
-                file.read().splitlines(),
-                start_line,
-                end_line,
-            ),
-        )
+    snippet = CodeSnippetHighlighter().get_code_snippet(
+        filename,
+        secret['line_number'],
+        lines_of_context=lines_of_context,
+    )
 
     try:
-        output[index_of_secret_in_output] = _highlight_secret(
-            output[index_of_secret_in_output],
-            secret['line_number'],
+        raw_secret_value = get_raw_secret_value(
+            snippet.target_line,
             secret,
-            filename,
             plugin_settings,
+            filename,
         )
+
+        snippet.highlight_line(raw_secret_value)
     except SecretNotFoundOnSpecifiedLineError:
         if not force:
             raise
 
-        output[index_of_secret_in_output] = '{}'.format(
-            colorize(
-                output[index_of_secret_in_output],
-                AnsiColor.BOLD,
-            ),
+        snippet.target_line = colorize(
+            snippet.target_line,
+            AnsiColor.BOLD,
         )
 
-    # Adding line numbers
-    return '\n'.join(
-        map(
-            lambda x: '{}:{}'.format(
-                colorize(
-                    str(int(x[0]) + start_line + 1),
-                    AnsiColor.LIGHT_GREEN,
-                ),
-                x[1],
-            ),
-            enumerate(output),
-        ),
-    )
+    return snippet.add_line_numbers()
 
 
-def _highlight_secret(
+def get_raw_secret_value(
     secret_line,
-    secret_lineno,
     secret,
-    filename,
     plugin_settings,
+    filename,
 ):
     """
     :type secret_line: str
     :param secret_line: the line on which the secret is found
 
-    :type secret_lineno: int
-    :param secret_lineno: secret_line's line number in the source file
-
     :type secret: dict
     :param secret: see caller's docstring
-
-    :type filename: str
-    :param filename: this is needed, because PotentialSecret uses this
-        as a means of comparing whether two secrets are equal.
 
     :type plugin_settings: list
     :param plugin_settings: see caller's docstring
 
-    :rtype: str
-    :returns: secret_line, but with the actual secret highlighted.
+    :type filename: str
+    :param filename: this is needed, because PotentialSecret uses this
+        as a means of comparing whether two secrets are equal.
     """
     plugin = initialize.from_secret_type(
         secret['type'],
         plugin_settings,
     )
 
-    for raw_secret in _raw_secret_generator(
+    for raw_secret in raw_secret_generator(
         plugin,
         secret_line,
         filetype=determine_file_type(filename),
@@ -553,26 +519,18 @@ def _highlight_secret(
         # There could be more than two secrets on the same line.
         # We only want to highlight the right one.
         if secret_obj.secret_hash == secret['hashed_secret']:
-            break
+            return raw_secret
     else:
-        raise SecretNotFoundOnSpecifiedLineError(secret_lineno)
-
-    index_of_secret = secret_line.lower().index(raw_secret.lower())
-    end_of_secret = index_of_secret + len(raw_secret)
-    return '{}{}{}'.format(
-        secret_line[:index_of_secret],
-        colorize(
-            # copy the secret out of the line because .lower() from secret
-            # generator may be different from the original value:
-            secret_line[index_of_secret:end_of_secret],
-            AnsiColor.RED_BACKGROUND,
-        ),
-        secret_line[index_of_secret + len(raw_secret):],
-    )
+        raise SecretNotFoundOnSpecifiedLineError(secret['line_number'])
 
 
-def _raw_secret_generator(plugin, secret_line, filetype):
-    """Generates raw secrets by re-scanning the line, with the specified plugin"""
+def raw_secret_generator(plugin, secret_line, filetype):
+    """Generates raw secrets by re-scanning the line, with the specified plugin
+
+    :type plugin: BasePlugin
+    :type secret_line: str
+    :type filetype: FileType
+    """
     for raw_secret in plugin.secret_generator(secret_line, filetype=filetype):
         yield raw_secret
 
