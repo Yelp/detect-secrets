@@ -519,7 +519,7 @@ class TestPrintContext(object):
                 string.ascii_letters[:(end_line - secret_line)][::-1],
             ),
         )
-        return mock_open_base(data, 'detect_secrets.core.audit.codecs.open')
+        return mock_open_base(data, 'detect_secrets.core.code_snippet.codecs.open')
 
     @staticmethod
     def _make_string_into_individual_lines(string):
