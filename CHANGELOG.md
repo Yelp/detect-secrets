@@ -15,7 +15,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 #### :sparkles: Usability
 #### :mortar_board: Walkthrough / Help
 #### :performing_arts: Performance
-#### :telescope: Precision
+#### :telescope: Accuracy
 #### :bug: Bugfixes
 #### :snake: Miscellaneous
 #### :art: Display Changes
@@ -37,7 +37,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 - Removed the `--exclude` CLI scan argument ([#127])
 
-#### :telescope: Precision
+#### :telescope: Accuracy
 
 - Reduced false-positives by excluding more characters (`!$&\';`) in the `BasicAuthDetector` regex ([#126], [#123], thanks [@killuazhu])
 - Added more to the `FALSE_POSITIVES` dict for `KeywordDetector` plugin, **including** `password` ([#118])
@@ -97,7 +97,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 ### 0.11.2
 ##### January 4th, 2019
 
-#### :telescope: Precision
+#### :telescope: Accuracy
 
 - [Added `null` to the `FALSE_POSITIVES` tuple for `KeywordDetector` plugin, so we do not alert off of it](https://github.com/Yelp/detect-secrets/commit/58df82ce37d64f22cb885960c2031b5f8ebe4b75)
 
@@ -115,7 +115,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#100]: https://github.com/Yelp/detect-secrets/pull/100
 [#106]: https://github.com/Yelp/detect-secrets/pull/106
 
-#### :telescope: Precision
+#### :telescope: Accuracy
 
 - Add blacklisting of PGP private key headers in `PrivateKeyDetector` plugin ([#104])
 - Reduced false-positives by improving `BasicAuthDetector` plugin regex ([#98])
@@ -268,7 +268,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 - Changed `--audit` and `--scan` to `audit` and `scan` ([#51])
 - Changed `scan --import <baseline>` to `scan --update <baseline>` ([#58])
 
-#### :telescope: Precision
+#### :telescope: Accuracy
 
 - Reduced false-positives caused by sequential strings, e.g. `ABCDEF` ([#64])
 
@@ -330,7 +330,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
   `secret_type` ([#26])
 - Got rid of `SensitivityValues` as a means to store plugin configs
 
-#### :telescope: Precision
+#### :telescope: Accuracy
 
 - Improved the heuristic for `HexHighEntropyStrings`, reducing the false positive rates
   for large numbers identified in code
@@ -361,7 +361,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 - Allow scanning of non-git files ([#18])
 
-#### :telescope: Precision
+#### :telescope: Accuracy
 
 - Improved scanning of INI config files with `HighEntropyString` ([#13], [#17])
 - Improved scanning of YAML files with `HighEntropyString` ([#16])
