@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import configparser
 import re
 
@@ -20,7 +22,8 @@ class IniFileParser(object):
         try:
             # python2.7 compatible
             self.parser.optionxform = unicode
-        except NameError:
+        except NameError:  # pragma: no cover
+            # python3 compatible
             self.parser.optionxform = str
 
         self.exclude_lines_regex = exclude_lines_regex
@@ -34,7 +37,7 @@ class IniFileParser(object):
         try:
             # python2.7 compatible
             self.parser.read_string(unicode(content))
-        except NameError:
+        except NameError:  # pragma: no cover
             # python3 compatible
             self.parser.read_string(content)
 
