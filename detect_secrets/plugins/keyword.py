@@ -135,7 +135,7 @@ BLACKLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_EQUAL_SIGNS_REGEX: 9,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 5,
 }
-PYTHON_BLACKLIST_REGEX_TO_GROUP = {
+QUOTES_REQUIRED_BLACKLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX: 7,
     FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 9,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 5,
@@ -149,13 +149,11 @@ class KeywordDetector(BasePlugin):
 
     secret_type = 'Secret Keyword'
 
-    def __init__(
-        self, keyword_exclude=None,
-        exclude_lines_regex=None, **kwargs
-    ):
+    def __init__(self, keyword_exclude=None, exclude_lines_regex=None, **kwargs):
         super(KeywordDetector, self).__init__(
             exclude_lines_regex,
         )
+
         self.keyword_exclude = None
         if keyword_exclude:
             self.keyword_exclude = re.compile(
@@ -187,8 +185,11 @@ class KeywordDetector(BasePlugin):
     def secret_generator(self, string, filetype):
         lowered_string = string.lower()
 
-        if filetype == FileType.PYTHON:
-            blacklist_regex_to_group = PYTHON_BLACKLIST_REGEX_TO_GROUP
+        if filetype in (
+            FileType.CLS,
+            FileType.PYTHON,
+        ):
+            blacklist_regex_to_group = QUOTES_REQUIRED_BLACKLIST_REGEX_TO_GROUP
         else:
             blacklist_regex_to_group = BLACKLIST_REGEX_TO_GROUP
 
@@ -217,9 +218,13 @@ def probably_false_positive(lowered_secret, filetype):
                 or lowered_secret.startswith('fs.read')
                 or lowered_secret == 'new'
             )
-        ) or (  # If it is a .php file, do not report $variables
+        ) or (
             filetype == FileType.PHP
             and lowered_secret[0] == '$'
+        ) or (
+            filetype == FileType.YAML
+            and lowered_secret.startswith('{{')
+            and lowered_secret.endswith('}}')
         )
     ):
         return True

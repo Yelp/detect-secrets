@@ -2,10 +2,12 @@ from enum import Enum
 
 
 class FileType(Enum):
-    JAVASCRIPT = 0
-    PHP = 1
-    PYTHON = 2
-    OTHER = 3
+    CLS = 0
+    JAVASCRIPT = 1
+    PHP = 2
+    PYTHON = 3
+    YAML = 4
+    OTHER = 5
 
 
 def determine_file_type(filename):
@@ -14,10 +16,18 @@ def determine_file_type(filename):
 
     :rtype: FileType
     """
-    if filename.endswith('.js'):
+    if filename.endswith('.cls'):
+        return FileType.CLS
+    elif filename.endswith('.js'):
         return FileType.JAVASCRIPT
-    elif filename.endswith('.py'):
-        return FileType.PYTHON
     elif filename.endswith('.php'):
         return FileType.PHP
+    elif filename.endswith('.py'):
+        return FileType.PYTHON
+    elif (
+        filename.endswith(
+            ('.yaml', '.yml'),
+        )
+    ):
+        return FileType.YAML
     return FileType.OTHER
