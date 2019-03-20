@@ -10,7 +10,8 @@ class TestPluginOptions(object):
     @staticmethod
     def parse_args(argument_string=''):
         # PluginOptions are added in pre-commit hook
-        return ParserBuilder().add_pre_commit_arguments()\
+        return ParserBuilder()\
+            .add_pre_commit_arguments()\
             .parse_args(argument_string.split())
 
     def test_added_by_default(self):
@@ -61,9 +62,11 @@ class TestPluginOptions(object):
         if expected_value is not None:
             args = self.parse_args(argument_string)
 
-            assert args.plugins['HexHighEntropyString'][
-                'hex_limit'
-            ] == expected_value
+            assert (
+                args.plugins['HexHighEntropyString']['hex_limit']
+
+                == expected_value
+            )
         else:
             with pytest.raises(SystemExit):
                 self.parse_args(argument_string)
