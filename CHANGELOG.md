@@ -24,6 +24,43 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [@xxxx]: https://github.com/xxxx
 -->
 
+### 0.12.1
+##### March 21st, 2019
+
+#### :performing_arts: Performance
+
+- Improved performance when scanning for high-entropy strings ([#144], thanks [@killuazhu])
+
+#### :tada: New Features
+
+- Added a `--keyword-exclude` argument to `scan` ([#132], thanks [@hpandeycodeit])
+
+#### :telescope: Accuracy
+
+- For the `KeywordDetector` plugin: made quotes required for secrets in `.cls` and `.java` files in, and skipped `{{secrets like this}}` in YAML files ([#133]/[#145])
+
+#### :bug: Bugfixes
+
+- Fixed an uncaught `UnicodeEncodeError` exception in our `ini` file parser, when using Python 2 ([#143])
+
+#### :snake: Miscellaneous
+
+- Fixed the example pre-commit configuration in the README ([#135], thanks [@nymous]) ([#138], thanks [@neunkasulle])
+- Refactored some `audit` code into `CodeSnippet` and `CodeSnippetHighlighter` classes ([#137])
+
+[#132]: https://github.com/Yelp/detect-secrets/pull/132
+[#133]: https://github.com/Yelp/detect-secrets/pull/133
+[#135]: https://github.com/Yelp/detect-secrets/pull/135
+[#137]: https://github.com/Yelp/detect-secrets/pull/137
+[#138]: https://github.com/Yelp/detect-secrets/pull/138
+[#143]: https://github.com/Yelp/detect-secrets/pull/143
+[#144]: https://github.com/Yelp/detect-secrets/pull/144
+[#145]: https://github.com/Yelp/detect-secrets/pull/145
+[@hpandeycodeit]: https://github.com/hpandeycodeit
+[@nymous]: https://github.com/nymous
+[@neunkasulle]: https://github.com/neunkasulle
+
+
 ### 0.12.0
 ##### February 11th, 2019
 
@@ -40,13 +77,13 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 #### :telescope: Accuracy
 
 - Reduced false-positives by excluding more characters (`!$&\';`) in the `BasicAuthDetector` regex ([#126], [#123], thanks [@killuazhu])
-- Added more to the `FALSE_POSITIVES` dict for `KeywordDetector` plugin, **including** `password` ([#118])
+- Added more to the `FALSE_POSITIVES` dict for the `KeywordDetector` plugin, **including** `password` ([#118])
 
 #### :bug: Bugfixes
 
 - Fixed a bug where `--update` was adding all plugins to the baseline, instead of respecting the plugins used in the baseline ([#124], thanks [@killuazhu])
-- Fixed an uncaught `UnicodeEncodeError` exception when scanning non-ini files (e.g. markdown) containing unicode ([#128], thanks [@killuazhu])
-- Fixed a bug where non-ini files (e.g. markdown) containing unicode caused a `UnicodeEncodeError` exception in the `audit` functionality ([#129], thanks [@killuazhu])
+- Fixed an uncaught `UnicodeEncodeError` exception when scanning non-ini files (e.g. markdown) containing unicode, when using Python 2 ([#128], thanks [@killuazhu])
+- Fixed a bug where non-ini files (e.g. markdown) containing unicode caused a `UnicodeEncodeError` exception in the `audit` functionality, when using Python 2 ([#129], thanks [@killuazhu])
 - Fixed a bug where non-posix end of line characters caused a "Secret not found on line...." error in the `audit` functionality ([#120], thanks [@killuazhu])
 - Fixed a bug where `scan_diff`, called by [`detect-secrets-server`](https://github.com/Yelp/detect-secrets-server), was ignoring inline `pragma: whitelist secret` comments ([#127])
 
@@ -99,7 +136,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 #### :telescope: Accuracy
 
-- [Added `null` to the `FALSE_POSITIVES` tuple for `KeywordDetector` plugin, so we do not alert off of it](https://github.com/Yelp/detect-secrets/commit/58df82ce37d64f22cb885960c2031b5f8ebe4b75)
+- [Added `null` to the `FALSE_POSITIVES` tuple for the `KeywordDetector` plugin, so we do not alert off of it](https://github.com/Yelp/detect-secrets/commit/58df82ce37d64f22cb885960c2031b5f8ebe4b75)
 
 
 ### 0.11.1
@@ -261,7 +298,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 #### :tada: New Features
 
 - Scan `--all-files` option ([#57])
-- Yaml inline whitelisting support ([#50])
+- YAML inline whitelisting support ([#50])
 
 #### :boom: Breaking Changes
 
