@@ -147,6 +147,11 @@ QUOTES_REQUIRED_BLACKLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 9,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 5,
 }
+QUOTES_REQUIRED_FILETYPES = {
+    FileType.CLS,
+    FileType.JAVA,
+    FileType.PYTHON,
+}
 
 
 class KeywordDetector(BasePlugin):
@@ -192,10 +197,7 @@ class KeywordDetector(BasePlugin):
     def secret_generator(self, string, filetype):
         lowered_string = string.lower()
 
-        if filetype in (
-            FileType.CLS,
-            FileType.PYTHON,
-        ):
+        if filetype in QUOTES_REQUIRED_FILETYPES:
             blacklist_regex_to_group = QUOTES_REQUIRED_BLACKLIST_REGEX_TO_GROUP
         else:
             blacklist_regex_to_group = BLACKLIST_REGEX_TO_GROUP

@@ -8,6 +8,11 @@ from detect_secrets.plugins.keyword import KeywordDetector
 from testing.mocks import mock_file_object
 
 
+QUOTES_REQUIRED_FILE_EXTENSIONS = (
+    '.cls',
+    '.java',
+    '.py',
+)
 STANDARD_NEGATIVES = [
     # FOLLOWED_BY_COLON_RE
     'theapikey: ""',  # Nothing in the quotes
@@ -111,10 +116,7 @@ class TestKeywordDetector(object):
                     'my_password ={{h}o)p${e]nob(ody[finds>-_$#thisone}}',
                     'the_password={{h}o)p${e]nob(ody[finds>-_$#thisone}}\n',
                 }
-            ) for file_extension in (
-                '.cls',
-                '.py',
-            )
+            ) for file_extension in QUOTES_REQUIRED_FILE_EXTENSIONS
         ),
     )
     def test_analyze_quotes_required_positives(self, file_content, file_extension):
@@ -190,10 +192,7 @@ class TestKeywordDetector(object):
                     'my_password =hope]nobody[finds>-_$#thisone',
                     'the_password=hope]nobody[finds>-_$#thisone\n',
                 ]
-            ) for file_extension in (
-                '.cls',
-                '.py',
-            )
+            ) for file_extension in QUOTES_REQUIRED_FILE_EXTENSIONS
         ),
     )
     def test_analyze_quotes_required_negatives(self, file_content, file_extension):
