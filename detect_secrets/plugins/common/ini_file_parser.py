@@ -1,6 +1,9 @@
 from __future__ import unicode_literals
 
-import configparser
+try:
+    from backports import configparser
+except ImportError:  # pragma: no cover
+    import configparser
 import re
 
 
