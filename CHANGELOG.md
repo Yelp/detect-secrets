@@ -24,7 +24,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [@xxxx]: https://github.com/xxxx
 -->
 
-### 0.12.2
+### v0.12.2
 ##### March 21st, 2019
 
 #### :bug: Bugfixes
@@ -34,7 +34,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#147]: https://github.com/Yelp/detect-secrets/pull/147
 
 
-### 0.12.1
+### v0.12.1
 ##### March 21st, 2019
 
 #### :performing_arts: Performance
@@ -71,7 +71,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [@neunkasulle]: https://github.com/neunkasulle
 
 
-### 0.12.0
+### v0.12.0
 ##### February 11th, 2019
 
 #### :tada: New Features
@@ -118,7 +118,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [@killuazhu]: https://github.com/killuazhu
 
 
-### 0.11.4
+### v0.11.4
 ##### January 7th, 2019
 
 #### :bug: Bugfixes
@@ -127,7 +127,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#116]: https://github.com/Yelp/detect-secrets/pull/116
 
 
-### 0.11.3
+### v0.11.3
 ##### January 4th, 2019
 
 #### :bug: Bugfixes
@@ -141,7 +141,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#113]: https://github.com/Yelp/detect-secrets/pull/113
 
 
-### 0.11.2
+### v0.11.2
 ##### January 4th, 2019
 
 #### :telescope: Accuracy
@@ -149,7 +149,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 - [Added `null` to the `FALSE_POSITIVES` tuple for the `KeywordDetector` plugin, so we do not alert off of it](https://github.com/Yelp/detect-secrets/commit/58df82ce37d64f22cb885960c2031b5f8ebe4b75)
 
 
-### 0.11.1
+### v0.11.1
 ##### January 4th, 2019
 
 #### :tada: New Features
@@ -191,7 +191,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#109]: https://github.com/Yelp/detect-secrets/pull/109
 
 
-### 0.11.0
+### v0.11.0
 ##### November 26th, 2018
 
 #### :tada: New Features
@@ -209,7 +209,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#94]: https://github.com/Yelp/detect-secrets/pull/94
 
 
-### 0.10.5
+### v0.10.5
 ##### October 30th, 2018
 
 #### :art: Display Changes
