@@ -3,11 +3,12 @@ from enum import Enum
 
 class FileType(Enum):
     CLS = 0
-    JAVASCRIPT = 1
-    PHP = 2
-    PYTHON = 3
-    YAML = 4
-    OTHER = 5
+    JAVA = 1
+    JAVASCRIPT = 2
+    PHP = 3
+    PYTHON = 4
+    YAML = 5
+    OTHER = 6
 
 
 def determine_file_type(filename):
@@ -18,6 +19,8 @@ def determine_file_type(filename):
     """
     if filename.endswith('.cls'):
         return FileType.CLS
+    elif filename.endswith('.java'):
+        return FileType.JAVA
     elif filename.endswith('.js'):
         return FileType.JAVASCRIPT
     elif filename.endswith('.php'):
