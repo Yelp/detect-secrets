@@ -4,6 +4,21 @@ import configparser
 import re
 
 
+class EfficientParsingError(configparser.ParsingError):
+
+    def append(self, lineno, line):
+        """
+        Rather than inefficiently add all the lines in the file
+        to the error message like the CPython code from 1998.
+        We just `return` because we will catch and `pass`
+        the exception in `high_entropy_strings.py` anyway.
+        """
+        return
+
+
+configparser.ParsingError = EfficientParsingError
+
+
 class IniFileParser(object):
 
     _comment_regex = re.compile(r'\s*[;#]')
@@ -95,8 +110,8 @@ class IniFileParser(object):
                 continue
 
             if (
-                self.exclude_lines_regex
-                and self.exclude_lines_regex.search(line)
+                self.exclude_lines_regex and
+                self.exclude_lines_regex.search(line)
             ):
                 continue
 
