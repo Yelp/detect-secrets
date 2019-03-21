@@ -47,7 +47,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 #### :telescope: Accuracy
 
-- For the `KeywordDetector` plugin: made quotes required for secrets in `.cls` and `.java` files in, and skipped `{{secrets like this}}` in YAML files ([#133]/[#145])
+- For the `KeywordDetector` plugin: made quotes required for secrets in `.cls` and `.java` files, and skipped `{{secrets like this}}` in YAML files ([#133]/[#145])
 
 #### :bug: Bugfixes
 
