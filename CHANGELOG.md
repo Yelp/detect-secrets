@@ -24,6 +24,16 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [@xxxx]: https://github.com/xxxx
 -->
 
+### 0.12.2
+##### March 21st, 2019
+
+#### :bug: Bugfixes
+
+- Fixed a bug where the improved performance for high-entropy strings ([#144]) did not work on Python 2 ([#147])
+
+[#147]: https://github.com/Yelp/detect-secrets/pull/147
+
+
 ### 0.12.1
 ##### March 21st, 2019
 
