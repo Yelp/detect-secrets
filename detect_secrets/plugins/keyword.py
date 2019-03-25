@@ -96,6 +96,7 @@ FALSE_POSITIVES = {
     'redacted',
     'some_key',
     'string,',
+    'string;',
     'string?',
     'string}',
     'string}}',
