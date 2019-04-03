@@ -6,11 +6,12 @@ WHITELIST_REGEXES = [
     for r in [
         r'[ \t]+{} *pragma: ?whitelist[ -]secret{}[ \t]*$'.format(start, end)
         for start, end in (
-            ('#', ''),              # e.g. python or yaml
-            ('//', ''),             # e.g. golang
-            (r'/\*', r' *\*/'),     # e.g. c
-            ('\'', ''),             # e.g. visual basic .net
-            ('--', ''),             # e.g. sql
+            ('#', ''),                 # e.g. python or yaml
+            ('//', ''),                # e.g. golang
+            (r'/\*', r' *\*/'),        # e.g. c
+            ('\'', ''),                # e.g. visual basic .net
+            ('--', ''),                # e.g. sql
+            ('<!--[# \t]*', ' *-->'),  # e.g. xml
             # many other inline comment syntaxes are not included,
             # because we want to be performant for
             # any(regex.search(line) for regex in WHITELIST_REGEXES)
