@@ -1,6 +1,9 @@
 from __future__ import absolute_import
 
-import configparser
+try:
+    from backports import configparser
+except ImportError:  # pragma: no cover
+    import configparser
 import math
 import os
 import re
