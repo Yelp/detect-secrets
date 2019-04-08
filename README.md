@@ -150,6 +150,7 @@ The current heuristic searches we implement out of the box include:
 
 * **KeywordDetector**: checks to see if certain keywords are being used e.g. `password` or `secret`
 
+<<<<<<< HEAD
 See [detect_secrets/
 plugins](https://github.com/Yelp/detect-secrets/tree/master/detect_secrets/plugins)
 for more details.
@@ -178,6 +179,11 @@ This preset amount can be adjusted in several ways:
 
 * Specifying it within the config file, for server scanning.
 * Specifying it with command line flags (e.g. `--base64-limit`)
+=======
+* **ArtifactoryDetector**: checks to see if Artifactory credentials are present.
+
+## IBM versioning and rebase guide
+>>>>>>> 5ac3771... Adds artifactory credential detector to plugins (#136)
 
 Lowering these limits will identify more potential secrets, but also create
 more false positives. Adjust these limits to suit your needs.
