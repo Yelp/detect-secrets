@@ -152,6 +152,10 @@ The current heuristic searches we implement out of the box include:
 
 * **ArtifactoryDetector**: checks to see if Artifactory credentials are present.
 
+See [detect_secrets/
+plugins](https://github.com/Yelp/detect-secrets/tree/master/detect_secrets/plugins)
+for more details.
+
 ## Caveats
 
 This is not meant to be a sure-fire solution to prevent secrets from entering
