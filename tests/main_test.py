@@ -103,26 +103,6 @@ class TestMain(object):
 
         mock_baseline_initialize.assert_not_called()
 
-    def test_scan_string_basic_default(
-        self,
-        mock_baseline_initialize,
-    ):
-        with mock_stdin(
-            '012345678ab',
-        ), mock_printer(
-            main_module,
-        ) as printer_shim:
-            assert main('scan --string'.split()) == 0
-            assert uncolor(printer_shim.message) == textwrap.dedent("""
-                AWSKeyDetector     : False
-                ArtifactoryDetector: False
-                BasicAuthDetector  : False
-                PrivateKeyDetector : False
-                SlackDetector      : False
-            """)[1:]
-
-        mock_baseline_initialize.assert_not_called()
-
     def test_scan_string_cli_overrides_stdin(self):
         with mock_stdin(
             '012345678ab',
@@ -539,37 +519,6 @@ class TestMain(object):
                 baseline_dict['results'][filename][0]['type'],
                 expected_output,
             )
-
-    def test_scan_with_default_plugin(self):
-        filename = 'test_data/short_files/last_line.ini'
-        plugins_used = [
-            {
-                "name": "AWSKeyDetector",
-            },
-            {
-                "name": "ArtifactoryDetector",
-            },
-            {
-                "name": "BasicAuthDetector",
-            },
-            {
-                "name": "PrivateKeyDetector",
-            },
-            {
-                "name": "SlackDetector",
-            },
-        ]
-
-        with mock_stdin(), mock_printer(
-            # To extract the baseline output
-            main_module,
-        ) as printer_shim:
-            main(['scan', filename])
-            baseline = printer_shim.message
-
-        baseline_dict = json.loads(baseline)
-        assert baseline_dict['results'] == {}
-        assert baseline_dict['plugins_used'] == plugins_used
 
     def test_audit_diff_not_enough_files(self):
         assert main('audit --diff fileA'.split()) == 1
