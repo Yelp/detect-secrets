@@ -103,8 +103,6 @@ class TestMain(object):
 
         mock_baseline_initialize.assert_not_called()
 
-<<<<<<< HEAD
-=======
     def test_scan_string_basic_default(
         self,
         mock_baseline_initialize,
@@ -125,7 +123,6 @@ class TestMain(object):
 
         mock_baseline_initialize.assert_not_called()
 
->>>>>>> 5ac3771... Adds artifactory credential detector to plugins (#136)
     def test_scan_string_cli_overrides_stdin(self):
         with mock_stdin(
             '012345678ab',
@@ -543,8 +540,6 @@ class TestMain(object):
                 expected_output,
             )
 
-<<<<<<< HEAD
-=======
     def test_scan_with_default_plugin(self):
         filename = 'test_data/short_files/last_line.ini'
         plugins_used = [
@@ -576,7 +571,6 @@ class TestMain(object):
         assert baseline_dict['results'] == {}
         assert baseline_dict['plugins_used'] == plugins_used
 
->>>>>>> 5ac3771... Adds artifactory credential detector to plugins (#136)
     def test_audit_diff_not_enough_files(self):
         assert main('audit --diff fileA'.split()) == 1
 
