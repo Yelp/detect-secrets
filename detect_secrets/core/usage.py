@@ -294,7 +294,6 @@ class PluginOptions(object):
             classname='ArtifactoryDetector',
             disable_flag_text='--no-artifactory-scan',
             disable_help_text='Disable scanning for Artifactory credentials',
-            is_default=True,
         ),
     ]
 
