@@ -4,6 +4,7 @@ try:
 except ImportError:  # pragma: no cover
     from functools32 import lru_cache
 
+from ..artifactory import ArtifactoryDetector               # noqa: F401
 from ..aws import AWSKeyDetector                            # noqa: F401
 from ..base import BasePlugin
 from ..basic_auth import BasicAuthDetector                  # noqa: F401
@@ -12,7 +13,6 @@ from ..high_entropy_strings import HexHighEntropyString     # noqa: F401
 from ..keyword import KeywordDetector                       # noqa: F401
 from ..private_key import PrivateKeyDetector                # noqa: F401
 from ..slack import SlackDetector                           # noqa: F401
-from ..artifactory import ArtifactoryDetector               # noqa: F401
 from detect_secrets.core.log import log
 from detect_secrets.core.usage import PluginOptions
 
