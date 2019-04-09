@@ -172,6 +172,9 @@ class TestPreCommitHook(object):
                     'name': 'AWSKeyDetector',
                 },
                 {
+                    'name': 'ArtifactoryDetector',
+                },
+                {
                     'base64_limit': 4.5,
                     'name': 'Base64HighEntropyString',
                 },

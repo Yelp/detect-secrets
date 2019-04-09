@@ -290,6 +290,11 @@ class PluginOptions(object):
             disable_flag_text='--no-slack-scan',
             disable_help_text='Disables scanning for Slack tokens.',
         ),
+        PluginDescriptor(
+            classname='ArtifactoryDetector',
+            disable_flag_text='--no-artifactory-scan',
+            disable_help_text='Disable scanning for Artifactory credentials',
+        ),
     ]
 
     def __init__(self, parser):

@@ -89,6 +89,7 @@ class TestMain(object):
             assert main('scan --string'.split()) == 0
             assert uncolor(printer_shim.message) == textwrap.dedent("""
                 AWSKeyDetector         : False
+                ArtifactoryDetector    : False
                 Base64HighEntropyString: {}
                 BasicAuthDetector      : False
                 HexHighEntropyString   : {}
@@ -111,6 +112,7 @@ class TestMain(object):
             assert main('scan --string 012345'.split()) == 0
             assert uncolor(printer_shim.message) == textwrap.dedent("""
                 AWSKeyDetector         : False
+                ArtifactoryDetector    : False
                 Base64HighEntropyString: False (2.585)
                 BasicAuthDetector      : False
                 HexHighEntropyString   : False (2.121)
@@ -233,6 +235,9 @@ class TestMain(object):
                         "name": "AWSKeyDetector",
                     },
                     {
+                        "name": "ArtifactoryDetector",
+                    },
+                    {
                         "base64_limit": 1.5,
                         "name": "Base64HighEntropyString",
                     },
@@ -266,6 +271,9 @@ class TestMain(object):
                 [
                     {
                         "name": "AWSKeyDetector",
+                    },
+                    {
+                        "name": "ArtifactoryDetector",
                     },
                     {
                         "name": "BasicAuthDetector",
@@ -352,6 +360,9 @@ class TestMain(object):
                         "name": "AWSKeyDetector",
                     },
                     {
+                        "name": "ArtifactoryDetector",
+                    },
+                    {
                         "base64_limit": 5.5,
                         "name": "Base64HighEntropyString",
                     },
@@ -380,6 +391,9 @@ class TestMain(object):
                 [
                     {
                         "name": "AWSKeyDetector",
+                    },
+                    {
+                        "name": "ArtifactoryDetector",
                     },
                     {
                         "base64_limit": 2.5,

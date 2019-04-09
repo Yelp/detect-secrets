@@ -4,6 +4,7 @@ try:
 except ImportError:  # pragma: no cover
     from functools32 import lru_cache
 
+from ..artifactory import ArtifactoryDetector               # noqa: F401
 from ..aws import AWSKeyDetector                            # noqa: F401
 from ..base import BasePlugin
 from ..basic_auth import BasicAuthDetector                  # noqa: F401
