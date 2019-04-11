@@ -120,15 +120,16 @@ FALSE_POSITIVES = {
 }
 QUOTE = r'[\'"]'
 # includes ], ', " as closing
-CLOSING = r'[]\'"]'
+CLOSING = r'[]\'"]{0,2}'
 # non-greedy match
 OPTIONAL_WHITESPACE = r'\s*?'
+OPTIONAL_NON_WHITESPACE = r'[^\s]*?'
 SECRET = r'[^\s]+'
 BLACKLIST_REGEX = r'|'.join(BLACKLIST)
 
 FOLLOWED_BY_COLON_REGEX = re.compile(
     # e.g. api_key: foo
-    r'({blacklist}){closing}?:{whitespace}({quote}?)({secret})(\2)'.format(
+    r'({blacklist})({closing})?:{whitespace}({quote}?)({secret})(\3)'.format(
         blacklist=BLACKLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
@@ -138,7 +139,7 @@ FOLLOWED_BY_COLON_REGEX = re.compile(
 )
 FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX = re.compile(
     # e.g. api_key: "foo"
-    r'({blacklist}){closing}?:({whitespace})({quote})({secret})(\3)'.format(
+    r'({blacklist})({closing})?:({whitespace})({quote})({secret})(\4)'.format(
         blacklist=BLACKLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
@@ -148,7 +149,7 @@ FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX = re.compile(
 )
 FOLLOWED_BY_EQUAL_SIGNS_REGEX = re.compile(
     # e.g. my_password = bar
-    r'({blacklist})({quote}?){closing}?{whitespace}={whitespace}({quote}?)({secret})(\3)'.format(
+    r'({blacklist})({closing})?{whitespace}={whitespace}({quote}?)({secret})(\3)'.format(
         blacklist=BLACKLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
@@ -158,7 +159,7 @@ FOLLOWED_BY_EQUAL_SIGNS_REGEX = re.compile(
 )
 FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
     # e.g. my_password = "bar"
-    r'({blacklist})({quote}?){closing}?{whitespace}={whitespace}({quote})({secret})(\3)'.format(
+    r'({blacklist})({closing})?{whitespace}={whitespace}({quote})({secret})(\3)'.format(
         blacklist=BLACKLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
@@ -168,8 +169,9 @@ FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
 )
 FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX = re.compile(
     # e.g. private_key "something";
-    r'({blacklist})({secret})?{whitespace}({quote})({secret})(\3);'.format(
+    r'({blacklist}){nonWhitespace}{whitespace}({quote})({secret})(\2);'.format(
         blacklist=BLACKLIST_REGEX,
+        nonWhitespace=OPTIONAL_NON_WHITESPACE,
         quote=QUOTE,
         closing=CLOSING,
         whitespace=OPTIONAL_WHITESPACE,
