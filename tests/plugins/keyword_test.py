@@ -13,58 +13,104 @@ QUOTES_REQUIRED_FILE_EXTENSIONS = (
     '.java',
     '.py',
 )
-STANDARD_NEGATIVES = [
-    # FOLLOWED_BY_COLON_RE
-    'theapikey: ""',  # Nothing in the quotes
-    'theapikey: "somefakekey"',  # 'fake' in the secret
-    'theapikeyforfoo:hopenobodyfindsthisone',  # Characters between apikey and :
-    # FOLLOWED_BY_EQUAL_SIGNS_RE
-    'some_key = "real_secret"',  # We cannot make 'key' a Keyword, too noisy
-    'my_password = foo(hey)you',  # Has a ( followed by a )
-    "my_password = request.json_body['hey']",  # Has a [ followed by a ]
-    'my_password = ""',  # Nothing in the quotes
-    "my_password = ''",  # Nothing in the quotes
-    'my_password = True',  # 'True' is a known false-positive
-    'my_password = "fakesecret"',  # 'fake' in the secret
-    'login(username=username, password=password)',  # secret is password)
-    'open(self, password = ""):',  # secrets is ""):
-    'open(self, password = ""):',  # secrets is ""):
-    # FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE
-    'private_key "";',  # Nothing in the quotes
-    'private_key \'"no spaces\';',  # Has whitespace in the secret
-    'private_key "fake";',  # 'fake' in the secret
-    'private_key "hopenobodyfindsthisone\';',  # Double-quote does not match single-quote
-    'private_key \'hopenobodyfindsthisone";',  # Single-quote does not match double-quote
-    'password: ${link}',  # Has a ${ followed by a }
-]
-STANDARD_POSITIVES = {
-    # FOLLOWED_BY_COLON_RE
-    "'theapikey': '{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
-    '"theapikey": "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-    'apikey: {{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-    'apikey:{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-    'theapikey:{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-    'apikey: "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-    "apikey:  '{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
-    # FOLLOWED_BY_EQUAL_SIGNS_RE
-    'some_dict["secret"] = "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-    "some_dict['secret'] = {{h}o)p${e]nob(ody[finds>-_$#thisone}}",
-    'my_password={{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-    'my_password= {{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-    'my_password ={{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-    'my_password = {{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-    'my_password ={{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-    'the_password={{h}o)p${e]nob(ody[finds>-_$#thisone}}\n',
-    'the_password= "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"\n',
-    'the_password=\'{{h}o)p${e]nob(ody[finds>-_$#thisone}}\'\n',
-    # FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE
-    'apikey "{{h}o)p${e]nob(ody[finds>-_$#thisone}}";',  # Double-quotes
-    'fooapikeyfoo "{{h}o)p${e]nob(ody[finds>-_$#thisone}}";',  # Double-quotes
-    'fooapikeyfoo"{{h}o)p${e]nob(ody[finds>-_$#thisone}}";',  # Double-quotes
-    'private_key \'{{h}o)p${e]nob(ody[finds>-_$#thisone}}\';',  # Single-quotes
-    'fooprivate_keyfoo\'{{h}o)p${e]nob(ody[finds>-_$#thisone}}\';',  # Single-quotes
-    'fooprivate_key\'{{h}o)p${e]nob(ody[finds>-_$#thisone}}\';',  # Single-quotes
+FOLLOWED_BY_COLON_RE = {
+    "negatives": {
+        "quotes_required": [
+            'theapikey: ""',  # Nothing in the quotes
+            'theapikey: "somefakekey"',  # 'fake' in the secret
+        ],
+        "quotes_not_required": [
+            'theapikeyforfoo:hopenobodyfindsthisone',  # Characters between apikey and :
+            'password: ${link}',  # Has a ${ followed by a }
+        ],
+    },
+    "positives": {
+        "quotes_required": [
+            "'theapikey': '{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
+            '"theapikey": "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+            'apikey: "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+            "apikey:  '{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
+        ],
+        "quotes_not_required": [
+            'apikey: {{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+            'apikey:{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+            'theapikey:{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+        ],
+    },
 }
+FOLLOWED_BY_EQUAL_SIGNS_RE = {
+    "negatives": {
+        "quotes_required": [
+            'some_key = "real_secret"',  # We cannot make 'key' a Keyword, too noisy
+            'my_password = ""',  # Nothing in the quotes
+            "my_password = ''",  # Nothing in the quotes
+            'my_password = "fakesecret"',  # 'fake' in the secret
+            'open(self, password = ""):',  # secrets is ""):
+            'open(self, password = ""):',  # secrets is ""):
+        ],
+        "quotes_not_required": [
+            'my_password = foo(hey)you',  # Has a ( followed by a )
+            "my_password = request.json_body['hey']",  # Has a [ followed by a ]
+            'my_password = True',  # 'True' is a known false-positive
+            'login(username=username, password=password)',  # secret is password)
+        ],
+    },
+    "positives": {
+        "quotes_required": [
+            'some_dict["secret"] = "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+            'the_password= "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"\n',
+            'the_password=\'{{h}o)p${e]nob(ody[finds>-_$#thisone}}\'\n',
+        ],
+        "quotes_not_required": [
+            "some_dict['secret'] = {{h}o)p${e]nob(ody[finds>-_$#thisone}}",
+            'my_password={{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+            'my_password= {{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+            'my_password ={{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+            'my_password = {{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+            'my_password ={{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+            'the_password={{h}o)p${e]nob(ody[finds>-_$#thisone}}\n',
+        ],
+    },
+}
+FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE = {
+    "negatives": {
+        "quotes_required": [
+            'private_key "";',  # Nothing in the quotes
+            'private_key \'"no spaces\';',  # Has whitespace in the secret
+            'private_key "fake";',  # 'fake' in the secret
+            'private_key "hopenobodyfindsthisone\';',  # Double-quote does not match single-quote
+            'private_key \'hopenobodyfindsthisone";',  # Single-quote does not match double-quote
+        ],
+    },
+    "positives": {
+        "quotes_required": [
+            'apikey "{{h}o)p${e]nob(ody[finds>-_$#thisone}}";',  # Double-quotes
+            'fooapikeyfoo "{{h}o)p${e]nob(ody[finds>-_$#thisone}}";',  # Double-quotes
+            'fooapikeyfoo"{{h}o)p${e]nob(ody[finds>-_$#thisone}}";',  # Double-quotes
+            'private_key \'{{h}o)p${e]nob(ody[finds>-_$#thisone}}\';',  # Single-quotes
+            'fooprivate_keyfoo\'{{h}o)p${e]nob(ody[finds>-_$#thisone}}\';',  # Single-quotes
+            'fooprivate_key\'{{h}o)p${e]nob(ody[finds>-_$#thisone}}\';',  # Single-quotes
+        ],
+    },
+}
+
+STANDARD_NEGATIVES = []
+STANDARD_POSITIVES = []
+
+STANDARD_NEGATIVES.extend(
+    FOLLOWED_BY_COLON_RE.get("negatives").get("quotes_required")
+    + FOLLOWED_BY_COLON_RE.get("negatives").get("quotes_not_required")
+    + FOLLOWED_BY_EQUAL_SIGNS_RE.get("negatives").get("quotes_required")
+    + FOLLOWED_BY_EQUAL_SIGNS_RE.get("negatives").get("quotes_not_required")
+    + FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE.get("negatives").get("quotes_required"),
+)
+STANDARD_POSITIVES.extend(
+    FOLLOWED_BY_COLON_RE.get("positives").get("quotes_required")
+    + FOLLOWED_BY_COLON_RE.get("positives").get("quotes_not_required")
+    + FOLLOWED_BY_EQUAL_SIGNS_RE.get("positives").get("quotes_required")
+    + FOLLOWED_BY_EQUAL_SIGNS_RE.get("positives").get("quotes_not_required")
+    + FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE.get("positives").get("quotes_required"),
+)
 
 
 class TestKeywordDetector(object):
@@ -82,8 +128,8 @@ class TestKeywordDetector(object):
         for potential_secret in output:
             assert 'mock_filename' == potential_secret.filename
             assert (
-                potential_secret.secret_hash ==
-                PotentialSecret.hash_secret('{{h}o)p${e]nob(ody[finds>-_$#thisone}}')
+                potential_secret.secret_hash
+                == PotentialSecret.hash_secret('{{h}o)p${e]nob(ody[finds>-_$#thisone}}')
             )
 
     @pytest.mark.parametrize(
@@ -102,20 +148,9 @@ class TestKeywordDetector(object):
         (
             (positive, file_extension)
             for positive in (
-                STANDARD_POSITIVES - {
-                    # FOLLOWED_BY_COLON_QUOTES_REQUIRED_RE
-                    'apikey: {{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-                    'apikey:{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-                    'theapikey:{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-                    # FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_RE
-                    "some_dict['secret'] = {{h}o)p${e]nob(ody[finds>-_$#thisone}}",
-                    'my_password={{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-                    'my_password= {{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-                    'my_password ={{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-                    'my_password = {{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-                    'my_password ={{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-                    'the_password={{h}o)p${e]nob(ody[finds>-_$#thisone}}\n',
-                }
+                FOLLOWED_BY_COLON_RE.get("positives").get("quotes_required")
+                + FOLLOWED_BY_EQUAL_SIGNS_RE.get("positives").get("quotes_required")
+                + FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE.get("positives").get("quotes_required")
             ) for file_extension in QUOTES_REQUIRED_FILE_EXTENSIONS
         ),
     )
@@ -129,8 +164,8 @@ class TestKeywordDetector(object):
         for potential_secret in output:
             assert mock_filename == potential_secret.filename
             assert (
-                potential_secret.secret_hash ==
-                PotentialSecret.hash_secret('{{h}o)p${e]nob(ody[finds>-_$#thisone}}')
+                potential_secret.secret_hash
+                == PotentialSecret.hash_secret('{{h}o)p${e]nob(ody[finds>-_$#thisone}}')
             )
 
     @pytest.mark.parametrize(
