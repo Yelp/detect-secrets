@@ -218,6 +218,9 @@ class TestKeywordDetector(object):
             for negative in (
                 STANDARD_NEGATIVES + [
                     # FOLLOWED_BY_COLON_QUOTES_REQUIRED_RE
+                    'apikey: hope]nobody[finds>-_$#thisone',
+                    'apikey:hope]nobody[finds>-_$#thisone',
+                    'theapikey:hope]nobody[finds>-_$#thisone',
                     # FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_RE
                     "some_dict['secret'] = hope]nobody[finds>-_$#thisone",
                     'my_password=hope]nobody[finds>-_$#thisone',
