@@ -21,6 +21,7 @@ FOLLOWED_BY_COLON_RE = {
         ],
         "quotes_not_required": [
             'theapikeyforfoo:hopenobodyfindsthisone',  # Characters between apikey and :
+            'password: ${link}',  # Has a ${ followed by a }
         ],
     },
     "positives": {
@@ -80,9 +81,6 @@ FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE = {
             'private_key "hopenobodyfindsthisone\';',  # Double-quote does not match single-quote
             'private_key \'hopenobodyfindsthisone";',  # Single-quote does not match double-quote
         ],
-        "quotes_not_required": [
-            'password: ${link}',  # Has a ${ followed by a }
-        ],
     },
     "positives": {
         "quotes_required": [
@@ -105,7 +103,6 @@ STANDARD_NEGATIVES.extend(
     + FOLLOWED_BY_EQUAL_SIGNS_RE.get("negatives").get("quotes_required")
     + FOLLOWED_BY_EQUAL_SIGNS_RE.get("negatives").get("quotes_not_required")
     + FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE.get("negatives").get("quotes_required")
-    + FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE.get("negatives").get("quotes_not_required")
 )
 STANDARD_POSITIVES.extend(
     FOLLOWED_BY_COLON_RE.get("positives").get("quotes_required")
