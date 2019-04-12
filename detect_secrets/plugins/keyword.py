@@ -178,6 +178,16 @@ FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX = re.compile(
         secret=SECRET,
     ),
 )
+FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
+    # e.g. my_password := "bar" or my_password := bar
+    r'({blacklist})({closing})?{whitespace}:=?{whitespace}({quote}?)({secret})(\3)'.format(
+        blacklist=BLACKLIST_REGEX,
+        closing=CLOSING,
+        quote=QUOTE,
+        whitespace=OPTIONAL_WHITESPACE,
+        secret=SECRET,
+    ),
+)
 BLACKLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_COLON_REGEX: 4,
     FOLLOWED_BY_EQUAL_SIGNS_REGEX: 4,
@@ -187,6 +197,11 @@ QUOTES_REQUIRED_BLACKLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX: 5,
     FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 4,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
+}
+GOLANG_BLACKLIST_REGEX_TO_GROUP = {
+    FOLLOWED_BY_EQUAL_SIGNS_REGEX: 4,
+    FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
+    FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX: 4,
 }
 QUOTES_REQUIRED_FILETYPES = {
     FileType.CLS,
@@ -240,6 +255,8 @@ class KeywordDetector(BasePlugin):
 
         if filetype in QUOTES_REQUIRED_FILETYPES:
             blacklist_regex_to_group = QUOTES_REQUIRED_BLACKLIST_REGEX_TO_GROUP
+        elif filetype == FileType.GO:
+            blacklist_regex_to_group = GOLANG_BLACKLIST_REGEX_TO_GROUP
         else:
             blacklist_regex_to_group = BLACKLIST_REGEX_TO_GROUP
 

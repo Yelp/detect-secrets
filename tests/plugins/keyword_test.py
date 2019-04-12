@@ -93,6 +93,37 @@ FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE = {
         ],
     },
 }
+FOLLOWED_BY_COLON_EQUAL_SIGNS_RE = {
+    "negatives": {
+        "quotes_required": [
+            'theapikey := ""',  # Nothing in the quotes
+            'theapikey := "somefakekey"',  # 'fake' in the secret
+        ],
+        "quotes_not_required": [
+            'theapikeyforfoo := hopenobodyfindsthisone',  # Characters between apikey and :=
+        ],
+    },
+    "positives": {
+        "quotes_required": [
+            'apikey := "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+            'apikey :="{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+            'apikey  :=   "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+            "apikey := '{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
+            "apikey :='{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
+            'apikey:= "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+            'apikey:="{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+            "apikey:= '{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
+            "apikey:='{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
+            "apikey:=  '{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
+        ],
+        "quotes_not_required": [
+            "apikey := {{h}o)p${e]nob(ody[finds>-_$#thisone}}",
+            "apikey :={{h}o)p${e]nob(ody[finds>-_$#thisone}}",
+            "apikey:= {{h}o)p${e]nob(ody[finds>-_$#thisone}}",
+            "apikey:={{h}o)p${e]nob(ody[finds>-_$#thisone}}",
+        ],
+    },
+}
 
 STANDARD_NEGATIVES = []
 STANDARD_POSITIVES = []
@@ -166,6 +197,27 @@ class TestKeywordDetector(object):
             assert (
                 potential_secret.secret_hash
                 == PotentialSecret.hash_secret('{{h}o)p${e]nob(ody[finds>-_$#thisone}}')
+            )
+
+    @pytest.mark.parametrize(
+        'file_content',
+        FOLLOWED_BY_EQUAL_SIGNS_RE.get("positives").get("quotes_required")
+        + FOLLOWED_BY_EQUAL_SIGNS_RE.get("positives").get("quotes_not_required")
+        + FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE.get("positives").get("quotes_required")
+        + FOLLOWED_BY_COLON_EQUAL_SIGNS_RE.get("positives").get("quotes_required")
+        + FOLLOWED_BY_COLON_EQUAL_SIGNS_RE.get("positives").get("quotes_not_required"),
+    )
+    def test_analyze_go_positives(self, file_content):
+        logic = KeywordDetector()
+
+        f = mock_file_object(file_content)
+        output = logic.analyze(f, 'mock_filename.go')
+        assert len(output) == 1
+        for potential_secret in output:
+            assert 'mock_filename.go' == potential_secret.filename
+            assert (
+                potential_secret.secret_hash ==
+                PotentialSecret.hash_secret('{{h}o)p${e]nob(ody[finds>-_$#thisone}}')
             )
 
     @pytest.mark.parametrize(
