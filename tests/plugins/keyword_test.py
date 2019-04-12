@@ -137,7 +137,6 @@ STANDARD_NEGATIVES.extend(
     + FOLLOWED_BY_COLON_EQUAL_SIGNS_RE.get("negatives").get("quotes_required")
     + FOLLOWED_BY_COLON_EQUAL_SIGNS_RE.get("negatives").get("quotes_not_required"),
 )
-
 STANDARD_POSITIVES.extend(
     FOLLOWED_BY_COLON_RE.get("positives").get("quotes_required")
     + FOLLOWED_BY_COLON_RE.get("positives").get("quotes_not_required")
