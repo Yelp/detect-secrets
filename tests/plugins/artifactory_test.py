@@ -18,6 +18,8 @@ class TestArtifactoryDetector(object):
             ('=AKCxxxxxxxxxx', True),
             ('\"AP6xxxxxxxxxx\"', True),
             ('\"AKCxxxxxxxxxx\"', True),
+            ('artif-key:AP6xxxxxxxxxx', True),
+            ('artif-key:AKCxxxxxxxxxx', True),
             ('X-JFrog-Art-Api: AKCxxxxxxxxxx', True),
             ('X-JFrog-Art-Api: AP6xxxxxxxxxx', True),
             ('artifactoryx:_password=AKCxxxxxxxxxx', True),
