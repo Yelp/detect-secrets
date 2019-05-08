@@ -128,7 +128,15 @@ API_KEY = "blah-blah-but-actually-not-secret"  # pragma: whitelist secret
 print('hello world')
 ```
 
-Inline commenting syntax for a multitude of languages is supported.
+Inline commenting syntax for a multitude of languages is supported:
+
+| Comment Style | Language Support |
+| :---:     | :---:       |
+| `#` | e.g. Python, Dockerfile, YAML |
+| `//` | e.g. Go, C++, Java |
+| `/* */` | e.g. C, Java|
+| `'` | e.g. Visual Basic .NET|
+| `--` | e.g. SQL, Haskell|
 
 This may be a convenient way for you to whitelist secrets, without having to
 regenerate the entire baseline again. Furthermore, this makes the whitelisted
