@@ -4,7 +4,7 @@ import re
 WHITELIST_REGEXES = [
     re.compile(r)
     for r in [
-        r'[ \t]+{} *pragma: ?whitelist[ -]secret{}[ \t]*$'.format(start, end)
+        r'[ \t]+{} *pragma: ?whitelist[ -]secret.*{}[ \t]*$'.format(start, end)
         for start, end in (
             ('#', ''),                    # e.g. python or yaml
             ('//', ''),                   # e.g. golang
