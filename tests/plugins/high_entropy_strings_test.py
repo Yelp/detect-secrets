@@ -101,10 +101,12 @@ class HighEntropyStringsTest(object):
         [
             # Test inline annotation for whitelisting
             "'{secret}'  # pragma: whitelist secret",
+            "'{secret}'  # pragma: whitelist secret more text",
             "'{secret}' #  pragma: whitelist secret",
             "'{secret}'  // pragma: whitelist secret",
             "'{secret}' //  pragma: whitelist secret",
             "'{secret}'  /* pragma: whitelist secret */",
+            "'{secret}'  /* pragma: whitelist secret more text */",
             "'{secret}' /*  pragma: whitelist secret  */",
             "'{secret}'  ' pragma: whitelist secret",
             "'{secret}' '  pragma: whitelist secret",
