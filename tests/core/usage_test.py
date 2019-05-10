@@ -40,6 +40,7 @@ class TestPluginOptions(object):
             'AWSKeyDetector': {},
             'SlackDetector': {},
             'ArtifactoryDetector': {},
+            'StripeDetector': {},
         }
         assert not hasattr(args, 'no_private_key_scan')
 

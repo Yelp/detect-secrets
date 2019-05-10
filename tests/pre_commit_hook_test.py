@@ -194,6 +194,9 @@ class TestPreCommitHook(object):
                 {
                     'name': 'SlackDetector',
                 },
+                {
+                    'name': 'StripeDetector',
+                },
             ]
 
     def test_writes_new_baseline_if_modified(self):
