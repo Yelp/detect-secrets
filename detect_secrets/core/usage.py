@@ -295,6 +295,11 @@ class PluginOptions(object):
             disable_flag_text='--no-artifactory-scan',
             disable_help_text='Disable scanning for Artifactory credentials',
         ),
+        PluginDescriptor(
+            classname='StripeDetector',
+            disable_flag_text='--no-stripe-scan',
+            disable_help_text='Disable scanning for Stripe keys',
+        ),
     ]
 
     def __init__(self, parser):

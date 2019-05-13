@@ -96,6 +96,7 @@ class TestMain(object):
                 KeywordDetector        : False
                 PrivateKeyDetector     : False
                 SlackDetector          : False
+                StripeDetector         : False
             """.format(
                 expected_base64_result,
                 expected_hex_result,
@@ -119,6 +120,7 @@ class TestMain(object):
                 KeywordDetector        : False
                 PrivateKeyDetector     : False
                 SlackDetector          : False
+                StripeDetector         : False
             """)[1:]
 
     def test_scan_with_all_files_flag(self, mock_baseline_initialize):
@@ -257,6 +259,9 @@ class TestMain(object):
                     {
                         "name": "SlackDetector",
                     },
+                    {
+                        "name": "StripeDetector",
+                    },
                 ],
             ),
             (  # remove some plugins from all plugins
@@ -287,6 +292,9 @@ class TestMain(object):
                     },
                     {
                         "name": "SlackDetector",
+                    },
+                    {
+                        "name": "StripeDetector",
                     },
                 ],
             ),
@@ -375,6 +383,9 @@ class TestMain(object):
                     {
                         "name": "SlackDetector",
                     },
+                    {
+                        "name": "StripeDetector",
+                    },
                 ],
             ),
             (  # use plugin limit from baseline when using --use-all-plugins and no input limit
@@ -407,6 +418,9 @@ class TestMain(object):
                     },
                     {
                         "name": "SlackDetector",
+                    },
+                    {
+                        "name": "StripeDetector",
                     },
                 ],
             ),
