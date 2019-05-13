@@ -24,6 +24,43 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [@xxxx]: https://github.com/xxxx
 -->
 
+### v0.12.3
+##### May 13th, 2019
+
+#### :tada: New Features
+
+- Added an `ArtifactoryDetector` plugin ([#157] and [#163], thanks [@justineyster])
+- Added support for Golang string assignments in the `KeywordDetector` plugin ([#162], thanks [@baboateng])
+- Added support for XML inline whitelisting comments ([#152], thanks [@killuazhu])
+- Added support for text after inline whitelisting comments ([#168], thanks [@dgzlopes])
+
+#### :bug: Bugfixes
+
+- Fixed a bug where filetype detection failed due to an inconsistent `configparser` import ([#155], thanks [@Namburgesas])
+
+#### :snake: Miscellaneous
+- **Greatly** improved the readability of regular expressions in the `KeywordDetector` plugin, and the maintainability of the corresponding test ([#160] and [#161], thanks [@baboateng])
+- Added a contribution guide ([#166], thanks [@zioalex])
+- Documented all of our inline whitelisting directives ([#165] and [#172], thanks [@dgzlopes])
+
+[#152]: https://github.com/Yelp/detect-secrets/pull/152
+[#155]: https://github.com/Yelp/detect-secrets/pull/155
+[#157]: https://github.com/Yelp/detect-secrets/pull/157
+[#160]: https://github.com/Yelp/detect-secrets/pull/160
+[#161]: https://github.com/Yelp/detect-secrets/pull/161
+[#162]: https://github.com/Yelp/detect-secrets/pull/162
+[#163]: https://github.com/Yelp/detect-secrets/pull/163
+[#165]: https://github.com/Yelp/detect-secrets/pull/165
+[#166]: https://github.com/Yelp/detect-secrets/pull/166
+[#168]: https://github.com/Yelp/detect-secrets/pull/168
+[#172]: https://github.com/Yelp/detect-secrets/pull/172
+[@baboateng]: https://github.com/baboateng
+[@dgzlopes]: https://github.com/dgzlopes
+[@justineyster]: https://github.com/justineyster
+[@Namburgesas]: https://github.com/Namburgesas
+[@zioalex]: https://github.com/zioalex
+
+
 ### v0.12.2
 ##### March 21st, 2019
 
