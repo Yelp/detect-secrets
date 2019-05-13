@@ -45,6 +45,7 @@ BLACKLIST = (
     'private_key',
     'secret',
     'secrete',
+    'token',
 )
 FALSE_POSITIVES = {
     '""',

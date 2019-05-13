@@ -18,6 +18,7 @@ FOLLOWED_BY_COLON_RE = {
         "quotes_required": [
             'theapikey: ""',  # Nothing in the quotes
             'theapikey: "somefakekey"',  # 'fake' in the secret
+            'token: "somefaketoken"',  # 'fake' in the secret
         ],
         "quotes_not_required": [
             'theapikeyforfoo:hopenobodyfindsthisone',  # Characters between apikey and :
@@ -30,11 +31,13 @@ FOLLOWED_BY_COLON_RE = {
             '"theapikey": "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
             'apikey: "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
             "apikey:  '{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
+            "token:  '{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
         ],
         "quotes_not_required": [
             'apikey: {{h}o)p${e]nob(ody[finds>-_$#thisone}}',
             'apikey:{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
             'theapikey:{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+            'token:{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
         ],
     },
 }
@@ -60,6 +63,7 @@ FOLLOWED_BY_EQUAL_SIGNS_RE = {
             'some_dict["secret"] = "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
             'the_password= "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"\n',
             'the_password=\'{{h}o)p${e]nob(ody[finds>-_$#thisone}}\'\n',
+            'apitoken=\'{{h}o)p${e]nob(ody[finds>-_$#thisone}}\'\n',
         ],
         "quotes_not_required": [
             "some_dict['secret'] = {{h}o)p${e]nob(ody[finds>-_$#thisone}}",
@@ -69,6 +73,7 @@ FOLLOWED_BY_EQUAL_SIGNS_RE = {
             'my_password = {{h}o)p${e]nob(ody[finds>-_$#thisone}}',
             'my_password ={{h}o)p${e]nob(ody[finds>-_$#thisone}}',
             'the_password={{h}o)p${e]nob(ody[finds>-_$#thisone}}\n',
+            'my_token={{h}o)p${e]nob(ody[finds>-_$#thisone}}\n',
         ],
     },
 }
@@ -98,6 +103,7 @@ FOLLOWED_BY_COLON_EQUAL_SIGNS_RE = {
         "quotes_required": [
             'theapikey := ""',  # Nothing in the quotes
             'theapikey := "somefakekey"',  # 'fake' in the secret
+            'token := "somefakekey"',  # 'fake' in the secret
         ],
         "quotes_not_required": [
             'theapikeyforfoo := hopenobodyfindsthisone',  # Characters between apikey and :=
@@ -115,12 +121,14 @@ FOLLOWED_BY_COLON_EQUAL_SIGNS_RE = {
             "apikey:= '{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
             "apikey:='{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
             "apikey:=  '{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
+            "token:=  '{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
         ],
         "quotes_not_required": [
             "apikey := {{h}o)p${e]nob(ody[finds>-_$#thisone}}",
             "apikey :={{h}o)p${e]nob(ody[finds>-_$#thisone}}",
             "apikey:= {{h}o)p${e]nob(ody[finds>-_$#thisone}}",
             "apikey:={{h}o)p${e]nob(ody[finds>-_$#thisone}}",
+            "thetoken:={{h}o)p${e]nob(ody[finds>-_$#thisone}}",
         ],
     },
 }
