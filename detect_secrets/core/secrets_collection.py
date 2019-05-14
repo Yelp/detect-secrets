@@ -8,6 +8,7 @@ from time import gmtime
 from time import strftime
 
 from detect_secrets import VERSION
+from detect_secrets.core.constants import IGNORED_FILE_EXTENSIONS
 from detect_secrets.core.log import log
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.common import initialize
@@ -200,7 +201,8 @@ class SecretsCollection(object):
 
         if os.path.islink(filename):
             return False
-
+        if os.path.splitext(filename)[1] in IGNORED_FILE_EXTENSIONS:
+            return False
         try:
             with codecs.open(filename, encoding='utf-8') as f:
                 self._extract_secrets_from_file(f, filename_key)
