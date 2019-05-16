@@ -167,7 +167,7 @@ def merge_baseline(old_baseline, new_baseline):
     """Updates baseline to be compatible with the latest version of
     detect-secrets.
 
-    Currently, this only exists to transfer whitelisted secrets across
+    Currently, this only exists to transfer allowlisted secrets across
     to the new baseline, and will only work with baselines created
     after v0.9.
 

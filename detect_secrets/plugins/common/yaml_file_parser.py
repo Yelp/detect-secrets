@@ -1,6 +1,6 @@
 import yaml
 
-from .constants import WHITELIST_REGEX
+from .constants import ALLOWLIST_REGEX
 
 
 class YamlFileParser(object):
@@ -122,7 +122,7 @@ class YamlFileParser(object):
     def get_ignored_lines(self):
         """
         Return a set of integers that refer to line numbers that were
-        whitelisted by the user and should be ignored.
+        allowlisted by the user and should be ignored.
 
         We need to parse the file separately from PyYAML parsing because
         the parser drops the comments (at least up to version 3.13):
@@ -134,7 +134,7 @@ class YamlFileParser(object):
 
         for line_number, line in enumerate(self.content.split('\n'), 1):
             if (
-                WHITELIST_REGEX['yaml'].search(line)
+                ALLOWLIST_REGEX['yaml'].search(line)
 
                 or (
                     self.exclude_lines_regex and

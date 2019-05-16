@@ -32,13 +32,13 @@ from .base import RegexBasedDetector
 
 
 class PrivateKeyDetector(RegexBasedDetector):
-    """This checks for private keys by determining whether the blacklisted
+    """This checks for private keys by determining whether the denylisted
     lines are present in the analyzed string.
     """
 
     secret_type = 'Private Key'
 
-    blacklist = [
+    denylist = [
         re.compile(regexp)
         for regexp in (
             r'BEGIN DSA PRIVATE KEY',
