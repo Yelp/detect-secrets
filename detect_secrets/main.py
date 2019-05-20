@@ -115,6 +115,7 @@ def _perform_scan(args, plugins):
 
     :rtype: dict
     """
+
     old_baseline = _get_existing_baseline(args.import_filename)
     if old_baseline:
         plugins = initialize.merge_plugin_from_baseline(
