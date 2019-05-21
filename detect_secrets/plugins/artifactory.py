@@ -9,7 +9,7 @@ class ArtifactoryDetector(RegexBasedDetector):
 
     secret_type = 'Artifactory Credentials'
 
-    blacklist = [
+    denylist = [
         # artifactory tokens begin with AKC
         re.compile(r'(\s|=|:|"|^)AKC\w{10,}'),    # api token
         # artifactory encrypted passwords begin with AP6

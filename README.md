@@ -89,14 +89,14 @@ either the client-side pre-commit hook, or the server-side secret scanner.
 2. **Server-side Secret Scanning**, to periodically scan tracked repositories,
    and make sure developers didn't accidentally skip the pre-commit check.
 
-3. **Secrets Baseline**, to whitelist pre-existing secrets in the repository,
+3. **Secrets Baseline**, to allowlist pre-existing secrets in the repository,
    so that they won't be continuously caught through scan iterations.
 
 ### Client-side `pre-commit` Hook
 
 See [pre-commit](https://github.com/pre-commit/pre-commit) for instructions
 to install the pre-commit framework. The example usage above has a sample
-installation configuration, with a whitelisted secrets baseline.
+installation configuration, with a allowlisted secrets baseline.
 
 Hooks available:
 
@@ -118,13 +118,13 @@ $ pip install detect-secrets
 Remember to initialize your baseline with the same plugin configurations
 as your pre-commit hook, and server-side secret scanner!
 
-#### Inline Whitelisting
+#### Inline Allowlisting
 
 To tell `detect-secrets` to ignore a particular line of code, simply append an
-inline `pragma: whitelist secret` comment. For example:
+inline `pragma: allowlist secret` comment. For example:
 
 ```python
-API_KEY = "blah-blah-but-actually-not-secret"  # pragma: whitelist secret
+API_KEY = "blah-blah-but-actually-not-secret"  # pragma: allowlist secret
 print('hello world')
 ```
 
@@ -139,8 +139,8 @@ Inline commenting syntax for a multitude of languages is supported:
 | `--` | e.g. SQL, Haskell|
 | `<!-- --!>` | e.g. XML |
 
-This may be a convenient way for you to whitelist secrets, without having to
-regenerate the entire baseline again. Furthermore, this makes the whitelisted
+This may be a convenient way for you to allowlist secrets, without having to
+regenerate the entire baseline again. Furthermore, this makes the allowlisted
 secrets easily searchable, auditable, and maintainable.
 
 ## Currently Supported Plugins

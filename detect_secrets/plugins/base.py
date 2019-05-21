@@ -4,7 +4,7 @@ from abc import abstractmethod
 from abc import abstractproperty
 
 from detect_secrets.core.potential_secret import PotentialSecret
-from detect_secrets.plugins.common.constants import WHITELIST_REGEXES
+from detect_secrets.plugins.common.constants import ALLOWLIST_REGEXES
 
 
 class BasePlugin(object):
@@ -55,7 +55,7 @@ class BasePlugin(object):
         """
         if (
             any(
-                whitelist_regex.search(string) for whitelist_regex in WHITELIST_REGEXES
+                allowlist_regex.search(string) for allowlist_regex in ALLOWLIST_REGEXES
             )
 
             or (
@@ -131,14 +131,14 @@ class RegexBasedDetector(BasePlugin):
     """Base class for regular-expression based detectors.
 
     To create a new regex-based detector, subclass this and set
-    `secret_type` with a description and `blacklist`
+    `secret_type` with a description and `denylist`
     with a sequence of regular expressions, like:
 
     class FooDetector(RegexBasedDetector):
 
         secret_type = "foo"
 
-        blacklist = (
+        denylist = (
             re.compile(r'foo'),
         )
     """
@@ -149,7 +149,7 @@ class RegexBasedDetector(BasePlugin):
         raise NotImplementedError
 
     @abstractproperty
-    def blacklist(self):
+    def denylist(self):
         raise NotImplementedError
 
     def analyze_string_content(self, string, line_num, filename):
@@ -167,6 +167,6 @@ class RegexBasedDetector(BasePlugin):
         return output
 
     def secret_generator(self, string, *args, **kwargs):
-        for regex in self.blacklist:
+        for regex in self.denylist:
             for match in regex.findall(string):
                 yield match

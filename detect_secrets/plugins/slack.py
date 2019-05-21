@@ -12,6 +12,6 @@ class SlackDetector(RegexBasedDetector):
 
     secret_type = 'Slack Token'
 
-    blacklist = (
+    denylist = (
         re.compile(r'xox(?:a|b|p|o|s|r)-(?:\d+-)+[a-z0-9]+', flags=re.IGNORECASE),
     )

@@ -35,7 +35,7 @@ from detect_secrets.core.potential_secret import PotentialSecret
 
 
 # Note: All values here should be lowercase
-BLACKLIST = (
+DENYLIST = (
     'apikey',
     'api_key',
     'aws_secret_access_key',
@@ -125,12 +125,12 @@ CLOSING = r'[]\'"]{0,2}'
 OPTIONAL_WHITESPACE = r'\s*?'
 OPTIONAL_NON_WHITESPACE = r'[^\s]*?'
 SECRET = r'[^\s]+'
-BLACKLIST_REGEX = r'|'.join(BLACKLIST)
+DENYLIST_REGEX = r'|'.join(DENYLIST)
 
 FOLLOWED_BY_COLON_REGEX = re.compile(
     # e.g. api_key: foo
-    r'({blacklist})({closing})?:{whitespace}({quote}?)({secret})(\3)'.format(
-        blacklist=BLACKLIST_REGEX,
+    r'({denylist})({closing})?:{whitespace}({quote}?)({secret})(\3)'.format(
+        denylist=DENYLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
         whitespace=OPTIONAL_WHITESPACE,
@@ -139,8 +139,8 @@ FOLLOWED_BY_COLON_REGEX = re.compile(
 )
 FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX = re.compile(
     # e.g. api_key: "foo"
-    r'({blacklist})({closing})?:({whitespace})({quote})({secret})(\4)'.format(
-        blacklist=BLACKLIST_REGEX,
+    r'({denylist})({closing})?:({whitespace})({quote})({secret})(\4)'.format(
+        denylist=DENYLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
         whitespace=OPTIONAL_WHITESPACE,
@@ -149,8 +149,8 @@ FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX = re.compile(
 )
 FOLLOWED_BY_EQUAL_SIGNS_REGEX = re.compile(
     # e.g. my_password = bar
-    r'({blacklist})({closing})?{whitespace}={whitespace}({quote}?)({secret})(\3)'.format(
-        blacklist=BLACKLIST_REGEX,
+    r'({denylist})({closing})?{whitespace}={whitespace}({quote}?)({secret})(\3)'.format(
+        denylist=DENYLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
         whitespace=OPTIONAL_WHITESPACE,
@@ -159,8 +159,8 @@ FOLLOWED_BY_EQUAL_SIGNS_REGEX = re.compile(
 )
 FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
     # e.g. my_password = "bar"
-    r'({blacklist})({closing})?{whitespace}={whitespace}({quote})({secret})(\3)'.format(
-        blacklist=BLACKLIST_REGEX,
+    r'({denylist})({closing})?{whitespace}={whitespace}({quote})({secret})(\3)'.format(
+        denylist=DENYLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
         whitespace=OPTIONAL_WHITESPACE,
@@ -169,8 +169,8 @@ FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
 )
 FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX = re.compile(
     # e.g. private_key "something";
-    r'({blacklist}){nonWhitespace}{whitespace}({quote})({secret})(\2);'.format(
-        blacklist=BLACKLIST_REGEX,
+    r'({denylist}){nonWhitespace}{whitespace}({quote})({secret})(\2);'.format(
+        denylist=DENYLIST_REGEX,
         nonWhitespace=OPTIONAL_NON_WHITESPACE,
         quote=QUOTE,
         closing=CLOSING,
@@ -180,25 +180,25 @@ FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX = re.compile(
 )
 FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
     # e.g. my_password := "bar" or my_password := bar
-    r'({blacklist})({closing})?{whitespace}:=?{whitespace}({quote}?)({secret})(\3)'.format(
-        blacklist=BLACKLIST_REGEX,
+    r'({denylist})({closing})?{whitespace}:=?{whitespace}({quote}?)({secret})(\3)'.format(
+        denylist=DENYLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
         whitespace=OPTIONAL_WHITESPACE,
         secret=SECRET,
     ),
 )
-BLACKLIST_REGEX_TO_GROUP = {
+DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_COLON_REGEX: 4,
     FOLLOWED_BY_EQUAL_SIGNS_REGEX: 4,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
 }
-QUOTES_REQUIRED_BLACKLIST_REGEX_TO_GROUP = {
+QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX: 5,
     FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 4,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
 }
-GOLANG_BLACKLIST_REGEX_TO_GROUP = {
+GOLANG_DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_EQUAL_SIGNS_REGEX: 4,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
     FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX: 4,
@@ -211,7 +211,7 @@ QUOTES_REQUIRED_FILETYPES = {
 
 
 class KeywordDetector(BasePlugin):
-    """This checks if blacklisted keywords
+    """This checks if denylisted keywords
     are present in the analyzed string.
     """
 
@@ -254,14 +254,14 @@ class KeywordDetector(BasePlugin):
         lowered_string = string.lower()
 
         if filetype in QUOTES_REQUIRED_FILETYPES:
-            blacklist_regex_to_group = QUOTES_REQUIRED_BLACKLIST_REGEX_TO_GROUP
+            denylist_regex_to_group = QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP
         elif filetype == FileType.GO:
-            blacklist_regex_to_group = GOLANG_BLACKLIST_REGEX_TO_GROUP
+            denylist_regex_to_group = GOLANG_DENYLIST_REGEX_TO_GROUP
         else:
-            blacklist_regex_to_group = BLACKLIST_REGEX_TO_GROUP
+            denylist_regex_to_group = DENYLIST_REGEX_TO_GROUP
 
-        for blacklist_regex, group_number in blacklist_regex_to_group.items():
-            match = blacklist_regex.search(lowered_string)
+        for denylist_regex, group_number in denylist_regex_to_group.items():
+            match = denylist_regex.search(lowered_string)
             if match:
                 lowered_secret = match.group(group_number)
 

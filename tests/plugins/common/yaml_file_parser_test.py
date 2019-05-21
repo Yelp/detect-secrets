@@ -9,7 +9,7 @@ class TestYamlFileParser(object):
 
     def test_get_ignored_lines(self):
         content = """keyA: value
-        keyB: \"another_value\"  # pragma: whitelist secret
+        keyB: \"another_value\"  # pragma: allowlist secret
         keyC: yet_another_value
         """
 

@@ -18,7 +18,7 @@ class BasicAuthDetector(RegexBasedDetector):
 
     secret_type = 'Basic Auth Credentials'
 
-    blacklist = [
+    denylist = [
         re.compile(
             r'://[^{}\s]+:([^{}\s]+)@'.format(
                 re.escape(RESERVED_CHARACTERS + SUB_DELIMITER_CHARACTERS),

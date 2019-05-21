@@ -12,6 +12,6 @@ class AWSKeyDetector(RegexBasedDetector):
 
     secret_type = 'AWS Access Key'
 
-    blacklist = (
+    denylist = (
         re.compile(r'AKIA[0-9A-Z]{16}'),
     )
