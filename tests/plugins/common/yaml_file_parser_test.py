@@ -10,11 +10,12 @@ class TestYamlFileParser(object):
     def test_get_ignored_lines(self):
         content = """keyA: value
         keyB: \"another_value\"  # pragma: allowlist secret
-        keyC: yet_another_value
+        keyC: \"another_value\"  # pragma: whitelist secret (backwards compatibility test)
+        keyD: yet_another_value
         """
 
         f = mock_file_object(content)
 
         ignored_lines = YamlFileParser(f).get_ignored_lines()
 
-        assert ignored_lines == {2}
+        assert ignored_lines == {2, 3}

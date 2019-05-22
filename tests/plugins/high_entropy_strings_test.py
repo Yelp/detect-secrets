@@ -116,6 +116,8 @@ class HighEntropyStringsTest(object):
             "'{secret}' <!-- # pragma: allowlist secret -->",
             "'{secret}' <!-- pragma: allowlist secret -->",
             "'{secret}' <!--  pragma: allowlist secret  -->",
+            # Test old inline annotation for backwards compatibility
+            "'{secret}'  # pragma: whitelist secret",
             # Test high entropy exclude regex
             '"CanonicalUser": "{secret}"',
             # Not a string

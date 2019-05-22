@@ -4,7 +4,8 @@ import re
 ALLOWLIST_REGEXES = [
     re.compile(r)
     for r in [
-        r'[ \t]+{} *pragma: ?allowlist[ -]secret.*?{}[ \t]*$'.format(start, end)
+        # Note: Always use allowlist, whitelist will be deprecated in the future
+        r'[ \t]+{} *pragma: ?(allow|white)list[ -]secret.*?{}[ \t]*$'.format(start, end)
         for start, end in (
             ('#', ''),                    # e.g. python or yaml
             ('//', ''),                   # e.g. golang
