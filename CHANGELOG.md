@@ -6,7 +6,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 <!--
 # A.B.C
-##### MMM DD, YYYY
+##### MMM DDth, YYYY
 
 #### :newspaper: News
 #### :mega: Release Highlights
@@ -23,6 +23,31 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#xxxx]: https://github.com/Yelp/detect-secrets/pull/xxxx
 [@xxxx]: https://github.com/xxxx
 -->
+
+### v0.12.4
+##### May 22nd, 2019
+
+#### :newspaper: News
+
+- `whitelist`/`blacklist` have been replaced with `allowlist`/`denylist` ([#178], thanks [@richo]).
+This includes using `# pragma: allowlist secret` now for inline allowlisting.
+`# pragma: whitelist secret` compatibility will be removed in a later major version bump.
+
+#### :tada: New Features
+
+- Added a `StripeDetector` plugin ([#169], thanks [@dgzlopes])
+- Improved handling of un-scannable files ([#176], thanks [@dgzlopes])
+
+#### :snake: Miscellaneous
+
+- Improved documentation of regex based detector's in the README ([#177], thanks [@dgzlopes])
+
+[#169]: https://github.com/Yelp/detect-secrets/pull/169
+[#176]: https://github.com/Yelp/detect-secrets/pull/176
+[#177]: https://github.com/Yelp/detect-secrets/pull/177
+[#178]: https://github.com/Yelp/detect-secrets/pull/178
+
+
 
 ### v0.12.3
 ##### May 13th, 2019
@@ -54,11 +79,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#166]: https://github.com/Yelp/detect-secrets/pull/166
 [#168]: https://github.com/Yelp/detect-secrets/pull/168
 [#172]: https://github.com/Yelp/detect-secrets/pull/172
-[@baboateng]: https://github.com/baboateng
-[@dgzlopes]: https://github.com/dgzlopes
-[@justineyster]: https://github.com/justineyster
-[@Namburgesas]: https://github.com/Namburgesas
-[@zioalex]: https://github.com/zioalex
+
 
 
 ### v0.12.2
@@ -69,6 +90,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 - Fixed a bug where the improved performance for high-entropy strings ([#144]) did not work on Python 2 ([#147])
 
 [#147]: https://github.com/Yelp/detect-secrets/pull/147
+
 
 
 ### v0.12.1
@@ -103,9 +125,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#143]: https://github.com/Yelp/detect-secrets/pull/143
 [#144]: https://github.com/Yelp/detect-secrets/pull/144
 [#145]: https://github.com/Yelp/detect-secrets/pull/145
-[@hpandeycodeit]: https://github.com/hpandeycodeit
-[@nymous]: https://github.com/nymous
-[@neunkasulle]: https://github.com/neunkasulle
+
 
 
 ### v0.12.0
@@ -151,8 +171,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#127]: https://github.com/Yelp/detect-secrets/pull/127
 [#128]: https://github.com/Yelp/detect-secrets/pull/128
 [#129]: https://github.com/Yelp/detect-secrets/pull/129
-[@cclauss]: https://github.com/cclauss
-[@killuazhu]: https://github.com/killuazhu
+
 
 
 ### v0.11.4
@@ -162,6 +181,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 - Fixed a `TypeError` bug introduced in [#111]  ([#116])
 
 [#116]: https://github.com/Yelp/detect-secrets/pull/116
+
 
 
 ### v0.11.3
@@ -178,12 +198,14 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#113]: https://github.com/Yelp/detect-secrets/pull/113
 
 
+
 ### v0.11.2
 ##### January 4th, 2019
 
 #### :telescope: Accuracy
 
 - [Added `null` to the `FALSE_POSITIVES` tuple for the `KeywordDetector` plugin, so we do not alert off of it](https://github.com/Yelp/detect-secrets/commit/58df82ce37d64f22cb885960c2031b5f8ebe4b75)
+
 
 
 ### v0.11.1
@@ -228,6 +250,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#109]: https://github.com/Yelp/detect-secrets/pull/109
 
 
+
 ### v0.11.0
 ##### November 26th, 2018
 
@@ -246,6 +269,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#94]: https://github.com/Yelp/detect-secrets/pull/94
 
 
+
 ### v0.10.5
 ##### October 30th, 2018
 
@@ -261,6 +285,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 - Update `scan --update` results to only propagate `is_secret` of new secrets  ([#90])
 
 [#90]: https://github.com/Yelp/detect-secrets/pull/90
+
 
 
 ### 0.10.4
@@ -284,7 +309,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 - Fixed a couple bugs in the `audit` functionality, one for small files and the other case-sensitivity in the `KeywordDetector` plugin ([#83], thanks [@jkozera])
 
 [#83]: https://github.com/Yelp/detect-secrets/pull/83
-[@jkozera]: https://github.com/jkozera
+
 
 
 ### 0.10.3
@@ -309,7 +334,6 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#80]: https://github.com/Yelp/detect-secrets/pull/80
 [#81]: https://github.com/Yelp/detect-secrets/pull/81
 
-[@JoshuaRLi]: https://github.com/JoshuaRLi
 
 
 ### 0.10.2
@@ -329,6 +353,15 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 - Fixed a typo in the README ([#68], thanks [@whathejoe])
 
+
+[#68]: https://github.com/Yelp/detect-secrets/pull/68
+[#69]: https://github.com/Yelp/detect-secrets/pull/69
+[#72]: https://github.com/Yelp/detect-secrets/pull/72
+[#73]: https://github.com/Yelp/detect-secrets/pull/73
+[#74]: https://github.com/Yelp/detect-secrets/pull/74
+
+
+
 ### 0.10.1
 ##### August 1st, 2018
 
@@ -337,6 +370,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 - Fixed a bug where we didn't skip sequential strings when we should have ([#67])
 
 [#67]: https://github.com/Yelp/detect-secrets/pull/67
+
 
 
 ### 0.10.0
@@ -374,15 +408,6 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#64]: https://github.com/Yelp/detect-secrets/pull/64
 [#65]: https://github.com/Yelp/detect-secrets/pull/65
 
-[#68]: https://github.com/Yelp/detect-secrets/pull/68
-[#69]: https://github.com/Yelp/detect-secrets/pull/69
-[#72]: https://github.com/Yelp/detect-secrets/pull/72
-[#73]: https://github.com/Yelp/detect-secrets/pull/73
-[#74]: https://github.com/Yelp/detect-secrets/pull/74
-
-[@cleborys]: https://github.com/cleborys
-[@guykisel]: https://github.com/guykisel
-[@whathejoe]: https://github.com/whathejoe
 
 
 ### 0.9.1
@@ -395,6 +420,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 
 [#47]: https://github.com/Yelp/detect-secrets/pull/47
+
 
 
 ### 0.9.0
@@ -439,6 +465,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#46]: https://github.com/Yelp/detect-secrets/pull/46
 
 
+
 ### Before 0.9.0
 
 #### :tada: New Features
@@ -447,7 +474,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 #### :telescope: Accuracy
 
-- Improved scanning of INI config files with `HighEntropyString` ([#13], [#17])
+- Improved scanning of INI config files with `HighEntropyString` ([#13] and [#17])
 - Improved scanning of YAML files with `HighEntropyString` ([#16])
 
 #### :bug: Bugfixes
@@ -459,3 +486,41 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#16]: https://github.com/Yelp/detect-secrets/pull/16
 [#17]: https://github.com/Yelp/detect-secrets/pull/17
 [#18]: https://github.com/Yelp/detect-secrets/pull/18
+
+
+
+# Special thanks to our awesome contributors!
+
+- [@baboateng]
+- [@cclauss]
+- [@cleborys]
+- [@dgzlopes]
+- [@guykisel]
+- [@hpandeycodeit]
+- [@jkozera]
+- [@JoshuaRLi]
+- [@justineyster]
+- [@killuazhu]
+- [@Namburgesas]
+- [@neunkasulle]
+- [@nymous]
+- [@richo]
+- [@whathejoe]
+- [@zioalex]
+
+[@baboateng]: https://github.com/baboateng
+[@cclauss]: https://github.com/cclauss
+[@cleborys]: https://github.com/cleborys
+[@dgzlopes]: https://github.com/dgzlopes
+[@guykisel]: https://github.com/guykisel
+[@hpandeycodeit]: https://github.com/hpandeycodeit
+[@jkozera]: https://github.com/jkozera
+[@JoshuaRLi]: https://github.com/JoshuaRLi
+[@justineyster]: https://github.com/justineyster
+[@killuazhu]: https://github.com/killuazhu
+[@Namburgesas]: https://github.com/Namburgesas
+[@neunkasulle]: https://github.com/neunkasulle
+[@nymous]: https://github.com/nymous
+[@richo]: https://github.com/richo
+[@whathejoe]: https://github.com/whathejoe
+[@zioalex]: https://github.com/zioalex
