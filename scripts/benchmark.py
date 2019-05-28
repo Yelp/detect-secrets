@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import argparse
+import json
 import subprocess
 
 from monotonic import monotonic
@@ -26,7 +27,7 @@ def main():
         key = flag[len('--no-'):-len('-scan')]
         timings[key] = time_execution(plugins_to_ignore, args.filenames)
 
-    print_output(timings, args.filenames)
+    print_output(timings, args)
 
 
 def get_arguments():
@@ -35,6 +36,11 @@ def get_arguments():
         'filenames',
         nargs=argparse.REMAINDER,
         help='Filenames to check or detect-secrets compatible arguments.',
+    )
+    parser.add_argument(
+        '--pretty',
+        action='store_true',
+        help='Human readable output.',
     )
 
     args = parser.parse_args()
@@ -45,23 +51,35 @@ def get_arguments():
 
 
 def time_execution(flags, arguments):
+    """
+    :type flags: list
+    :param flags: flags to disable
+
+    :type arguments: list
+    :param arguments: filenames to scan
+    """
     start_time = monotonic()
     subprocess.check_output('detect-secrets scan'.split() + arguments + flags)
     return monotonic() - start_time
 
 
-def print_output(timings, filenames):
+def print_output(timings, args):
     """
     :type timings: dict
+    :type args: Namespace
     """
+    if not args.pretty:
+        print(json.dumps(timings))
+        return
+
     # Print header
-    print('Scanning: ' + str(filenames))
+    print('Scanning: ' + str(args.filenames))
     print('-' * 42)
     print('{:<20s}{:>20s}'.format('benchmark', 'time'))
     print('-' * 42)
+
     print_line('all-plugins', timings['all-plugins'])
     del timings['all-plugins']
-
     for key in sorted(timings):
         print_line(key, timings[key])
 
