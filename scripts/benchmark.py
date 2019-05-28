@@ -25,7 +25,10 @@ def main():
     timings = {}
     if len(args.plugin) == len(PluginOptions.all_plugins):
         # Only run benchmarks for all the cases, if already running all plugins
-        timings['all-plugins'] = time_execution([], args.filenames)
+        timings['all-plugins'] = time_execution(
+            filenames=args.filenames,
+            timeout=args.harakiri,
+        )
 
     for flag_number, flag in enumerate(flag_list):
         plugins_to_ignore = list(flag_list)
@@ -33,8 +36,9 @@ def main():
 
         key = flag[len('--no-'):-len('-scan')]
         timings[key] = time_execution(
-            plugins_to_ignore + always_disabled_plugins,
-            args.filenames,
+            filenames=args.filenames,
+            timeout=args.harakiri,
+            flags=plugins_to_ignore + always_disabled_plugins,
         )
 
     print_output(timings, args)
@@ -67,6 +71,15 @@ def get_arguments():
             'Defaults to all.'
         ),
     )
+    parser.add_argument(
+        '--harakiri',
+        default=5,
+        type=float,
+        help=(
+            'Specifies an upper bound for the number of seconds to wait '
+            'per execution.'
+        ),
+    )
 
     args = parser.parse_args()
     if not args.filenames:
@@ -78,17 +91,26 @@ def get_arguments():
     return args
 
 
-def time_execution(flags, arguments):
+def time_execution(filenames, timeout, flags=None):
     """
-    :type flags: list
-    :param flags: flags to disable
+    :type filenames: list
+    :type timeout: float
 
-    :type arguments: list
-    :param arguments: filenames to scan
+    :type flags: list|None
+    :param flags: flags to disable
     """
+    if not flags:
+        flags = []
+
     start_time = monotonic()
-    subprocess.check_output('detect-secrets scan'.split() + arguments + flags)
-    return monotonic() - start_time
+    try:
+        subprocess.check_output(
+            'detect-secrets scan'.split() + filenames + flags,
+            timeout=timeout,
+        )
+        return monotonic() - start_time
+    except subprocess.TimeoutExpired:
+        pass
 
 
 def print_output(timings, args):
@@ -103,17 +125,24 @@ def print_output(timings, args):
     # Print header
     print('Scanning: ' + str(args.filenames))
     print('-' * 42)
-    print('{:<20s}{:>20s}'.format('benchmark', 'time'))
+    print('{:<20s}{:>20s}'.format('plugin', 'time'))
     print('-' * 42)
 
-    print_line('all-plugins', timings['all-plugins'])
-    del timings['all-plugins']
+    if 'all-plugins' in timings:
+        print_line('all-plugins', timings['all-plugins'])
+        del timings['all-plugins']
+
     for key in sorted(timings):
         print_line(key, timings[key])
 
 
 def print_line(name, time):
-    print('{:<20s}{:>20s}s'.format(name, str(time)))
+    if not time:
+        time = 'Timeout exceeded!'
+    else:
+        time = '{}s'.format(str(time))
+
+    print('{:<20s}{:>20s}'.format(name, time))
 
 
 if __name__ == '__main__':
