@@ -1,8 +1,10 @@
 #!/usr/bin/python3
 import argparse
 import json
+import os
 import statistics
 import subprocess
+import sys
 
 from monotonic import monotonic
 
@@ -12,12 +14,23 @@ from detect_secrets.core.usage import PluginOptions
 def main():
     args = get_arguments()
 
+    print(
+        'Running performance tests on: {}'.format(
+            ', '.join(args.plugin),
+        ),
+        file=sys.stderr,
+    )
+    print(
+        'for: {}'.format(args.filenames),
+        file=sys.stderr,
+    )
+
     # First, convert chosen plugins into their disabled flags
     always_disabled_plugins = []
-    flag_list = []
+    flag_list = {}
     for info in PluginOptions.all_plugins:
         if info.classname in args.plugin:
-            flag_list.append(info.disable_flag_text)
+            flag_list[info.disable_flag_text] = info.classname
         else:
             always_disabled_plugins.append(info.disable_flag_text)
 
@@ -33,10 +46,10 @@ def main():
         )
 
     for flag_number, flag in enumerate(flag_list):
-        plugins_to_ignore = list(flag_list)
+        plugins_to_ignore = list(flag_list.keys())
         plugins_to_ignore.pop(flag_number)
 
-        key = flag[len('--no-'):-len('-scan')]
+        key = flag_list[flag]
         timings[key] = time_execution(
             filenames=args.filenames,
             timeout=args.harakiri,
@@ -97,7 +110,14 @@ def get_arguments():
 
     args = parser.parse_args()
     if not args.filenames:
-        args.filenames = ['../.']
+        args.filenames = [
+            os.path.realpath(
+                os.path.join(
+                    os.path.dirname(__file__),
+                    '../',
+                ),
+            ),
+        ]
 
     if not args.plugin:
         args.plugin = plugins
@@ -128,7 +148,11 @@ def time_execution(filenames, timeout, num_iterations=1, flags=None):
             scores.append(monotonic() - start_time)
         except subprocess.TimeoutExpired:
             scores.append(timeout)
-    
+
+    result = statistics.mean(scores)
+    if result == timeout:
+        return None
+
     return statistics.mean(scores)
 
 
@@ -142,7 +166,6 @@ def print_output(timings, args):
         return
 
     # Print header
-    print('Scanning: ' + str(args.filenames))
     print('-' * 42)
     print('{:<20s}{:>20s}'.format('plugin', 'time'))
     print('-' * 42)
@@ -153,6 +176,7 @@ def print_output(timings, args):
 
     for key in sorted(timings):
         print_line(key, timings[key])
+    print('-' * 42)
 
 
 def print_line(name, time):
