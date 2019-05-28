@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import argparse
 import json
+import statistics
 import subprocess
 
 from monotonic import monotonic
@@ -28,6 +29,7 @@ def main():
         timings['all-plugins'] = time_execution(
             filenames=args.filenames,
             timeout=args.harakiri,
+            num_iterations=args.num_iterations,
         )
 
     for flag_number, flag in enumerate(flag_list):
@@ -38,6 +40,7 @@ def main():
         timings[key] = time_execution(
             filenames=args.filenames,
             timeout=args.harakiri,
+            num_iterations=args.num_iterations,
             flags=plugins_to_ignore + always_disabled_plugins,
         )
 
@@ -80,6 +83,17 @@ def get_arguments():
             'per execution.'
         ),
     )
+    parser.add_argument(
+        '-n',
+        '--num-iterations',
+        default=1,
+        # TODO: assert non-negative
+        type=int,
+        help=(
+            'Specifies the number of times to run the test. '
+            'Results will be averaged over this value.'
+        ),
+    )
 
     args = parser.parse_args()
     if not args.filenames:
@@ -91,10 +105,11 @@ def get_arguments():
     return args
 
 
-def time_execution(filenames, timeout, flags=None):
+def time_execution(filenames, timeout, num_iterations=1, flags=None):
     """
     :type filenames: list
     :type timeout: float
+    :type num_iterations: int
 
     :type flags: list|None
     :param flags: flags to disable
@@ -102,15 +117,19 @@ def time_execution(filenames, timeout, flags=None):
     if not flags:
         flags = []
 
-    start_time = monotonic()
-    try:
-        subprocess.check_output(
-            'detect-secrets scan'.split() + filenames + flags,
-            timeout=timeout,
-        )
-        return monotonic() - start_time
-    except subprocess.TimeoutExpired:
-        pass
+    scores = []
+    for _ in range(num_iterations):
+        start_time = monotonic()
+        try:
+            subprocess.check_output(
+                'detect-secrets scan'.split() + filenames + flags,
+                timeout=timeout,
+            )
+            scores.append(monotonic() - start_time)
+        except subprocess.TimeoutExpired:
+            scores.append(timeout)
+    
+    return statistics.mean(scores)
 
 
 def print_output(timings, args):
