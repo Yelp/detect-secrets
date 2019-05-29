@@ -10,6 +10,8 @@ import sys
 
 from monotonic import monotonic
 
+from detect_secrets.core.color import AnsiColor
+from detect_secrets.core.color import colorize
 from detect_secrets.core.usage import PluginOptions
 
 
@@ -92,7 +94,7 @@ def get_arguments():
     parser.add_argument(
         '--harakiri',
         default=5,
-        type=float,
+        type=assert_positive(float),
         help=(
             'Specifies an upper bound for the number of seconds to wait '
             'per execution.'
@@ -102,23 +104,35 @@ def get_arguments():
         '-n',
         '--num-iterations',
         default=1,
-        type=assert_positive_integer,
+        type=assert_positive(int),
         help=(
             'Specifies the number of times to run the test. '
             'Results will be averaged over this value.'
         ),
     )
+    parser.add_argument(
+        '--baseline',
+        type=assert_valid_file,
+        help=(
+            'If provided, will compare performance with provided baseline. '
+            'Assumes pretty output (otherwise, you can do the comparison '
+            'yourself).'
+        ),
+    )
 
     args = parser.parse_args()
     if not args.filenames:
-        args.filenames = [
-            os.path.realpath(
-                os.path.join(
-                    os.path.dirname(__file__),
-                    '../',
+        if args.baseline:
+            args.filenames = args.baseline['filenames']
+        else:
+            args.filenames = [
+                os.path.realpath(
+                    os.path.join(
+                        os.path.dirname(__file__),
+                        '../',
+                    ),
                 ),
-            ),
-        ]
+            ]
 
     if not args.plugin:
         args.plugin = plugins
@@ -126,16 +140,30 @@ def get_arguments():
     return args
 
 
-def assert_positive_integer(string):
-    value = int(string)
-    if value <= 0:
+def assert_positive(type):
+    def wrapped(string):
+        value = type(string)
+        if value <= 0:
+            raise argparse.ArgumentTypeError(
+                '{} must be a positive {}.'.format(
+                    string,
+                    type.__name__,
+                ),
+            )
+
+        return value
+
+    return wrapped
+
+
+def assert_valid_file(string):
+    if not os.path.isfile(string):
         raise argparse.ArgumentTypeError(
-            '{} must be a positive integer.'.format(
-                string,
-            ),
+            '{} must be a valid file.'.format(string),
         )
 
-    return value
+    with open(string) as f:
+        return json.load(f)
 
 
 def time_execution(filenames, timeout, num_iterations=1, flags=None):
@@ -166,7 +194,7 @@ def time_execution(filenames, timeout, num_iterations=1, flags=None):
     if result == timeout:
         return None
 
-    return statistics.mean(scores)
+    return round(statistics.mean(scores), 5)
 
 
 def print_output(timings, args):
@@ -174,31 +202,86 @@ def print_output(timings, args):
     :type timings: dict
     :type args: Namespace
     """
-    if not args.pretty:
-        print(json.dumps(timings))
+    if not args.pretty and not args.baseline:
+        print(
+            json.dumps({
+                'filenames': args.filenames,
+                'timings': timings,
+            }),
+        )
         return
 
     # Print header
-    print('-' * 42)
-    print('{:<20s}{:>20s}'.format('plugin', 'time'))
-    print('-' * 42)
+    baseline = args.baseline['timings'] if args.baseline else {}
+    if not baseline:
+        print('-' * 40)
+        print('{:<25s}{:>15s}'.format('plugin', 'time'))
+        print('-' * 40)
+    else:
+        print('-' * 57)
+        print('{:<25s}{:>13s}{:>16s}'.format('plugin', 'time', 'change'))
+        print('-' * 57)
 
+    # Print content
     if 'all-plugins' in timings:
-        print_line('all-plugins', timings['all-plugins'])
+        print_line(
+            'All Plugins',
+            timings['all-plugins'],
+            baseline.get('all-plugins'),
+        )
         del timings['all-plugins']
 
     for key in sorted(timings):
-        print_line(key, timings[key])
-    print('-' * 42)
+        print_line(key, timings[key], baseline.get(key))
 
-
-def print_line(name, time):
-    if not time:
-        time = 'Timeout exceeded!'
+    # Print footer line
+    if not args.baseline:
+        print('-' * 40)
     else:
-        time = '{}s'.format(str(time))
+        print('-' * 57)
 
-    print('{:<20s}{:>20s}'.format(name, time))
+
+def print_line(name, time, baseline):
+    """
+    :type name: str
+
+    :type time: float
+    :param time: seconds it took to execute
+
+    :type baseline: float
+    :param baseline: expected seconds to execute
+    """
+    if not time:
+        time_string = 'Timeout exceeded!'
+    else:
+        time_string = '{}s'.format(str(time))
+
+    if baseline:
+        difference = round(baseline - time, 2)
+        if difference > 0:
+            difference_string = colorize(
+                '▲  {}'.format(difference),
+                AnsiColor.LIGHT_GREEN,
+            )
+            difference_string = '{:>24s}'.format(difference_string)
+        elif difference < 0:
+            difference_string = colorize(
+                '▼ {}'.format(difference),
+                AnsiColor.RED,
+            )
+            difference_string = '{:>24s}'.format(difference_string)
+        else:
+            difference_string = '{:>12s}'.format('-')
+
+        print(
+            '{:<25s}{:>15s}{}'.format(
+                name,
+                time_string,
+                difference_string,
+            ),
+        )
+    else:
+        print('{:<25s}{:>15s}'.format(name, time_string))
 
 
 if __name__ == '__main__':
