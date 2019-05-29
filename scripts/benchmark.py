@@ -1,4 +1,6 @@
 #!/usr/bin/python3
+from __future__ import print_function
+
 import argparse
 import json
 import os
@@ -100,8 +102,7 @@ def get_arguments():
         '-n',
         '--num-iterations',
         default=1,
-        # TODO: assert non-negative
-        type=int,
+        type=assert_positive_integer,
         help=(
             'Specifies the number of times to run the test. '
             'Results will be averaged over this value.'
@@ -123,6 +124,18 @@ def get_arguments():
         args.plugin = plugins
 
     return args
+
+
+def assert_positive_integer(string):
+    value = int(string)
+    if value <= 0:
+        raise argparse.ArgumentTypeError(
+            '{} must be a positive integer.'.format(
+                string,
+            ),
+        )
+
+    return value
 
 
 def time_execution(filenames, timeout, num_iterations=1, flags=None):
