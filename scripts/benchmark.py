@@ -13,6 +13,7 @@ from monotonic import monotonic
 from detect_secrets.core.color import AnsiColor
 from detect_secrets.core.color import colorize
 from detect_secrets.core.usage import PluginOptions
+from detect_secrets.util import get_root_directory
 
 
 def main():
@@ -125,14 +126,7 @@ def get_arguments():
         if args.baseline:
             args.filenames = args.baseline['filenames']
         else:
-            args.filenames = [
-                os.path.realpath(
-                    os.path.join(
-                        os.path.dirname(__file__),
-                        '../',
-                    ),
-                ),
-            ]
+            args.filenames = [get_root_directory()]
 
     if not args.plugin:
         args.plugin = plugins
