@@ -31,13 +31,13 @@ class TestInitializeBaseline(object):
 
     def get_results(
         self,
-        path='./test_data/files',
+        path=['./test_data/files'],
         exclude_files_regex=None,
         scan_all_files=False,
     ):
         return baseline.initialize(
+            path,
             self.plugins,
-            path=path,
             exclude_files_regex=exclude_files_regex,
             scan_all_files=scan_all_files,
         ).json()
@@ -45,10 +45,12 @@ class TestInitializeBaseline(object):
     @pytest.mark.parametrize(
         'path',
         [
-            './test_data/files',
+            [
+                './test_data/files',
 
-            # Test relative paths
-            'test_data/../test_data/files/tmp/..',
+                # Test relative paths
+                'test_data/../test_data/files/tmp/..',
+            ],
         ],
     )
     def test_basic_usage(self, path):
@@ -57,6 +59,31 @@ class TestInitializeBaseline(object):
         assert len(results.keys()) == 2
         assert len(results['test_data/files/file_with_secrets.py']) == 1
         assert len(results['test_data/files/tmp/file_with_secrets.py']) == 2
+
+    def test_with_multiple_files(self):
+        results = self.get_results(path=[
+            'test_data/files/file_with_secrets.py',
+            'test_data/files/tmp/file_with_secrets.py',
+        ])
+
+        assert len(results['test_data/files/file_with_secrets.py']) == 1
+        assert len(results['test_data/files/tmp/file_with_secrets.py']) == 2
+        assert 'test_data/files/file_with_secrets.py' in results
+        assert 'test_data/files/tmp/file_with_secrets.py' in results
+
+    def test_with_multiple_non_existent_files(self):
+        results = self.get_results(path=['non-existent-file.A', 'non-existent-file.B'])
+
+        # No expected results, because files don't exist
+        assert not results
+
+    def test_with_folders_and_files(self):
+        results = self.get_results(path=['test_data/', 'non-existent-file.B'])
+
+        assert 'test_data/files/file_with_secrets.py' in results
+        assert 'test_data/files/tmp/file_with_secrets.py' in results
+        assert 'test_data/files/file_with_no_secrets.py' not in results
+        assert 'non-existent-file.B' not in results
 
     def test_exclude_regex(self):
         results = self.get_results(exclude_files_regex='tmp*')
@@ -82,7 +109,7 @@ class TestInitializeBaseline(object):
                 ),
             ),
         ):
-            results = self.get_results(path='will_be_mocked')
+            results = self.get_results(path=['will_be_mocked'])
 
         assert not results
 
@@ -94,12 +121,12 @@ class TestInitializeBaseline(object):
             'Super hidden value "BEEF0123456789a"',
             'detect_secrets.core.secrets_collection.codecs.open',
         ):
-            results = self.get_results('will_be_mocked')
+            results = self.get_results(path=['will_be_mocked'])
 
         assert len(results['will_be_mocked']) == 1
 
     def test_scan_all_files(self):
-        results = self.get_results(path='test_data/files', scan_all_files=True)
+        results = self.get_results(path=['test_data/files'], scan_all_files=True)
         assert len(results.keys()) == 2
 
 

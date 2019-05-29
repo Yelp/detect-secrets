@@ -41,7 +41,7 @@ class TestMain(object):
             plugins=Any(tuple),
             exclude_files_regex=None,
             exclude_lines_regex=None,
-            path='test_data',
+            path=['test_data'],
             scan_all_files=False,
         )
 

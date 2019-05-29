@@ -5,14 +5,17 @@ import os
 import re
 import subprocess
 
+from detect_secrets.core.log import get_logger
 from detect_secrets.core.secrets_collection import SecretsCollection
+
+log = get_logger(format_string='%(message)s')
 
 
 def initialize(
+    path,
     plugins,
     exclude_files_regex=None,
     exclude_lines_regex=None,
-    path='.',
     scan_all_files=False,
 ):
     """Scans the entire codebase for secrets, and returns a
@@ -23,7 +26,7 @@ def initialize(
 
     :type exclude_files_regex: str|None
     :type exclude_lines_regex: str|None
-    :type path: str
+    :type path: list
     :type scan_all_files: bool
 
     :rtype: SecretsCollection
@@ -34,13 +37,17 @@ def initialize(
         exclude_lines=exclude_lines_regex,
     )
 
-    if os.path.isfile(path):
-        # This option allows for much easier adhoc usage.
-        files_to_scan = [path]
-    elif scan_all_files:
-        files_to_scan = _get_files_recursively(path)
-    else:
-        files_to_scan = _get_git_tracked_files(path)
+    files_to_scan = list()
+    for element in path:
+        if os.path.isdir(element):
+            if scan_all_files:
+                files_to_scan.extend(_get_files_recursively(element))
+            else:
+                files_to_scan.extend(_get_git_tracked_files(element))
+        elif os.path.isfile(element):
+            files_to_scan.append(element)
+        else:
+            log.error("detect-secrets: " + element + ": No such file or directory")
 
     if not files_to_scan:
         return output
