@@ -208,34 +208,50 @@ def print_output(timings, args):
     # Print header
     baseline = args.baseline['timings'] if args.baseline else {}
     if not baseline:
-        print('-' * 40)
+        print('-' * 45)
         print('{:<25s}{:>15s}'.format('plugin', 'time'))
-        print('-' * 40)
+        print('-' * 45)
     else:
-        print('-' * 57)
-        print('{:<25s}{:>13s}{:>16s}'.format('plugin', 'time', 'change'))
-        print('-' * 57)
+        print('-' * 60)
+        print('{:<25s}{:>11s}{:>22s}'.format('plugin', 'time', 'change'))
+        print('-' * 60)
 
     # Print content
     if 'all-plugins' in timings:
         print_line(
             'All Plugins',
-            timings['all-plugins'],
-            baseline.get('all-plugins'),
+            time=timings['all-plugins'],
+            baseline=_get_baseline_value(baseline, 'all-plugins'),
+            timeout=args.harakiri,
         )
         del timings['all-plugins']
 
     for key in sorted(timings):
-        print_line(key, timings[key], baseline.get(key))
+        print_line(
+            key,
+            time=timings[key],
+            baseline=_get_baseline_value(baseline, key),
+            timeout=args.harakiri,
+        )
 
     # Print footer line
     if not args.baseline:
-        print('-' * 40)
+        print('-' * 45)
     else:
-        print('-' * 57)
+        print('-' * 60)
 
 
-def print_line(name, time, baseline):
+def _get_baseline_value(baseline, key):
+    """
+    We need to distinguish between no baseline mode (which should return
+    None as a value), baseline mode with exceeded timeout (which is stored
+    as None, but should return 0).
+    """
+    if key in baseline:
+        return 0 if baseline[key] is None else baseline[key]
+
+
+def print_line(name, time, baseline, timeout):
     """
     :type name: str
 
@@ -244,38 +260,53 @@ def print_line(name, time, baseline):
 
     :type baseline: float
     :param baseline: expected seconds to execute
+
+    :type timeout: float
+    :param timeout: used to calculate difference when either current
+        execution or baseline execution exceeds timeout.
     """
     if not time:
         time_string = 'Timeout exceeded!'
     else:
         time_string = '{}s'.format(str(time))
 
-    if baseline:
-        difference = round(baseline - time, 2)
+    if baseline is not None:
+        if time and baseline:
+            difference = round(baseline - time, 2)
+        elif time:
+            # This handles the case when the baseline execution exceeds timeout
+            difference = round(timeout - time, 2)
+        elif baseline:
+            # This handles the case when this current execution exceeds timeout
+            difference = round(timeout - baseline, 2)
+        else:
+            # They both failed.
+            difference = 0
+
         if difference > 0:
             difference_string = colorize(
                 '▲  {}'.format(difference),
                 AnsiColor.LIGHT_GREEN,
             )
-            difference_string = '{:>24s}'.format(difference_string)
+            difference_string = '{:>22s}'.format(difference_string)
         elif difference < 0:
             difference_string = colorize(
                 '▼ {}'.format(difference),
                 AnsiColor.RED,
             )
-            difference_string = '{:>24s}'.format(difference_string)
+            difference_string = '{:>22s}'.format(difference_string)
         else:
-            difference_string = '{:>12s}'.format('-')
+            difference_string = '{:>10s}'.format('-')
 
         print(
-            '{:<25s}{:>15s}{}'.format(
+            '{:<25s}{:^20s}{}'.format(
                 name,
                 time_string,
                 difference_string,
             ),
         )
     else:
-        print('{:<25s}{:>15s}'.format(name, time_string))
+        print('{:<25s}{:>20s}'.format(name, time_string))
 
 
 if __name__ == '__main__':
