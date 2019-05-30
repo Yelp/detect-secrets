@@ -1,0 +1,21 @@
+{
+    "config": {
+        "length": null,
+        "mode": "LONG_LINES"
+    },
+    "filenames": [
+        "/tmp/tmp7iwzjvol"
+    ],
+    "timings": {
+        "AWSKeyDetector": 1.33812,
+        "ArtifactoryDetector": 1.95065,
+        "Base64HighEntropyString": 22.52337,
+        "BasicAuthDetector": 1.3325,
+        "HexHighEntropyString": 22.31473,
+        "KeywordDetector": 1.64396,
+        "PrivateKeyDetector": 1.35953,
+        "SlackDetector": 1.41018,
+        "StripeDetector": 1.49091,
+        "all-plugins": null
+    }
+}
