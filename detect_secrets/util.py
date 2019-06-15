@@ -8,3 +8,10 @@ def get_root_directory():
             '../',
         ),
     )
+
+
+def get_relative_path(root, path):
+    """Returns relative path, after following symlinks."""
+    return os.path.realpath(
+        os.path.join(root, path),
+    )[len(os.getcwd() + '/'):]
