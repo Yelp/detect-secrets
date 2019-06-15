@@ -19,7 +19,7 @@ class SlackDetector(RegexBasedDetector):
         re.compile(r'xox(?:a|b|p|o|s|r)-(?:\d+-)+[a-z0-9]+', flags=re.IGNORECASE),
     )
 
-    def verify(self, token, **kwargs):
+    def verify(self, token, **kwargs):    # pragma: no cover
         response = requests.post(
             'https://slack.com/api/auth.test',
             data={

@@ -51,7 +51,7 @@ def get_secret_access_key(content):
     ]
 
 
-def verify_aws_secret_access_key(key, secret):
+def verify_aws_secret_access_key(key, secret):  # pragma: no cover
     """
     Using requests, because we don't want to require boto3 for this one
     optional verification step.
@@ -92,16 +92,16 @@ def verify_aws_secret_access_key(key, secret):
     """)[1:-1].format(
 
         headers='\n'.join([
-            '{}:{}'.format(key.lower(), value)
-            for key, value in headers.items()
+            '{}:{}'.format(header.lower(), value)
+            for header, value in headers.items()
         ]),
         signed_headers=signed_headers,
 
         # Poor man's method, but works for this use case.
         hashed_payload=hashlib.sha256(
             '&'.join([
-                '{}={}'.format(key, value)
-                for key, value in body.items()
+                '{}={}'.format(header, value)
+                for header, value in body.items()
             ]).encode('utf-8'),
         ).hexdigest(),
     )
@@ -175,7 +175,7 @@ def verify_aws_secret_access_key(key, secret):
     return True
 
 
-def _sign(key, message, hex=False):
+def _sign(key, message, hex=False):   # pragma: no cover
     value = hmac.new(key, message.encode('utf-8'), hashlib.sha256)
     if not hex:
         return value.digest()

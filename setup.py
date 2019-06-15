@@ -20,6 +20,7 @@ setup(
     keywords=['secret-management', 'pre-commit', 'security', 'entropy-checks'],
     install_requires=[
         'pyyaml',
+        'requests',
     ],
     extras_require={
         ':python_version=="2.7"': [
