@@ -120,7 +120,7 @@ class ScanOptions(object):
     def _add_initialize_baseline_argument(self):
         self.parser.add_argument(
             'path',
-            nargs='?',
+            nargs='*',
             default='.',
             help=(
                 'Scans the entire codebase and outputs a snapshot of '
