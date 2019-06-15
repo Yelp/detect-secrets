@@ -3,6 +3,7 @@ from abc import ABCMeta
 from abc import abstractmethod
 from abc import abstractproperty
 
+from detect_secrets.core.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.common.constants import ALLOWLIST_REGEXES
 
@@ -14,7 +15,7 @@ class BasePlugin(object):
 
     secret_type = None
 
-    def __init__(self, exclude_lines_regex=None, **kwargs):
+    def __init__(self, exclude_lines_regex=None, should_verify=True, **kwargs):
         """
         :type exclude_lines_regex: str|None
         :param exclude_lines_regex: optional regex for ignored lines.
@@ -24,9 +25,9 @@ class BasePlugin(object):
 
         self.exclude_lines_regex = None
         if exclude_lines_regex:
-            self.exclude_lines_regex = re.compile(
-                exclude_lines_regex,
-            )
+            self.exclude_lines_regex = re.compile(exclude_lines_regex)
+
+        self.should_verify = should_verify
 
     def analyze(self, file, filename):
         """
@@ -39,8 +40,21 @@ class BasePlugin(object):
         """
         potential_secrets = {}
         for line_num, line in enumerate(file.readlines(), start=1):
-            secrets = self.analyze_string(line, line_num, filename)
-            potential_secrets.update(secrets)
+            results = self.analyze_string(line, line_num, filename)
+            if not self.should_verify:
+                potential_secrets.update(results)
+                continue
+
+            filtered_results = {}
+            for result in results:
+                is_verified = self.verify(result.secret_value)
+                if is_verified != VerifiedResult.UNVERIFIED:
+                    result.is_verified = True
+
+                if is_verified != VerifiedResult.VERIFIED_FALSE:
+                    filtered_results[result] = result
+
+            potential_secrets.update(filtered_results)
 
         return potential_secrets
 
@@ -117,8 +131,36 @@ class BasePlugin(object):
         results = self.analyze_string(string, 0, 'does_not_matter')
         if not results:
             return 'False'
-        else:
+
+        if not self.should_verify:
             return 'True'
+
+        verified_result = VerifiedResult.UNVERIFIED
+        for result in results:
+            is_verified = self.verify(result.secret_value)
+            if is_verified != VerifiedResult.UNVERIFIED:
+                verified_result = is_verified
+                break
+
+        output = {
+            VerifiedResult.VERIFIED_FALSE: 'False (verified)',
+            VerifiedResult.VERIFIED_TRUE: 'True  (verified)',
+            VerifiedResult.UNVERIFIED: 'True  (unverified)',
+        }
+
+        return output[verified_result]
+
+    def verify(self, token):
+        """
+        To increase accuracy and reduce false positives, plugins can also
+        optionally declare a method to verify their status.
+
+        :type token: str
+        :param token: secret found by current plugin
+
+        :rtype: VerifiedResult
+        """
+        return VerifiedResult.UNVERIFIED
 
     @property
     def __dict__(self):

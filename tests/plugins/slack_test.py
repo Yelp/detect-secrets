@@ -36,7 +36,7 @@ class TestSlackDetector(object):
         ],
     )
     def test_analyze(self, file_content):
-        logic = SlackDetector()
+        logic = SlackDetector(should_verify=False)
 
         f = mock_file_object(file_content)
         output = logic.analyze(f, 'mock_filename')

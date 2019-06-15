@@ -372,11 +372,13 @@ class TestBaselineInputOutput(object):
                     # Line numbers should be sorted, for better readability
                     {
                         'type': 'B',
+                        'is_verified': False,
                         'line_number': 2,
                         'hashed_secret': secret_hash,
                     },
                     {
                         'type': 'A',
+                        'is_verified': False,
                         'line_number': 3,
                         'hashed_secret': secret_hash,
                     },
@@ -384,6 +386,7 @@ class TestBaselineInputOutput(object):
                 'fileB': [
                     {
                         'type': 'C',
+                        'is_verified': False,
                         'line_number': 1,
                         'hashed_secret': secret_hash,
                     },
