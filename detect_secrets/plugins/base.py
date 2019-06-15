@@ -3,9 +3,20 @@ from abc import ABCMeta
 from abc import abstractmethod
 from abc import abstractproperty
 
+from detect_secrets.core.code_snippet import CodeSnippetHighlighter
 from detect_secrets.core.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.common.constants import ALLOWLIST_REGEXES
+
+
+# NOTE: In this whitepaper (Section V-D), it suggests that there's an
+#       80% chance of finding a multi-factor secret (e.g. username +
+#       password) within five lines of context, before and after a secret.
+#
+#       This number can be tweaked if desired, at the cost of performance.
+#
+#       https://www.ndss-symposium.org/wp-content/uploads/2019/02/ndss2019_04B-3_Meli_paper.pdf
+LINES_OF_CONTEXT = 5
 
 
 class BasePlugin(object):
@@ -47,7 +58,13 @@ class BasePlugin(object):
 
             filtered_results = {}
             for result in results:
-                is_verified = self.verify(result.secret_value)
+                snippet = CodeSnippetHighlighter().get_code_snippet(
+                    filename,
+                    result.lineno,
+                    lines_of_context=LINES_OF_CONTEXT,
+                )
+
+                is_verified = self.verify(result.secret_value, content=str(snippet))
                 if is_verified != VerifiedResult.UNVERIFIED:
                     result.is_verified = True
 
@@ -150,13 +167,16 @@ class BasePlugin(object):
 
         return output[verified_result]
 
-    def verify(self, token):
+    def verify(self, token, content=''):
         """
         To increase accuracy and reduce false positives, plugins can also
         optionally declare a method to verify their status.
 
         :type token: str
         :param token: secret found by current plugin
+
+        :type context: str
+        :param context: lines of context around identified secret
 
         :rtype: VerifiedResult
         """
