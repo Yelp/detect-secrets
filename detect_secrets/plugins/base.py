@@ -26,10 +26,12 @@ class BasePlugin(object):
 
     secret_type = None
 
-    def __init__(self, exclude_lines_regex=None, should_verify=True, **kwargs):
+    def __init__(self, exclude_lines_regex=None, should_verify=False, **kwargs):
         """
         :type exclude_lines_regex: str|None
         :param exclude_lines_regex: optional regex for ignored lines.
+
+        :type should_verify: bool
         """
         if not self.secret_type:
             raise ValueError('Plugins need to declare a secret_type.')

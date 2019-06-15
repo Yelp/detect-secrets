@@ -16,7 +16,7 @@ def initialize(
     plugins,
     exclude_files_regex=None,
     exclude_lines_regex=None,
-    scan_all_files=False,
+    should_scan_all_files=False,
 ):
     """Scans the entire codebase for secrets, and returns a
     SecretsCollection object.
@@ -27,7 +27,7 @@ def initialize(
     :type exclude_files_regex: str|None
     :type exclude_lines_regex: str|None
     :type path: list
-    :type scan_all_files: bool
+    :type should_scan_all_files: bool
 
     :rtype: SecretsCollection
     """
@@ -40,7 +40,7 @@ def initialize(
     files_to_scan = list()
     for element in path:
         if os.path.isdir(element):
-            if scan_all_files:
+            if should_scan_all_files:
                 files_to_scan.extend(_get_files_recursively(element))
             else:
                 files_to_scan.extend(_get_git_tracked_files(element))

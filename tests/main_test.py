@@ -30,7 +30,7 @@ class TestMain(object):
             exclude_files_regex=None,
             exclude_lines_regex=None,
             path='.',
-            scan_all_files=False,
+            should_scan_all_files=False,
         )
 
     def test_scan_with_rootdir(self, mock_baseline_initialize):
@@ -42,7 +42,7 @@ class TestMain(object):
             exclude_files_regex=None,
             exclude_lines_regex=None,
             path=['test_data'],
-            scan_all_files=False,
+            should_scan_all_files=False,
         )
 
     def test_scan_with_exclude_args(self, mock_baseline_initialize):
@@ -56,7 +56,7 @@ class TestMain(object):
             exclude_files_regex='some_pattern_here',
             exclude_lines_regex='other_patt',
             path='.',
-            scan_all_files=False,
+            should_scan_all_files=False,
         )
 
     @pytest.mark.parametrize(
@@ -132,7 +132,7 @@ class TestMain(object):
             exclude_files_regex=None,
             exclude_lines_regex=None,
             path='.',
-            scan_all_files=True,
+            should_scan_all_files=True,
         )
 
     def test_reads_from_stdin(self, mock_merge_baseline):

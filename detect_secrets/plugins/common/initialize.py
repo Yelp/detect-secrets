@@ -18,7 +18,11 @@ from detect_secrets.core.log import log
 from detect_secrets.core.usage import PluginOptions
 
 
-def from_parser_builder(plugins_dict, exclude_lines_regex=None):
+def from_parser_builder(
+    plugins_dict,
+    exclude_lines_regex=None,
+    should_verify_secrets=False,
+):
     """
     :param plugins_dict: plugins dictionary received from ParserBuilder.
         See example in tests.core.usage_test.
@@ -26,15 +30,20 @@ def from_parser_builder(plugins_dict, exclude_lines_regex=None):
     :type exclude_lines_regex: str|None
     :param exclude_lines_regex: optional regex for ignored lines.
 
+    :type should_verify_secrets: bool
+
     :returns: tuple of initialized plugins
     """
     output = []
     for plugin_name in plugins_dict:
-        output.append(from_plugin_classname(
-            plugin_name,
-            exclude_lines_regex=exclude_lines_regex,
-            **plugins_dict[plugin_name]
-        ))
+        output.append(
+            from_plugin_classname(
+                plugin_name,
+                exclude_lines_regex=exclude_lines_regex,
+                should_verify_secrets=should_verify_secrets,
+                **plugins_dict[plugin_name]
+            ),
+        )
 
     return tuple(output)
 
@@ -64,11 +73,11 @@ def merge_plugin_from_baseline(baseline_plugins, args):
     :param baseline_plugins: BasePlugin instances from baseline file
 
     :type args: dict
-    :param args: diction of arguments parsed from usage
+    :param args: dictionary of arguments parsed from usage
 
     param priority: input param > baseline param > default
 
-    :Returns tuple of initialized plugins
+    :returns: tuple of initialized plugins
     """
     def _remove_key(d, key):
         r = dict(d)
@@ -95,13 +104,14 @@ def merge_plugin_from_baseline(baseline_plugins, args):
                 plugins_dict[plugin_name][param_name] = param_value
             except KeyError:
                 log.warning(
-                    'Baseline contain plugin %s which is not in all plugins! Ignoring...'
-                    % (plugin_name),
+                    'Baseline contain plugin {} which is not in all plugins! Ignoring...',
+                    plugin_name,
                 )
 
         return from_parser_builder(
             plugins_dict,
             exclude_lines_regex=args.exclude_lines,
+            should_verify_secrets=not args.no_verify,
         )
 
     # Use baseline plugin as starting point
@@ -123,8 +133,9 @@ def merge_plugin_from_baseline(baseline_plugins, args):
             plugins_dict[plugin_name][param_name] = param_value
         except KeyError:
             log.warning(
-                '%s specified, but %s not configured! Ignoring...'
-                % ("".join(["--", param_name.replace("_", "-")]), plugin_name),
+                '{} specified, but {} not configured! Ignoring...',
+                "".join(["--", param_name.replace("_", "-")]),
+                plugin_name,
             )
 
     return from_parser_builder(
@@ -133,7 +144,12 @@ def merge_plugin_from_baseline(baseline_plugins, args):
     )
 
 
-def from_plugin_classname(plugin_classname, exclude_lines_regex=None, **kwargs):
+def from_plugin_classname(
+    plugin_classname,
+    exclude_lines_regex=None,
+    should_verify_secrets=False,
+    **kwargs
+):
     """Initializes a plugin class, given a classname and kwargs.
 
     :type plugin_classname: str
@@ -149,7 +165,11 @@ def from_plugin_classname(plugin_classname, exclude_lines_regex=None, **kwargs):
         raise TypeError
 
     try:
-        instance = klass(exclude_lines_regex=exclude_lines_regex, **kwargs)
+        instance = klass(
+            exclude_lines_regex=exclude_lines_regex,
+            should_verify=should_verify_secrets,
+            **kwargs
+        )
     except TypeError:
         log.warning(
             'Unable to initialize plugin!',
@@ -188,6 +208,10 @@ def from_secret_type(secret_type, settings):
 
             return from_plugin_classname(
                 classname,
+
+                # `audit` doesn't need verification
+                should_verify_secrets=False,
+
                 **plugin_init_vars
             )
 

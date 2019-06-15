@@ -92,11 +92,14 @@ class SecretsCollection(object):
         plugins = []
         for plugin in data['plugins_used']:
             plugin_classname = plugin.pop('name')
-            plugins.append(initialize.from_plugin_classname(
-                plugin_classname,
-                exclude_lines_regex=result.exclude_lines,
-                **plugin
-            ))
+            plugins.append(
+                initialize.from_plugin_classname(
+                    plugin_classname,
+                    exclude_lines_regex=result.exclude_lines,
+                    should_verify_secrets=False,
+                    **plugin
+                ),
+            )
         result.plugins = tuple(plugins)
 
         for filename in data['results']:
