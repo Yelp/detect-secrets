@@ -11,6 +11,11 @@ class TestArtifactoryDetector(object):
         'payload, should_flag',
         [
             ('AP6xxxxxxxxxx', True),
+            ('AP2xxxxxxxxxx', True),
+            ('AP3xxxxxxxxxx', True),
+            ('AP5xxxxxxxxxx', True),
+            ('APAxxxxxxxxxx', True),
+            ('APBxxxxxxxxxx', True),
             ('AKCxxxxxxxxxx', True),
             (' AP6xxxxxxxxxx', True),
             (' AKCxxxxxxxxxx', True),
@@ -28,7 +33,7 @@ class TestArtifactoryDetector(object):
             ('testAP6withinsomeirrelevantstring', False),
             ('X-JFrog-Art-Api: $API_KEY', False),
             ('X-JFrog-Art-Api: $PASSWORD', False),
-            ('artifactory:_password=AP6xxxxxxxx', False),
+            ('artifactory:_password=AP6xxxxxx', False),
             ('artifactory:_password=AKCxxxxxxxx', False),
         ],
     )
