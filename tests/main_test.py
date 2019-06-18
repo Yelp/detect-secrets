@@ -210,217 +210,217 @@ class TestMain(object):
             (  # remove some plugins from baseline
                 [
                     {
-                        "base64_limit": 4.5,
-                        "name": "Base64HighEntropyString",
+                        'base64_limit': 4.5,
+                        'name': 'Base64HighEntropyString',
                     },
                     {
-                        "name": "PrivateKeyDetector",
+                        'name': 'PrivateKeyDetector',
                     },
                 ],
                 '--no-base64-string-scan --no-keyword-scan',
                 [
                     {
-                        "name": "PrivateKeyDetector",
+                        'name': 'PrivateKeyDetector',
                     },
                 ],
             ),
             (  # all plugins
                 [
                     {
-                        "base64_limit": 1.5,
-                        "name": "Base64HighEntropyString",
+                        'base64_limit': 1.5,
+                        'name': 'Base64HighEntropyString',
                     },
                 ],
                 '--use-all-plugins',
                 [
                     {
-                        "name": "AWSKeyDetector",
+                        'name': 'AWSKeyDetector',
                     },
                     {
-                        "name": "ArtifactoryDetector",
+                        'name': 'ArtifactoryDetector',
                     },
                     {
-                        "base64_limit": 1.5,
-                        "name": "Base64HighEntropyString",
+                        'base64_limit': 1.5,
+                        'name': 'Base64HighEntropyString',
                     },
                     {
-                        "name": "BasicAuthDetector",
+                        'name': 'BasicAuthDetector',
                     },
                     {
-                        "hex_limit": 3,
-                        "name": "HexHighEntropyString",
+                        'hex_limit': 3,
+                        'name': 'HexHighEntropyString',
                     },
                     {
-                        "name": "KeywordDetector",
+                        'name': 'KeywordDetector',
                     },
                     {
-                        "name": "PrivateKeyDetector",
+                        'name': 'PrivateKeyDetector',
                     },
                     {
-                        "name": "SlackDetector",
+                        'name': 'SlackDetector',
                     },
                     {
-                        "name": "StripeDetector",
+                        'name': 'StripeDetector',
                     },
                 ],
             ),
             (  # remove some plugins from all plugins
                 [
                     {
-                        "base64_limit": 4.5,
-                        "name": "Base64HighEntropyString",
+                        'base64_limit': 4.5,
+                        'name': 'Base64HighEntropyString',
                     },
                 ],
 
                 '--use-all-plugins --no-base64-string-scan --no-private-key-scan',
                 [
                     {
-                        "name": "AWSKeyDetector",
+                        'name': 'AWSKeyDetector',
                     },
                     {
-                        "name": "ArtifactoryDetector",
+                        'name': 'ArtifactoryDetector',
                     },
                     {
-                        "name": "BasicAuthDetector",
+                        'name': 'BasicAuthDetector',
                     },
                     {
-                        "hex_limit": 3,
-                        "name": "HexHighEntropyString",
+                        'hex_limit': 3,
+                        'name': 'HexHighEntropyString',
                     },
                     {
-                        "name": "KeywordDetector",
+                        'name': 'KeywordDetector',
                     },
                     {
-                        "name": "SlackDetector",
+                        'name': 'SlackDetector',
                     },
                     {
-                        "name": "StripeDetector",
+                        'name': 'StripeDetector',
                     },
                 ],
             ),
             (  # use same plugin list from baseline
                 [
                     {
-                        "base64_limit": 3.5,
-                        "name": "Base64HighEntropyString",
+                        'base64_limit': 3.5,
+                        'name': 'Base64HighEntropyString',
                     },
                     {
-                        "name": "PrivateKeyDetector",
+                        'name': 'PrivateKeyDetector',
                     },
                 ],
                 '',
                 [
                     {
-                        "base64_limit": 3.5,
-                        "name": "Base64HighEntropyString",
+                        'base64_limit': 3.5,
+                        'name': 'Base64HighEntropyString',
                     },
                     {
-                        "name": "PrivateKeyDetector",
+                        'name': 'PrivateKeyDetector',
                     },
                 ],
             ),
             (  # overwrite base limit from CLI
                 [
                     {
-                        "base64_limit": 3.5,
-                        "name": "Base64HighEntropyString",
+                        'base64_limit': 3.5,
+                        'name': 'Base64HighEntropyString',
                     }, {
-                        "name": "PrivateKeyDetector",
+                        'name': 'PrivateKeyDetector',
                     },
                 ],
                 '--base64-limit=5.5',
                 [
                     {
-                        "base64_limit": 5.5,
-                        "name": "Base64HighEntropyString",
+                        'base64_limit': 5.5,
+                        'name': 'Base64HighEntropyString',
                     },
                     {
-                        "name": "PrivateKeyDetector",
+                        'name': 'PrivateKeyDetector',
                     },
                 ],
             ),
             (  # does not overwrite base limit from CLI if baseline not using the plugin
                 [
                     {
-                        "name": "PrivateKeyDetector",
+                        'name': 'PrivateKeyDetector',
                     },
                 ],
                 '--base64-limit=4.5',
                 [
                     {
-                        "name": "PrivateKeyDetector",
+                        'name': 'PrivateKeyDetector',
                     },
                 ],
             ),
             (  # use overwriten option from CLI only when using --use-all-plugins
                 [
                     {
-                        "base64_limit": 3.5,
-                        "name": "Base64HighEntropyString",
+                        'base64_limit': 3.5,
+                        'name': 'Base64HighEntropyString',
                     },
                     {
-                        "name": "PrivateKeyDetector",
+                        'name': 'PrivateKeyDetector',
                     },
                 ],
                 '--use-all-plugins --base64-limit=5.5 --no-hex-string-scan --no-keyword-scan',
                 [
                     {
-                        "name": "AWSKeyDetector",
+                        'name': 'AWSKeyDetector',
                     },
                     {
-                        "name": "ArtifactoryDetector",
+                        'name': 'ArtifactoryDetector',
                     },
                     {
-                        "base64_limit": 5.5,
-                        "name": "Base64HighEntropyString",
+                        'base64_limit': 5.5,
+                        'name': 'Base64HighEntropyString',
                     },
                     {
-                        "name": "BasicAuthDetector",
+                        'name': 'BasicAuthDetector',
                     },
                     {
-                        "name": "PrivateKeyDetector",
+                        'name': 'PrivateKeyDetector',
                     },
                     {
-                        "name": "SlackDetector",
+                        'name': 'SlackDetector',
                     },
                     {
-                        "name": "StripeDetector",
+                        'name': 'StripeDetector',
                     },
                 ],
             ),
             (  # use plugin limit from baseline when using --use-all-plugins and no input limit
                 [
                     {
-                        "base64_limit": 2.5,
-                        "name": "Base64HighEntropyString",
+                        'base64_limit': 2.5,
+                        'name': 'Base64HighEntropyString',
                     },
                     {
-                        "name": "PrivateKeyDetector",
+                        'name': 'PrivateKeyDetector',
                     },
                 ],
                 '--use-all-plugins --no-hex-string-scan --no-keyword-scan',
                 [
                     {
-                        "name": "AWSKeyDetector",
+                        'name': 'AWSKeyDetector',
                     },
                     {
-                        "name": "ArtifactoryDetector",
+                        'name': 'ArtifactoryDetector',
                     },
                     {
-                        "base64_limit": 2.5,
-                        "name": "Base64HighEntropyString",
+                        'base64_limit': 2.5,
+                        'name': 'Base64HighEntropyString',
                     },
                     {
-                        "name": "BasicAuthDetector",
+                        'name': 'BasicAuthDetector',
                     },
                     {
-                        "name": "PrivateKeyDetector",
+                        'name': 'PrivateKeyDetector',
                     },
                     {
-                        "name": "SlackDetector",
+                        'name': 'SlackDetector',
                     },
                     {
-                        "name": "StripeDetector",
+                        'name': 'StripeDetector',
                     },
                 ],
             ),
@@ -434,10 +434,10 @@ class TestMain(object):
         with mock_stdin(), mock.patch(
             'detect_secrets.main._read_from_file',
             return_value={
-                "plugins_used": plugins_used,
-                "results": {},
-                "version": VERSION,
-                "exclude": {
+                'plugins_used': plugins_used,
+                'results': {},
+                'version': VERSION,
+                'exclude': {
                     'files': '',
                     'lines': '',
                 },

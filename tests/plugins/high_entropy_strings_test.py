@@ -53,7 +53,7 @@ class HighEntropyStringsTest(object):
             ),
             # Matches exclude_lines_regex
             (
-                "CanonicalUser: {secret}",
+                'CanonicalUser: {secret}',
                 False,
             ),
         ],
@@ -121,7 +121,7 @@ class HighEntropyStringsTest(object):
             # Test high entropy exclude regex
             '"CanonicalUser": "{secret}"',
             # Not a string
-            "{secret}",
+            '{secret}',
         ],
     )
     def test_ignored_lines(self, content_to_format):

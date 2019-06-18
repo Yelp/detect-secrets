@@ -51,7 +51,7 @@ def initialize(
         elif os.path.isfile(element):
             files_to_scan.append(element)
         else:
-            log.error("detect-secrets: " + element + ": No such file or directory")
+            log.error('detect-secrets: ' + element + ': No such file or directory')
 
     if not files_to_scan:
         return output
@@ -215,7 +215,7 @@ def merge_results(old_results, new_results):
         if filename not in new_results:
             continue
 
-        old_secrets_mapping = dict()
+        old_secrets_mapping = {}
         for old_secret in old_secrets:
             old_secrets_mapping[old_secret['hashed_secret']] = old_secret
 

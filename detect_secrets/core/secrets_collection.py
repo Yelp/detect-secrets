@@ -209,7 +209,7 @@ class SecretsCollection(object):
 
             return True
         except IOError:
-            log.warning("Unable to open file: %s", filename)
+            log.warning('Unable to open file: %s', filename)
             return False
 
     def get_secret(self, filename, secret, type_=None):
@@ -263,7 +263,7 @@ class SecretsCollection(object):
         plugins_used = sorted(plugins_used, key=lambda x: x['name'])
 
         return {
-            'generated_at': strftime("%Y-%m-%dT%H:%M:%SZ", gmtime()),
+            'generated_at': strftime('%Y-%m-%dT%H:%M:%SZ', gmtime()),
             'exclude': {
                 'files': self.exclude_files,
                 'lines': self.exclude_lines,
@@ -302,14 +302,14 @@ class SecretsCollection(object):
         :type filename: string
         """
         try:
-            log.info("Checking file: %s", filename)
+            log.info('Checking file: %s', filename)
 
             for results, plugin in self._results_accumulator(filename):
                 results.update(plugin.analyze(f, filename))
                 f.seek(0)
 
         except UnicodeDecodeError:
-            log.warning("%s failed to load.", filename)
+            log.warning('%s failed to load.', filename)
 
     def _extract_secrets_from_patch(self, f, plugin, filename):
         """Extract secrets from a given patch file object.
