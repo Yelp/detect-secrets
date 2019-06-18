@@ -87,6 +87,7 @@ def verify_aws_secret_access_key(key, secret):  # pragma: no cover
         /
 
         {headers}
+
         {signed_headers}
         {hashed_payload}
     """)[1:-1].format(
