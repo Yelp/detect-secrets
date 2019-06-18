@@ -165,7 +165,8 @@ class TestBase64HighEntropyStrings(HighEntropyStringsTest):
                     'Location:    test_data/config.ini:10',
                     'Location:    test_data/config.ini:15',
                     'Location:    test_data/config.ini:21',
-                    'Location:    test_data/config.ini:22', ],
+                    'Location:    test_data/config.ini:22',
+                ],
             ),
             (
                 'test_data/files/file_with_secrets.py',
