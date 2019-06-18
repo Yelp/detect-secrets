@@ -3,8 +3,9 @@ from abc import ABCMeta
 from abc import abstractmethod
 from abc import abstractproperty
 
+from .common.constants import ALLOWLIST_REGEXES
+from .common.filters import is_false_positive
 from detect_secrets.core.potential_secret import PotentialSecret
-from detect_secrets.plugins.common.constants import ALLOWLIST_REGEXES
 
 
 class BasePlugin(object):
@@ -169,4 +170,7 @@ class RegexBasedDetector(BasePlugin):
     def secret_generator(self, string, *args, **kwargs):
         for regex in self.denylist:
             for match in regex.findall(string):
+                if is_false_positive(match):
+                    continue
+
                 yield match
