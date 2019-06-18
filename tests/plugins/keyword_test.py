@@ -14,24 +14,24 @@ QUOTES_REQUIRED_FILE_EXTENSIONS = (
     '.py',
 )
 FOLLOWED_BY_COLON_RE = {
-    "negatives": {
-        "quotes_required": [
+    'negatives': {
+        'quotes_required': [
             'theapikey: ""',  # Nothing in the quotes
             'theapikey: "somefakekey"',  # 'fake' in the secret
         ],
-        "quotes_not_required": [
+        'quotes_not_required': [
             'theapikeyforfoo:hopenobodyfindsthisone',  # Characters between apikey and :
             'password: ${link}',  # Has a ${ followed by a }
         ],
     },
-    "positives": {
-        "quotes_required": [
+    'positives': {
+        'quotes_required': [
             "'theapikey': '{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
             '"theapikey": "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
             'apikey: "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
             "apikey:  '{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
         ],
-        "quotes_not_required": [
+        'quotes_not_required': [
             'apikey: {{h}o)p${e]nob(ody[finds>-_$#thisone}}',
             'apikey:{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
             'theapikey:{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
@@ -39,8 +39,8 @@ FOLLOWED_BY_COLON_RE = {
     },
 }
 FOLLOWED_BY_EQUAL_SIGNS_RE = {
-    "negatives": {
-        "quotes_required": [
+    'negatives': {
+        'quotes_required': [
             'some_key = "real_secret"',  # We cannot make 'key' a Keyword, too noisy
             'my_password = ""',  # Nothing in the quotes
             "my_password = ''",  # Nothing in the quotes
@@ -48,20 +48,20 @@ FOLLOWED_BY_EQUAL_SIGNS_RE = {
             'open(self, password = ""):',  # secrets is ""):
             'open(self, password = ""):',  # secrets is ""):
         ],
-        "quotes_not_required": [
+        'quotes_not_required': [
             'my_password = foo(hey)you',  # Has a ( followed by a )
             "my_password = request.json_body['hey']",  # Has a [ followed by a ]
             'my_password = True',  # 'True' is a known false-positive
             'login(username=username, password=password)',  # secret is password)
         ],
     },
-    "positives": {
-        "quotes_required": [
+    'positives': {
+        'quotes_required': [
             'some_dict["secret"] = "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
             'the_password= "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"\n',
             'the_password=\'{{h}o)p${e]nob(ody[finds>-_$#thisone}}\'\n',
         ],
-        "quotes_not_required": [
+        'quotes_not_required': [
             "some_dict['secret'] = {{h}o)p${e]nob(ody[finds>-_$#thisone}}",
             'my_password={{h}o)p${e]nob(ody[finds>-_$#thisone}}',
             'my_password= {{h}o)p${e]nob(ody[finds>-_$#thisone}}',
@@ -73,8 +73,8 @@ FOLLOWED_BY_EQUAL_SIGNS_RE = {
     },
 }
 FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE = {
-    "negatives": {
-        "quotes_required": [
+    'negatives': {
+        'quotes_required': [
             'private_key "";',  # Nothing in the quotes
             'private_key \'"no spaces\';',  # Has whitespace in the secret
             'private_key "fake";',  # 'fake' in the secret
@@ -82,8 +82,8 @@ FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE = {
             'private_key \'hopenobodyfindsthisone";',  # Single-quote does not match double-quote
         ],
     },
-    "positives": {
-        "quotes_required": [
+    'positives': {
+        'quotes_required': [
             'apikey "{{h}o)p${e]nob(ody[finds>-_$#thisone}}";',  # Double-quotes
             'fooapikeyfoo "{{h}o)p${e]nob(ody[finds>-_$#thisone}}";',  # Double-quotes
             'fooapikeyfoo"{{h}o)p${e]nob(ody[finds>-_$#thisone}}";',  # Double-quotes
@@ -94,17 +94,17 @@ FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE = {
     },
 }
 FOLLOWED_BY_COLON_EQUAL_SIGNS_RE = {
-    "negatives": {
-        "quotes_required": [
+    'negatives': {
+        'quotes_required': [
             'theapikey := ""',  # Nothing in the quotes
             'theapikey := "somefakekey"',  # 'fake' in the secret
         ],
-        "quotes_not_required": [
+        'quotes_not_required': [
             'theapikeyforfoo := hopenobodyfindsthisone',  # Characters between apikey and :=
         ],
     },
-    "positives": {
-        "quotes_required": [
+    'positives': {
+        'quotes_required': [
             'apikey := "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
             'apikey :="{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
             'apikey  :=   "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
@@ -116,11 +116,11 @@ FOLLOWED_BY_COLON_EQUAL_SIGNS_RE = {
             "apikey:='{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
             "apikey:=  '{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
         ],
-        "quotes_not_required": [
-            "apikey := {{h}o)p${e]nob(ody[finds>-_$#thisone}}",
-            "apikey :={{h}o)p${e]nob(ody[finds>-_$#thisone}}",
-            "apikey:= {{h}o)p${e]nob(ody[finds>-_$#thisone}}",
-            "apikey:={{h}o)p${e]nob(ody[finds>-_$#thisone}}",
+        'quotes_not_required': [
+            'apikey := {{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+            'apikey :={{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+            'apikey:= {{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+            'apikey:={{h}o)p${e]nob(ody[finds>-_$#thisone}}',
         ],
     },
 }
@@ -129,20 +129,20 @@ STANDARD_NEGATIVES = []
 STANDARD_POSITIVES = []
 
 STANDARD_NEGATIVES.extend(
-    FOLLOWED_BY_COLON_RE.get("negatives").get("quotes_required")
-    + FOLLOWED_BY_COLON_RE.get("negatives").get("quotes_not_required")
-    + FOLLOWED_BY_EQUAL_SIGNS_RE.get("negatives").get("quotes_required")
-    + FOLLOWED_BY_EQUAL_SIGNS_RE.get("negatives").get("quotes_not_required")
-    + FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE.get("negatives").get("quotes_required")
-    + FOLLOWED_BY_COLON_EQUAL_SIGNS_RE.get("negatives").get("quotes_required")
-    + FOLLOWED_BY_COLON_EQUAL_SIGNS_RE.get("negatives").get("quotes_not_required"),
+    FOLLOWED_BY_COLON_RE.get('negatives').get('quotes_required')
+    + FOLLOWED_BY_COLON_RE.get('negatives').get('quotes_not_required')
+    + FOLLOWED_BY_EQUAL_SIGNS_RE.get('negatives').get('quotes_required')
+    + FOLLOWED_BY_EQUAL_SIGNS_RE.get('negatives').get('quotes_not_required')
+    + FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE.get('negatives').get('quotes_required')
+    + FOLLOWED_BY_COLON_EQUAL_SIGNS_RE.get('negatives').get('quotes_required')
+    + FOLLOWED_BY_COLON_EQUAL_SIGNS_RE.get('negatives').get('quotes_not_required'),
 )
 STANDARD_POSITIVES.extend(
-    FOLLOWED_BY_COLON_RE.get("positives").get("quotes_required")
-    + FOLLOWED_BY_COLON_RE.get("positives").get("quotes_not_required")
-    + FOLLOWED_BY_EQUAL_SIGNS_RE.get("positives").get("quotes_required")
-    + FOLLOWED_BY_EQUAL_SIGNS_RE.get("positives").get("quotes_not_required")
-    + FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE.get("positives").get("quotes_required"),
+    FOLLOWED_BY_COLON_RE.get('positives').get('quotes_required')
+    + FOLLOWED_BY_COLON_RE.get('positives').get('quotes_not_required')
+    + FOLLOWED_BY_EQUAL_SIGNS_RE.get('positives').get('quotes_required')
+    + FOLLOWED_BY_EQUAL_SIGNS_RE.get('positives').get('quotes_not_required')
+    + FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE.get('positives').get('quotes_required'),
 )
 
 
@@ -181,9 +181,9 @@ class TestKeywordDetector(object):
         (
             (positive, file_extension)
             for positive in (
-                FOLLOWED_BY_COLON_RE.get("positives").get("quotes_required")
-                + FOLLOWED_BY_EQUAL_SIGNS_RE.get("positives").get("quotes_required")
-                + FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE.get("positives").get("quotes_required")
+                FOLLOWED_BY_COLON_RE.get('positives').get('quotes_required')
+                + FOLLOWED_BY_EQUAL_SIGNS_RE.get('positives').get('quotes_required')
+                + FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE.get('positives').get('quotes_required')
             ) for file_extension in QUOTES_REQUIRED_FILE_EXTENSIONS
         ),
     )
@@ -203,11 +203,11 @@ class TestKeywordDetector(object):
 
     @pytest.mark.parametrize(
         'file_content',
-        FOLLOWED_BY_EQUAL_SIGNS_RE.get("positives").get("quotes_required")
-        + FOLLOWED_BY_EQUAL_SIGNS_RE.get("positives").get("quotes_not_required")
-        + FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE.get("positives").get("quotes_required")
-        + FOLLOWED_BY_COLON_EQUAL_SIGNS_RE.get("positives").get("quotes_required")
-        + FOLLOWED_BY_COLON_EQUAL_SIGNS_RE.get("positives").get("quotes_not_required"),
+        FOLLOWED_BY_EQUAL_SIGNS_RE.get('positives').get('quotes_required')
+        + FOLLOWED_BY_EQUAL_SIGNS_RE.get('positives').get('quotes_not_required')
+        + FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE.get('positives').get('quotes_required')
+        + FOLLOWED_BY_COLON_EQUAL_SIGNS_RE.get('positives').get('quotes_required')
+        + FOLLOWED_BY_COLON_EQUAL_SIGNS_RE.get('positives').get('quotes_not_required'),
     )
     def test_analyze_go_positives(self, file_content):
         logic = KeywordDetector()

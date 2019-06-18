@@ -453,7 +453,7 @@ class TestMergeResults(object):
 
     def test_old_results_have_diff_type_will_carry_over(self):
         secretA = self.get_secret()
-        secretA["type"] = "different type"
+        secretA['type'] = 'different type'
         secretB = self.get_secret()
 
         assert merge_results(

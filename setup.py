@@ -12,7 +12,7 @@ setup(
     long_description=(
         'Check out detect-secrets on `GitHub <https://github.com/Yelp/detect-secrets>`_!'
     ),
-    license="Copyright Yelp, Inc. 2018",
+    license='Copyright Yelp, Inc. 2018',
     author='Aaron Loo',
     author_email='aaronloo@yelp.com',
     url='https://github.com/Yelp/detect-secrets',
@@ -36,14 +36,14 @@ setup(
         ],
     },
     classifiers=[
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: Apache Software License",
-        "Intended Audience :: Developers",
-        "Topic :: Software Development",
-        "Topic :: Utilities",
-        "Environment :: Console",
-        "Operating System :: OS Independent",
-        "Development Status :: 5 - Production/Stable",
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
+        'License :: OSI Approved :: Apache Software License',
+        'Intended Audience :: Developers',
+        'Topic :: Software Development',
+        'Topic :: Utilities',
+        'Environment :: Console',
+        'Operating System :: OS Independent',
+        'Development Status :: 5 - Production/Stable',
     ],
 )
