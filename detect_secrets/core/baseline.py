@@ -5,8 +5,10 @@ import os
 import re
 import subprocess
 
+from detect_secrets import util
 from detect_secrets.core.log import get_logger
 from detect_secrets.core.secrets_collection import SecretsCollection
+
 
 log = get_logger(format_string='%(message)s')
 
@@ -37,17 +39,19 @@ def initialize(
         exclude_lines=exclude_lines_regex,
     )
 
-    files_to_scan = list()
+    files_to_scan = []
     for element in path:
         if os.path.isdir(element):
             if should_scan_all_files:
                 files_to_scan.extend(_get_files_recursively(element))
             else:
-                files_to_scan.extend(_get_git_tracked_files(element))
+                files = _get_git_tracked_files(element)
+                if files:
+                    files_to_scan.extend(files)
         elif os.path.isfile(element):
             files_to_scan.append(element)
         else:
-            log.error("detect-secrets: " + element + ": No such file or directory")
+            log.error('detect-secrets: ' + element + ': No such file or directory')
 
     if not files_to_scan:
         return output
@@ -211,7 +215,7 @@ def merge_results(old_results, new_results):
         if filename not in new_results:
             continue
 
-        old_secrets_mapping = dict()
+        old_secrets_mapping = {}
         for old_secret in old_secrets:
             old_secrets_mapping[old_secret['hashed_secret']] = old_secret
 
@@ -268,13 +272,16 @@ def _get_git_tracked_files(rootdir='.'):
             git_files = subprocess.check_output(
                 [
                     'git',
+                    '-C', rootdir,
                     'ls-files',
-                    rootdir,
                 ],
                 stderr=fnull,
             )
 
-        return set(git_files.decode('utf-8').split())
+        return set([
+            util.get_relative_path(rootdir, filename)
+            for filename in git_files.decode('utf-8').split()
+        ])
     except subprocess.CalledProcessError:
         return None
 
@@ -284,8 +291,8 @@ def _get_files_recursively(rootdir):
     This function allows us to do so.
     """
     output = []
-    for root, dirs, files in os.walk(rootdir):
+    for root, _, files in os.walk(rootdir):
         for filename in files:
-            output.append(os.path.join(root, filename))
+            output.append(util.get_relative_path(root, filename))
 
     return output

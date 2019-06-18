@@ -692,14 +692,14 @@ class TestPrintContext(object):
         self.run_logic(
             secret=potential_secret_factory(
                 type_='Base64 High Entropy String',
-                filename="test_data/config.md",
+                filename='test_data/config.md',
                 secret='ToCynx5Se4e2PtoZxEhW7lUJcOX15c54',
                 lineno=10,
             ).json(),
             settings=[
                 {
-                    "base64_limit": 4.5,
-                    "name": "Base64HighEntropyString",
+                    'base64_limit': 4.5,
+                    'name': 'Base64HighEntropyString',
                 },
             ],
         )

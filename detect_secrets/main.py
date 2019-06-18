@@ -84,7 +84,7 @@ def main(argv=None):
 
 def _get_plugin_from_baseline(old_baseline):
     plugins = []
-    if old_baseline and "plugins_used" in old_baseline:
+    if old_baseline and 'plugins_used' in old_baseline:
         secrets_collection = SecretsCollection.load_baseline_from_dict(old_baseline)
         plugins = secrets_collection.plugins
     return plugins

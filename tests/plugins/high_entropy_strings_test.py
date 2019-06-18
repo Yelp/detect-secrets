@@ -53,7 +53,7 @@ class HighEntropyStringsTest(object):
             ),
             # Matches exclude_lines_regex
             (
-                "CanonicalUser: {secret}",
+                'CanonicalUser: {secret}',
                 False,
             ),
         ],
@@ -121,7 +121,7 @@ class HighEntropyStringsTest(object):
             # Test high entropy exclude regex
             '"CanonicalUser": "{secret}"',
             # Not a string
-            "{secret}",
+            '{secret}',
         ],
     )
     def test_ignored_lines(self, content_to_format):
@@ -165,7 +165,8 @@ class TestBase64HighEntropyStrings(HighEntropyStringsTest):
                     'Location:    test_data/config.ini:10',
                     'Location:    test_data/config.ini:15',
                     'Location:    test_data/config.ini:21',
-                    'Location:    test_data/config.ini:22', ],
+                    'Location:    test_data/config.ini:22',
+                ],
             ),
             (
                 'test_data/files/file_with_secrets.py',

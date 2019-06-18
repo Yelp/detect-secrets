@@ -2,15 +2,17 @@ repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v2.1.0
     hooks:
-    -   id: trailing-whitespace
-    -   id: end-of-file-fixer
+    -   id: check-builtin-literals
+        args: ['--no-allow-dict-kwargs']
     -   id: check-docstring-first
     -   id: debug-statements
+    -   id: double-quote-string-fixer
+    -   id: end-of-file-fixer
     -   id: name-tests-test
-        exclude: tests/util
     -   id: flake8
         args: ['--max-line-length', '100']
         exclude: ^test_data/
+    -   id: trailing-whitespace
 -   repo: https://github.com/asottile/reorder_python_imports
     rev: v1.3.4
     hooks:

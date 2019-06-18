@@ -85,7 +85,7 @@ def merge_plugin_from_baseline(baseline_plugins, args):
         return r
 
     baseline_plugins_dict = {
-        vars(plugin)["name"]: _remove_key(vars(plugin), "name")
+        vars(plugin)['name']: _remove_key(vars(plugin), 'name')
         for plugin in baseline_plugins
     }
 
@@ -134,7 +134,7 @@ def merge_plugin_from_baseline(baseline_plugins, args):
         except KeyError:
             log.warning(
                 '{} specified, but {} not configured! Ignoring...',
-                "".join(["--", param_name.replace("_", "-")]),
+                ''.join(['--', param_name.replace('_', '-')]),
                 plugin_name,
             )
 

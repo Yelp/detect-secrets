@@ -1,5 +1,5 @@
 #!/usr/bin/python
-REGULAR_VALUE = "this is just a long string, like a user facing error message"
+REGULAR_VALUE = 'this is just a long string, like a user facing error message'
 
 
 def main():

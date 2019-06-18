@@ -318,9 +318,9 @@ def _create_baseline_template(has_result, use_private_key_scan):
     }
 
     if not use_private_key_scan:
-        baseline["plugins_used"].pop(-1)
+        baseline['plugins_used'].pop(-1)
 
     if not has_result:
-        baseline["results"] = {}
+        baseline['results'] = {}
 
     return baseline

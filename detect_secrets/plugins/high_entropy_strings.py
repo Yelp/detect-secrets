@@ -14,23 +14,12 @@ from contextlib import contextmanager
 import yaml
 
 from .base import BasePlugin
+from .common.filters import is_false_positive
+from .common.ini_file_parser import IniFileParser
+from .common.yaml_file_parser import YamlFileParser
 from detect_secrets.core.potential_secret import PotentialSecret
-from detect_secrets.plugins.common.ini_file_parser import IniFileParser
-from detect_secrets.plugins.common.yaml_file_parser import YamlFileParser
 
 
-IGNORED_SEQUENTIAL_STRINGS = (
-    (
-        string.ascii_uppercase +
-        string.ascii_uppercase +
-        string.digits +
-        string.ascii_uppercase +
-        string.ascii_uppercase +
-        '+/'
-    ),
-    string.hexdigits.upper() + string.hexdigits.upper(),
-    string.ascii_uppercase + '=/',
-)
 YAML_EXTENSIONS = (
     '.yaml',
     '.yml',
@@ -97,13 +86,6 @@ class HighEntropyStringsPlugin(BasePlugin):
 
         return entropy
 
-    def _is_sequential_string(self, string):
-        uppercased_string = string.upper()
-        for sequential_string in IGNORED_SEQUENTIAL_STRINGS:
-            if uppercased_string in sequential_string:
-                return True
-        return False
-
     def analyze_string_content(self, string, line_num, filename):
         """Searches string for custom pattern, and captures all high entropy strings that
         match self.regex, with a limit defined as self.entropy_limit.
@@ -111,8 +93,9 @@ class HighEntropyStringsPlugin(BasePlugin):
         output = {}
 
         for result in self.secret_generator(string):
-            if self._is_sequential_string(result):
+            if is_false_positive(result):
                 continue
+
             secret = PotentialSecret(self.secret_type, filename, result, line_num)
             output[secret] = secret
 
