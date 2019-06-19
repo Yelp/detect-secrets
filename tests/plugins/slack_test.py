@@ -33,6 +33,9 @@ class TestSlackDetector(object):
             (
                 'xoxb-34532454-e039d02840a0b9379c'
             ),
+            (
+                'https://hooks.slack.com/services/Txxxxxxxx/Bxxxxxxxx/xxxxxxxxxxxxxxxxxxxxxxxx'
+            ),
         ],
     )
     def test_analyze(self, file_content):
