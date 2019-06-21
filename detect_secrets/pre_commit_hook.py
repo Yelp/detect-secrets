@@ -39,6 +39,7 @@ def main(argv=None):
     plugins = initialize.from_parser_builder(
         args.plugins,
         exclude_lines_regex=args.exclude_lines,
+        should_verify_secrets=not args.no_verify,
     )
 
     # Merge plugin from baseline

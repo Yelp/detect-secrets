@@ -39,7 +39,7 @@ class TestInitializeBaseline(object):
             path,
             self.plugins,
             exclude_files_regex=exclude_files_regex,
-            scan_all_files=scan_all_files,
+            should_scan_all_files=scan_all_files,
         ).json()
 
     @pytest.mark.parametrize(
@@ -126,7 +126,10 @@ class TestInitializeBaseline(object):
         assert len(results['will_be_mocked']) == 1
 
     def test_scan_all_files(self):
-        results = self.get_results(path=['test_data/files'], scan_all_files=True)
+        results = self.get_results(
+            path=['test_data/files'],
+            scan_all_files=True,
+        )
         assert len(results.keys()) == 2
 
 

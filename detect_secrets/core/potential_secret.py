@@ -40,12 +40,26 @@ class PotentialSecret(object):
 
         :type is_secret: bool|None
         :param is_secret: whether or not the secret is a true- or false- positive
+
+        :type is_verified: bool
+        :param is_verified: whether the secret has been externally verified
         """
         self.type = typ
         self.filename = filename
         self.lineno = lineno
         self.secret_hash = self.hash_secret(secret)
         self.is_secret = is_secret
+        self.is_verified = False
+
+        # NOTE: Originally, we never wanted to keep the secret value in memory,
+        #       after finding it in the codebase. However, to support verifiable
+        #       secrets (and avoid the pain of re-scanning again), we need to
+        #       keep the plaintext in memory as such.
+        #
+        #       This value should never appear in the baseline though, seeing that
+        #       we don't want to create a file that contains all plaintext secrets
+        #       in the repository.
+        self.secret_value = secret
 
         # If two PotentialSecrets have the same values for these fields,
         # they are considered equal. Note that line numbers aren't included
@@ -69,6 +83,7 @@ class PotentialSecret(object):
             'filename': self.filename,
             'line_number': self.lineno,
             'hashed_secret': self.secret_hash,
+            'is_verified': self.is_verified,
         }
 
         if self.is_secret is not None:

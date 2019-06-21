@@ -28,6 +28,10 @@ def secrets_collection_factory(secrets=None, plugins=(), exclude_files_regex=Non
     )
 
     if plugins:
+        for plugin in plugins:
+            # We don't want to incur network calls during test cases
+            plugin.should_verify = False
+
         collection.plugins = plugins
 
     # Handle secrets

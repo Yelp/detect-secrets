@@ -34,6 +34,7 @@ def main(argv=None):
         plugins = initialize.from_parser_builder(
             args.plugins,
             exclude_lines_regex=args.exclude_lines,
+            should_verify_secrets=not args.no_verify,
         )
         if args.string:
             line = args.string
@@ -115,7 +116,6 @@ def _perform_scan(args, plugins):
 
     :rtype: dict
     """
-
     old_baseline = _get_existing_baseline(args.import_filename)
     if old_baseline:
         plugins = initialize.merge_plugin_from_baseline(
@@ -144,7 +144,7 @@ def _perform_scan(args, plugins):
         exclude_files_regex=args.exclude_files,
         exclude_lines_regex=args.exclude_lines,
         path=args.path,
-        scan_all_files=args.all_files,
+        should_scan_all_files=args.all_files,
     ).format_for_baseline_output()
 
     if old_baseline:

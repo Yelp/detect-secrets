@@ -308,6 +308,7 @@ def _create_baseline_template(has_result, use_private_key_scan):
                 {
                     'type': 'Base64 High Entropy String',
                     'is_secret': True,
+                    'is_verified': False,
                     'line_number': 3,
                     'hashed_secret': PotentialSecret.hash_secret(base64_secret),
                 },

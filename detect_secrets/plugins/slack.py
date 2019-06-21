@@ -5,7 +5,10 @@ from __future__ import absolute_import
 
 import re
 
+import requests
+
 from .base import RegexBasedDetector
+from detect_secrets.core.constants import VerifiedResult
 
 
 class SlackDetector(RegexBasedDetector):
@@ -23,3 +26,14 @@ class SlackDetector(RegexBasedDetector):
             flags=re.IGNORECASE | re.VERBOSE,
         ),
     )
+
+    def verify(self, token, **kwargs):    # pragma: no cover
+        response = requests.post(
+            'https://slack.com/api/auth.test',
+            data={
+                'token': token,
+            },
+        ).json()
+
+        return VerifiedResult.VERIFIED_TRUE if response['ok'] \
+            else VerifiedResult.VERIFIED_FALSE

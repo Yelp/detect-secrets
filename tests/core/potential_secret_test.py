@@ -35,5 +35,10 @@ class TestPotentialSecret(object):
         assert (a != b) is not is_equal
 
     def test_secret_storage(self):
-        secret = potential_secret_factory()
+        secret = potential_secret_factory(secret='secret')
         assert secret.secret_hash != 'secret'
+
+    def test_json(self):
+        secret = potential_secret_factory(secret='blah')
+        for value in secret.json().values():
+            assert value != 'blah'
