@@ -7,9 +7,11 @@ import subprocess
 import sys
 from builtins import input
 from collections import defaultdict
+from copy import deepcopy
 
 from ..plugins.common import initialize
 from ..plugins.common.filetype import determine_file_type
+from ..plugins.common.util import get_mapping_from_secret_type_to_class_name
 from ..plugins.high_entropy_strings import HighEntropyStringsPlugin
 from .baseline import merge_results
 from .bidirectional_iterator import BidirectionalIterator
@@ -30,6 +32,22 @@ class SecretNotFoundOnSpecifiedLineError(Exception):
 
 class RedundantComparisonError(Exception):
     pass
+
+
+AUDIT_RESULT_TO_STRING = {
+    True: 'positive',
+    False: 'negative',
+    None: 'unknown',
+}
+
+EMPTY_PLUGIN_AUDIT_RESULT = {
+    'results': {
+        'positive': [],
+        'negative': [],
+        'unknown': [],
+    },
+    'config': {},
+}
 
 
 def audit_baseline(baseline_filename):
@@ -174,6 +192,55 @@ def compare_baselines(old_baseline_filename, new_baseline_filename):
         if decision == 'b':  # pragma: no cover
             current_index -= 2
             secret_iterator.step_back_on_next_iteration()
+
+
+def determine_audit_results(baseline):
+    """
+    Given a baseline which has been audited, returns
+    a dictionary describing the results of each plugin in the following form:
+    {
+        "plugin_name1": {
+            "results": {
+                "positive": [list of secrets with is_secret: true caught by this plugin],
+                "negative": [list of secrets with is_secret: false caught by this plugin],
+                "unknown": [list of secrets with no is_secret entry caught by this plugin]
+            },
+            "config": {configuration used for the plugin}
+        },
+        ...
+    }
+    """
+    all_secrets = _secret_generator(baseline)
+
+    audit_results = defaultdict(lambda: deepcopy(EMPTY_PLUGIN_AUDIT_RESULT))
+    secret_type_mapping = get_mapping_from_secret_type_to_class_name()
+
+    for filename, secret in all_secrets:
+        plugin_name = secret_type_mapping[secret['type']]
+        audit_result = AUDIT_RESULT_TO_STRING[secret.get('is_secret')]
+
+        # TODO: figure out how to plaintext-ify
+        audit_results[plugin_name]['results'][audit_result].append(secret['hashed_secret'])
+
+    for plugin_config in baseline['plugins_used']:
+        plugin_name = plugin_config['name']
+        if plugin_name not in audit_results:
+            continue
+
+        audit_results[plugin_name]['config'].update(plugin_config)
+
+    # TODO: pull in git repo and commit info
+
+    return audit_results
+
+
+def print_audit_results(baseline_filename):
+    baseline = _get_baseline_from_file(baseline_filename)
+    if not baseline:
+        print('Failed to retrieve baseline from {filename}'.format(filename=baseline_filename))
+        return
+
+    print(json.dumps(determine_audit_results(baseline)))
 
 
 def _get_baseline_from_file(filename):  # pragma: no cover
