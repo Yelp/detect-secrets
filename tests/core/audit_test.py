@@ -476,6 +476,16 @@ class TestCompareBaselines(object):
 
 
 class TestDetermineAuditResults(object):
+
+    @pytest.fixture
+    def mock_get_raw_secret_value(self):
+        with mock.patch.object(
+            audit,
+            'get_raw_secret_value',
+            autospec=True,
+        ) as _mock:
+            yield _mock
+
     def get_audited_baseline(self, plugin_config={}, is_secret=None):
         """
         Returns a baseline in dict form with 1 plugin and 1 secret.
@@ -525,19 +535,41 @@ class TestDetermineAuditResults(object):
     )
     def test_determine_audit_results(
         self,
+        mock_get_raw_secret_value,
         plugin_config,
         is_secret,
         expected_audited_result,
     ):
+        plaintext_secret = 'some_plaintext_secret'
+        mock_get_raw_secret_value.return_value = plaintext_secret
         baseline = self.get_audited_baseline(plugin_config, is_secret)
+
         results = audit.determine_audit_results(baseline)
 
         if plugin_config:
             assert results['HexHighEntropyString']['config'].items() >= plugin_config.items()
 
         for audited_result, list_of_secrets in results['HexHighEntropyString']['results'].items():
-            expected_num_secrets = 1 if audited_result == expected_audited_result else 0
-            assert len(list_of_secrets) == expected_num_secrets
+            if audited_result == expected_audited_result:
+                assert plaintext_secret in list_of_secrets
+            else:
+                assert len(list_of_secrets) == 0
+
+    def test_determine_audit_results_secret_not_found(self, mock_get_raw_secret_value):
+        mock_get_raw_secret_value.side_effect = audit.SecretNotFoundOnSpecifiedLineError(1)
+        baseline = self.get_audited_baseline({}, True)
+
+        whole_plaintext_line = 'a plaintext line'
+
+        with mock.patch.object(
+            audit,
+            '_get_file_line',
+            return_value=whole_plaintext_line,
+            autospec=True,
+        ):
+            results = audit.determine_audit_results(baseline)
+
+        assert whole_plaintext_line in results['HexHighEntropyString']['results']['positive']
 
 
 class TestPrintAuditResults():

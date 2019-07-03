@@ -1,6 +1,7 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import codecs
 import json
 import os
 import subprocess
@@ -216,11 +217,20 @@ def determine_audit_results(baseline):
     secret_type_mapping = get_mapping_from_secret_type_to_class_name()
 
     for filename, secret in all_secrets:
+        plaintext_line = _get_file_line(filename, secret['line_number'])
+        try:
+            secret_plaintext = get_raw_secret_value(
+                secret_line=plaintext_line,
+                secret=secret,
+                plugin_settings=baseline['plugins_used'],
+                filename=filename,
+            )
+        except SecretNotFoundOnSpecifiedLineError:
+            secret_plaintext = plaintext_line
+
         plugin_name = secret_type_mapping[secret['type']]
         audit_result = AUDIT_RESULT_TO_STRING[secret.get('is_secret')]
-
-        # TODO: figure out how to plaintext-ify
-        audit_results[plugin_name]['results'][audit_result].append(secret['hashed_secret'])
+        audit_results[plugin_name]['results'][audit_result].append(secret_plaintext)
 
     for plugin_config in baseline['plugins_used']:
         plugin_name = plugin_config['name']
@@ -489,6 +499,17 @@ def _handle_user_decision(decision, secret):
         secret['is_secret'] = False
     elif decision == 's' and 'is_secret' in secret:
         del secret['is_secret']
+
+
+def _get_file_line(filename, line_number):
+    """
+    Attempts to read a given line from the input file.
+    """
+    try:
+        with codecs.open(filename, encoding='utf-8') as f:
+            return f.read().splitlines()[line_number - 1]  # line numbers are 1-indexed
+    except (OSError, IOError, IndexError):
+        return None
 
 
 def _get_secret_with_context(
