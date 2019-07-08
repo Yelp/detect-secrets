@@ -225,7 +225,7 @@ def determine_audit_results(baseline, baseline_path):
         'results': defaultdict(lambda: deepcopy(EMPTY_PLUGIN_AUDIT_RESULT)),
     }
 
-    secret_type_mapping = get_mapping_from_secret_type_to_class_name()
+    secret_type_to_plugin_name = get_mapping_from_secret_type_to_class_name()
 
     for filename, secret in all_secrets:
         plaintext_line = _get_file_line(filename, secret['line_number'])
@@ -239,7 +239,7 @@ def determine_audit_results(baseline, baseline_path):
         except SecretNotFoundOnSpecifiedLineError:
             secret_plaintext = plaintext_line
 
-        plugin_name = secret_type_mapping[secret['type']]
+        plugin_name = secret_type_to_plugin_name[secret['type']]
         audit_result = AUDIT_RESULT_TO_STRING[secret.get('is_secret')]
         audit_results['results'][plugin_name]['results'][audit_result].append(secret_plaintext)
 

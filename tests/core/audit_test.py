@@ -504,7 +504,7 @@ class TestDetermineAuditResults(object):
         ) as _mock:
             yield _mock
 
-    def get_audited_baseline(self, plugin_config={}, is_secret=None):
+    def get_audited_baseline(self, plugin_config, is_secret):
         """
         Returns a baseline in dict form with 1 plugin and 1 secret.
         :param plugin_config: An optional dict for the plugin's config.
@@ -548,13 +548,12 @@ class TestDetermineAuditResults(object):
     ):
         plaintext_secret = 'some_plaintext_secret'
         mock_get_raw_secret_value.return_value = plaintext_secret
-        baseline = self.get_audited_baseline(plugin_config, None)
+        baseline = self.get_audited_baseline(plugin_config=plugin_config, is_secret=None)
 
         results = audit.determine_audit_results(baseline, '.secrets.baseline')
 
-        if plugin_config:
-            assert results['results']['HexHighEntropyString']['config'].items() \
-                >= plugin_config.items()
+        assert results['results']['HexHighEntropyString']['config'].items() \
+            >= plugin_config.items()
 
     @pytest.mark.parametrize(
         'is_secret, expected_audited_result',
@@ -574,7 +573,7 @@ class TestDetermineAuditResults(object):
     ):
         plaintext_secret = 'some_plaintext_secret'
         mock_get_raw_secret_value.return_value = plaintext_secret
-        baseline = self.get_audited_baseline({}, is_secret)
+        baseline = self.get_audited_baseline(plugin_config={}, is_secret=is_secret)
 
         results = audit.determine_audit_results(baseline, '.secrets.baseline')
 
@@ -617,7 +616,7 @@ class TestDetermineAuditResults(object):
         mock_get_git_remotes.return_value = git_remotes
         mock_get_git_sha.return_value = git_sha
 
-        baseline = self.get_audited_baseline({}, True)
+        baseline = self.get_audited_baseline(plugin_config={}, is_secret=True)
 
         results = audit.determine_audit_results(baseline, '.secrets.baseline')
 
@@ -633,7 +632,7 @@ class TestDetermineAuditResults(object):
         mock_get_git_sha,
     ):
         mock_get_raw_secret_value.side_effect = audit.SecretNotFoundOnSpecifiedLineError(1)
-        baseline = self.get_audited_baseline({}, True)
+        baseline = self.get_audited_baseline(plugin_config={}, is_secret=True)
 
         whole_plaintext_line = 'a plaintext line'
 
