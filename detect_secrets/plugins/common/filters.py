@@ -21,17 +21,31 @@ def is_sequential_string(secret):
     Returns true if string is sequential.
     """
     sequences = (
+        # base64 letters first
         (
             string.ascii_uppercase +
             string.ascii_uppercase +
+            string.digits +
+            '+/'
+        ),
+
+        # base64 numbers first
+        (
             string.digits +
             string.ascii_uppercase +
             string.ascii_uppercase +
             '+/'
         ),
 
+        # We don't have a specific sequence for alphabetical
+        # sequences, since those will happen to be caught by the
+        # base64 checks.
+
+        # alphanumeric sequences
+        (string.digits + string.ascii_uppercase) * 2,
+
         # Capturing any number sequences
-        '0123456789' * 2,
+        string.digits * 2,
 
         string.hexdigits.upper() + string.hexdigits.upper(),
         string.ascii_uppercase + '=/',
