@@ -11,11 +11,25 @@ class TestIsSequentialString:
     @pytest.mark.parametrize(
         'secret',
         (
+            # ascii sequence
             'ABCDEF',
+            'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
 
             # Number sequences
             '0123456789',
             '1234567890',
+
+            # Alphanumeric sequences
+            'abcdefghijklmnopqrstuvwxyz0123456789',
+            '0123456789abcdefghijklmnopqrstuvwxyz',
+
+            # Hex sequences
+            '0123456789abcdef',
+            'abcdef0123456789',
+
+            # base64 sequences
+            'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/',
+            '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+/',
         ),
     )
     def test_success(self, secret):
