@@ -209,13 +209,24 @@ class AuditOptions(object):
             ),
         )
 
-        self.parser.add_argument(
+        action_parser = self.parser.add_mutually_exclusive_group()
+
+        action_parser.add_argument(
             '--diff',
             action='store_true',
             help=(
                 'Allows the comparison of two baseline files, in order to '
                 'effectively distinguish the difference between various '
                 'plugin configurations.'
+            ),
+        )
+
+        action_parser.add_argument(
+            '--display-results',
+            action='store_true',
+            help=(
+                'Displays the results of an interactive auditing session '
+                'which have been saved to a baseline file.'
             ),
         )
 

@@ -60,8 +60,12 @@ def main(argv=None):
                 )
 
     elif args.action == 'audit':
-        if not args.diff:
+        if not args.diff and not args.display_results:
             audit.audit_baseline(args.filename[0])
+            return 0
+
+        if args.display_results:
+            audit.print_audit_results(args.filename[0])
             return 0
 
         if len(args.filename) != 2:

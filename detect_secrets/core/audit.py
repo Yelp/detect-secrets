@@ -1,16 +1,21 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import codecs
 import json
 import os
 import subprocess
 import sys
 from builtins import input
 from collections import defaultdict
+from copy import deepcopy
 
 from ..plugins.common import initialize
 from ..plugins.common.filetype import determine_file_type
+from ..plugins.common.util import get_mapping_from_secret_type_to_class_name
 from ..plugins.high_entropy_strings import HighEntropyStringsPlugin
+from ..util import get_git_remotes
+from ..util import get_git_sha
 from .baseline import merge_results
 from .bidirectional_iterator import BidirectionalIterator
 from .code_snippet import CodeSnippetHighlighter
@@ -30,6 +35,22 @@ class SecretNotFoundOnSpecifiedLineError(Exception):
 
 class RedundantComparisonError(Exception):
     pass
+
+
+AUDIT_RESULT_TO_STRING = {
+    True: 'positive',
+    False: 'negative',
+    None: 'unknown',
+}
+
+EMPTY_PLUGIN_AUDIT_RESULT = {
+    'results': {
+        'positive': [],
+        'negative': [],
+        'unknown': [],
+    },
+    'config': {},
+}
 
 
 def audit_baseline(baseline_filename):
@@ -174,6 +195,81 @@ def compare_baselines(old_baseline_filename, new_baseline_filename):
         if decision == 'b':  # pragma: no cover
             current_index -= 2
             secret_iterator.step_back_on_next_iteration()
+
+
+def determine_audit_results(baseline, baseline_path):
+    """
+    Given a baseline which has been audited, returns
+    a dictionary describing the results of each plugin in the following form:
+    {
+        "results": {
+            "plugin_name1": {
+                "results": {
+                    "positive": [list of secrets with is_secret: true caught by this plugin],
+                    "negative": [list of secrets with is_secret: false caught by this plugin],
+                    "unknown": [list of secrets with no is_secret entry caught by this plugin]
+                },
+                "config": {configuration used for the plugin}
+            },
+            ...
+        },
+        "repo_info": {
+            "remote": "remote url",
+            "sha": "sha of repo checkout"
+        },
+    }
+    """
+    all_secrets = _secret_generator(baseline)
+
+    audit_results = {
+        'results': defaultdict(lambda: deepcopy(EMPTY_PLUGIN_AUDIT_RESULT)),
+    }
+
+    secret_type_to_plugin_name = get_mapping_from_secret_type_to_class_name()
+
+    for filename, secret in all_secrets:
+        plaintext_line = _get_file_line(filename, secret['line_number'])
+        try:
+            secret_plaintext = get_raw_secret_value(
+                secret_line=plaintext_line,
+                secret=secret,
+                plugin_settings=baseline['plugins_used'],
+                filename=filename,
+            )
+        except SecretNotFoundOnSpecifiedLineError:
+            secret_plaintext = plaintext_line
+
+        plugin_name = secret_type_to_plugin_name[secret['type']]
+        audit_result = AUDIT_RESULT_TO_STRING[secret.get('is_secret')]
+        audit_results['results'][plugin_name]['results'][audit_result].append(secret_plaintext)
+
+    for plugin_config in baseline['plugins_used']:
+        plugin_name = plugin_config['name']
+        if plugin_name not in audit_results['results']:
+            continue
+
+        audit_results['results'][plugin_name]['config'].update(plugin_config)
+
+    git_repo_path = os.path.dirname(os.path.abspath(baseline_path))
+    git_sha = get_git_sha(git_repo_path)
+    git_remotes = get_git_remotes(git_repo_path)
+
+    if git_sha and git_remotes:
+        audit_results['repo_info'] = {
+            'remote': git_remotes[0],
+            'sha': git_sha,
+        }
+
+    return audit_results
+
+
+def print_audit_results(baseline_filename):
+    baseline = _get_baseline_from_file(baseline_filename)
+    if not baseline:
+        print('Failed to retrieve baseline from {filename}'.format(filename=baseline_filename))
+        return
+
+    print(json.dumps(determine_audit_results(baseline, baseline_filename)))
 
 
 def _get_baseline_from_file(filename):  # pragma: no cover
@@ -422,6 +518,17 @@ def _handle_user_decision(decision, secret):
         secret['is_secret'] = False
     elif decision == 's' and 'is_secret' in secret:
         del secret['is_secret']
+
+
+def _get_file_line(filename, line_number):
+    """
+    Attempts to read a given line from the input file.
+    """
+    try:
+        with codecs.open(filename, encoding='utf-8') as f:
+            return f.read().splitlines()[line_number - 1]  # line numbers are 1-indexed
+    except (OSError, IOError, IndexError):
+        return None
 
 
 def _get_secret_with_context(

@@ -1,13 +1,9 @@
 """Intelligent initialization of plugins."""
-try:
-    from functools import lru_cache
-except ImportError:  # pragma: no cover
-    from functools32 import lru_cache
-
 from ..artifactory import ArtifactoryDetector               # noqa: F401
 from ..aws import AWSKeyDetector                            # noqa: F401
 from ..base import BasePlugin
 from ..basic_auth import BasicAuthDetector                  # noqa: F401
+from ..common.util import get_mapping_from_secret_type_to_class_name
 from ..high_entropy_strings import Base64HighEntropyString  # noqa: F401
 from ..high_entropy_strings import HexHighEntropyString     # noqa: F401
 from ..keyword import KeywordDetector                       # noqa: F401
@@ -195,7 +191,7 @@ def from_secret_type(secret_type, settings):
         ...     },
         ... ]
     """
-    mapping = _get_mapping_from_secret_type_to_class_name()
+    mapping = get_mapping_from_secret_type_to_class_name()
     try:
         classname = mapping[secret_type]
     except KeyError:
@@ -214,17 +210,3 @@ def from_secret_type(secret_type, settings):
 
                 **plugin_init_vars
             )
-
-
-@lru_cache(maxsize=1)
-def _get_mapping_from_secret_type_to_class_name():
-    """Returns secret_type => plugin classname"""
-    mapping = {}
-    for key, value in globals().items():
-        try:
-            if issubclass(value, BasePlugin) and value != BasePlugin:
-                mapping[value.secret_type] = key
-        except TypeError:
-            pass
-
-    return mapping

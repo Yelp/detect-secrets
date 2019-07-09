@@ -475,6 +475,227 @@ class TestCompareBaselines(object):
         }
 
 
+class TestDetermineAuditResults(object):
+
+    @pytest.fixture
+    def mock_get_raw_secret_value(self):
+        with mock.patch.object(
+            audit,
+            'get_raw_secret_value',
+            autospec=True,
+        ) as _mock:
+            yield _mock
+
+    @pytest.fixture
+    def mock_get_git_sha(self):
+        with mock.patch(
+            'detect_secrets.core.audit.get_git_sha',
+            return_value=None,
+            autospec=True,
+        ) as _mock:
+            yield _mock
+
+    @pytest.fixture
+    def mock_get_git_remotes(self):
+        with mock.patch(
+            'detect_secrets.core.audit.get_git_remotes',
+            return_value=None,
+            autospec=True,
+        ) as _mock:
+            yield _mock
+
+    def get_audited_baseline(self, plugin_config, is_secret):
+        """
+        Returns a baseline in dict form with 1 plugin and 1 secret.
+        :param plugin_config: An optional dict for the plugin's config.
+        :param is_secret: An optional bool for whether the secret has been
+        audited.
+        """
+        baseline_fixture = {
+            'plugins_used': [
+                {
+                    'name': 'HexHighEntropyString',
+                },
+            ],
+            'results': {
+                'file': [
+                    {
+                        'hashed_secret': 'a837eb90d815a852f68f56f70b1b3fab24c46c84',
+                        'line_number': 1,
+                        'type': 'Hex High Entropy String',
+                    },
+                ],
+            },
+        }
+
+        if plugin_config:
+            baseline_fixture['plugins_used'][0].update(plugin_config)
+
+        if is_secret is not None:
+            baseline_fixture['results']['file'][0]['is_secret'] = is_secret
+
+        return baseline_fixture
+
+    @pytest.mark.parametrize(
+        'plugin_config', [{}, {'hex_limit': 2}],
+    )
+    def test_determine_audit_results_plugin_config(
+        self,
+        mock_get_raw_secret_value,
+        mock_get_git_remotes,
+        mock_get_git_sha,
+        plugin_config,
+    ):
+        plaintext_secret = 'some_plaintext_secret'
+        mock_get_raw_secret_value.return_value = plaintext_secret
+        baseline = self.get_audited_baseline(plugin_config=plugin_config, is_secret=None)
+
+        results = audit.determine_audit_results(baseline, '.secrets.baseline')
+
+        assert results['results']['HexHighEntropyString']['config'].items() \
+            >= plugin_config.items()
+
+    @pytest.mark.parametrize(
+        'is_secret, expected_audited_result',
+        [
+            (True, 'positive'),
+            (False, 'negative'),
+            (None, 'unknown'),
+        ],
+    )
+    def test_determine_audit_results_is_secret(
+        self,
+        mock_get_raw_secret_value,
+        mock_get_git_remotes,
+        mock_get_git_sha,
+        is_secret,
+        expected_audited_result,
+    ):
+        plaintext_secret = 'some_plaintext_secret'
+        mock_get_raw_secret_value.return_value = plaintext_secret
+        baseline = self.get_audited_baseline(plugin_config={}, is_secret=is_secret)
+
+        results = audit.determine_audit_results(baseline, '.secrets.baseline')
+
+        for audited_result, list_of_secrets \
+                in results['results']['HexHighEntropyString']['results'].items():
+            if audited_result == expected_audited_result:
+                assert plaintext_secret in list_of_secrets
+            else:
+                assert len(list_of_secrets) == 0
+
+    @pytest.mark.parametrize(
+        'git_remotes, git_sha, expected_git_info',
+        [
+            (None, None, None),
+            (None, 'abc', None),
+            (['git.com/git.git'], None, None),
+            (
+                ['git.com/git.git'],
+                'abc',
+                {'remote': 'git.com/git.git', 'sha': 'abc'},
+            ),
+            (
+                ['git.com/git.git', 'hub.com/git.git'],
+                'abc',
+                {'remote': 'git.com/git.git', 'sha': 'abc'},
+            ),
+        ],
+    )
+    def test_determine_audit_results_git_info(
+        self,
+        mock_get_raw_secret_value,
+        mock_get_git_remotes,
+        mock_get_git_sha,
+        git_remotes,
+        git_sha,
+        expected_git_info,
+    ):
+        plaintext_secret = 'some_plaintext_secret'
+        mock_get_raw_secret_value.return_value = plaintext_secret
+        mock_get_git_remotes.return_value = git_remotes
+        mock_get_git_sha.return_value = git_sha
+
+        baseline = self.get_audited_baseline(plugin_config={}, is_secret=True)
+
+        results = audit.determine_audit_results(baseline, '.secrets.baseline')
+
+        if expected_git_info:
+            assert results['repo_info'] == expected_git_info
+        else:
+            assert 'repo_info' not in results
+
+    def test_determine_audit_results_secret_not_found(
+        self,
+        mock_get_raw_secret_value,
+        mock_get_git_remotes,
+        mock_get_git_sha,
+    ):
+        mock_get_raw_secret_value.side_effect = audit.SecretNotFoundOnSpecifiedLineError(1)
+        baseline = self.get_audited_baseline(plugin_config={}, is_secret=True)
+
+        whole_plaintext_line = 'a plaintext line'
+
+        with mock.patch.object(
+            audit,
+            '_get_file_line',
+            return_value=whole_plaintext_line,
+            autospec=True,
+        ):
+            results = audit.determine_audit_results(baseline, '.secrets.baseline')
+
+        assert whole_plaintext_line in \
+            results['results']['HexHighEntropyString']['results']['positive']
+
+
+class TestPrintAuditResults():
+
+    @contextmanager
+    def mock_env(self, baseline):
+        with mock.patch.object(
+            # We mock this, so we don't need to do any file I/O.
+            audit,
+            '_get_baseline_from_file',
+            return_value=baseline,
+        ) as _mock:
+            yield _mock
+
+    @pytest.mark.parametrize(
+        'mock_baseline, expected_message',
+        [
+            (
+                {},
+                'Failed to retrieve baseline',
+            ),
+            (
+                None,
+                'Failed to retrieve baseline',
+            ),
+            (
+                {'plugins_used': {'name': 'MyFakePlugin'}, 'results': {}},
+                '{}',
+            ),
+        ],
+    )
+    def test_print_audit_results_none(
+        self, mock_printer, mock_baseline, expected_message,
+    ):
+        """
+        This doesn't actually test for correctness; we rely on
+        good tests for determine_audit_results.
+        """
+        with self.mock_env(
+            baseline=mock_baseline,
+        ), mock.patch.object(
+            audit,
+            'determine_audit_results',
+            return_value={},
+        ):
+            audit.print_audit_results('somefilename')
+
+        assert expected_message in mock_printer.message
+
+
 class TestPrintContext(object):
 
     def run_logic(self, secret=None, secret_lineno=15, settings=None):
