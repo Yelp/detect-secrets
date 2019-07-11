@@ -203,7 +203,7 @@ class HighEntropyStringsPlugin(BasePlugin):
                 item = to_search.pop()
 
                 try:
-                    if '__line__' in item and not item['__line__'] in ignored_lines:
+                    if '__line__' in item and item['__line__'] not in ignored_lines:
                         potential_secrets.update(
                             self.analyze_string(
                                 item['__value__'],
