@@ -703,7 +703,7 @@ class TestPrintAuditResults():
 
 class TestPrintContext(object):
 
-    def run_logic(self, secret=None, secret_lineno=15, settings=None):
+    def run_logic(self, secret=None, secret_lineno=15, settings=None, should_find_secret=True):
         # Setup default arguments
         if not secret:
             secret = potential_secret_factory(
@@ -711,7 +711,7 @@ class TestPrintContext(object):
                 filename='filenameA',
                 secret='BEGIN PRIVATE KEY',
                 lineno=secret_lineno,
-            ).json()
+            )
 
         if not settings:
             settings = [
@@ -720,13 +720,27 @@ class TestPrintContext(object):
                 },
             ]
 
-        audit._print_context(
-            secret['filename'],
-            secret,
-            count=1,
-            total=2,
-            plugin_settings=settings,
-        )
+        with self.mock_get_raw_secret_value(
+            secret.secret_value,
+            secret_lineno,
+            should_find_secret,
+        ):
+            audit._print_context(
+                secret.filename,
+                secret.json(),
+                count=1,
+                total=2,
+                plugin_settings=settings,
+            )
+
+    @contextmanager
+    def mock_get_raw_secret_value(self, secret_value, secret_lineno, should_find_secret):
+        with mock.patch.object(audit, 'get_raw_secret_value', autospec=True) as m:
+            if should_find_secret:
+                m.return_value = secret_value
+            else:
+                m.side_effect = audit.SecretNotFoundOnSpecifiedLineError(secret_lineno)
+            yield m
 
     def mock_open(
         self,
@@ -821,7 +835,8 @@ class TestPrintContext(object):
                     filename='filenameA',
                     secret='BEGIN RSA PRIVATE KEY',
                     lineno=15,
-                ).json(),
+                ),
+                should_find_secret=False,
             )
 
         assert uncolor(mock_printer.message) == textwrap.dedent("""
@@ -845,7 +860,7 @@ class TestPrintContext(object):
                     filename='filenameB',
                     secret='123456789a',
                     lineno=15,
-                ).json(),
+                ),
                 settings=[
                     {
                         'name': 'HexHighEntropyString',
@@ -884,7 +899,7 @@ class TestPrintContext(object):
                     filename='filenameB',
                     secret='yerba',
                     lineno=15,
-                ).json(),
+                ),
                 settings=[
                     {
                         'name': 'KeywordDetector',
@@ -921,7 +936,7 @@ class TestPrintContext(object):
                 filename='test_data/config.md',
                 secret='ToCynx5Se4e2PtoZxEhW7lUJcOX15c54',
                 lineno=10,
-            ).json(),
+            ),
             settings=[
                 {
                     'base64_limit': 4.5,

@@ -2,6 +2,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import codecs
+import io
 import json
 import os
 import subprocess
@@ -16,9 +17,7 @@ except ImportError:  # pragma: no cover
     from functools32 import lru_cache
 
 from ..plugins.common import initialize
-from ..plugins.common.filetype import determine_file_type
 from ..plugins.common.util import get_mapping_from_secret_type_to_class_name
-from ..plugins.high_entropy_strings import HighEntropyStringsPlugin
 from ..util import get_git_remotes
 from ..util import get_git_sha
 from .baseline import merge_results
@@ -27,7 +26,6 @@ from .code_snippet import CodeSnippetHighlighter
 from .color import AnsiColor
 from .color import colorize
 from .common import write_baseline_to_file
-from .potential_secret import PotentialSecret
 
 
 class SecretNotFoundOnSpecifiedLineError(Exception):
@@ -233,16 +231,17 @@ def determine_audit_results(baseline, baseline_path):
     secret_type_to_plugin_name = get_mapping_from_secret_type_to_class_name()
 
     for filename, secret in all_secrets:
-        plaintext_line = _get_file_line(filename, secret['line_number'])
+        file_contents = _open_file_with_cache(filename)
+
         try:
             secret_plaintext = get_raw_secret_value(
-                secret_line=plaintext_line,
                 secret=secret,
                 plugin_settings=baseline['plugins_used'],
+                file_handle=io.StringIO(file_contents),
                 filename=filename,
             )
         except SecretNotFoundOnSpecifiedLineError:
-            secret_plaintext = plaintext_line
+            secret_plaintext = _get_file_line(filename, secret['line_number'])
 
         plugin_name = secret_type_to_plugin_name[secret['type']]
         audit_result = AUDIT_RESULT_TO_STRING[secret.get('is_secret')]
@@ -604,9 +603,9 @@ def _get_secret_with_context(
         )
 
         raw_secret_value = get_raw_secret_value(
-            snippet.target_line,
             secret,
             plugin_settings,
+            io.StringIO(file_content),
             filename,
         )
 
@@ -624,20 +623,20 @@ def _get_secret_with_context(
 
 
 def get_raw_secret_value(
-    secret_line,
     secret,
     plugin_settings,
+    file_handle,
     filename,
 ):
     """
-    :type secret_line: str
-    :param secret_line: the line on which the secret is found
-
     :type secret: dict
     :param secret: see caller's docstring
 
     :type plugin_settings: list
     :param plugin_settings: see caller's docstring
+
+    :type file_handle: file object
+    :param file_handle: Open handle to file where the secret is
 
     :type filename: str
     :param filename: this is needed, because PotentialSecret uses this
@@ -648,36 +647,15 @@ def get_raw_secret_value(
         plugin_settings,
     )
 
-    for raw_secret in raw_secret_generator(
-        plugin,
-        secret_line,
-        filetype=determine_file_type(filename),
-    ):
-        secret_obj = PotentialSecret(
-            plugin.secret_type,
-            filename,
-            secret=raw_secret,
-        )
+    plugin_secrets = plugin.analyze(file_handle, filename)
 
-        # There could be more than two secrets on the same line.
-        # We only want to highlight the right one.
-        if secret_obj.secret_hash == secret['hashed_secret']:
-            return raw_secret
-    else:
+    matching_secret = [
+        plugin_secret.secret_value
+        for plugin_secret in plugin_secrets
+        if plugin_secret.secret_hash == secret['hashed_secret']
+    ]
+
+    if not matching_secret:
         raise SecretNotFoundOnSpecifiedLineError(secret['line_number'])
 
-
-def raw_secret_generator(plugin, secret_line, filetype):
-    """Generates raw secrets by re-scanning the line, with the specified plugin
-
-    :type plugin: BasePlugin
-    :type secret_line: str
-    :type filetype: FileType
-    """
-    for raw_secret in plugin.secret_generator(secret_line, filetype=filetype):
-        yield raw_secret
-
-    if issubclass(plugin.__class__, HighEntropyStringsPlugin):
-        with plugin.non_quoted_string_regex(strict=False):
-            for raw_secret in plugin.secret_generator(secret_line):
-                yield raw_secret
+    return matching_secret[0]
