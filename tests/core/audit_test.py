@@ -317,7 +317,7 @@ class TestCompareBaselines(object):
             audit.compare_baselines('foo/bar', 'foo/bar')
 
     def test_compare(self, mock_printer):
-        with self.mock_env():
+        with self.mock_env(user_input=['s'] * 4):
             audit.compare_baselines('baselineA', 'baselineB')
 
         # Break up the printed messages, because we're only interested
@@ -366,8 +366,14 @@ class TestCompareBaselines(object):
             Status:      >> ADDED <<
         """)[1:]
 
+    def test_compare_quit(self, mock_printer):
+        with self.mock_env(user_input=['q']):
+            audit.compare_baselines('baselineA', 'baselineB')
+
+        assert 'Quitting...' in mock_printer.message
+
     @contextmanager
-    def mock_env(self):
+    def mock_env(self, user_input):
         baseline_count = [0]
 
         def _get_baseline_from_file(_):
@@ -387,7 +393,7 @@ class TestCompareBaselines(object):
             audit,
             '_clear_screen',
         ), mock_user_input(
-            ['s'] * 4,
+            user_input,
         ):
             yield
 
@@ -509,19 +515,19 @@ class TestDetermineAuditResults(object):
         ) as _mock:
             yield _mock
 
-    def get_audited_baseline(self, plugin_config, is_secret):
+    def get_audited_baseline(
+        self,
+        plugins_used=[{'name': 'HexHighEntropyString'}],
+        is_secret=None,
+    ):
         """
         Returns a baseline in dict form with 1 plugin and 1 secret.
-        :param plugin_config: An optional dict for the plugin's config.
+        :param plugins_used: A list of plugin configs.
         :param is_secret: An optional bool for whether the secret has been
         audited.
         """
         baseline_fixture = {
-            'plugins_used': [
-                {
-                    'name': 'HexHighEntropyString',
-                },
-            ],
+            'plugins_used': plugins_used,
             'results': {
                 'file': [
                     {
@@ -533,32 +539,39 @@ class TestDetermineAuditResults(object):
             },
         }
 
-        if plugin_config:
-            baseline_fixture['plugins_used'][0].update(plugin_config)
-
         if is_secret is not None:
             baseline_fixture['results']['file'][0]['is_secret'] = is_secret
 
         return baseline_fixture
 
     @pytest.mark.parametrize(
-        'plugin_config', [{}, {'hex_limit': 2}],
+        'plugins_used',
+        [
+            # NOTE: The first config here needs to be
+            # the HexHighEntropyString config for this test to work.
+            [{'name': 'HexHighEntropyString'}],  # plugin w/o config
+            [{'name': 'HexHighEntropyString', 'hex_limit': 2}],  # plugin w/config
+            [
+                {'name': 'HexHighEntropyString'},
+                {'name': 'Base64HighEntropyString'},
+            ],  # > 1 plugin
+        ],
     )
     def test_determine_audit_results_plugin_config(
         self,
         mock_get_raw_secret_value,
         mock_get_git_remotes,
         mock_get_git_sha,
-        plugin_config,
+        plugins_used,
     ):
         plaintext_secret = 'some_plaintext_secret'
         mock_get_raw_secret_value.return_value = plaintext_secret
-        baseline = self.get_audited_baseline(plugin_config=plugin_config, is_secret=None)
+        baseline = self.get_audited_baseline(plugins_used=plugins_used, is_secret=None)
 
         results = audit.determine_audit_results(baseline, '.secrets.baseline')
 
         assert results['results']['HexHighEntropyString']['config'].items() \
-            >= plugin_config.items()
+            >= plugins_used[0].items()
 
     @pytest.mark.parametrize(
         'is_secret, expected_audited_result',
@@ -578,7 +591,7 @@ class TestDetermineAuditResults(object):
     ):
         plaintext_secret = 'some_plaintext_secret'
         mock_get_raw_secret_value.return_value = plaintext_secret
-        baseline = self.get_audited_baseline(plugin_config={}, is_secret=is_secret)
+        baseline = self.get_audited_baseline(plugins_used={}, is_secret=is_secret)
 
         results = audit.determine_audit_results(baseline, '.secrets.baseline')
 
@@ -621,7 +634,7 @@ class TestDetermineAuditResults(object):
         mock_get_git_remotes.return_value = git_remotes
         mock_get_git_sha.return_value = git_sha
 
-        baseline = self.get_audited_baseline(plugin_config={}, is_secret=True)
+        baseline = self.get_audited_baseline(plugins_used={}, is_secret=True)
 
         results = audit.determine_audit_results(baseline, '.secrets.baseline')
 
@@ -637,7 +650,7 @@ class TestDetermineAuditResults(object):
         mock_get_git_sha,
     ):
         mock_get_raw_secret_value.side_effect = audit.SecretNotFoundOnSpecifiedLineError(1)
-        baseline = self.get_audited_baseline(plugin_config={}, is_secret=True)
+        baseline = self.get_audited_baseline(plugins_used={}, is_secret=True)
 
         whole_plaintext_line = 'a plaintext line'
 
