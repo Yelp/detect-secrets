@@ -269,7 +269,16 @@ def print_audit_results(baseline_filename):
         print('Failed to retrieve baseline from {filename}'.format(filename=baseline_filename))
         return
 
-    print(json.dumps(determine_audit_results(baseline, baseline_filename)))
+    print(
+        json.dumps(
+            determine_audit_results(
+                baseline,
+                baseline_filename,
+            ),
+            indent=2,
+            sort_keys=True,
+        ),
+    )
 
 
 def _get_baseline_from_file(filename):  # pragma: no cover
