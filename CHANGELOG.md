@@ -29,7 +29,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 #### :tada: New Features
 
-- Added Slack webhook detection to our Slack plugin ([#195], thanks [@adrianbn])
+- Added webhook detection to our Slack plugin ([#195], thanks [@adrianbn])
 - Added support for scanning multiple files ([#188], thanks [@dgzlopes])
 - Added support for scanning multiple repositories ([#193])
 - Added verification for AWS and Slack secrets ([#194])
