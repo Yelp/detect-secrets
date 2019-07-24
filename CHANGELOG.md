@@ -24,6 +24,40 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [@xxxx]: https://github.com/xxxx
 -->
 
+### v0.12.5
+##### July 23rd, 2019
+
+#### :tada: New Features
+
+- Added Slack webhook detection to our Slack plugin ([#195], thanks [@adrianbn])
+- Added support for scanning multiple files ([#188], thanks [@dgzlopes])
+- Added support for scanning multiple repositories ([#193])
+- Added verification for AWS and Slack secrets ([#194])
+- Added an `audit --display-results` feature to aid plugin development ([#205])
+
+#### :telescope: Accuracy
+
+- Improved our Artifactory regex ([#195], thanks [@adrianbn])
+- Improved sequential string detection to catch the Base 64 character set ([#207])
+- Moved our sequential string detection so it is used by all plugins ([#196])
+
+#### :performing_arts: Performance
+
+- Added performance testing benchmarks ([#181], [#186], [#187], thanks [@dgzlopes])
+
+[#181]: https://github.com/Yelp/detect-secrets/pull/181
+[#186]: https://github.com/Yelp/detect-secrets/pull/186
+[#187]: https://github.com/Yelp/detect-secrets/pull/187
+[#188]: https://github.com/Yelp/detect-secrets/pull/188
+[#193]: https://github.com/Yelp/detect-secrets/pull/193
+[#194]: https://github.com/Yelp/detect-secrets/pull/194
+[#195]: https://github.com/Yelp/detect-secrets/pull/195
+[#196]: https://github.com/Yelp/detect-secrets/pull/196
+[#205]: https://github.com/Yelp/detect-secrets/pull/205
+[#207]: https://github.com/Yelp/detect-secrets/pull/207
+
+
+
 ### v0.12.4
 ##### May 22nd, 2019
 
@@ -96,10 +130,6 @@ This includes using `# pragma: allowlist secret` now for inline allowlisting.
 ### v0.12.1
 ##### March 21st, 2019
 
-#### :performing_arts: Performance
-
-- Improved performance when scanning for high-entropy strings ([#144], thanks [@killuazhu])
-
 #### :tada: New Features
 
 - Added a `--keyword-exclude` argument to `scan` ([#132], thanks [@hpandeycodeit])
@@ -107,6 +137,10 @@ This includes using `# pragma: allowlist secret` now for inline allowlisting.
 #### :telescope: Accuracy
 
 - For the `KeywordDetector` plugin: made quotes required for secrets in `.cls` and `.java` files, and skipped `{{secrets like this}}` in YAML files ([#133]/[#145])
+
+#### :performing_arts: Performance
+
+- Improved performance when scanning for high-entropy strings ([#144], thanks [@killuazhu])
 
 #### :bug: Bugfixes
 
@@ -489,8 +523,9 @@ This includes using `# pragma: allowlist secret` now for inline allowlisting.
 
 
 
-# Special thanks to our awesome contributors!
+# Special thanks to our awesome contributors! :clap:
 
+- [@adrianbn]
 - [@baboateng]
 - [@cclauss]
 - [@cleborys]
@@ -508,6 +543,7 @@ This includes using `# pragma: allowlist secret` now for inline allowlisting.
 - [@whathejoe]
 - [@zioalex]
 
+[@adrianbn]: https://github.com/adrianbn
 [@baboateng]: https://github.com/baboateng
 [@cclauss]: https://github.com/cclauss
 [@cleborys]: https://github.com/cleborys
