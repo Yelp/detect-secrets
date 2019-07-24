@@ -38,7 +38,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 #### :telescope: Accuracy
 
 - Improved our Artifactory regex ([#195], thanks [@adrianbn])
-- Improved sequential string detection to catch the Base 64 character set ([#207])
+- Improved sequential string detection to catch the Base64 character set ([#207])
 - Moved our sequential string detection so it is used by all plugins ([#196])
 
 #### :performing_arts: Performance
