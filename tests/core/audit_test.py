@@ -16,6 +16,11 @@ from testing.mocks import mock_printer as mock_printer_base
 from testing.util import uncolor
 
 
+@pytest.fixture(autouse=True)
+def reset_file_cache():
+    audit._open_file_with_cache.cache_clear()
+
+
 class TestAuditBaseline(object):
 
     def test_no_baseline(self, mock_printer):
@@ -740,7 +745,7 @@ class TestPrintContext(object):
                 string.ascii_letters[:(end_line - secret_line)][::-1],
             ),
         )
-        return mock_open_base(data, 'detect_secrets.core.code_snippet.codecs.open')
+        return mock_open_base(data, 'detect_secrets.core.audit.codecs.open')
 
     @staticmethod
     def _make_string_into_individual_lines(string):

@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
 
-import codecs
 import itertools
 
 from .color import AnsiColor
@@ -9,9 +8,10 @@ from .color import colorize
 
 class CodeSnippetHighlighter:
 
-    def get_code_snippet(self, filename, line_number, lines_of_context=5):
+    def get_code_snippet(self, file_lines, line_number, lines_of_context=5):
         """
-        :type filename: str
+        :type file_lines: iterable of str
+        :param file_lines: an iterator of lines in the file
 
         :type line_number: int
         :param line_number: line which you want to focus on
@@ -35,7 +35,7 @@ class CodeSnippetHighlighter:
         return CodeSnippet(
             list(
                 itertools.islice(
-                    self._get_lines_in_file(filename),
+                    file_lines,
                     start_line,
                     end_line,
                 ),
@@ -44,19 +44,12 @@ class CodeSnippetHighlighter:
             index_of_secret_in_output,
         )
 
-    def _get_lines_in_file(self, filename):
-        """
-        :rtype: list
-        """
-        with codecs.open(filename, encoding='utf-8') as file:
-            return file.read().splitlines()
-
 
 class CodeSnippet:
 
     def __init__(self, snippet, start_line, target_index):
         """
-        :type snippet: list
+        :type snippet: iterable and indexable of str
         :param snippet: lines of code extracted from file
 
         :type start_line: int
