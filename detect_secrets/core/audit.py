@@ -84,7 +84,10 @@ def audit_baseline(baseline_filename):
             )
             decision = _get_user_decision(can_step_back=secret_iterator.can_step_back())
         except SecretNotFoundOnSpecifiedLineError:
-            decision = _get_user_decision(prompt_secret_decision=False)
+            decision = _get_user_decision(
+                prompt_secret_decision=False,
+                can_step_back=secret_iterator.can_step_back(),
+            )
 
         if decision == 'q':
             print('Quitting...')
