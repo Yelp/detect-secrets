@@ -18,6 +18,8 @@ from testing.mocks import SubprocessMock
 def assert_commit_blocked(command):
     assert pre_commit_hook.main(command.split()) == 1
 
+def assert_commit_blocked_with_diff_exit_code(command):
+    assert pre_commit_hook.main(command.split()) == 3
 
 def assert_commit_succeeds(command):
     assert pre_commit_hook.main(command.split()) == 0
@@ -154,7 +156,7 @@ class TestPreCommitHook(object):
             ), mock.patch(
                 'detect_secrets.pre_commit_hook.write_baseline_to_file',
             ) as m:
-                assert_commit_blocked(
+                assert_commit_blocked_with_diff_exit_code(
                     '--baseline will_be_mocked --use-all-plugins' +
                     ' test_data/files/file_with_secrets.py',
                 )
@@ -210,7 +212,7 @@ class TestPreCommitHook(object):
         ), mock.patch(
             'detect_secrets.pre_commit_hook.write_baseline_to_file',
         ) as m:
-            assert_commit_blocked(
+            assert_commit_blocked_with_diff_exit_code(
                 '--baseline will_be_mocked test_data/files/file_with_secrets.py',
             )
 

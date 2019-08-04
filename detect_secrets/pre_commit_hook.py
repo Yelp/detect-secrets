@@ -88,7 +88,7 @@ def main(argv=None):
             'Probably to keep line numbers of secrets up-to-date.\n'
             'Please `git add {}`, thank you.\n\n'.format(args.baseline[0]),
         )
-        return 1
+        return 3
 
     return 0
 
