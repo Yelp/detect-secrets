@@ -18,8 +18,10 @@ from testing.mocks import SubprocessMock
 def assert_commit_blocked(command):
     assert pre_commit_hook.main(command.split()) == 1
 
+
 def assert_commit_blocked_with_diff_exit_code(command):
     assert pre_commit_hook.main(command.split()) == 3
+
 
 def assert_commit_succeeds(command):
     assert pre_commit_hook.main(command.split()) == 0
