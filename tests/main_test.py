@@ -94,6 +94,7 @@ class TestMain(object):
                 BasicAuthDetector      : False
                 HexHighEntropyString   : {}
                 KeywordDetector        : False
+                MailchimpDetector      : False
                 PrivateKeyDetector     : False
                 SlackDetector          : False
                 StripeDetector         : False
@@ -118,6 +119,7 @@ class TestMain(object):
                 BasicAuthDetector      : False
                 HexHighEntropyString   : False (2.121)
                 KeywordDetector        : False
+                MailchimpDetector      : False
                 PrivateKeyDetector     : False
                 SlackDetector          : False
                 StripeDetector         : False
@@ -254,6 +256,9 @@ class TestMain(object):
                         'name': 'KeywordDetector',
                     },
                     {
+                        'name': 'MailchimpDetector',
+                    },
+                    {
                         'name': 'PrivateKeyDetector',
                     },
                     {
@@ -289,6 +294,9 @@ class TestMain(object):
                     },
                     {
                         'name': 'KeywordDetector',
+                    },
+                    {
+                        'name': 'MailchimpDetector',
                     },
                     {
                         'name': 'SlackDetector',
@@ -378,6 +386,9 @@ class TestMain(object):
                         'name': 'BasicAuthDetector',
                     },
                     {
+                        'name': 'MailchimpDetector',
+                    },
+                    {
                         'name': 'PrivateKeyDetector',
                     },
                     {
@@ -412,6 +423,9 @@ class TestMain(object):
                     },
                     {
                         'name': 'BasicAuthDetector',
+                    },
+                    {
+                        'name': 'MailchimpDetector',
                     },
                     {
                         'name': 'PrivateKeyDetector',

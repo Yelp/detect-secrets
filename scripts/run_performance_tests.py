@@ -208,6 +208,7 @@ def generate_content(separator, length):
         'BasicAuthDetector': 'http://username:password@example.com',
         'HexHighEntropyString': '123456abcd',
         'KeywordDetector': 'api_key = foobar',
+        'MailchimpDetector': '376a2953ed38c31a43ea46e2b19257db-us2',
         'PrivateKeyDetector': 'BEGIN PRIVATE KEY',
         'SlackDetector': 'xoxb-1-test',
         'StripeDetector': 'rk_live_TESTtestTESTtestTESTtest',

@@ -41,6 +41,7 @@ class TestPluginOptions(object):
             'SlackDetector': {},
             'ArtifactoryDetector': {},
             'StripeDetector': {},
+            'MailchimpDetector': {},
         }
         assert not hasattr(args, 'no_private_key_scan')
 

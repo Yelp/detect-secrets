@@ -13,6 +13,7 @@
         "BasicAuthDetector": 1.3325,
         "HexHighEntropyString": 22.31473,
         "KeywordDetector": 1.64396,
+        "MailchimpDetector": 1.45022,
         "PrivateKeyDetector": 1.35953,
         "SlackDetector": 1.41018,
         "StripeDetector": 1.49091,

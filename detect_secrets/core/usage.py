@@ -328,6 +328,11 @@ class PluginOptions(object):
             disable_flag_text='--no-stripe-scan',
             disable_help_text='Disable scanning for Stripe keys',
         ),
+        PluginDescriptor(
+            classname='MailchimpDetector',
+            disable_flag_text='--no-mailchimp-scan',
+            disable_help_text='Disable scanning for Mailchimp keys',
+        ),
     ]
 
     def __init__(self, parser):

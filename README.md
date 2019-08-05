@@ -160,7 +160,7 @@ The current heuristic searches we implement out of the box include:
 
 * **KeywordDetector**: checks to see if certain keywords are being used e.g. `password` or `secret`
 
-* **RegexBasedDetector**: checks for any keys matching certain regular expressions (Artifactory, AWS, Slack, Stripe).
+* **RegexBasedDetector**: checks for any keys matching certain regular expressions (Artifactory, AWS, Slack, Stripe, Mailchimp).
 
 See [detect_secrets/
 plugins](https://github.com/Yelp/detect-secrets/tree/master/detect_secrets/plugins)
