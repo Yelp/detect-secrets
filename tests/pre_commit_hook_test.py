@@ -193,6 +193,9 @@ class TestPreCommitHook(object):
                     'name': 'KeywordDetector',
                 },
                 {
+                    'name': 'MailchimpDetector',
+                },
+                {
                     'name': 'PrivateKeyDetector',
                 },
                 {
