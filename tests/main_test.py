@@ -534,6 +534,44 @@ class TestMain(object):
                 expected_output,
             )
 
+    @pytest.mark.parametrize(
+        'filename, expected_output',
+        [
+            (
+                'test_data/short_files/first_line.php',
+                {
+                    'KeywordDetector': {
+                        'config': {
+                            'name': 'KeywordDetector',
+                        },
+                        'results': {
+                            'negative': [],
+                            'positive': [],
+                            'unknown': ['nothighenoughentropy'],
+                        },
+                    },
+                },
+            ),
+        ],
+    )
+    def test_audit_display_results(self, filename, expected_output):
+        with mock_stdin(), mock_printer(
+            main_module,
+        ) as printer_shim:
+            main(['scan', filename])
+            baseline = printer_shim.message
+
+        baseline_dict = json.loads(baseline)
+        with mock.patch(
+            'detect_secrets.core.audit._get_baseline_from_file',
+            return_value=baseline_dict,
+        ), mock_printer(
+            audit_module,
+        ) as printer_shim:
+            main(['audit', '--display-results', 'MOCKED'])
+
+            assert json.loads(uncolor(printer_shim.message))['results'] == expected_output
+
     def test_audit_diff_not_enough_files(self):
         assert main('audit --diff fileA'.split()) == 1
 
