@@ -10,6 +10,11 @@ from builtins import input
 from collections import defaultdict
 from copy import deepcopy
 
+try:
+    from functools import lru_cache
+except ImportError:  # pragma: no cover
+    from functools32 import lru_cache
+
 from ..plugins.common import initialize
 from ..plugins.common.filetype import determine_file_type
 from ..plugins.common.util import get_mapping_from_secret_type_to_class_name
@@ -28,8 +33,8 @@ from .potential_secret import PotentialSecret
 class SecretNotFoundOnSpecifiedLineError(Exception):
     def __init__(self, line):
         super(SecretNotFoundOnSpecifiedLineError, self).__init__(
-            'ERROR: Secret not found on line {}!\n'.format(line) +
-            'Try recreating your baseline to fix this issue.',
+            'ERROR: Secret not found on line {}!\n'.format(line)
+            + 'Try recreating your baseline to fix this issue.',
         )
 
 
@@ -532,15 +537,30 @@ def _handle_user_decision(decision, secret):
         del secret['is_secret']
 
 
+@lru_cache(maxsize=1)
+def _open_file_with_cache(filename):
+    """
+    Reads the input file and returns the result as a string.
+
+    This caches opened files to ensure that the audit functionality
+    doesn't unnecessarily re-open the same file.
+    """
+    try:
+        with codecs.open(filename, encoding='utf-8') as f:
+            return f.read()
+    except (OSError, IOError):
+        return None
+
+
 def _get_file_line(filename, line_number):
     """
     Attempts to read a given line from the input file.
     """
-    try:
-        with codecs.open(filename, encoding='utf-8') as f:
-            return f.read().splitlines()[line_number - 1]  # line numbers are 1-indexed
-    except (OSError, IOError, IndexError):
+    file_content = _open_file_with_cache(filename)
+    if not file_content:
         return None
+
+    return file_content.splitlines()[line_number - 1]
 
 
 def _get_secret_with_context(
@@ -572,13 +592,20 @@ def _get_secret_with_context(
 
     :raises: SecretNotFoundOnSpecifiedLineError
     """
-    snippet = CodeSnippetHighlighter().get_code_snippet(
-        filename,
-        secret['line_number'],
-        lines_of_context=lines_of_context,
-    )
 
     try:
+        file_content = _open_file_with_cache(filename)
+        if not file_content:
+            raise SecretNotFoundOnSpecifiedLineError(secret['line_number'])
+
+        file_lines = file_content.splitlines()
+
+        snippet = CodeSnippetHighlighter().get_code_snippet(
+            file_lines,
+            secret['line_number'],
+            lines_of_context=lines_of_context,
+        )
+
         raw_secret_value = get_raw_secret_value(
             snippet.target_line,
             secret,

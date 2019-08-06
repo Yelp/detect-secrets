@@ -21,7 +21,7 @@ class BidirectionalIterator(object):
 
         return result
 
-    def next(self):
+    def next(self):  # pragma: no cover
         return self.__next__()
 
     def step_back_on_next_iteration(self):
@@ -30,5 +30,5 @@ class BidirectionalIterator(object):
     def can_step_back(self):
         return self.index > 0
 
-    def __iter__(self):
+    def __iter__(self):  # pragma: no cover
         return self

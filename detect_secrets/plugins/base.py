@@ -53,7 +53,8 @@ class BasePlugin(object):
                                detect_secrets.core.potential_secret         }
         """
         potential_secrets = {}
-        for line_num, line in enumerate(file.readlines(), start=1):
+        file_lines = tuple(file.readlines())
+        for line_num, line in enumerate(file_lines, start=1):
             results = self.analyze_string(line, line_num, filename)
             if not self.should_verify:
                 potential_secrets.update(results)
@@ -62,7 +63,7 @@ class BasePlugin(object):
             filtered_results = {}
             for result in results:
                 snippet = CodeSnippetHighlighter().get_code_snippet(
-                    filename,
+                    file_lines,
                     result.lineno,
                     lines_of_context=LINES_OF_CONTEXT,
                 )
