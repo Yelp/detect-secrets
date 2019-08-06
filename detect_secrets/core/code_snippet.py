@@ -45,7 +45,7 @@ class CodeSnippetHighlighter:
         )
 
 
-class CodeSnippet:
+class CodeSnippet(object):
 
     def __init__(self, snippet, start_line, target_index):
         """

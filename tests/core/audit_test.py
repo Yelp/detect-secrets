@@ -716,7 +716,14 @@ class TestPrintAuditResults():
 
 class TestPrintContext(object):
 
-    def run_logic(self, secret=None, secret_lineno=15, settings=None, should_find_secret=True):
+    def run_logic(
+        self,
+        secret=None,
+        secret_lineno=15,
+        settings=None,
+        should_find_secret=True,
+        force=False,
+    ):
         # Setup default arguments
         if not secret:
             secret = potential_secret_factory(
@@ -744,6 +751,7 @@ class TestPrintContext(object):
                 count=1,
                 total=2,
                 plugin_settings=settings,
+                force=force,
             )
 
     @contextmanager
@@ -838,7 +846,7 @@ class TestPrintContext(object):
 
         """)[1:-1]
 
-    def test_secret_not_found(self, mock_printer):
+    def test_secret_not_found_no_force(self, mock_printer):
         with self.mock_open(), pytest.raises(
             audit.SecretNotFoundOnSpecifiedLineError,
         ):
@@ -850,6 +858,7 @@ class TestPrintContext(object):
                     lineno=15,
                 ),
                 should_find_secret=False,
+                force=False,
             )
 
         assert uncolor(mock_printer.message) == textwrap.dedent("""
@@ -859,6 +868,41 @@ class TestPrintContext(object):
             ----------
             ERROR: Secret not found on line 15!
             Try recreating your baseline to fix this issue.
+            ----------
+
+        """)[1:-1]
+
+    def test_secret_not_found_force(self, mock_printer):
+        with self.mock_open(
+            line_containing_secret='THIS IS NOT AN RSA PRIVATE KEY',
+        ):
+            self.run_logic(
+                secret=potential_secret_factory(
+                    type_='Private Key',
+                    filename='filenameA',
+                    secret='BEGIN RSA PRIVATE KEY',
+                    lineno=15,
+                ),
+                should_find_secret=False,
+                force=True,
+            )
+
+        assert uncolor(mock_printer.message) == textwrap.dedent("""
+            Secret:      1 of 2
+            Filename:    filenameA
+            Secret Type: Private Key
+            ----------
+            10:a
+            11:b
+            12:c
+            13:d
+            14:e
+            15:THIS IS NOT AN RSA PRIVATE KEY
+            16:e
+            17:d
+            18:c
+            19:b
+            20:a
             ----------
 
         """)[1:-1]
