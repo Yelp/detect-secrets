@@ -155,11 +155,51 @@ class TestMain:
         ), mock_printer(
             main_module,
         ) as printer_shim:
+<<<<<<< HEAD
             assert main('scan --string'.split()) == 0
             assert uncolor(printer_shim.message) == get_plugin_report({
                 'Base64HighEntropyString': expected_base64_result,
                 'HexHighEntropyString': expected_hex_result,
             })
+=======
+            assert main('scan --use-all-plugins --string'.split()) == 0
+            assert uncolor(printer_shim.message) == textwrap.dedent("""
+                AWSKeyDetector         : False
+                ArtifactoryDetector    : False
+                Base64HighEntropyString: {}
+                BasicAuthDetector      : False
+                GHDetector             : False
+                HexHighEntropyString   : {}
+                KeywordDetector        : False
+                PrivateKeyDetector     : False
+                SlackDetector          : False
+                StripeDetector         : False
+            """.format(
+                expected_base64_result,
+                expected_hex_result,
+            ))[1:]
+>>>>>>> Define default plugin list
+
+        mock_baseline_initialize.assert_not_called()
+
+    def test_scan_string_basic_default(
+        self,
+        mock_baseline_initialize,
+    ):
+        with mock_stdin(
+            '012345678ab',
+        ), mock_printer(
+            main_module,
+        ) as printer_shim:
+            assert main('scan --string'.split()) == 0
+            assert uncolor(printer_shim.message) == textwrap.dedent("""
+                AWSKeyDetector     : False
+                ArtifactoryDetector: False
+                BasicAuthDetector  : False
+                PrivateKeyDetector : False
+                SlackDetector      : False
+                StripeDetector     : False
+            """)[1:]
 
         mock_baseline_initialize.assert_not_called()
 
@@ -169,11 +209,27 @@ class TestMain:
         ), mock_printer(
             main_module,
         ) as printer_shim:
+<<<<<<< HEAD
             assert main('scan --string 012345'.split()) == 0
             assert uncolor(printer_shim.message) == get_plugin_report({
                 'Base64HighEntropyString': 'False (2.585)',
                 'HexHighEntropyString': 'False (2.121)',
             })
+=======
+            assert main('scan --use-all-plugins --string 012345'.split()) == 0
+            assert uncolor(printer_shim.message) == textwrap.dedent("""
+                AWSKeyDetector         : False
+                ArtifactoryDetector    : False
+                Base64HighEntropyString: False (2.585)
+                BasicAuthDetector      : False
+                GHDetector             : False
+                HexHighEntropyString   : False (2.121)
+                KeywordDetector        : False
+                PrivateKeyDetector     : False
+                SlackDetector          : False
+                StripeDetector         : False
+            """)[1:]
+>>>>>>> Define default plugin list
 
     def test_scan_with_all_files_flag(self, mock_baseline_initialize):
         with mock_stdin():
@@ -489,7 +545,7 @@ class TestMain:
             # To extract the baseline output
             main_module,
         ) as printer_shim:
-            main(['scan', filename])
+            main(['scan', '--use-all-plugins', filename])
             baseline = printer_shim.message
 
         baseline_dict = json.loads(baseline)
@@ -526,6 +582,7 @@ class TestMain:
                 expected_output,
             )
 
+<<<<<<< HEAD
     @pytest.mark.parametrize(
         'filename, expected_output',
         [
@@ -554,12 +611,40 @@ class TestMain:
     )
     def test_audit_display_results(self, filename, expected_output):
         with mock_stdin(), mock_printer(
+=======
+    def test_scan_with_default_plugin(self):
+        filename = 'test_data/short_files/last_line.ini'
+        plugins_used = [
+            {
+                'name': 'AWSKeyDetector',
+            },
+            {
+                'name': 'ArtifactoryDetector',
+            },
+            {
+                'name': 'BasicAuthDetector',
+            },
+            {
+                'name': 'PrivateKeyDetector',
+            },
+            {
+                'name': 'SlackDetector',
+            },
+            {
+                'name': 'StripeDetector',
+            },
+        ]
+
+        with mock_stdin(), mock_printer(
+            # To extract the baseline output
+>>>>>>> Define default plugin list
             main_module,
         ) as printer_shim:
             main(['scan', filename])
             baseline = printer_shim.message
 
         baseline_dict = json.loads(baseline)
+<<<<<<< HEAD
         with mock.patch(
             'detect_secrets.core.audit._get_baseline_from_file',
             return_value=baseline_dict,
@@ -569,6 +654,10 @@ class TestMain:
             main(['audit', '--display-results', 'MOCKED'])
 
             assert json.loads(uncolor(printer_shim.message))['plugins'] == expected_output
+=======
+        assert baseline_dict['results'] == {}
+        assert baseline_dict['plugins_used'] == plugins_used
+>>>>>>> Define default plugin list
 
     def test_audit_diff_not_enough_files(self):
         assert main('audit --diff fileA'.split()) == 1

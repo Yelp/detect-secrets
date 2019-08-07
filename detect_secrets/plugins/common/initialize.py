@@ -60,7 +60,32 @@ def _get_prioritized_parameters(plugins_dict, is_using_default_value_map, prefer
                 yield plugin_name, param_name, param_value
 
 
+<<<<<<< HEAD
 def merge_plugins_from_baseline(baseline_plugins, args, automaton):
+=======
+def remove_non_default_plugins(plugins, args):
+    """
+    :type plugins: tuple of BasePlugin
+    :param plugins: BasePlugin instances from input
+
+    :type args: dict
+    :param args: dictionary of arguments parsed from usage
+
+    :Returns tuple of default plugins if use_all_plugins is not used
+    """
+
+    if args.use_all_plugins:
+        return plugins
+    else:
+        return tuple([
+            plugin
+            for plugin in plugins
+            if vars(plugin)['name'] in PluginOptions.default_plugins_list
+        ])
+
+
+def merge_plugin_from_baseline(baseline_plugins, args):
+>>>>>>> Define default plugin list
     """
     :type baseline_plugins: tuple of BasePlugin
     :param baseline_plugins: BasePlugin instances from baseline file

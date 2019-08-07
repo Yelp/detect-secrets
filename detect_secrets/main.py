@@ -45,6 +45,7 @@ def main(argv=None):
             if isinstance(args.string, bool):
                 line = sys.stdin.read().splitlines()[0]
 
+            plugins = initialize.remove_non_default_plugins(plugins, args)
             _scan_string(line, plugins)
 
         else:
@@ -141,6 +142,8 @@ def _perform_scan(args, plugins, automaton, word_list_hash):
             args,
             automaton=automaton,
         )
+    else:
+        plugins = initialize.remove_non_default_plugins(plugins, args)
 
     # Favors `--exclude-files` and `--exclude-lines` CLI arguments
     # over existing baseline's regexes (if given)

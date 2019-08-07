@@ -21,7 +21,7 @@ class TestPluginOptions:
         self.parse_args('--no-private-key-scan')
 
     def test_consolidates_output_basic(self):
-        """Everything enabled by default, with default values"""
+        """Only default enabled plugins presented, with default values"""
         args = self.parse_args()
 
         regex_based_plugins = {
@@ -35,11 +35,22 @@ class TestPluginOptions:
             'Base64HighEntropyString': {
                 'base64_limit': 4.5,
             },
+<<<<<<< HEAD
             'KeywordDetector': {
                 'keyword_exclude': None,
             },
         })
         assert not hasattr(args, 'no_private_key_scan')
+=======
+            'KeywordDetector': {},
+            'PrivateKeyDetector': {},
+            'AWSKeyDetector': {},
+            'SlackDetector': {},
+            'StripeDetector': {},
+            'ArtifactoryDetector': {},
+            'GHDetector': {},
+        }
+>>>>>>> Define default plugin list
 
     def test_consolidates_removes_disabled_plugins(self):
         args = self.parse_args('--no-private-key-scan')
