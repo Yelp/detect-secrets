@@ -199,16 +199,16 @@ def generate_content(separator, length):
     :type length: int
     """
     valid_secrets = {
-        'AWSKeyDetector': 'AKIATESTTESTTESTTEST',
-        'ArtifactoryDetector': ':AKCtestTESTte',
-        'Base64HighEntropyString': 'Y29uZ3JhdHVsYXRpb25zISB0aGlzIGlzIGEgaGlkZGVuIG1lc3NhZ2U=',
-        'BasicAuthDetector': 'http://username:password@example.com',
-        'HexHighEntropyString': '123456abcd',
-        'KeywordDetector': 'api_key = foobar',
-        'MailchimpDetector': '376a2953ed38c31a43ea46e2b19257db-us2',
-        'PrivateKeyDetector': 'BEGIN PRIVATE KEY',
-        'SlackDetector': 'xoxb-1-test',
-        'StripeDetector': 'rk_live_TESTtestTESTtestTESTtest',
+        'AWSKeyDetector': 'AKIATESTTESTTESTTEST',  # pragma: whitelist secret
+        'ArtifactoryDetector': ':AKCtestTESTte',  # pragma: whitelist secret
+        'Base64HighEntropyString':
+        'Y29uZ3JhdHVsYXRpb25zISB0aGlzIGlzIGEgaGlkZGVuIG1lc3NhZ2U=',  # pragma: whitelist secret
+        'BasicAuthDetector': 'http://username:password@example.com',  # pragma: whitelist secret
+        'HexHighEntropyString': '123456abcd',  # pragma: whitelist secret
+        'KeywordDetector': 'api_key = foobar',  # pragma: whitelist secret
+        'PrivateKeyDetector': 'BEGIN PRIVATE KEY',  # pragma: whitelist secret
+        'SlackDetector': 'xoxb-1-test',  # pragma: whitelist secret
+        'StripeDetector': 'rk_live_TESTtestTESTtestTESTtest',  # pragma: whitelist secret
     }
 
     with open(
