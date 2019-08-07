@@ -10,13 +10,10 @@ setup(
     version=VERSION,
     description='Tool for detecting secrets in the codebase',
     long_description=(
-        'Check out detect-secrets on `GitHub <https://github.com/Yelp/detect-secrets>`_!'
+        'Check out detect-secrets on `GitHub ' +
+        '<https://github.ibm.com/Whitewater/whitewater-detect-secrets>`_!'
     ),
-    license='Copyright Yelp, Inc. 2020',
-    author='Aaron Loo',
-    author_email='aaronloo@yelp.com',
-    url='https://github.com/Yelp/detect-secrets',
-    download_url='https://github.com/Yelp/detect-secrets/archive/{}.tar.gz'.format(VERSION),
+    url='https://github.ibm.com/Whitewater/whitewater-detect-secrets',
     keywords=['secret-management', 'pre-commit', 'security', 'entropy-checks'],
     install_requires=[
         'pyyaml',

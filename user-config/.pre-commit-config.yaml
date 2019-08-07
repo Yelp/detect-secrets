@@ -1,0 +1,17 @@
+# This is an example configuration to enable whitewater-detect-secrets in the pre-commit hook.
+# Add this file to the root folder of your repository.
+#
+# Read pre-commit hook framework https://pre-commit.com/ for more details about the structure of config yaml file and how git pre-commit would invoke each hook.
+#
+# This line indicates we will use the hook from Whitewater/whitewater-detect-secrets to run scan during commiting phase.
+- repo: git@github.ibm.com:Whitewater/whitewater-detect-secrets
+  # If you desire to use a specific version of whitewater-detect-secrets, you can replace `master` with other git revisions such as branch, tag or commit sha.
+  rev: master
+  hooks:
+    -   id: detect-secrets # pragma: whitelist secret
+        # Add options for detect-secrets-hook binary. You can run `detect-secrets-hook --help` to list out all possible options.
+        # You may also run `pre-commit run detect-secrets` to preview the scan result.
+        #
+        # The `--no-keyword-scan` field can be removed if you are using 0.10.3-ibm.1. It was added prior to 0.10.3-ibm.1 to reduce false positives generated from old keyword scanner.
+        # After 0.10.3-ibm.1, keyword scanner is disabled by default.
+        args: [--baseline, .secrets.baseline, --no-keyword-scan ]

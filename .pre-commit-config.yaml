@@ -4,7 +4,9 @@ repos:
     hooks:
     -   id: check-builtin-literals
         args: ['--no-allow-dict-kwargs']
-        exclude: bumpity.py$
+    -   id: trailing-whitespace
+        exclude: \.(md)
+    -   id: end-of-file-fixer
     -   id: check-docstring-first
     -   id: debug-statements
         exclude: bumpity.py$

@@ -1,12 +1,8 @@
-[![Build Status](https://travis-ci.org/Yelp/detect-secrets.svg?branch=master)](https://travis-ci.org/Yelp/detect-secrets)
-[![PyPI version](https://badge.fury.io/py/detect-secrets.svg)](https://badge.fury.io/py/detect-secrets)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg)](https://github.com/Yelp/detect-secrets/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+)
-[![AMF](https://img.shields.io/badge/Donate-Charity-orange.svg)](https://www.againstmalaria.com/donation.aspx)
-
-
-# detect-secrets
+# Whitewater Detect Secrets
 
 ## About
+
+The purpose of the project is to **detecting secrets** within a code base. This is a fork of [detect-secrets](https://github.com/Yelp/detect-secrets) from yelp. This include more detection, some of which are unique for IBM. Additional features to help integrate with services IBM uses.
 
 `detect-secrets` is an aptly named module for (surprise, surprise) **detecting
 secrets** within a code base.
@@ -32,133 +28,75 @@ regex statements, to identify whether any *new* secret has been committed. This
 way, it avoids the overhead of digging through all git history, as well as the
 need to scan the entire repository every time.
 
-For a look at recent changes, please see [CHANGELOG.md](https://github.com/Yelp/detect-secrets/blob/master/CHANGELOG.md).
+For a look at recent changes, please see the
+[changelog](/CHANGELOG.md).
 
-If you are looking to contribute, please see [CONTRIBUTING.md](https://github.com/Yelp/detect-secrets/blob/master/CONTRIBUTING.md).
+## User Guide
 
-## Example Usage
+If you are looking for information on how to use this project as an end user please refer to the [user guide](https://w3.ibm.com/w3publisher/detect-secrets).
 
-### Setting Up a Baseline
+## Contribution
 
-```
-$ detect-secrets scan > .secrets.baseline
-```
+Please read the [CONTRIBUTING.md](/CONTRIBUTING.md). Bellow is information on how setup the testing environment, and run the tests.
 
-### pre-commit Hook
+## Testing
 
-```
-$ cat .pre-commit-config.yaml
--   repo: git@github.com:Yelp/detect-secrets
-    rev: v0.13.1
-    hooks:
-    -   id: detect-secrets
-        args: ['--baseline', '.secrets.baseline']
-        exclude: .*/tests/.*
-```
+To run the tests you need install the dependencies described bellow.
 
-### Auditing a Baseline
+You need to run the setup once or after you do a `make clean`. To run the setup run the following command:
 
 ```
-$ detect-secrets audit .secrets.baseline
+make setup
 ```
 
-### Upgrading Baselines
-
-This is only applicable for upgrading baselines that have been created after version 0.9.
-For upgrading baselines lower than that version, just recreate it.
+To run the tests run:
 
 ```
-$ detect-secrets scan --update .secrets.baseline
+make test
 ```
 
-### Command Line
-
-`detect-secrets` is designed to be used as a git pre-commit hook, but you can also invoke `detect-secrets scan [path]` directly being `path` the file(s) and/or directory(ies) to scan (`path` defaults to `.` if not specified).
-
-It should be noted that by default, `detect-secrets scan` only operates on files that are tracked by git. So if you intend to scan files outside of a git repository, you will need to pass the `--all-files` flag.
-
-
-## Installation
-
-There are three components that you can setup, depending on your purposes.
-While all three are independent, you should pair the Secrets Baseline with
-either the client-side pre-commit hook, or the server-side secret scanner.
-
-1. **Client-side Pre-Commit Hook**, that alerts developers when they attempt
-   to enter a secret in the code base.
-
-2. **Server-side Secret Scanning**, to periodically scan tracked repositories,
-   and make sure developers didn't accidentally skip the pre-commit check.
-
-3. **Secrets Baseline**, to allowlist pre-existing secrets in the repository,
-   so that they won't be continuously caught through scan iterations.
-
-### Client-side `pre-commit` Hook
-
-See [pre-commit](https://github.com/pre-commit/pre-commit) for instructions
-to install the pre-commit framework. The example usage above has a sample
-installation configuration, with a allowlisted secrets baseline.
-
-Hooks available:
-
-- `detect-secrets`: This hook detects and prevents high entropy strings from
-  entering the codebase.
-
-However, you can also run it manually (without the pre-commit framework) as such:
+If you want to clean you environment, if you have a bad setup or tests, just run:
 
 ```
-git diff --staged --name-only | xargs detect-secrets-hook
+make clean
 ```
 
-### Server-side Secret Scanning
+## Testing Dependencies
 
-Please see the [detect-secrets-server](https://github.com/Yelp/detect-secrets-server)
-repository for installation instructions.
+This project is written in Python. Here are the dependencies needed to run the tests:
+- `python` The version can be installed using an utility like pyenv ( instructions bellow ) or your os package manager
+    - `2.7`
+    - `3.5`
+    - `3.6`
+    - `pypy`
+- `tox` installed via pip or your os package manager
+- `make`
 
-### Secrets Baseline
+#### Installing via pyenv
+
+1. Install [pyenv](https://github.com/pyenv/pyenv) in your environment. **Note:** you need to add the environment to you `.bashrc`. You will most likely run into the common build problems listed [here](https://github.com/pyenv/pyenv/wiki/Common-build-problems).
+1. Install the environment listed above
+1. Set the environment as global using the `pyenv global $VERSION` command
+1. Install tox `pip install tox`
+
+
+#### Running test in a docker image
+
+If you don't want to figure out how to install it locally or don't want to spend the time you can use the development docker image. Install `docker` and `docker-compose`. Then run:
 
 ```
-$ pip install detect-secrets
-✨🍰✨
+docker-compose build test && docker-compose run --rm test
 ```
 
-Remember to initialize your baseline with the same plugin configurations
-as your pre-commit hook, and server-side secret scanner!
+## Plugins
 
-#### Inline Allowlisting
-
-To tell `detect-secrets` to ignore a particular line of code, simply append an
-inline `pragma: allowlist secret` comment. For example:
-
-```python
-API_KEY = "blah-blah-but-actually-not-secret"  # pragma: allowlist secret
-print('hello world')
-```
-
-Inline commenting syntax for a multitude of languages is supported:
-
-| Comment Style | Language Support |
-| :---:     | :---:       |
-| `#` | e.g. Python, Dockerfile, YAML |
-| `//` | e.g. Go, C++, Java |
-| `/* */` | e.g. C, Java|
-| `'` | e.g. Visual Basic .NET|
-| `--` | e.g. SQL, Haskell|
-| `<!-- --!>` | e.g. XML |
-
-This may be a convenient way for you to allowlist secrets, without having to
-regenerate the entire baseline again. Furthermore, this makes the allowlisted
-secrets easily searchable, auditable, and maintainable.
-
-## Currently Supported Plugins
+Each of the checks are developed as plugins in the [detect_secrets/plugins](/tree/master/detect_secrets/plugins) directory. Each plugin represent a single test or a group of tests. The following is a list of the currently developed plugins:
 
 The current heuristic searches we implement out of the box include:
 
-* **Base64HighEntropyString**: checks for all strings matching the Base64
-  character set, and alerts if their Shannon entropy is above a certain limit.
+* **Base64HighEntropyString**: checks for all strings matching the Base64 character set, and alerts if their Shannon entropy is above a certain limit.
 
-* **HexHighEntropyString**: checks for all strings matching the Hex character
-  set, and alerts if their Shannon entropy is above a certain limit.
+* **HexHighEntropyString**: checks for all strings matching the Hex character set, and alerts if their Shannon entropy is above a certain limit.
 
 * **PrivateKeyDetector**: checks to see if any private keys are committed.
 
@@ -166,45 +104,10 @@ The current heuristic searches we implement out of the box include:
 
 * **KeywordDetector**: checks to see if certain keywords are being used e.g. `password` or `secret`
 
-* **RegexBasedDetector**: checks for any keys matching certain regular expressions (Artifactory, AWS, Slack, Stripe, Mailchimp, Twilio).
+* **ArtifactoryDetector**: checks to see if Artifactory credentials are present.
 
-* **JwtTokenDetector**: checks for formally correct JWTs.
+* **GHDetector**: checks to see if GitHub credentials are present.
 
-* **SoftlayerDetector**: checks for Softlayer tokens.
+## IBM versioning and rebase guide
 
-* **IbmCloudIamDetector**: checks for IBM Cloud IAM key.
-
-* **CloudantDetector**: checks for Cloudant credentials.
-
-
-See [detect_secrets/
-plugins](https://github.com/Yelp/detect-secrets/tree/master/detect_secrets/plugins)
-for more details.
-
-## Caveats
-
-This is not meant to be a sure-fire solution to prevent secrets from entering
-the codebase. Only proper developer education can truly do that. This pre-commit
-hook merely implements several heuristics to try and prevent obvious cases of
-committing secrets.
-
-### Things that won't be prevented
-
-* Multi-line secrets
-* Default passwords that don't trigger the `KeywordDetector` (e.g. `login = "hunter2"`)
-
-### Plugin Configuration
-
-One method that this package uses to find secrets is by searching for high
-entropy strings in the codebase. This is calculated through the [Shannon entropy
-formula](http://blog.dkbza.org/2007/05/scanning-data-for-entropy-anomalies.html).
-If the entropy of a given string exceeds the preset amount, the string will be
-rejected as a potential secret.
-
-This preset amount can be adjusted in several ways:
-
-* Specifying it within the config file, for server scanning.
-* Specifying it with command line flags (e.g. `--base64-limit`)
-
-Lowering these limits will identify more potential secrets, but also create
-more false positives. Adjust these limits to suit your needs.
+- [update.md](./update.md)
