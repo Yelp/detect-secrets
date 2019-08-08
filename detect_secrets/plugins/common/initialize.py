@@ -147,8 +147,12 @@ def merge_plugin_from_baseline(baseline_plugins, args):
         return from_parser_builder(
             plugins_dict,
             exclude_lines_regex=args.exclude_lines,
+<<<<<<< HEAD
             automaton=automaton,
             should_verify_secrets=not args.no_verify,
+=======
+            should_verify_secrets=args.verify,
+>>>>>>> No verify by default (#166)
         )
 
     # Use baseline plugin as starting point
