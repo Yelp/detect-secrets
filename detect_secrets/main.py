@@ -68,7 +68,7 @@ def main(argv=None):
                     ),
                 )
 
-    elif args.action == 'audit':
+    elif args.action == 'audit':  # pragma: no cover
         if not args.diff and not args.display_results:
             audit.audit_baseline(args.filename[0])
             return 0
