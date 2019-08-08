@@ -89,8 +89,7 @@ class TestMain:
             exclude_lines_regex=None,
             path='.',
             should_scan_all_files=False,
-            word_list_file=None,
-            word_list_hash=None,
+            output_raw=False,
         )
 
     def test_scan_with_rootdir(self, mock_baseline_initialize):
@@ -103,8 +102,7 @@ class TestMain:
             exclude_lines_regex=None,
             path=['test_data'],
             should_scan_all_files=False,
-            word_list_file=None,
-            word_list_hash=None,
+            output_raw=False,
         )
 
     def test_scan_with_exclude_args(self, mock_baseline_initialize):
@@ -119,8 +117,22 @@ class TestMain:
             exclude_lines_regex='other_patt',
             path='.',
             should_scan_all_files=False,
-            word_list_file=None,
-            word_list_hash=None,
+            output_raw=False,
+        )
+
+    def test_scan_with_output_raw(self, mock_baseline_initialize):
+        with mock_stdin():
+            assert main(
+                'scan --output-raw'.split(),
+            ) == 0
+
+        mock_baseline_initialize.assert_called_once_with(
+            plugins=Any(tuple),
+            exclude_files_regex=None,
+            exclude_lines_regex=None,
+            path='.',
+            should_scan_all_files=False,
+            output_raw=True,
         )
 
     @pytest.mark.parametrize(
@@ -155,30 +167,11 @@ class TestMain:
         ), mock_printer(
             main_module,
         ) as printer_shim:
-<<<<<<< HEAD
             assert main('scan --string'.split()) == 0
             assert uncolor(printer_shim.message) == get_plugin_report({
                 'Base64HighEntropyString': expected_base64_result,
                 'HexHighEntropyString': expected_hex_result,
             })
-=======
-            assert main('scan --use-all-plugins --string'.split()) == 0
-            assert uncolor(printer_shim.message) == textwrap.dedent("""
-                AWSKeyDetector         : False
-                ArtifactoryDetector    : False
-                Base64HighEntropyString: {}
-                BasicAuthDetector      : False
-                GHDetector             : False
-                HexHighEntropyString   : {}
-                KeywordDetector        : False
-                PrivateKeyDetector     : False
-                SlackDetector          : False
-                StripeDetector         : False
-            """.format(
-                expected_base64_result,
-                expected_hex_result,
-            ))[1:]
->>>>>>> Define default plugin list
 
         mock_baseline_initialize.assert_not_called()
 
@@ -209,27 +202,11 @@ class TestMain:
         ), mock_printer(
             main_module,
         ) as printer_shim:
-<<<<<<< HEAD
             assert main('scan --string 012345'.split()) == 0
             assert uncolor(printer_shim.message) == get_plugin_report({
                 'Base64HighEntropyString': 'False (2.585)',
                 'HexHighEntropyString': 'False (2.121)',
             })
-=======
-            assert main('scan --use-all-plugins --string 012345'.split()) == 0
-            assert uncolor(printer_shim.message) == textwrap.dedent("""
-                AWSKeyDetector         : False
-                ArtifactoryDetector    : False
-                Base64HighEntropyString: False (2.585)
-                BasicAuthDetector      : False
-                GHDetector             : False
-                HexHighEntropyString   : False (2.121)
-                KeywordDetector        : False
-                PrivateKeyDetector     : False
-                SlackDetector          : False
-                StripeDetector         : False
-            """)[1:]
->>>>>>> Define default plugin list
 
     def test_scan_with_all_files_flag(self, mock_baseline_initialize):
         with mock_stdin():
@@ -241,8 +218,7 @@ class TestMain:
             exclude_lines_regex=None,
             path='.',
             should_scan_all_files=True,
-            word_list_file=None,
-            word_list_hash=None,
+            output_raw=False,
         )
 
     def test_reads_from_stdin(self, mock_merge_baseline):
@@ -342,16 +318,6 @@ class TestMain:
                     },
                 ],
                 '--use-all-plugins',
-<<<<<<< HEAD
-                get_list_of_plugins(
-                    include=[
-                        {
-                            'base64_limit': 1.5,
-                            'name': 'Base64HighEntropyString',
-                        },
-                    ],
-                ),
-=======
                 [
                     {
                         'name': 'AWSKeyDetector',
@@ -386,7 +352,6 @@ class TestMain:
                         'name': 'StripeDetector',
                     },
                 ],
->>>>>>> Add GH detector
             ),
             (  # Remove some plugins from all plugins
                 [
@@ -397,14 +362,6 @@ class TestMain:
                 ],
 
                 '--use-all-plugins --no-base64-string-scan --no-private-key-scan',
-<<<<<<< HEAD
-                get_list_of_plugins(
-                    exclude=(
-                        'Base64HighEntropyString',
-                        'PrivateKeyDetector',
-                    ),
-                ),
-=======
                 [
                     {
                         'name': 'AWSKeyDetector',
@@ -432,7 +389,6 @@ class TestMain:
                         'name': 'StripeDetector',
                     },
                 ],
->>>>>>> Add GH detector
             ),
             (  # Use same plugin list from baseline
                 [
@@ -499,20 +455,6 @@ class TestMain:
                     },
                 ],
                 '--use-all-plugins --base64-limit=5.5 --no-hex-string-scan --no-keyword-scan',
-<<<<<<< HEAD
-                get_list_of_plugins(
-                    include=[
-                        {
-                            'base64_limit': 5.5,
-                            'name': 'Base64HighEntropyString',
-                        },
-                    ],
-                    exclude=(
-                        'HexHighEntropyString',
-                        'KeywordDetector',
-                    ),
-                ),
-=======
                 [
                     {
                         'name': 'AWSKeyDetector',
@@ -540,7 +482,6 @@ class TestMain:
                         'name': 'StripeDetector',
                     },
                 ],
->>>>>>> Add GH detector
             ),
             (  # Use plugin limit from baseline when using --use-all-plugins and no input limit
                 [
@@ -553,20 +494,6 @@ class TestMain:
                     },
                 ],
                 '--use-all-plugins --no-hex-string-scan --no-keyword-scan',
-<<<<<<< HEAD
-                get_list_of_plugins(
-                    include=[
-                        {
-                            'base64_limit': 2.5,
-                            'name': 'Base64HighEntropyString',
-                        },
-                    ],
-                    exclude=(
-                        'HexHighEntropyString',
-                        'KeywordDetector',
-                    ),
-                ),
-=======
                 [
                     {
                         'name': 'AWSKeyDetector',
@@ -594,7 +521,6 @@ class TestMain:
                         'name': 'StripeDetector',
                     },
                 ],
->>>>>>> Add GH detector
             ),
         ],
     )
@@ -709,7 +635,6 @@ class TestMain:
                 expected_output,
             )
 
-<<<<<<< HEAD
     @pytest.mark.parametrize(
         'filename, expected_output',
         [
@@ -738,40 +663,12 @@ class TestMain:
     )
     def test_audit_display_results(self, filename, expected_output):
         with mock_stdin(), mock_printer(
-=======
-    def test_scan_with_default_plugin(self):
-        filename = 'test_data/short_files/last_line.ini'
-        plugins_used = [
-            {
-                'name': 'AWSKeyDetector',
-            },
-            {
-                'name': 'ArtifactoryDetector',
-            },
-            {
-                'name': 'BasicAuthDetector',
-            },
-            {
-                'name': 'PrivateKeyDetector',
-            },
-            {
-                'name': 'SlackDetector',
-            },
-            {
-                'name': 'StripeDetector',
-            },
-        ]
-
-        with mock_stdin(), mock_printer(
-            # To extract the baseline output
->>>>>>> Define default plugin list
             main_module,
         ) as printer_shim:
             main(['scan', filename])
             baseline = printer_shim.message
 
         baseline_dict = json.loads(baseline)
-<<<<<<< HEAD
         with mock.patch(
             'detect_secrets.core.audit._get_baseline_from_file',
             return_value=baseline_dict,
@@ -781,10 +678,6 @@ class TestMain:
             main(['audit', '--display-results', 'MOCKED'])
 
             assert json.loads(uncolor(printer_shim.message))['plugins'] == expected_output
-=======
-        assert baseline_dict['results'] == {}
-        assert baseline_dict['plugins_used'] == plugins_used
->>>>>>> Define default plugin list
 
     def test_audit_diff_not_enough_files(self):
         assert main('audit --diff fileA'.split()) == 1

@@ -78,60 +78,19 @@ class BasePlugin:
 
         self.should_verify = should_verify
 
-        self.false_positive_heuristics = false_positive_heuristics or []
-
-    @classproperty
-    def disable_flag_text(cls):
-        name = cls.__name__
-        if name.endswith('Detector'):
-            name = name[:-len('Detector')]
-
-        # turn camel case into hyphenated strings
-        name_hyphen = ''
-        for letter in name:
-            if letter.upper() == letter and name_hyphen:
-                name_hyphen += '-'
-            name_hyphen += letter.lower()
-
-        return 'no-{}-scan'.format(name_hyphen)
-
-    @classproperty
-    def default_options(cls):
-        return {}
-
-    def _is_excluded_line(self, line):
-        return (
-            any(
-                allowlist_regex.search(line)
-                for allowlist_regex in ALLOWLIST_REGEXES
-            )
-            or
-            (
-                self.exclude_lines_regex and
-                self.exclude_lines_regex.search(line)
-            )
-        )
-
-    def analyze(self, file, filename):
+    def analyze(self, file, filename, output_raw=False):
         """
         :param file:     The File object itself.
         :param filename: string; filename of File object, used for creating
                          PotentialSecret objects
+        :param output_raw: whether or not to output the raw, unhashed secret
         :returns         dictionary representation of set (for random access by hash)
                          { detect_secrets.core.potential_secret.__hash__:
                                detect_secrets.core.potential_secret         }
         """
         potential_secrets = {}
-        file_lines = tuple(file.readlines())
-        for line_num, line in enumerate(file_lines, start=1):
-            results = self.analyze_line(line, line_num, filename)
-            if (
-                not results
-                or
-                self._is_excluded_line(line)
-            ):
-                continue
-
+        for line_num, line in enumerate(file.readlines(), start=1):
+            results = self.analyze_string(line, line_num, filename, output_raw)
             if not self.should_verify:
                 potential_secrets.update(results)
                 continue
@@ -155,11 +114,12 @@ class BasePlugin:
 
         return potential_secrets
 
-    def analyze_line(self, string, line_num, filename):
+    def analyze_string(self, string, line_num, filename, output_raw=False):
         """
         :param string:    string; the line to analyze
         :param line_num:  integer; line number that is currently being analyzed
         :param filename:  string; name of file being analyzed
+        :param output_raw: whether or not to output the raw, unhashed secret
         :returns:         dictionary
 
         NOTE: line_num and filename are used for PotentialSecret creation only.
@@ -168,14 +128,16 @@ class BasePlugin:
             string,
             line_num,
             filename,
+            output_raw,
         )
 
     @abstractmethod
-    def analyze_string_content(self, string, line_num, filename):
+    def analyze_string_content(self, string, line_num, filename, output_raw=False):
         """
         :param string:    string; the line to analyze
         :param line_num:  integer; line number that is currently being analyzed
         :param filename:  string; name of file being analyzed
+        :param output_raw: whether or not to output the raw, unhashed secret
         :returns:         dictionary
 
         NOTE: line_num and filename are used for PotentialSecret creation only.
@@ -295,40 +257,7 @@ class RegexBasedDetector(BasePlugin):
     def denylist(self):
         raise NotImplementedError
 
-    @staticmethod
-    def assign_regex_generator(prefix_regex, secret_keyword_regex, secret_regex):
-        """Generate assignment regex
-        It reads 3 input parameters, each stands for regex. The return regex would look for
-        secret in following format.
-        <prefix_regex>(-|_|)<secret_keyword_regex> <assignment> <secret_regex>
-        assignment would include =,:,:=,::
-        keyname and value supports optional quotes
-        """
-        begin = r'(?:(?<=\W)|(?<=^))'
-        opt_quote = r'(?:"|\'|)'
-        opt_open_square_bracket = r'(?:\[|)'
-        opt_close_square_bracket = r'(?:\]|)'
-        opt_dash_undrscr = r'(?:_|-|)'
-        opt_space = r'(?: *)'
-        assignment = r'(?:=|:|:=|=>| +|::)'
-        return re.compile(
-            r'{begin}{opt_open_square_bracket}{opt_quote}{prefix_regex}{opt_dash_undrscr}'
-            '{secret_keyword_regex}{opt_quote}{opt_close_square_bracket}{opt_space}'
-            '{assignment}{opt_space}{opt_quote}{secret_regex}{opt_quote}'.format(
-                begin=begin,
-                opt_open_square_bracket=opt_open_square_bracket,
-                opt_quote=opt_quote,
-                prefix_regex=prefix_regex,
-                opt_dash_undrscr=opt_dash_undrscr,
-                secret_keyword_regex=secret_keyword_regex,
-                opt_close_square_bracket=opt_close_square_bracket,
-                opt_space=opt_space,
-                assignment=assignment,
-                secret_regex=secret_regex,
-            ), flags=re.IGNORECASE,
-        )
-
-    def analyze_string_content(self, string, line_num, filename):
+    def analyze_string_content(self, string, line_num, filename, output_raw=False):
         output = {}
 
         for identifier in self.secret_generator(string):
@@ -337,6 +266,7 @@ class RegexBasedDetector(BasePlugin):
                 filename,
                 identifier,
                 line_num,
+                output_raw=output_raw,
             )
             output[secret] = secret
 
