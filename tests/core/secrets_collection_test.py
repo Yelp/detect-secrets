@@ -465,7 +465,7 @@ class MockPluginFixedValue(MockBasePlugin):
 
     secret_type = 'mock_plugin_fixed_value'
 
-    def analyze(self, f, filename):
+    def analyze(self, f, filename, output_raw=False):
         # We're not testing the plugin's ability to analyze secrets, so
         # it doesn't matter what we return
         secret = PotentialSecret('mock fixed value type', filename, 'asdf', 1)
@@ -476,7 +476,7 @@ class MockPluginFileValue(MockBasePlugin):
 
     secret_type = 'mock_plugin_file_value'
 
-    def analyze(self, f, filename):
+    def analyze(self, f, filename, output_raw=False):
         # We're not testing the plugin's ability to analyze secrets, so
         # it doesn't matter what we return
         secret = PotentialSecret('mock file value type', filename, f.read().strip(), 2)
@@ -487,7 +487,7 @@ class MockPasswordPluginValue(MockBasePlugin):
 
     secret_type = 'mock_plugin_file_value'
 
-    def analyze(self, f, filename):
+    def analyze(self, f, filename, output_raw=False):
         password_secret = PotentialSecret('Password', filename, f.read().strip(), 2)
         return {
             password_secret: password_secret,

@@ -21,6 +21,7 @@ def initialize(
     word_list_file=None,
     word_list_hash=None,
     should_scan_all_files=False,
+    output_raw=False,
 ):
     """Scans the entire codebase for secrets, and returns a
     SecretsCollection object.
@@ -40,7 +41,7 @@ def initialize(
     :param word_list_hash: optional iterated sha1 hash of the words in the word list.
 
     :type should_scan_all_files: bool
-
+    :type output_raw: bool
     :rtype: SecretsCollection
     """
     output = SecretsCollection(
@@ -49,6 +50,7 @@ def initialize(
         exclude_lines=exclude_lines_regex,
         word_list_file=word_list_file,
         word_list_hash=word_list_hash,
+        output_raw=output_raw,
     )
 
     files_to_scan = []
