@@ -7,6 +7,7 @@ env:
         - DOCKER_IMAGE_HOST=txo-whitewater-public-docker-local.artifactory.swg-devops.com
         - DOCKER_IMAGE=txo-whitewater-public-docker-local.artifactory.swg-devops.com/whitewater-detect-secrets
         - DOCKER_IMAGE_TAG="$TRAVIS_BUILD_NUMBER-id-$TRAVIS_BUILD_ID-time-$(date +%s)"
+        - DOCKER_IMAGE_TAG_MVP="$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER-id-$TRAVIS_BUILD_ID-time-$(date +%s)"
 deploy:
 - provider: script
   script: docker login $DOCKER_IMAGE_HOST --username $DOCKER_USER --password $DOCKER_PASS
@@ -15,6 +16,14 @@ deploy:
     && docker push $DOCKER_IMAGE:latest
   on:
     branch: master
+- provider: script
+  script: docker login $DOCKER_IMAGE_HOST --username $DOCKER_USER --password $DOCKER_PASS
+    && docker tag $DOCKER_IMAGE:$DOCKER_IMAGE_TAG $DOCKER_IMAGE:$DOCKER_IMAGE_TAG_MVP
+    && docker push $DOCKER_IMAGE:$DOCKER_IMAGE_TAG_MVP
+    && docker tag $DOCKER_IMAGE:$DOCKER_IMAGE_TAG_MVP $DOCKER_IMAGE:mvp-latest
+    && docker push $DOCKER_IMAGE:mvp-latest
+  on:
+    branch: mvp
 matrix:
     include:
         - env: TOXENV=py35
