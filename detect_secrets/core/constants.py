@@ -23,6 +23,7 @@ IGNORED_FILE_EXTENSIONS = {
     'rar',
     'realm',
     's7z',
+    'svg',
     'tar',
     'tif',
     'tiff',
