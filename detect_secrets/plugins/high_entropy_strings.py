@@ -359,8 +359,7 @@ class HexHighEntropyString(HighEntropyStringsPlugin):
         is ~3.32 (e.g. "0123456789", with every digit different), and we want
         to lower that below the standard limit, 3. However, at the same time,
         we also want to accommodate the fact that longer strings have a higher
-        chance of being a true positive, which means
-        "01234567890123456789" # pragma: whitelist secret
+        chance of being a true positive, which means "(0-9 twice)"
         should be closer to the maximum entropy than the shorter version.
         """
         entropy = super(HexHighEntropyString, self).calculate_shannon_entropy(data)
