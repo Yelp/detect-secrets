@@ -41,13 +41,13 @@ class SoftLayerDetector(RegexBasedDetector):
         ),
     ]
 
-    def verify(self, token, content):
+    def verify(self, token, content, potential_secret=None):
         usernames = get_username(content)
         if not usernames:
             return VerifiedResult.UNVERIFIED
 
         for username in usernames:
-            return verify_softlayer_key(username, token)
+            return verify_softlayer_key(username, token, potential_secret)
 
         return VerifiedResult.VERIFIED_FALSE
 
@@ -87,7 +87,7 @@ def get_username(content):
     ]
 
 
-def verify_softlayer_key(username, token):
+def verify_softlayer_key(username, token, potential_secret=None):
     try:
         headers = {'Content-type': 'application/json'}
         response = requests.get(
@@ -96,6 +96,8 @@ def verify_softlayer_key(username, token):
         )
 
         if response.status_code == 200:
+            if potential_secret:
+                potential_secret.other_factors['username'] = username
             return VerifiedResult.VERIFIED_TRUE
         else:
             return VerifiedResult.VERIFIED_FALSE

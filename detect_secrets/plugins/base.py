@@ -103,8 +103,11 @@ class BasePlugin:
                     lines_of_context=LINES_OF_CONTEXT,
                 )
 
-                is_verified = self.verify(result.secret_value, content=str(snippet))
-                if is_verified == VerifiedResult.VERIFIED_TRUE:
+                is_verified = self.verify(
+                    result.secret_value, content=str(snippet),
+                    potential_secret=result,
+                )
+                if is_verified != VerifiedResult.UNVERIFIED:
                     result.is_verified = True
 
                 if is_verified != VerifiedResult.VERIFIED_FALSE:

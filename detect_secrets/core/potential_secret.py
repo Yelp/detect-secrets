@@ -55,6 +55,7 @@ class PotentialSecret:
         self.secret = secret
         self.is_secret = is_secret
         self.is_verified = False
+        self.other_factors = {}
 
         # If two PotentialSecrets have the same values for these fields,
         # they are considered equal. Note that line numbers aren't included
