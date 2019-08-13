@@ -106,6 +106,9 @@ class PotentialSecret:
         if self.is_secret is not None:
             attributes['is_secret'] = self.is_secret
 
+        if self.other_factors:
+            attributes['other_factors'] = self.other_factors
+
         return attributes
 
     def __eq__(self, other):
