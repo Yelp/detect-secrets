@@ -12,3 +12,4 @@ responses
 tox-pip-extensions
 tox>=3.8
 unidiff
+responses
