@@ -3,15 +3,13 @@ from detect_secrets.core.secrets_collection import SecretsCollection
 
 
 def potential_secret_factory(
-    type_='type',
-    filename='filename',
-    secret='secret',
-    lineno=1,
+    type_='type', filename='filename', secret='secret',
+    lineno=1, output_raw=False,
 ):
     """This is only marginally better than creating PotentialSecret objects directly,
     because of the default values.
     """
-    return PotentialSecret(type_, filename, secret, lineno)
+    return PotentialSecret(type_, filename, secret, lineno, output_raw=output_raw)
 
 
 def secrets_collection_factory(

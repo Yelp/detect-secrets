@@ -39,3 +39,12 @@ class TestPotentialSecret:
         secret = potential_secret_factory(secret='blah')
         for value in secret.json().values():
             assert value != 'blah'
+
+    def test_json_output_raw(self):
+        secret = potential_secret_factory(secret='blah', output_raw=True)
+        assert 'blah' in secret.json().values()
+
+    def test_other_factors(self):
+        secret = potential_secret_factory(secret='blah')
+        secret.other_factors['second factor'] = 'another one'
+        assert {'second factor': 'another one'} == secret.json()['other_factors']

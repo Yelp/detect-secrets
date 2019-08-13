@@ -6,6 +6,7 @@ import pytest
 import responses
 
 from detect_secrets.core.constants import VerifiedResult
+from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.softlayer import get_username
 from detect_secrets.plugins.softlayer import SoftLayerDetector
 
@@ -101,11 +102,13 @@ class TestSoftLayerDetector(object):
             responses.GET, 'https://api.softlayer.com/rest/v3/SoftLayer_Account.json',
             json={'id': 1}, status=200,
         )
-
+        potential_secret = PotentialSecret('test softlayer', 'test filename', SL_TOKEN)
         assert SoftLayerDetector().verify(
             SL_TOKEN,
             'softlayer_username={}'.format(SL_USERNAME),
+            potential_secret,
         ) == VerifiedResult.VERIFIED_TRUE
+        assert potential_secret.other_factors['username'] == SL_USERNAME
 
     @responses.activate
     def test_verify_unverified_secret(self):
