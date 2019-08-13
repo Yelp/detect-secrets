@@ -4,8 +4,7 @@ coverage<5
 flake8==3.5.0
 mock
 monotonic
-pre-commit==1.11.2
-pyahocorasick
+pre-commit
 pytest
 pyyaml
 responses
