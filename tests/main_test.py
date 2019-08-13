@@ -167,11 +167,23 @@ class TestMain:
         ), mock_printer(
             main_module,
         ) as printer_shim:
-            assert main('scan --string'.split()) == 0
-            assert uncolor(printer_shim.message) == get_plugin_report({
-                'Base64HighEntropyString': expected_base64_result,
-                'HexHighEntropyString': expected_hex_result,
-            })
+            assert main('scan --use-all-plugins --string'.split()) == 0
+            assert uncolor(printer_shim.message) == textwrap.dedent("""
+                AWSKeyDetector         : False
+                ArtifactoryDetector    : False
+                Base64HighEntropyString: {}
+                BasicAuthDetector      : False
+                GHDetector             : False
+                HexHighEntropyString   : {}
+                KeywordDetector        : False
+                PrivateKeyDetector     : False
+                SlackDetector          : False
+                SoftLayerDetector      : False
+                StripeDetector         : False
+            """.format(
+                expected_base64_result,
+                expected_hex_result,
+            ))[1:]
 
         mock_baseline_initialize.assert_not_called()
 
@@ -191,6 +203,7 @@ class TestMain:
                 BasicAuthDetector  : False
                 PrivateKeyDetector : False
                 SlackDetector      : False
+                SoftLayerDetector  : False
                 StripeDetector     : False
             """)[1:]
 
@@ -202,11 +215,20 @@ class TestMain:
         ), mock_printer(
             main_module,
         ) as printer_shim:
-            assert main('scan --string 012345'.split()) == 0
-            assert uncolor(printer_shim.message) == get_plugin_report({
-                'Base64HighEntropyString': 'False (2.585)',
-                'HexHighEntropyString': 'False (2.121)',
-            })
+            assert main('scan --use-all-plugins --string 012345'.split()) == 0
+            assert uncolor(printer_shim.message) == textwrap.dedent("""
+                AWSKeyDetector         : False
+                ArtifactoryDetector    : False
+                Base64HighEntropyString: False (2.585)
+                BasicAuthDetector      : False
+                GHDetector             : False
+                HexHighEntropyString   : False (2.121)
+                KeywordDetector        : False
+                PrivateKeyDetector     : False
+                SlackDetector          : False
+                SoftLayerDetector      : False
+                StripeDetector         : False
+            """)[1:]
 
     def test_scan_with_all_files_flag(self, mock_baseline_initialize):
         with mock_stdin():
@@ -349,6 +371,9 @@ class TestMain:
                         'name': 'SlackDetector',
                     },
                     {
+                        'name': 'SoftLayerDetector',
+                    },
+                    {
                         'name': 'StripeDetector',
                     },
                 ],
@@ -384,6 +409,9 @@ class TestMain:
                     },
                     {
                         'name': 'SlackDetector',
+                    },
+                    {
+                        'name': 'SoftLayerDetector',
                     },
                     {
                         'name': 'StripeDetector',
@@ -479,6 +507,9 @@ class TestMain:
                         'name': 'SlackDetector',
                     },
                     {
+                        'name': 'SoftLayerDetector',
+                    },
+                    {
                         'name': 'StripeDetector',
                     },
                 ],
@@ -516,6 +547,9 @@ class TestMain:
                     },
                     {
                         'name': 'SlackDetector',
+                    },
+                    {
+                        'name': 'SoftLayerDetector',
                     },
                     {
                         'name': 'StripeDetector',
@@ -635,33 +669,32 @@ class TestMain:
                 expected_output,
             )
 
-    @pytest.mark.parametrize(
-        'filename, expected_output',
-        [
-            (
-                'test_data/short_files/first_line.php',
-                {
-                    'KeywordDetector': {
-                        'config': {
-                            'name': 'KeywordDetector',
-                            'keyword_exclude': None,
-                        },
-                        'results': {
-                            'false-positives': {},
-                            'true-positives': {},
-                            'unknowns': {
-                                'test_data/short_files/first_line.php': [{
-                                    'line': "secret = 'notHighEnoughEntropy'",
-                                    'plaintext': 'nothighenoughentropy',
-                                }],
-                            },
-                        },
-                    },
-                },
-            ),
-        ],
-    )
-    def test_audit_display_results(self, filename, expected_output):
+    def test_scan_with_default_plugin(self):
+        filename = 'test_data/short_files/last_line.ini'
+        plugins_used = [
+            {
+                'name': 'AWSKeyDetector',
+            },
+            {
+                'name': 'ArtifactoryDetector',
+            },
+            {
+                'name': 'BasicAuthDetector',
+            },
+            {
+                'name': 'PrivateKeyDetector',
+            },
+            {
+                'name': 'SlackDetector',
+            },
+            {
+                'name': 'SoftLayerDetector',
+            },
+            {
+                'name': 'StripeDetector',
+            },
+        ]
+
         with mock_stdin(), mock_printer(
             main_module,
         ) as printer_shim:

@@ -441,6 +441,12 @@ class PluginOptions:
             disable_help_text='Disable scanning for GH credentials',
             is_default=False,
         ),
+        PluginDescriptor(
+            classname='SoftLayerDetector',
+            disable_flag_text='--no-sl-scan',
+            disable_help_text='Disable scanning for SoftLayer keys',
+            is_default=True,
+        ),
     ]
 
     default_plugins_list = [

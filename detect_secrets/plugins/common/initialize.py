@@ -14,6 +14,7 @@ from ..high_entropy_strings import HexHighEntropyString     # noqa: F401
 from ..keyword import KeywordDetector                       # noqa: F401
 from ..private_key import PrivateKeyDetector                # noqa: F401
 from ..slack import SlackDetector                           # noqa: F401
+from ..softlayer import SoftLayerDetector                   # noqa: F401
 from ..stripe import StripeDetector                         # noqa: F401
 >>>>>>> Add GH detector
 from detect_secrets.core.log import log

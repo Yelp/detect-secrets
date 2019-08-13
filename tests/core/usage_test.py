@@ -49,6 +49,7 @@ class TestPluginOptions:
             'StripeDetector': {},
             'ArtifactoryDetector': {},
             'GHDetector': {},
+            'SoftLayerDetector': {},
         }
 >>>>>>> Define default plugin list
 

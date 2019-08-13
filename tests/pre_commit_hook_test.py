@@ -210,10 +210,19 @@ class TestPreCommitHook:
                     'name': 'KeywordDetector',
                     'keyword_exclude': None,
                 },
-            ])
-
-            expected = sorted(regex_based_plugins, key=lambda x: x['name'])
-            assert baseline_written['plugins_used'] == expected
+                {
+                    'name': 'PrivateKeyDetector',
+                },
+                {
+                    'name': 'SlackDetector',
+                },
+                {
+                    'name': 'SoftLayerDetector',
+                },
+                {
+                    'name': 'StripeDetector',
+                },
+            ]
 
     def test_writes_new_baseline_if_modified(self):
         baseline_string = _create_baseline()
