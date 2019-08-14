@@ -76,7 +76,7 @@ class YamlFileParser(object):
         new_values = []
         for key, value in map_node.value:
             if not value.tag.endswith(':str'):
-                new_values.append((key, value,))
+                new_values.append((key, value))
                 continue
 
             augmented_string = yaml.nodes.MappingNode(
@@ -95,7 +95,7 @@ class YamlFileParser(object):
                 ],
             )
 
-            new_values.append((key, augmented_string,))
+            new_values.append((key, augmented_string))
 
         output = yaml.nodes.MappingNode(
             tag=map_node.tag,

@@ -53,8 +53,8 @@ class TestPluginOptions(object):
     @pytest.mark.parametrize(
         'argument_string,expected_value',
         [
-            ('--hex-limit 5', 5.0,),
-            ('--hex-limit 2.3', 2.3,),
+            ('--hex-limit 5', 5.0),
+            ('--hex-limit 2.3', 2.3),
             ('--hex-limit 0', 0),
             ('--hex-limit 8', 8),
             ('--hex-limit -1', None),

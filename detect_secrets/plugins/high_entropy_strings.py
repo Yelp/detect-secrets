@@ -49,10 +49,10 @@ class HighEntropyStringsPlugin(BasePlugin):
 
     def analyze(self, file, filename):
         file_type_analyzers = (
-            (self._analyze_ini_file(), configparser.Error,),
-            (self._analyze_yaml_file, yaml.YAMLError,),
-            (super(HighEntropyStringsPlugin, self).analyze, Exception,),
-            (self._analyze_ini_file(add_header=True), configparser.Error,),
+            (self._analyze_ini_file(), configparser.Error),
+            (self._analyze_yaml_file, yaml.YAMLError),
+            (super(HighEntropyStringsPlugin, self).analyze, Exception),
+            (self._analyze_ini_file(add_header=True), configparser.Error),
         )
 
         for analyze_function, exception_class in file_type_analyzers:
@@ -169,11 +169,13 @@ class HighEntropyStringsPlugin(BasePlugin):
                     add_header,
                     exclude_lines_regex=self.exclude_lines_regex,
                 ).iterator():
-                    potential_secrets.update(self.analyze_string(
-                        value,
-                        lineno,
-                        filename,
-                    ))
+                    potential_secrets.update(
+                        self.analyze_string(
+                            value,
+                            lineno,
+                            filename,
+                        ),
+                    )
 
             return potential_secrets
 

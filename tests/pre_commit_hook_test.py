@@ -32,10 +32,12 @@ class TestPreCommitHook(object):
     def test_file_with_secrets(self, mock_log):
         assert_commit_blocked('test_data/files/file_with_secrets.py')
 
-        message_by_lines = list(filter(
-            lambda x: x != '',
-            mock_log.error_messages.splitlines(),
-        ))
+        message_by_lines = list(
+            filter(
+                lambda x: x != '',
+                mock_log.error_messages.splitlines(),
+            ),
+        )
 
         assert message_by_lines[0].startswith(
             'Potential secrets about to be committed to git repo!',
@@ -136,10 +138,10 @@ class TestPreCommitHook(object):
     @pytest.mark.parametrize(
         'baseline_version, current_version',
         [
-            ('', '0.8.8',),
-            ('0.8.8', '0.8.9',),
-            ('0.8.8', '0.9.0',),
-            ('0.8.8', '1.0.0',),
+            ('', '0.8.8'),
+            ('0.8.8', '0.8.9'),
+            ('0.8.8', '0.9.0'),
+            ('0.8.8', '1.0.0'),
         ],
     )
     def test_that_baseline_gets_updated(

@@ -65,14 +65,16 @@ def mock_git_calls(subprocess_namespace, cases):
         yield
 
 
-class SubprocessMock(namedtuple(
-    'SubprocessMock',
-    [
-        'expected_input',
-        'mocked_output',
-        'should_throw_exception',
-    ],
-)):
+class SubprocessMock(
+    namedtuple(
+        'SubprocessMock',
+        [
+            'expected_input',
+            'mocked_output',
+            'should_throw_exception',
+        ],
+    ),
+):
     """For use with mock_subprocess.
 
     :type expected_input: string

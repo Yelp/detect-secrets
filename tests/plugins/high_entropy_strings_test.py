@@ -170,7 +170,7 @@ class TestBase64HighEntropyStrings(HighEntropyStringsTest):
             ),
             (
                 'test_data/files/file_with_secrets.py',
-                ['Location:    test_data/files/file_with_secrets.py:3', ],
+                ['Location:    test_data/files/file_with_secrets.py:3'],
             ),
             # Mark down files with colons and unicode charaters preceding the
             # colon on the line would cause the scanner to fail and exit on
@@ -179,7 +179,7 @@ class TestBase64HighEntropyStrings(HighEntropyStringsTest):
             # high entropy issues
             (
                 'test_data/config.md',
-                ['Location:    test_data/config.md:10', ],
+                ['Location:    test_data/config.md:10'],
             ),
         ],
     )

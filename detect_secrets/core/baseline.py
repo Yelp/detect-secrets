@@ -242,7 +242,7 @@ def format_baseline_for_output(baseline):
     for filename, secret_list in baseline['results'].items():
         baseline['results'][filename] = sorted(
             secret_list,
-            key=lambda x: (x['line_number'], x['hashed_secret'],),
+            key=lambda x: (x['line_number'], x['hashed_secret']),
         )
 
     return json.dumps(
