@@ -102,7 +102,7 @@ class TestMain(object):
             """.format(
                     expected_base64_result,
                     expected_hex_result,
-                )
+                ),
             )[1:]
 
         mock_baseline_initialize.assert_not_called()
