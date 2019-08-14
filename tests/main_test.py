@@ -87,7 +87,8 @@ class TestMain(object):
             main_module,
         ) as printer_shim:
             assert main('scan --string'.split()) == 0
-            assert uncolor(printer_shim.message) == textwrap.dedent("""
+            assert uncolor(printer_shim.message) == textwrap.dedent(
+                """
                 AWSKeyDetector         : False
                 ArtifactoryDetector    : False
                 Base64HighEntropyString: {}
@@ -99,9 +100,10 @@ class TestMain(object):
                 SlackDetector          : False
                 StripeDetector         : False
             """.format(
-                expected_base64_result,
-                expected_hex_result,
-            ))[1:]
+                    expected_base64_result,
+                    expected_hex_result,
+                )
+            )[1:]
 
         mock_baseline_initialize.assert_not_called()
 

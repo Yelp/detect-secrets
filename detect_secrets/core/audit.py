@@ -349,7 +349,7 @@ def _get_secrets_to_compare(old_baseline, new_baseline):
         if not new_filename:
             secrets_to_compare += list(
                 map(
-                    lambda x: (old_filename, x, True,),
+                    lambda x: (old_filename, x, True),
                     old_baseline['results'][old_filename],
                 ),
             )
@@ -357,7 +357,7 @@ def _get_secrets_to_compare(old_baseline, new_baseline):
         elif not old_filename:
             secrets_to_compare += list(
                 map(
-                    lambda x: (new_filename, x, False,),
+                    lambda x: (new_filename, x, False),
                     new_baseline['results'][new_filename],
                 ),
             )
@@ -374,11 +374,11 @@ def _get_secrets_to_compare(old_baseline, new_baseline):
 
             if old_secret:
                 secrets_to_compare.append(
-                    (old_filename, old_secret, True,),
+                    (old_filename, old_secret, True),
                 )
             else:
                 secrets_to_compare.append(
-                    (new_filename, new_secret, False,),
+                    (new_filename, new_secret, False),
                 )
 
     return secrets_to_compare
@@ -404,22 +404,22 @@ def _comparison_generator(old_list, new_list, compare_fn):
 
         status = compare_fn(old_value, new_value)
         if status == 0:
-            yield (old_value, new_value,)
+            yield (old_value, new_value)
             old_index += 1
             new_index += 1
         elif status == -1:
-            yield (old_value, None,)
+            yield (old_value, None)
             old_index += 1
         else:
-            yield (None, new_value,)
+            yield (None, new_value)
             new_index += 1
 
     # Catch leftovers. Only one of these while statements should run.
     while old_index < len(old_list):
-        yield (old_list[old_index], None,)
+        yield (old_list[old_index], None)
         old_index += 1
     while new_index < len(new_list):
-        yield (None, new_list[new_index],)
+        yield (None, new_list[new_index])
         new_index += 1
 
 
@@ -462,16 +462,18 @@ def _print_context(  # pragma: no cover
 
     :raises: SecretNotFoundOnSpecifiedLineError
     """
-    print('{} {} {} {}\n{} {}\n{} {}'.format(
-        colorize('Secret:     ', AnsiColor.BOLD),
-        colorize(str(count), AnsiColor.PURPLE),
-        colorize('of', AnsiColor.BOLD),
-        colorize(str(total), AnsiColor.PURPLE),
-        colorize('Filename:   ', AnsiColor.BOLD),
-        colorize(filename, AnsiColor.PURPLE),
-        colorize('Secret Type:', AnsiColor.BOLD),
-        colorize(secret['type'], AnsiColor.PURPLE),
-    ))
+    print(
+        '{} {} {} {}\n{} {}\n{} {}'.format(
+            colorize('Secret:     ', AnsiColor.BOLD),
+            colorize(str(count), AnsiColor.PURPLE),
+            colorize('of', AnsiColor.BOLD),
+            colorize(str(total), AnsiColor.PURPLE),
+            colorize('Filename:   ', AnsiColor.BOLD),
+            colorize(filename, AnsiColor.PURPLE),
+            colorize('Secret Type:', AnsiColor.BOLD),
+            colorize(secret['type'], AnsiColor.PURPLE),
+        ),
+    )
     if additional_header_lines:
         print(additional_header_lines)
 

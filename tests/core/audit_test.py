@@ -1023,10 +1023,10 @@ class TestGetUserDecision(object):
     @pytest.mark.parametrize(
         'user_input, expected_value',
         [
-            ('y', 'y',),
-            ('N', 'n',),
-            ('Skip', 's',),
-            ('QUIT', 'q',),
+            ('y', 'y'),
+            ('N', 'n'),
+            ('Skip', 's'),
+            ('QUIT', 'q'),
         ],
     )
     def test_get_user_decision_valid_input(

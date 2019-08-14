@@ -119,10 +119,12 @@ class IniFileParser(object):
                 continue
 
             if current_value_list_index == 0:
-                first_line_regex = re.compile(r'^\s*{}[ :=]+{}'.format(
-                    re.escape(key),
-                    re.escape(values_list[current_value_list_index]),
-                ))
+                first_line_regex = re.compile(
+                    r'^\s*{}[ :=]+{}'.format(
+                        re.escape(key),
+                        re.escape(values_list[current_value_list_index]),
+                    ),
+                )
                 if first_line_regex.match(line):
                     output.append((
                         values_list[current_value_list_index],

@@ -61,10 +61,12 @@ class TestInitializeBaseline(object):
         assert len(results['test_data/files/tmp/file_with_secrets.py']) == 2
 
     def test_with_multiple_files(self):
-        results = self.get_results(path=[
-            'test_data/files/file_with_secrets.py',
-            'test_data/files/tmp/file_with_secrets.py',
-        ])
+        results = self.get_results(
+            path=[
+                'test_data/files/file_with_secrets.py',
+                'test_data/files/tmp/file_with_secrets.py',
+            ],
+        )
 
         assert len(results['test_data/files/file_with_secrets.py']) == 1
         assert len(results['test_data/files/tmp/file_with_secrets.py']) == 2
@@ -589,9 +591,11 @@ class TestFormatBaselineForOutput(object):
             },
         })
 
-        ordered_hashes = list(map(
-            lambda x: x['hashed_secret'],
-            json.loads(output_string)['results']['filename'],
-        ))
+        ordered_hashes = list(
+            map(
+                lambda x: x['hashed_secret'],
+                json.loads(output_string)['results']['filename'],
+            ),
+        )
 
         assert ordered_hashes == ['z', 'a', 'f']

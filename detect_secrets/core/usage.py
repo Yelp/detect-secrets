@@ -233,32 +233,34 @@ class AuditOptions(object):
         return self
 
 
-class PluginDescriptor(namedtuple(
-    'PluginDescriptor',
-    [
-        # Classname of plugin; used for initialization
-        'classname',
+class PluginDescriptor(
+    namedtuple(
+        'PluginDescriptor',
+        [
+            # Classname of plugin; used for initialization
+            'classname',
 
-        # Flag to disable plugin. e.g. `--no-hex-string-scan`
-        'disable_flag_text',
+            # Flag to disable plugin. e.g. `--no-hex-string-scan`
+            'disable_flag_text',
 
-        # Description for disable flag.
-        'disable_help_text',
+            # Description for disable flag.
+            'disable_help_text',
 
-        # type: list
-        # Allows the bundling of all related command line provided
-        # arguments together, under one plugin name.
-        # Assumes there is no shared related arg.
-        #
-        # Furthermore, each related arg can have its own default
-        # value (paired together, with a tuple). This allows us to
-        # distinguish the difference between a default value, and
-        # whether a user has entered the same value as a default value.
-        # Therefore, only populate the default value upon consolidation
-        # (rather than relying on argparse default).
-        'related_args',
-    ],
-)):
+            # type: list
+            # Allows the bundling of all related command line provided
+            # arguments together, under one plugin name.
+            # Assumes there is no shared related arg.
+            #
+            # Furthermore, each related arg can have its own default
+            # value (paired together, with a tuple). This allows us to
+            # distinguish the difference between a default value, and
+            # whether a user has entered the same value as a default value.
+            # Therefore, only populate the default value upon consolidation
+            # (rather than relying on argparse default).
+            'related_args',
+        ],
+    ),
+):
 
     def __new__(cls, related_args=None, **kwargs):
         if not related_args:
@@ -279,7 +281,7 @@ class PluginOptions(object):
             disable_flag_text='--no-hex-string-scan',
             disable_help_text='Disables scanning for hex high entropy strings',
             related_args=[
-                ('--hex-limit', 3,),
+                ('--hex-limit', 3),
             ],
         ),
         PluginDescriptor(
@@ -287,7 +289,7 @@ class PluginOptions(object):
             disable_flag_text='--no-base64-string-scan',
             disable_help_text='Disables scanning for base64 high entropy strings',
             related_args=[
-                ('--base64-limit', 4.5,),
+                ('--base64-limit', 4.5),
             ],
         ),
         PluginDescriptor(

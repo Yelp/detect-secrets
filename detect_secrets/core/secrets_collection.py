@@ -70,17 +70,21 @@ class SecretsCollection(object):
         """
         result = SecretsCollection()
 
-        if not all(key in data for key in (
-            'plugins_used',
-            'results',
-        )):
+        if not all(
+            key in data for key in (
+                'plugins_used',
+                'results',
+            )
+        ):
             raise IOError
 
         # In v0.12.0 `exclude_regex` got replaced by `exclude`
-        if not any(key in data for key in (
-            'exclude',
-            'exclude_regex',
-        )):
+        if not any(
+            key in data for key in (
+                'exclude',
+                'exclude_regex',
+            )
+        ):
             raise IOError
 
         if 'exclude_regex' in data:
@@ -259,10 +263,12 @@ class SecretsCollection(object):
         for key in results:
             results[key] = sorted(results[key], key=lambda x: x['line_number'])
 
-        plugins_used = list(map(
-            lambda x: x.__dict__,
-            self.plugins,
-        ))
+        plugins_used = list(
+            map(
+                lambda x: x.__dict__,
+                self.plugins,
+            ),
+        )
         plugins_used = sorted(plugins_used, key=lambda x: x['name'])
 
         return {
