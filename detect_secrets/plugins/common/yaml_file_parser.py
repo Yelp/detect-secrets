@@ -16,7 +16,7 @@ class YamlFileParser(object):
     Therefore, we take a different approach: intercept the parsing of the yaml
     file to identify string values. This assumes:
 
-        1. Secrets are strings
+        1. Secrets are strings or binaries
         2. Secrets are not keys
 
     Then, we calculate the entropy of those string values.
@@ -75,7 +75,10 @@ class YamlFileParser(object):
         """
         new_values = []
         for key, value in map_node.value:
-            if not value.tag.endswith(':str'):
+            if not (
+                value.tag.endswith(':str') or
+                value.tag.endswith(':binary')
+            ):
                 new_values.append((key, value))
                 continue
 
@@ -83,14 +86,19 @@ class YamlFileParser(object):
                 tag=map_node.tag,
                 value=[
                     self._create_key_value_pair_for_mapping_node_value(
-                        '__value__',
-                        value.value,
-                        'tag:yaml.org,2002:str',
+                        key='__value__',
+                        value=value.value,
+                        tag='tag:yaml.org,2002:str',
                     ),
                     self._create_key_value_pair_for_mapping_node_value(
-                        '__line__',
-                        str(value.__line__),
-                        'tag:yaml.org,2002:int',
+                        key='__line__',
+                        value=str(value.__line__),
+                        tag='tag:yaml.org,2002:int',
+                    ),
+                    self._create_key_value_pair_for_mapping_node_value(
+                        key='__is_binary__',
+                        value=str(value.tag.endswith(':binary')),
+                        tag='tag:yaml.org,2002:bool',
                     ),
                 ],
             )
