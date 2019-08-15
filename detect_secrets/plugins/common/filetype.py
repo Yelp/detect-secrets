@@ -32,7 +32,7 @@ def determine_file_type(filename):
         return FileType.PYTHON
     elif (
         filename.endswith(
-            ('.yaml', '.yml'),
+            ('.eyaml', '.yaml', '.yml'),
         )
     ):
         return FileType.YAML
