@@ -614,7 +614,10 @@ def _get_secret_with_context(
             filename,
         )
 
-        snippet.highlight_line(raw_secret_value)
+        try:
+            snippet.highlight_line(raw_secret_value)
+        except ValueError:
+            raise SecretNotFoundOnSpecifiedLineError(secret['line_number'])
     except SecretNotFoundOnSpecifiedLineError:
         if not force:
             raise
