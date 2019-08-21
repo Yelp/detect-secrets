@@ -141,7 +141,7 @@ def raise_exception_if_baseline_file_is_unstaged(filename):
                 '--name-only',
             ],
         ).split()
-    except subprocess.CalledProcessError:
+    except subprocess.CalledProcessError:  # pragma: no cover
         # Since we don't pipe stderr, we get free logging through git.
         raise ValueError
 
