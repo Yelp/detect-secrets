@@ -281,14 +281,6 @@ def probably_false_positive(lowered_secret, filetype):
         or 'forgot' in lowered_secret
         or lowered_secret in FALSE_POSITIVES
         or (
-            filetype == FileType.JAVASCRIPT
-            and (
-                lowered_secret.startswith('this.')
-                or lowered_secret.startswith('fs.read')
-                or lowered_secret.startswith('options.')
-                or lowered_secret == 'new'
-            )
-        ) or (
             filetype == FileType.PHP
             and lowered_secret[0] == '$'
         ) or (
