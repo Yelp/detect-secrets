@@ -158,7 +158,7 @@ def from_plugin_classname(
     klass = globals()[plugin_classname]
 
     # Make sure the instance is a BasePlugin type, before creating it.
-    if not issubclass(klass, BasePlugin):
+    if not issubclass(klass, BasePlugin):  # pragma: no cover
         raise TypeError
 
     try:
