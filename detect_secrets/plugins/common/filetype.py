@@ -8,8 +8,9 @@ class FileType(Enum):
     JAVASCRIPT = 3
     PHP = 4
     PYTHON = 5
-    YAML = 6
-    OTHER = 7
+    SWIFT = 6
+    YAML = 7
+    OTHER = 8
 
 
 def determine_file_type(filename):
@@ -30,6 +31,8 @@ def determine_file_type(filename):
         return FileType.PHP
     elif filename.endswith('.py'):
         return FileType.PYTHON
+    elif filename.endswith('.swift'):
+        return FileType.SWIFT
     elif (
         filename.endswith(
             ('.eyaml', '.yaml', '.yml'),
