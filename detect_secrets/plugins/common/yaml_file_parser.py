@@ -88,7 +88,7 @@ class YamlFileParser(object):
                     self._create_key_value_pair_for_mapping_node_value(
                         key='__value__',
                         value=value.value,
-                        tag='tag:yaml.org,2002:str',
+                        tag=value.tag,
                     ),
                     self._create_key_value_pair_for_mapping_node_value(
                         key='__line__',

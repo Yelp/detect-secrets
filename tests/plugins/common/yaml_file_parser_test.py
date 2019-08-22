@@ -27,7 +27,7 @@ class TestYamlFileParser(object):
         ['yaml_value', 'expected_value', 'expected_is_binary'],
         [
             ('string_value', 'string_value', False),
-            ('!!binary YWJjZGVm', 'YWJjZGVm', True),
+            ('!!binary YWJjZGVm', b'abcdef', True),
         ],
     )
     def test_possible_secret_format(

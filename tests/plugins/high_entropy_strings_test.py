@@ -2,13 +2,11 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import codecs
-import string
 
 import pytest
 
 from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
 from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
-from detect_secrets.plugins.high_entropy_strings import HighEntropyStringsPlugin
 from testing.mocks import mock_file_object
 
 
@@ -213,12 +211,13 @@ class TestBase64HighEntropyStrings(HighEntropyStringsTest):
         with open('test_data/config.yaml') as f:
             secrets = plugin.analyze(f, 'test_data/config.yaml')
 
-        assert len(secrets.values()) == 2
+        assert len(secrets.values()) == 3
         for secret in secrets.values():
             location = str(secret).splitlines()[1]
             assert location in (
                 'Location:    test_data/config.yaml:3',
                 'Location:    test_data/config.yaml:6',
+                'Location:    test_data/config.yaml:15',
             )
 
     def test_env_file(self):
@@ -234,6 +233,21 @@ class TestBase64HighEntropyStrings(HighEntropyStringsTest):
             )
 
 
+class HexHighEntropyStringsWithStandardEntropy(HexHighEntropyString):
+    """Copies the HexHighEntropyString class, but keeps the standard
+    Shannon entropy calculation.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(HexHighEntropyStringsWithStandardEntropy, self).__init__(
+            *args,
+            **kwargs
+        )
+
+    def calculate_shannon_entropy(self, data):
+        return super(HexHighEntropyString, self).calculate_shannon_entropy(data)
+
+
 class TestHexHighEntropyStrings(HighEntropyStringsTest):
 
     def setup(self):
@@ -247,10 +261,21 @@ class TestHexHighEntropyStrings(HighEntropyStringsTest):
             secret_string='2b00042f7481c7b056c4b410d28f33cf',
         )
 
+    def test_yaml_file(self):
+        plugin = HexHighEntropyString(3)
+        with open('test_data/config2.yaml') as f:
+            secrets = plugin.analyze(f, 'test_data/config2.yaml')
+
+        assert len(secrets.values()) == 1
+        for secret in secrets.values():
+            location = str(secret).splitlines()[1]
+            assert location in (
+                'Location:    test_data/config2.yaml:2',
+            )
+
     def test_discounts_when_all_numbers(self):
-        original_scanner = HighEntropyStringsPlugin(
-            charset=string.hexdigits,
-            limit=3,
+        original_scanner = HexHighEntropyStringsWithStandardEntropy(
+            hex_limit=3,
             exclude_lines_regex=None,
         )
 
