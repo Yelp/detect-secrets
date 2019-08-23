@@ -124,6 +124,8 @@ FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE = {
             'private_key "";',  # Nothing in the quotes
             'private_key \'"no spaces\';',  # Has whitespace in the secret
             'private_key "fake";',  # 'fake' in the secret
+            'private_key "some/dir/aint/a/secret";',  # 3 or more /
+            'private_key "${FOO}";',  # Starts with ${ and ends with }
             'private_key "hopenobodyfindsthisone\';',  # Double-quote does not match single-quote
             'private_key \'hopenobodyfindsthisone";',  # Single-quote does not match double-quote
         ],
@@ -358,5 +360,22 @@ class TestKeywordDetector(object):
         output = logic.analyze(
             f,
             'mock_filename{}'.format(file_extension),
+        )
+        assert len(output) == 0
+
+    @pytest.mark.parametrize(
+        'file_content',
+        STANDARD_POSITIVES,
+    )
+    def test_analyze_example_negatives(self, file_content):
+        logic = KeywordDetector()
+
+        # Make it start with `<`, (and end with `>`) so it hits our false-positive check
+        f = mock_file_object(
+            file_content.replace('m{', '<').replace('}', '>'),
+        )
+        output = logic.analyze(
+            f,
+            'mock_filename.example',
         )
         assert len(output) == 0

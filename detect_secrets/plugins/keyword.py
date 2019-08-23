@@ -66,8 +66,9 @@ FALSE_POSITIVES = {
     "'this",
     '(nsstring',
     '-default}',
-    '/etc/passwd:ro',
     '::',
+    '<%=',
+    '<?php',
     '<a',
     '<aws_secret_access_key>',
     '<input',
@@ -80,35 +81,49 @@ FALSE_POSITIVES = {
     "\\k.*'",
     '`cat',
     '`grep',
+    '`sudo',
     'account_password',
+    'api_key',
+    'disable',
     'dummy_secret',
     'dummy_value',
     'false',
     'false):',
     'false,',
     'false;',
+    'login_password',
     'none',
     'none,',
     'none}',
     'not',
+    'not_real_key',
     'null',
     'null,',
     'null.*"',
     "null.*'",
     'null;',
+    'pass',
+    'pass)',
     'password',
     'password)',
+    'password))',
     'password,',
     'password},',
     'prompt',
     'redacted',
+    'secret',
     'some_key',
+    'str',
     'str_to_sign',
+    'string',
+    'string)',
     'string,',
     'string;',
     'string?',
+    'string?)',
     'string}',
     'string}}',
+    'test',
     'test-access-key',
     'thisisnottherealsecret',
     'todo',
@@ -116,7 +131,10 @@ FALSE_POSITIVES = {
     'true):',
     'true,',
     'true;',
+    'undef',
+    'undef,',
     '{',
+    '{{',
 }
 # Includes ], ', " as closing
 CLOSING = r'[]\'"]{0,2}'
@@ -224,6 +242,7 @@ QUOTES_REQUIRED_FILETYPES = {
     FileType.JAVASCRIPT,
     FileType.PYTHON,
     FileType.SWIFT,
+    FileType.TERRAFORM,
 }
 
 
@@ -294,20 +313,26 @@ class KeywordDetector(BasePlugin):
 
 def probably_false_positive(lowered_secret, filetype):
     if (
-        'fake' in lowered_secret
-        or 'forgot' in lowered_secret
-        or lowered_secret in FALSE_POSITIVES
+        any(
+            false_positive in lowered_secret
+            for false_positive in (
+                '/etc/',
+                'fake',
+                'forgot',
+            )
+        ) or lowered_secret in FALSE_POSITIVES
+        or lowered_secret.count('/') >= 3
         # For e.g. "secret": "{secret}"
         or (
             lowered_secret[0] == '{'
             and lowered_secret[-1] == '}'
         ) or (
-            filetype == FileType.PHP
+            filetype not in QUOTES_REQUIRED_FILETYPES
             and lowered_secret[0] == '$'
         ) or (
-            filetype == FileType.YAML
-            and lowered_secret.startswith('{{')
-            and lowered_secret.endswith('}}')
+            filetype == FileType.EXAMPLE
+            and lowered_secret[0] == '<'
+            and lowered_secret[-1] == '>'
         )
     ):
         return True

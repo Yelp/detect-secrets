@@ -4,19 +4,22 @@ from enum import Enum
 
 class FileType(Enum):
     CLS = 0
-    GO = 1
-    JAVA = 2
-    JAVASCRIPT = 3
-    PHP = 4
-    OBJECTIVE_C = 5
-    PYTHON = 6
-    SWIFT = 7
-    YAML = 8
-    OTHER = 9
+    EXAMPLE = 1
+    GO = 2
+    JAVA = 3
+    JAVASCRIPT = 4
+    PHP = 5
+    OBJECTIVE_C = 6
+    PYTHON = 7
+    SWIFT = 8
+    TERRAFORM = 9
+    YAML = 10
+    OTHER = 11
 
 
 EXTENSION_TO_FILETYPE = {
     '.cls': FileType.CLS,
+    '.example': FileType.EXAMPLE,
     '.eyaml': FileType.YAML,
     '.go': FileType.GO,
     '.java': FileType.JAVA,
@@ -26,6 +29,7 @@ EXTENSION_TO_FILETYPE = {
     '.py': FileType.PYTHON,
     '.pyi': FileType.PYTHON,
     '.swift': FileType.SWIFT,
+    '.tf': FileType.TERRAFORM,
     '.yaml': FileType.YAML,
     '.yml': FileType.YAML,
 }
