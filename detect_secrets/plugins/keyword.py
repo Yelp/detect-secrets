@@ -297,7 +297,11 @@ def probably_false_positive(lowered_secret, filetype):
         'fake' in lowered_secret
         or 'forgot' in lowered_secret
         or lowered_secret in FALSE_POSITIVES
+        # For e.g. "secret": "{secret}"
         or (
+            lowered_secret[0] == '{'
+            and lowered_secret[-1] == '}'
+        ) or (
             filetype == FileType.PHP
             and lowered_secret[0] == '$'
         ) or (

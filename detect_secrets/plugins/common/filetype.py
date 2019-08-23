@@ -24,6 +24,7 @@ EXTENSION_TO_FILETYPE = {
     '.m': FileType.OBJECTIVE_C,
     '.php': FileType.PHP,
     '.py': FileType.PYTHON,
+    '.pyi': FileType.PYTHON,
     '.swift': FileType.SWIFT,
     '.yaml': FileType.YAML,
     '.yml': FileType.YAML,

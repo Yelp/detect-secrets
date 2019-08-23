@@ -8,13 +8,6 @@ from detect_secrets.plugins.keyword import KeywordDetector
 from testing.mocks import mock_file_object
 
 
-QUOTES_REQUIRED_FILE_EXTENSIONS = (
-    '.cls',
-    '.java',
-    '.js',
-    '.py',
-    '.swift',
-)
 FOLLOWED_BY_COLON_EQUAL_SIGNS_RE = {
     'negatives': {
         'quotes_required': [
@@ -27,22 +20,22 @@ FOLLOWED_BY_COLON_EQUAL_SIGNS_RE = {
     },
     'positives': {
         'quotes_required': [
-            'apikey := "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            'apikey :="{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            'apikey  :=   "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            "apikey := '{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
-            "apikey :='{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
-            'apikey:= "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            'apikey:="{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            "apikey:= '{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
-            "apikey:='{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
-            "apikey:=  '{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
+            'apikey := "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+            'apikey :="m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+            'apikey  :=   "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+            "apikey := 'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
+            "apikey :='m{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
+            'apikey:= "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+            'apikey:="m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+            "apikey:= 'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
+            "apikey:='m{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
+            "apikey:=  'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
         ],
         'quotes_not_required': [
-            'apikey := {{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            'apikey :={{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            'apikey:= {{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            'apikey:={{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+            'apikey := m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+            'apikey :=m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+            'apikey:= m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+            'apikey:=m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
         ],
     },
 }
@@ -59,15 +52,15 @@ FOLLOWED_BY_COLON_RE = {
     },
     'positives': {
         'quotes_required': [
-            "'theapikey': '{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
-            '"theapikey": "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            'apikey: "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            "apikey:  '{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
+            "'theapikey': 'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
+            '"theapikey": "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+            'apikey: "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+            "apikey:  'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
         ],
         'quotes_not_required': [
-            'apikey: {{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            'apikey:{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            'theapikey:{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+            'apikey: m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+            'apikey:m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+            'theapikey:m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
         ],
     },
 }
@@ -80,14 +73,14 @@ FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX
     },
     'positives': {
         'quotes_required': [
-            'apikey = "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            'apikey ="{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            'apikey  =   "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            'apikey = @"{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            'apikey =@"{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            'apikey  =   @"{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            'apikey[]= "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            'apikey[]="{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+            'apikey = "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+            'apikey ="m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+            'apikey  =   "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+            'apikey = @"m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+            'apikey =@"m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+            'apikey  =   @"m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+            'apikey[]= "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+            'apikey[]="m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
         ],
     },
 }
@@ -110,18 +103,18 @@ FOLLOWED_BY_EQUAL_SIGNS_RE = {
     },
     'positives': {
         'quotes_required': [
-            'some_dict["secret"] = "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            'the_password= "{{h}o)p${e]nob(ody[finds>-_$#thisone}}"\n',
-            'the_password=\'{{h}o)p${e]nob(ody[finds>-_$#thisone}}\'\n',
+            'some_dict["secret"] = "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+            'the_password= "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"\n',
+            'the_password=\'m{{h}o)p${e]nob(ody[finds>-_$#thisone}}\'\n',
         ],
         'quotes_not_required': [
-            "some_dict['secret'] = {{h}o)p${e]nob(ody[finds>-_$#thisone}}",
-            'my_password={{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            'my_password= {{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            'my_password ={{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            'my_password = {{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            'my_password ={{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            'the_password={{h}o)p${e]nob(ody[finds>-_$#thisone}}\n',
+            "some_dict['secret'] = m{{h}o)p${e]nob(ody[finds>-_$#thisone}}",
+            'my_password=m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+            'my_password= m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+            'my_password =m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+            'my_password = m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+            'my_password =m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
+            'the_password=m{{h}o)p${e]nob(ody[finds>-_$#thisone}}\n',
         ],
     },
 }
@@ -137,15 +130,23 @@ FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE = {
     },
     'positives': {
         'quotes_required': [
-            'apikey "{{h}o)p${e]nob(ody[finds>-_$#thisone}}";',  # Double-quotes
-            'fooapikeyfoo "{{h}o)p${e]nob(ody[finds>-_$#thisone}}";',  # Double-quotes
-            'fooapikeyfoo"{{h}o)p${e]nob(ody[finds>-_$#thisone}}";',  # Double-quotes
-            'private_key \'{{h}o)p${e]nob(ody[finds>-_$#thisone}}\';',  # Single-quotes
-            'fooprivate_keyfoo\'{{h}o)p${e]nob(ody[finds>-_$#thisone}}\';',  # Single-quotes
-            'fooprivate_key\'{{h}o)p${e]nob(ody[finds>-_$#thisone}}\';',  # Single-quotes
+            'apikey "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}";',  # Double-quotes
+            'fooapikeyfoo "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}";',  # Double-quotes
+            'fooapikeyfoo"m{{h}o)p${e]nob(ody[finds>-_$#thisone}}";',  # Double-quotes
+            'private_key \'m{{h}o)p${e]nob(ody[finds>-_$#thisone}}\';',  # Single-quotes
+            'fooprivate_keyfoo\'m{{h}o)p${e]nob(ody[finds>-_$#thisone}}\';',  # Single-quotes
+            'fooprivate_key\'m{{h}o)p${e]nob(ody[finds>-_$#thisone}}\';',  # Single-quotes
         ],
     },
 }
+
+QUOTES_REQUIRED_FILE_EXTENSIONS = (
+    '.cls',
+    '.java',
+    '.js',
+    '.py',
+    '.swift',
+)
 
 STANDARD_NEGATIVES = []
 STANDARD_POSITIVES = []
@@ -187,7 +188,7 @@ class TestKeywordDetector(object):
             assert 'mock_filename' == potential_secret.filename
             assert (
                 potential_secret.secret_hash
-                == PotentialSecret.hash_secret('{{h}o)p${e]nob(ody[finds>-_$#thisone}}')
+                == PotentialSecret.hash_secret('m{{h}o)p${e]nob(ody[finds>-_$#thisone}}')
             )
 
     @pytest.mark.parametrize(
@@ -223,7 +224,7 @@ class TestKeywordDetector(object):
             assert mock_filename == potential_secret.filename
             assert (
                 potential_secret.secret_hash
-                == PotentialSecret.hash_secret('{{h}o)p${e]nob(ody[finds>-_$#thisone}}')
+                == PotentialSecret.hash_secret('m{{h}o)p${e]nob(ody[finds>-_$#thisone}}')
             )
 
     @pytest.mark.parametrize(
@@ -244,7 +245,7 @@ class TestKeywordDetector(object):
             assert 'mock_filename.go' == potential_secret.filename
             assert (
                 potential_secret.secret_hash ==
-                PotentialSecret.hash_secret('{{h}o)p${e]nob(ody[finds>-_$#thisone}}')
+                PotentialSecret.hash_secret('m{{h}o)p${e]nob(ody[finds>-_$#thisone}}')
             )
 
     @pytest.mark.parametrize(
@@ -263,7 +264,7 @@ class TestKeywordDetector(object):
             assert 'mock_filename.m' == potential_secret.filename
             assert (
                 potential_secret.secret_hash ==
-                PotentialSecret.hash_secret('{{h}o)p${e]nob(ody[finds>-_$#thisone}}')
+                PotentialSecret.hash_secret('m{{h}o)p${e]nob(ody[finds>-_$#thisone}}')
             )
 
     @pytest.mark.parametrize(
@@ -341,8 +342,8 @@ class TestKeywordDetector(object):
     @pytest.mark.parametrize(
         'file_content, file_extension',
         (
-            (yaml_negative, file_extension)
-            for yaml_negative in STANDARD_POSITIVES
+            (standard_positive, file_extension)
+            for standard_positive in STANDARD_POSITIVES
             for file_extension in (
                 '.yaml',
                 '.yml',
@@ -352,7 +353,8 @@ class TestKeywordDetector(object):
     def test_analyze_yaml_negatives(self, file_content, file_extension):
         logic = KeywordDetector()
 
-        f = mock_file_object(file_content)
+        # Make it start with `{{`, (and end with `}}`) so it hits our false-positive check
+        f = mock_file_object(file_content.replace('m{', '{'))
         output = logic.analyze(
             f,
             'mock_filename{}'.format(file_extension),
