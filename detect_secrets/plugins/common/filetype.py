@@ -1,3 +1,4 @@
+import os
 from enum import Enum
 
 
@@ -7,10 +8,26 @@ class FileType(Enum):
     JAVA = 2
     JAVASCRIPT = 3
     PHP = 4
-    PYTHON = 5
-    SWIFT = 6
-    YAML = 7
-    OTHER = 8
+    OBJECTIVE_C = 5
+    PYTHON = 6
+    SWIFT = 7
+    YAML = 8
+    OTHER = 9
+
+
+EXTENSION_TO_FILETYPE = {
+    '.cls': FileType.CLS,
+    '.eyaml': FileType.YAML,
+    '.go': FileType.GO,
+    '.java': FileType.JAVA,
+    '.js': FileType.JAVASCRIPT,
+    '.m': FileType.OBJECTIVE_C,
+    '.php': FileType.PHP,
+    '.py': FileType.PYTHON,
+    '.swift': FileType.SWIFT,
+    '.yaml': FileType.YAML,
+    '.yml': FileType.YAML,
+}
 
 
 def determine_file_type(filename):
@@ -19,24 +36,8 @@ def determine_file_type(filename):
 
     :rtype: FileType
     """
-    if filename.endswith('.cls'):
-        return FileType.CLS
-    elif filename.endswith('.go'):
-        return FileType.GO
-    elif filename.endswith('.java'):
-        return FileType.JAVA
-    elif filename.endswith('.js'):
-        return FileType.JAVASCRIPT
-    elif filename.endswith('.php'):
-        return FileType.PHP
-    elif filename.endswith('.py'):
-        return FileType.PYTHON
-    elif filename.endswith('.swift'):
-        return FileType.SWIFT
-    elif (
-        filename.endswith(
-            ('.eyaml', '.yaml', '.yml'),
-        )
-    ):
-        return FileType.YAML
-    return FileType.OTHER
+    _, file_extension = os.path.splitext(filename)
+    return EXTENSION_TO_FILETYPE.get(
+        file_extension,
+        FileType.OTHER,
+    )

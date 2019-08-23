@@ -118,15 +118,26 @@ FALSE_POSITIVES = {
     'true;',
     '{',
 }
-QUOTE = r'[\'"]'
-# includes ], ', " as closing
+# Includes ], ', " as closing
 CLOSING = r'[]\'"]{0,2}'
-# non-greedy match
+DENYLIST_REGEX = r'|'.join(DENYLIST)
+# Non-greedy match
 OPTIONAL_WHITESPACE = r'\s*?'
 OPTIONAL_NON_WHITESPACE = r'[^\s]*?'
+QUOTE = r'[\'"]'
 SECRET = r'[^\s]+'
-DENYLIST_REGEX = r'|'.join(DENYLIST)
+SQUARE_BRACKETS = r'(\[\])'
 
+FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
+    # e.g. my_password := "bar" or my_password := bar
+    r'({denylist})({closing})?{whitespace}:=?{whitespace}({quote}?)({secret})(\3)'.format(
+        denylist=DENYLIST_REGEX,
+        closing=CLOSING,
+        quote=QUOTE,
+        whitespace=OPTIONAL_WHITESPACE,
+        secret=SECRET,
+    ),
+)
 FOLLOWED_BY_COLON_REGEX = re.compile(
     # e.g. api_key: foo
     r'({denylist})({closing})?:{whitespace}({quote}?)({secret})(\3)'.format(
@@ -144,6 +155,17 @@ FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX = re.compile(
         closing=CLOSING,
         quote=QUOTE,
         whitespace=OPTIONAL_WHITESPACE,
+        secret=SECRET,
+    ),
+)
+FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX = re.compile(
+    # e.g. my_password = "bar"
+    # e.g. my_password = @"bar"
+    # e.g. my_password[] = "bar";
+    r'({denylist})({square_brackets})?{optional_whitespace}={optional_whitespace}(@)?(")({secret})(\5)'.format(  # noqa: E501
+        denylist=DENYLIST_REGEX,
+        square_brackets=SQUARE_BRACKETS,
+        optional_whitespace=OPTIONAL_WHITESPACE,
         secret=SECRET,
     ),
 )
@@ -178,29 +200,22 @@ FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX = re.compile(
         secret=SECRET,
     ),
 )
-FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
-    # e.g. my_password := "bar" or my_password := bar
-    r'({denylist})({closing})?{whitespace}:=?{whitespace}({quote}?)({secret})(\3)'.format(
-        denylist=DENYLIST_REGEX,
-        closing=CLOSING,
-        quote=QUOTE,
-        whitespace=OPTIONAL_WHITESPACE,
-        secret=SECRET,
-    ),
-)
 DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_COLON_REGEX: 4,
     FOLLOWED_BY_EQUAL_SIGNS_REGEX: 4,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
 }
-QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP = {
-    FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX: 5,
-    FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 4,
-    FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
-}
 GOLANG_DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX: 4,
     FOLLOWED_BY_EQUAL_SIGNS_REGEX: 4,
+    FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
+}
+OBJECTIVE_C_DENYLIST_REGEX_TO_GROUP = {
+    FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX: 6,
+}
+QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP = {
+    FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX: 5,
+    FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 4,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
 }
 QUOTES_REQUIRED_FILETYPES = {
@@ -259,6 +274,8 @@ class KeywordDetector(BasePlugin):
             denylist_regex_to_group = QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP
         elif filetype == FileType.GO:
             denylist_regex_to_group = GOLANG_DENYLIST_REGEX_TO_GROUP
+        elif filetype == FileType.OBJECTIVE_C:
+            denylist_regex_to_group = OBJECTIVE_C_DENYLIST_REGEX_TO_GROUP
         else:
             denylist_regex_to_group = DENYLIST_REGEX_TO_GROUP
 
