@@ -321,6 +321,7 @@ def probably_false_positive(lowered_secret, filetype):
                 'forgot',
             )
         ) or lowered_secret in FALSE_POSITIVES
+        # For e.g. private_key "some/dir/that/is/not/a/secret";
         or lowered_secret.count('/') >= 3
         # For e.g. "secret": "{secret}"
         or (
