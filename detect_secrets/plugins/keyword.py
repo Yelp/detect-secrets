@@ -66,8 +66,9 @@ FALSE_POSITIVES = {
     "'this",
     '(nsstring',
     '-default}',
-    '/etc/passwd:ro',
     '::',
+    '<%=',
+    '<?php',
     '<a',
     '<aws_secret_access_key>',
     '<input',
@@ -80,35 +81,49 @@ FALSE_POSITIVES = {
     "\\k.*'",
     '`cat',
     '`grep',
+    '`sudo',
     'account_password',
+    'api_key',
+    'disable',
     'dummy_secret',
     'dummy_value',
     'false',
     'false):',
     'false,',
     'false;',
+    'login_password',
     'none',
     'none,',
     'none}',
     'not',
+    'not_real_key',
     'null',
     'null,',
     'null.*"',
     "null.*'",
     'null;',
+    'pass',
+    'pass)',
     'password',
     'password)',
+    'password))',
     'password,',
     'password},',
     'prompt',
     'redacted',
+    'secret',
     'some_key',
+    'str',
     'str_to_sign',
+    'string',
+    'string)',
     'string,',
     'string;',
     'string?',
+    'string?)',
     'string}',
     'string}}',
+    'test',
     'test-access-key',
     'thisisnottherealsecret',
     'todo',
@@ -116,17 +131,31 @@ FALSE_POSITIVES = {
     'true):',
     'true,',
     'true;',
+    'undef',
+    'undef,',
     '{',
+    '{{',
 }
-QUOTE = r'[\'"]'
-# includes ], ', " as closing
+# Includes ], ', " as closing
 CLOSING = r'[]\'"]{0,2}'
-# non-greedy match
+DENYLIST_REGEX = r'|'.join(DENYLIST)
+# Non-greedy match
 OPTIONAL_WHITESPACE = r'\s*?'
 OPTIONAL_NON_WHITESPACE = r'[^\s]*?'
+QUOTE = r'[\'"]'
 SECRET = r'[^\s]+'
-DENYLIST_REGEX = r'|'.join(DENYLIST)
+SQUARE_BRACKETS = r'(\[\])'
 
+FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
+    # e.g. my_password := "bar" or my_password := bar
+    r'({denylist})({closing})?{whitespace}:=?{whitespace}({quote}?)({secret})(\3)'.format(
+        denylist=DENYLIST_REGEX,
+        closing=CLOSING,
+        quote=QUOTE,
+        whitespace=OPTIONAL_WHITESPACE,
+        secret=SECRET,
+    ),
+)
 FOLLOWED_BY_COLON_REGEX = re.compile(
     # e.g. api_key: foo
     r'({denylist})({closing})?:{whitespace}({quote}?)({secret})(\3)'.format(
@@ -144,6 +173,17 @@ FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX = re.compile(
         closing=CLOSING,
         quote=QUOTE,
         whitespace=OPTIONAL_WHITESPACE,
+        secret=SECRET,
+    ),
+)
+FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX = re.compile(
+    # e.g. my_password = "bar"
+    # e.g. my_password = @"bar"
+    # e.g. my_password[] = "bar";
+    r'({denylist})({square_brackets})?{optional_whitespace}={optional_whitespace}(@)?(")({secret})(\5)'.format(  # noqa: E501
+        denylist=DENYLIST_REGEX,
+        square_brackets=SQUARE_BRACKETS,
+        optional_whitespace=OPTIONAL_WHITESPACE,
         secret=SECRET,
     ),
 )
@@ -178,35 +218,31 @@ FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX = re.compile(
         secret=SECRET,
     ),
 )
-FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
-    # e.g. my_password := "bar" or my_password := bar
-    r'({denylist})({closing})?{whitespace}:=?{whitespace}({quote}?)({secret})(\3)'.format(
-        denylist=DENYLIST_REGEX,
-        closing=CLOSING,
-        quote=QUOTE,
-        whitespace=OPTIONAL_WHITESPACE,
-        secret=SECRET,
-    ),
-)
 DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_COLON_REGEX: 4,
     FOLLOWED_BY_EQUAL_SIGNS_REGEX: 4,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
+}
+GOLANG_DENYLIST_REGEX_TO_GROUP = {
+    FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX: 4,
+    FOLLOWED_BY_EQUAL_SIGNS_REGEX: 4,
+    FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
+}
+OBJECTIVE_C_DENYLIST_REGEX_TO_GROUP = {
+    FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX: 6,
 }
 QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX: 5,
     FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 4,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
 }
-GOLANG_DENYLIST_REGEX_TO_GROUP = {
-    FOLLOWED_BY_EQUAL_SIGNS_REGEX: 4,
-    FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
-    FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX: 4,
-}
 QUOTES_REQUIRED_FILETYPES = {
     FileType.CLS,
     FileType.JAVA,
+    FileType.JAVASCRIPT,
     FileType.PYTHON,
+    FileType.SWIFT,
+    FileType.TERRAFORM,
 }
 
 
@@ -257,6 +293,8 @@ class KeywordDetector(BasePlugin):
             denylist_regex_to_group = QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP
         elif filetype == FileType.GO:
             denylist_regex_to_group = GOLANG_DENYLIST_REGEX_TO_GROUP
+        elif filetype == FileType.OBJECTIVE_C:
+            denylist_regex_to_group = OBJECTIVE_C_DENYLIST_REGEX_TO_GROUP
         else:
             denylist_regex_to_group = DENYLIST_REGEX_TO_GROUP
 
@@ -275,24 +313,27 @@ class KeywordDetector(BasePlugin):
 
 def probably_false_positive(lowered_secret, filetype):
     if (
-        'fake' in lowered_secret
-        or 'forgot' in lowered_secret
-        or lowered_secret in FALSE_POSITIVES
-        or (
-            filetype == FileType.JAVASCRIPT
-            and (
-                lowered_secret.startswith('this.')
-                or lowered_secret.startswith('fs.read')
-                or lowered_secret.startswith('options.')
-                or lowered_secret == 'new'
+        any(
+            false_positive in lowered_secret
+            for false_positive in (
+                '/etc/',
+                'fake',
+                'forgot',
             )
+        ) or lowered_secret in FALSE_POSITIVES
+        # For e.g. private_key "some/dir/that/is/not/a/secret";
+        or lowered_secret.count('/') >= 3
+        # For e.g. "secret": "{secret}"
+        or (
+            lowered_secret[0] == '{'
+            and lowered_secret[-1] == '}'
         ) or (
-            filetype == FileType.PHP
+            filetype not in QUOTES_REQUIRED_FILETYPES
             and lowered_secret[0] == '$'
         ) or (
-            filetype == FileType.YAML
-            and lowered_secret.startswith('{{')
-            and lowered_secret.endswith('}}')
+            filetype == FileType.EXAMPLE
+            and lowered_secret[0] == '<'
+            and lowered_secret[-1] == '>'
         )
     ):
         return True
