@@ -1,8 +1,12 @@
 from __future__ import absolute_import
 
 import pytest
+import responses
 
+from detect_secrets.core.constants import VerifiedResult
 from detect_secrets.plugins.gh import GHDetector
+
+GHE_TOKEN = 'abcdef0123456789abcdef0123456789abcdef01'
 
 
 class TestGHDetector(object):
@@ -26,3 +30,29 @@ class TestGHDetector(object):
 
         output = logic.analyze_string(payload, 1, 'mock_filename')
         assert len(output) == int(should_flag)
+
+    @responses.activate
+    def test_verify_invalid_secret(self):
+        responses.add(
+            responses.GET, 'https://github.ibm.com/api/v3', status=401,
+        )
+
+        assert GHDetector().verify(GHE_TOKEN) == VerifiedResult.VERIFIED_FALSE
+
+    @responses.activate
+    def test_verify_valid_secret(self):
+        responses.add(
+            responses.GET, 'https://github.ibm.com/api/v3', status=200,
+        )
+        assert GHDetector().verify(GHE_TOKEN) == VerifiedResult.VERIFIED_TRUE
+
+    @responses.activate
+    def test_verify_status_not_200_or_401(self):
+        responses.add(
+            responses.GET, 'https://github.ibm.com/api/v3', status=500,
+        )
+        assert GHDetector().verify(GHE_TOKEN) == VerifiedResult.UNVERIFIED
+
+    @responses.activate
+    def test_verify_unverified_secret(self):
+        assert GHDetector().verify(GHE_TOKEN) == VerifiedResult.UNVERIFIED
