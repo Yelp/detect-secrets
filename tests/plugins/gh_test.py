@@ -7,6 +7,7 @@ from detect_secrets.core.constants import VerifiedResult
 from detect_secrets.plugins.gh import GHDetector
 
 GHE_TOKEN = 'abcdef0123456789abcdef0123456789abcdef01'
+GHE_TOKEN_BYTES = b'abcdef0123456789abcdef0123456789abcdef01'
 
 
 class TestGHDetector(object):
@@ -52,6 +53,28 @@ class TestGHDetector(object):
             responses.GET, 'https://github.ibm.com/api/v3', status=500,
         )
         assert GHDetector().verify(GHE_TOKEN) == VerifiedResult.UNVERIFIED
+
+    @responses.activate
+    def test_verify_invalid_secret_bytes(self):
+        responses.add(
+            responses.GET, 'https://github.ibm.com/api/v3', status=401,
+        )
+
+        assert GHDetector().verify(GHE_TOKEN_BYTES) == VerifiedResult.VERIFIED_FALSE
+
+    @responses.activate
+    def test_verify_valid_secret_bytes(self):
+        responses.add(
+            responses.GET, 'https://github.ibm.com/api/v3', status=200,
+        )
+        assert GHDetector().verify(GHE_TOKEN_BYTES) == VerifiedResult.VERIFIED_TRUE
+
+    @responses.activate
+    def test_verify_status_not_200_or_401_bytes(self):
+        responses.add(
+            responses.GET, 'https://github.ibm.com/api/v3', status=500,
+        )
+        assert GHDetector().verify(GHE_TOKEN_BYTES) == VerifiedResult.UNVERIFIED
 
     @responses.activate
     def test_verify_unverified_secret(self):

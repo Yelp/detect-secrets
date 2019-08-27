@@ -19,6 +19,8 @@ class GHDetector(RegexBasedDetector):
 
     def verify(self, token):
         try:
+            if type(token) == bytes:
+                token = token.decode('UTF-8')
             headers = {'Authorization': 'token %s' % token}
             response = requests.get('https://github.ibm.com/api/v3', headers=headers)
             if response.status_code == 200:
