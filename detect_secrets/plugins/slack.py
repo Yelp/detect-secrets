@@ -47,6 +47,6 @@ class SlackDetector(RegexBasedDetector):
 
         return (
             VerifiedResult.VERIFIED_TRUE
-            if valid
+            if valid 
             else VerifiedResult.VERIFIED_FALSE
         )
