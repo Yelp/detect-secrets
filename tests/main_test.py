@@ -174,6 +174,7 @@ class TestMain:
                 Base64HighEntropyString: {}
                 BasicAuthDetector      : False
                 GHDetector             : False
+                GHDetectorV2           : False
                 HexHighEntropyString   : {}
                 KeywordDetector        : False
                 PrivateKeyDetector     : False
@@ -222,6 +223,7 @@ class TestMain:
                 Base64HighEntropyString: False (2.585)
                 BasicAuthDetector      : False
                 GHDetector             : False
+                GHDetectorV2           : False
                 HexHighEntropyString   : False (2.121)
                 KeywordDetector        : False
                 PrivateKeyDetector     : False
@@ -358,6 +360,9 @@ class TestMain:
                         'name': 'GHDetector',
                     },
                     {
+                        'name': 'GHDetectorV2',
+                    },
+                    {
                         'hex_limit': 3,
                         'name': 'HexHighEntropyString',
                     },
@@ -399,6 +404,9 @@ class TestMain:
                     },
                     {
                         'name': 'GHDetector',
+                    },
+                    {
+                        'name': 'GHDetectorV2',
                     },
                     {
                         'hex_limit': 3,
@@ -501,6 +509,9 @@ class TestMain:
                         'name': 'GHDetector',
                     },
                     {
+                        'name': 'GHDetectorV2',
+                    },
+                    {
                         'name': 'PrivateKeyDetector',
                     },
                     {
@@ -541,6 +552,9 @@ class TestMain:
                     },
                     {
                         'name': 'GHDetector',
+                    },
+                    {
+                        'name': 'GHDetectorV2',
                     },
                     {
                         'name': 'PrivateKeyDetector',

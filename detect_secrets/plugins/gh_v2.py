@@ -6,10 +6,10 @@ from .base import RegexBasedDetector
 from detect_secrets.plugins.gh import GHDetector
 
 
-class GHTighterDetector(RegexBasedDetector):
+class GHDetectorV2(RegexBasedDetector):
     """ Tighter version of GHDetector. """
 
-    secret_type = 'GitHub Credentials (Tight Regex)'
+    secret_type = 'GitHub Credentials V2'
     opt_github = r'(?:github|gh|ghe|git|)'
     opt_space = r'(?: |)'
     opt_quote = r'(?:"|\'|)'
