@@ -17,7 +17,7 @@ class GHDetector(RegexBasedDetector):
         re.compile(r'(?:(?<=\W)|(?<=^))([0-9a-f]{40})(?:(?=\W)|(?=$))'),  # 40 hex
     ]
 
-    def verify(self, token):
+    def verify(self, token, **kwargs):
         try:
             if type(token) == bytes:
                 token = token.decode('UTF-8')

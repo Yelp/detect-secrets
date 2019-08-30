@@ -23,13 +23,9 @@ class AWSKeyDetector(RegexBasedDetector):
         re.compile(r'AKIA[0-9A-Z]{16}'),
     )
 
-    @classproperty
-    def disable_flag_text(cls):
-        return 'no-aws-key-scan'
-
-    def verify(self, token, content):
-        secret_access_key_candidates = get_secret_access_keys(content)
-        if not secret_access_key_candidates:
+    def verify(self, token, content, **kwargs):
+        secret_access_key = get_secret_access_key(content)
+        if not secret_access_key:
             return VerifiedResult.UNVERIFIED
 
         for candidate in secret_access_key_candidates:

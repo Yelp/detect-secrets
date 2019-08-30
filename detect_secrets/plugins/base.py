@@ -78,7 +78,7 @@ class BasePlugin:
 
         self.should_verify = should_verify
 
-    def analyze(self, file, filename, output_raw=False):
+    def analyze(self, file, filename, output_raw=False, output_verified_false=False):
         """
         :param file:     The File object itself.
         :param filename: string; filename of File object, used for creating
@@ -107,10 +107,19 @@ class BasePlugin:
                     result.secret_value, content=str(snippet),
                     potential_secret=result,
                 )
-                if is_verified != VerifiedResult.UNVERIFIED:
-                    result.is_verified = True
 
-                if is_verified != VerifiedResult.VERIFIED_FALSE:
+                if is_verified == VerifiedResult.UNVERIFIED:
+                    result.is_verified = False
+                elif is_verified == VerifiedResult.VERIFIED_TRUE:
+                    result.is_verified = True
+                    result.verified_result = True
+                elif is_verified == VerifiedResult.VERIFIED_FALSE:
+                    result.is_verified = True
+                    result.verified_result = False
+
+                if is_verified != VerifiedResult.VERIFIED_FALSE:  # unverified or true
+                    filtered_results[result] = result
+                elif is_verified == VerifiedResult.VERIFIED_FALSE and output_verified_false:
                     filtered_results[result] = result
 
             potential_secrets.update(filtered_results)

@@ -41,7 +41,15 @@ def add_verify_flag(parser):
     )
 
 
-class ParserBuilder:
+def add_output_verified_false_flag(parser):
+    parser.add_argument(
+        '--output-verified-false',
+        action='store_true',
+        help='Output secrets that are verified false.',
+    )
+
+
+class ParserBuilder(object):
 
     def __init__(self):
         self.parser = argparse.ArgumentParser()
@@ -58,7 +66,8 @@ class ParserBuilder:
             ._add_exclude_lines_argument()\
             ._add_word_list_argument()\
             ._add_use_all_plugins_argument()\
-            ._add_verify_flag()
+            ._add_verify_flag() \
+            ._add_output_verified_false_flag()
 
         PluginOptions(self.parser).add_arguments()
 
@@ -131,6 +140,10 @@ class ParserBuilder:
         add_verify_flag(self.parser)
         return self
 
+    def _add_output_verified_false_flag(self):
+        add_output_verified_false_flag(self.parser)
+        return self
+
 
 class ScanOptions:
 
@@ -194,6 +207,7 @@ class ScanOptions:
         )
 
         add_verify_flag(self.parser)
+        add_output_verified_false_flag(self.parser)
 
         return self
 
@@ -263,36 +277,6 @@ class AuditOptions:
         return self
 
 
-<<<<<<< HEAD
-class PluginDescriptor(
-    namedtuple(
-        'PluginDescriptor',
-        [
-            # Classname of plugin; used for initialization
-            'classname',
-
-            # Flag to disable plugin. e.g. `--no-hex-string-scan`
-            'disable_flag_text',
-
-            # Description for disable flag.
-            'disable_help_text',
-
-            # type: list
-            # Allows the bundling of all related command line provided
-            # arguments together, under one plugin name.
-            # Assumes there is no shared related arg.
-            #
-            # Furthermore, each related arg can have its own default
-            # value (paired together, with a tuple). This allows us to
-            # distinguish the difference between a default value, and
-            # whether a user has entered the same value as a default value.
-            # Therefore, only populate the default value upon consolidation
-            # (rather than relying on argparse default).
-            'related_args',
-        ],
-    ),
-):
-=======
 class PluginDescriptor(namedtuple(
     'PluginDescriptor',
     [
@@ -323,7 +307,6 @@ class PluginDescriptor(namedtuple(
     ],
 )):
 
->>>>>>> Define default plugin list
     def __new__(cls, related_args=None, **kwargs):
         return super(PluginDescriptor, cls).__new__(
             cls,
@@ -369,15 +352,11 @@ class PluginDescriptor(namedtuple(
 class PluginOptions:
 
     all_plugins = [
-<<<<<<< HEAD
-        PluginDescriptor.from_plugin_class(plugin, name)
-        for name, plugin in import_plugins().items()
-=======
         PluginDescriptor(
             classname='HexHighEntropyString',
             disable_flag_text='--no-hex-string-scan',
-            disable_help_text='Disables scanning for hex high entropy strings.'
-            + ' (Disabled by default)',
+            disable_help_text='Disables scanning for hex high entropy strings.' +
+            ' (Disabled by default)',
             related_args=[
                 ('--hex-limit', 3,),
             ],
@@ -386,8 +365,8 @@ class PluginOptions:
         PluginDescriptor(
             classname='Base64HighEntropyString',
             disable_flag_text='--no-base64-string-scan',
-            disable_help_text='Disables scanning for base64 high entropy strings.'
-            + ' (Disabled by default)',
+            disable_help_text='Disables scanning for base64 high entropy strings.' +
+            ' (Disabled by default)',
             related_args=[
                 ('--base64-limit', 4.5,),
             ],
@@ -457,7 +436,6 @@ class PluginOptions:
 
     default_plugins_list = [
         plugin.classname for plugin in all_plugins if plugin.is_default
->>>>>>> Define default plugin list
     ]
 
     def __init__(self, parser):

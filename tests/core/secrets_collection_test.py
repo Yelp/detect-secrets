@@ -426,12 +426,14 @@ class TestBaselineInputOutput:
                     {
                         'type': 'B',
                         'is_verified': False,
+                        'verified_result': None,
                         'line_number': 2,
                         'hashed_secret': secret_hash,
                     },
                     {
                         'type': 'A',
                         'is_verified': False,
+                        'verified_result': None,
                         'line_number': 3,
                         'hashed_secret': secret_hash,
                     },
@@ -440,6 +442,7 @@ class TestBaselineInputOutput:
                     {
                         'type': 'C',
                         'is_verified': False,
+                        'verified_result': None,
                         'line_number': 1,
                         'hashed_secret': secret_hash,
                     },
@@ -463,7 +466,7 @@ class MockPluginFixedValue(MockBasePlugin):
 
     secret_type = 'mock_plugin_fixed_value'
 
-    def analyze(self, f, filename, output_raw=False):
+    def analyze(self, f, filename, output_raw=False, output_verified_false=False):
         # We're not testing the plugin's ability to analyze secrets, so
         # it doesn't matter what we return
         secret = PotentialSecret('mock fixed value type', filename, 'asdf', 1)
@@ -474,7 +477,7 @@ class MockPluginFileValue(MockBasePlugin):
 
     secret_type = 'mock_plugin_file_value'
 
-    def analyze(self, f, filename, output_raw=False):
+    def analyze(self, f, filename, output_raw=False, output_verified_false=False):
         # We're not testing the plugin's ability to analyze secrets, so
         # it doesn't matter what we return
         secret = PotentialSecret('mock file value type', filename, f.read().strip(), 2)
@@ -485,7 +488,7 @@ class MockPasswordPluginValue(MockBasePlugin):
 
     secret_type = 'mock_plugin_file_value'
 
-    def analyze(self, f, filename, output_raw=False):
+    def analyze(self, f, filename, output_raw=False, output_verified_false=False):
         password_secret = PotentialSecret('Password', filename, f.read().strip(), 2)
         return {
             password_secret: password_secret,

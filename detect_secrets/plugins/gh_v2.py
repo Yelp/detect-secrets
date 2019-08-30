@@ -62,5 +62,5 @@ class GHDetectorV2(RegexBasedDetector):
         ),
     ]
 
-    def verify(self, token):
+    def verify(self, token, **kwargs):
         return GHDetector().verify(token)

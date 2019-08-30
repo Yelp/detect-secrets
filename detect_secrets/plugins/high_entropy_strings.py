@@ -48,7 +48,7 @@ class HighEntropyStringsPlugin(BasePlugin):
             false_positive_heuristics=false_positive_heuristics,
         )
 
-    def analyze(self, file, filename, output_raw=False):
+    def analyze(self, file, filename, output_raw=False, output_verified_false=False):
         file_type_analyzers = (
             (self._analyze_ini_file(), configparser.Error),
             (self._analyze_yaml_file, yaml.YAMLError),

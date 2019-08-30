@@ -55,6 +55,7 @@ class PotentialSecret:
         self.secret = secret
         self.is_secret = is_secret
         self.is_verified = False
+        self.verified_result = None
         self.other_factors = {}
 
         # If two PotentialSecrets have the same values for these fields,
@@ -98,6 +99,7 @@ class PotentialSecret:
             'line_number': self.lineno,
             'hashed_secret': self.secret_hash,
             'is_verified': self.is_verified,
+            'verified_result': self.verified_result,
         }
 
         if self.output_raw:
