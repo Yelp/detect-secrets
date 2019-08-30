@@ -63,6 +63,7 @@ class PotentialSecret(object):
 
     def set_secret(self, secret):
         self.secret_hash = self.hash_secret(secret)
+        self.verified_result = None
 
         # NOTE: Originally, we never wanted to keep the secret value in memory,
         #       after finding it in the codebase. However, to support verifiable
@@ -96,6 +97,7 @@ class PotentialSecret(object):
             'line_number': self.lineno,
             'hashed_secret': self.secret_hash,
             'is_verified': self.is_verified,
+            'verified_result': self.verified_result,
         }
 
         if self.debug_output_raw:

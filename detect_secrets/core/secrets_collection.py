@@ -25,6 +25,7 @@ class SecretsCollection(object):
         word_list_file=None,
         word_list_hash=None,
         debug_output_raw=False,
+        output_verified_false=False,
     ):
         """
         :type plugins: tuple of detect_secrets.plugins.base.BasePlugin
@@ -55,6 +56,7 @@ class SecretsCollection(object):
         self.word_list_file = word_list_file
         self.word_list_hash = word_list_hash
         self.debug_output_raw = debug_output_raw
+        self.output_verified_false = output_verified_false
         self.version = VERSION
 
     @classmethod
@@ -348,7 +350,12 @@ class SecretsCollection(object):
             log.info('Checking file: %s', filename)
 
             for results, plugin in self._results_accumulator(filename):
-                results.update(plugin.analyze(f, filename, self.debug_output_raw))
+                results.update(
+                    plugin.analyze(
+                        f, filename, self.debug_output_raw,
+                        self.output_verified_false,
+                    ),
+                )
                 f.seek(0)
 
         except UnicodeDecodeError:
