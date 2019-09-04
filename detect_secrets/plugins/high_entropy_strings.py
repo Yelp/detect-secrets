@@ -238,7 +238,7 @@ class HighEntropyStringsPlugin(BasePlugin):
         return potential_secrets
 
     def _encode_yaml_binary_secrets(self, secrets):
-        result = {}
+        new_secrets = {}
         """The secrets dict format is
         `{PotentialSecret: PotentialSecret}`, where both key and
         value are the same object. Therefore, we can just mutate
@@ -254,9 +254,9 @@ class HighEntropyStringsPlugin(BasePlugin):
 
             potential_secret.set_secret(secret_in_yaml_format)
 
-            result[potential_secret] = potential_secret
+            new_secrets[potential_secret] = potential_secret
 
-        return result
+        return new_secrets
 
     @abstractmethod
     def decode_binary(self, bytes_object):  # pragma: no cover
