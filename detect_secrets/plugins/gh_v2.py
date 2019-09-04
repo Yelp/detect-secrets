@@ -17,10 +17,11 @@ class GHDetectorV2(RegexBasedDetector):
     opt_dash_undrscr = r'(?:_|-|)'
     opt_api = r'(?:api|)'
     header_keyword = r'(?:token|bearer|Basic)'
-    key_or_pass = r'(?:key|pwd|password|pass|token)'
+    key_or_pass = r'(?:key|pwd|password|pass|token|oauth)'
     api_endpoint = r'(?:github.ibm.com|api.github.ibm.com)'
     forty_hex = r'(?:(?<=\W)|(?<=^))([0-9a-f]{40})(?:(?=\W)|(?=$))'
     b64_encoded_token = r'(?:(?<=\W)|(?<=^))([A-Za-z0-9+/]{55}=)(?:(?=\W)|(?=$))'
+    opt_username = r'(?:[a-zA-Z0-9-]+:|)'
     denylist = [
         re.compile(
             r'{opt_quote}{opt_github}{opt_dash_undrscr}{opt_api}{opt_dash_undrscr}{key_or_pass}'
@@ -37,9 +38,10 @@ class GHDetectorV2(RegexBasedDetector):
             ), flags=re.IGNORECASE,
         ),
         re.compile(
-            r'https://\w+:{forty_hex}@{api_endpoint}'.format(
+            r'https://{opt_username}{forty_hex}@{api_endpoint}'.format(
                 forty_hex=forty_hex,
                 api_endpoint=api_endpoint,
+                opt_username=opt_username,
             ), flags=re.IGNORECASE,
         ),
         re.compile(

@@ -27,6 +27,12 @@ class TestGHDetectorV2(object):
                 'YWJjZWRmYWJlZmQzMzMzMTQ1OTA4YWJjZGRmY2JkZGUxMTQ1Njc4OQo=', True,
             ),
             ('password abcdef0123456789abcdef0123456789abcdef01', True,),
+            ('git+https://abcdef0123456789abcdef0123456789abcdef01@github.ibm.com', True,),
+            ('sonar.github.oauth=abcdef0123456789abcdef0123456789abcdef01', True,),
+            (
+                'https://x-oauth-basic:abcdef0123456789abcdef0123456789abcdef01'
+                '@github.ibm.com/org/repo.git', True,
+            ),
             ('abcdef0123456789abcdef0123456789abcdef01', False),  # no keyword prefix
             ('gh-token=53d49dnotakeyata9bac57a3d86c517ded974b19', False),  # has non-hex
             ('GIT-KEY: a654fd9e3758a65235c765cf51e10df0c80b7a9', False),  # only 39
