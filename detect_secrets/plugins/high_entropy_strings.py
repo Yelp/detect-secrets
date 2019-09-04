@@ -4,11 +4,13 @@ try:
     from backports import configparser
 except ImportError:  # pragma: no cover
     import configparser
+import base64
 import math
 import os
 import re
 import string
 from abc import ABCMeta
+from abc import abstractmethod
 from contextlib import contextmanager
 
 import yaml
@@ -206,13 +208,22 @@ class HighEntropyStringsPlugin(BasePlugin):
 
                 try:
                     if '__line__' in item and item['__line__'] not in ignored_lines:
-                        potential_secrets.update(
-                            self.analyze_string(
-                                item['__value__'],
-                                item['__line__'],
-                                filename,
-                            ),
+                        # An isinstance check doesn't work in py2
+                        # so we need the __is_binary__ field.
+                        string_to_scan = self.decode_binary(item['__value__']) \
+                            if item['__is_binary__'] \
+                            else item['__value__']
+
+                        secrets = self.analyze_string(
+                            string_to_scan,
+                            item['__line__'],
+                            filename,
                         )
+
+                        if item['__is_binary__']:
+                            secrets = self._encode_yaml_binary_secrets(secrets)
+
+                        potential_secrets.update(secrets)
 
                     if '__line__' in item:
                         continue
@@ -225,6 +236,39 @@ class HighEntropyStringsPlugin(BasePlugin):
                     pass
 
         return potential_secrets
+
+    def _encode_yaml_binary_secrets(self, secrets):
+        new_secrets = {}
+        """The secrets dict format is
+        `{PotentialSecret: PotentialSecret}`, where both key and
+        value are the same object. Therefore, we can just mutate
+        the potential secret once.
+        """
+        for potential_secret in secrets.keys():
+            secret_in_yaml_format = yaml.dump(
+                self.encode_to_binary(potential_secret.secret_value),
+            ).replace(
+                '!!binary ',
+                '',
+            )
+
+            potential_secret.set_secret(secret_in_yaml_format)
+
+            new_secrets[potential_secret] = potential_secret
+
+        return new_secrets
+
+    @abstractmethod
+    def decode_binary(self, bytes_object):  # pragma: no cover
+        """Converts the bytes to a string which can be checked for
+        high entropy."""
+        pass
+
+    @abstractmethod
+    def encode_to_binary(self, string):  # pragma: no cover
+        """Converts a string (usually a high-entropy secret) to
+        binary. Usually the inverse of decode_binary."""
+        pass
 
 
 class HexHighEntropyString(HighEntropyStringsPlugin):
@@ -278,6 +322,12 @@ class HexHighEntropyString(HighEntropyStringsPlugin):
 
         return entropy
 
+    def decode_binary(self, bytes_object):
+        return bytes_object.decode('utf-8')
+
+    def encode_to_binary(self, string):
+        return string.encode('utf-8')
+
 
 class Base64HighEntropyString(HighEntropyStringsPlugin):
     """HighEntropyStringsPlugin for base64 encoded strings"""
@@ -299,3 +349,9 @@ class Base64HighEntropyString(HighEntropyStringsPlugin):
         })
 
         return output
+
+    def decode_binary(self, bytes_object):
+        return base64.b64encode(bytes_object).decode('utf-8')
+
+    def encode_to_binary(self, string):
+        return base64.b64decode(string)

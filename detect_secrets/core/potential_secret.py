@@ -47,9 +47,17 @@ class PotentialSecret(object):
         self.type = typ
         self.filename = filename
         self.lineno = lineno
-        self.secret_hash = self.hash_secret(secret)
+        self.set_secret(secret)
         self.is_secret = is_secret
         self.is_verified = False
+
+        # If two PotentialSecrets have the same values for these fields,
+        # they are considered equal. Note that line numbers aren't included
+        # in this, because line numbers are subject to change.
+        self.fields_to_compare = ['filename', 'secret_hash', 'type']
+
+    def set_secret(self, secret):
+        self.secret_hash = self.hash_secret(secret)
 
         # NOTE: Originally, we never wanted to keep the secret value in memory,
         #       after finding it in the codebase. However, to support verifiable
@@ -60,11 +68,6 @@ class PotentialSecret(object):
         #       we don't want to create a file that contains all plaintext secrets
         #       in the repository.
         self.secret_value = secret
-
-        # If two PotentialSecrets have the same values for these fields,
-        # they are considered equal. Note that line numbers aren't included
-        # in this, because line numbers are subject to change.
-        self.fields_to_compare = ['filename', 'secret_hash', 'type']
 
     @staticmethod
     def hash_secret(secret):

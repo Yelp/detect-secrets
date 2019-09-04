@@ -1,0 +1,2 @@
+# This is yaml.dump('2b00042f7481c7b056c4b410d28f33cf'.encode('utf-8'))
+high_entropy_hex_binary_secret: !!binary MmIwMDA0MmY3NDgxYzdiMDU2YzRiNDEwZDI4ZjMzY2Y=
