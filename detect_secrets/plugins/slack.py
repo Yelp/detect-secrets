@@ -35,7 +35,7 @@ class SlackDetector(RegexBasedDetector):
                     'text': '',
                 },
             )
-            valid = response.text == "missing_text_or_fallback_or_attachments"
+            valid = response.text == 'missing_text_or_fallback_or_attachments'
         else:
             response = requests.post(
                 'https://slack.com/api/auth.test',
@@ -47,6 +47,6 @@ class SlackDetector(RegexBasedDetector):
 
         return (
             VerifiedResult.VERIFIED_TRUE
-            if valid 
+            if valid
             else VerifiedResult.VERIFIED_FALSE
         )
