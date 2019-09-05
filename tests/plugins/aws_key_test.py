@@ -4,6 +4,7 @@ import mock
 import pytest
 
 from detect_secrets.core.constants import VerifiedResult
+from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.aws import AWSKeyDetector
 from detect_secrets.plugins.aws import get_secret_access_keys
 from testing.mocks import mock_file_object
@@ -53,19 +54,24 @@ class TestAWSKeyDetector:
             'detect_secrets.plugins.aws.verify_aws_secret_access_key',
             return_value=True,
         ):
+            potential_secret = PotentialSecret('test aws', 'test filename', self.example_key)
             assert AWSKeyDetector().verify(
                 self.example_key,
                 '={}'.format(EXAMPLE_SECRET),
+                potential_secret,
             ) == VerifiedResult.VERIFIED_TRUE
+        assert potential_secret.other_factors['secret_access_key'] == EXAMPLE_SECRET
 
     def test_verify_invalid_secret(self):
         with mock.patch(
             'detect_secrets.plugins.aws.verify_aws_secret_access_key',
             return_value=False,
         ):
+            potential_secret = PotentialSecret('test aws', 'test filename', self.example_key)
             assert AWSKeyDetector().verify(
                 self.example_key,
                 '={}'.format(EXAMPLE_SECRET),
+                potential_secret,
             ) == VerifiedResult.VERIFIED_FALSE
 
     def test_verify_keep_trying_until_found_something(self):
@@ -81,6 +87,7 @@ class TestAWSKeyDetector:
             'detect_secrets.plugins.aws.verify_aws_secret_access_key',
             counter,
         ):
+            potential_secret = PotentialSecret('test aws', 'test filename', self.example_key)
             assert AWSKeyDetector().verify(
                 self.example_key,
                 textwrap.dedent("""
@@ -90,7 +97,9 @@ class TestAWSKeyDetector:
                     'TEST' * 10,
                     EXAMPLE_SECRET,
                 ),
+                potential_secret,
             ) == VerifiedResult.VERIFIED_TRUE
+        assert potential_secret.other_factors['secret_access_key'] == EXAMPLE_SECRET
 
 
 @pytest.mark.parametrize(

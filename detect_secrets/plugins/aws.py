@@ -23,13 +23,14 @@ class AWSKeyDetector(RegexBasedDetector):
         re.compile(r'AKIA[0-9A-Z]{16}'),
     )
 
-    def verify(self, token, content, **kwargs):
+    def verify(self, token, content, potential_secret=None):
         secret_access_key = get_secret_access_key(content)
         if not secret_access_key:
             return VerifiedResult.UNVERIFIED
 
-        for candidate in secret_access_key_candidates:
-            if verify_aws_secret_access_key(token, candidate):
+        for candidate in secret_access_key:
+            if verify_aws_secret_access_key(token, candidate, potential_secret):
+                potential_secret.other_factors['secret_access_key'] = candidate
                 return VerifiedResult.VERIFIED_TRUE
 
         return VerifiedResult.VERIFIED_FALSE
