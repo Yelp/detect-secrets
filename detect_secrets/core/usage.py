@@ -424,7 +424,7 @@ class PluginOptions:
             classname='GHDetectorV2',
             disable_flag_text='--no-gh-v2-scan',
             disable_help_text='Disable v2 scanner for GH credentials',
-            is_default=False,
+            is_default=True,
         ),
         PluginDescriptor(
             classname='SoftLayerDetector',

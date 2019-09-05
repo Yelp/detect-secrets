@@ -9,7 +9,8 @@ from detect_secrets.plugins.gh import GHDetector
 class GHDetectorV2(RegexBasedDetector):
     """ Tighter version of GHDetector. """
 
-    secret_type = 'GitHub Credentials V2'
+    secret_type = 'GitHub Credentials'
+
     opt_github = r'(?:github|gh|ghe|git|)'
     opt_space = r'(?: |)'
     opt_quote = r'(?:"|\'|)'
