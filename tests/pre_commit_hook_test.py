@@ -200,12 +200,11 @@ class TestPreCommitHook:
                     'name': 'GHDetector',
                 },
                 {
-<<<<<<< HEAD
-=======
                     'name': 'GHDetectorV2',
                 },
                 {
->>>>>>> Use GHDetectorV2 (#181)
+=======
+>>>>>>> Delete GHDetector V1 (#186)
                     'hex_limit': 3,
                     'name': 'HexHighEntropyString',
                 },
