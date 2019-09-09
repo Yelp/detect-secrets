@@ -6,7 +6,8 @@ import pytest
 from detect_secrets.core.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.aws import AWSKeyDetector
-from detect_secrets.plugins.aws import get_secret_access_keys
+from detect_secrets.plugins.aws import get_secret_access_key
+from detect_secrets.plugins.aws import verify_aws_secret_access_key
 from testing.mocks import mock_file_object
 
 
@@ -100,6 +101,18 @@ class TestAWSKeyDetector:
                 potential_secret,
             ) == VerifiedResult.VERIFIED_TRUE
         assert potential_secret.other_factors['secret_access_key'] == EXAMPLE_SECRET
+
+    @mock.patch('detect_secrets.plugins.aws.get_caller_info')
+    def test_verify_aws_secret_access_key_valid(self, mock_get_caller_info):
+        mock_get_caller_info.return_value = mock.MagicMock(status_code=200)
+        result = verify_aws_secret_access_key('test-access-key', 'test-secret-access-key')
+        assert result is True
+
+    @mock.patch('detect_secrets.plugins.aws.get_caller_info')
+    def test_verify_aws_secret_access_key_invalid(self, mock_get_caller_info):
+        mock_get_caller_info.return_value = mock.MagicMock(status_code=403)
+        result = verify_aws_secret_access_key('test-access-key', 'test-secret-access-key')
+        assert result is False
 
 
 @pytest.mark.parametrize(

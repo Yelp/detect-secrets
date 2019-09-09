@@ -51,7 +51,15 @@ def get_secret_access_keys(content):
     ]
 
 
-def verify_aws_secret_access_key(key, secret):  # pragma: no cover
+def verify_aws_secret_access_key(key, secret):
+    response = get_caller_info(key, secret)
+    if response.status_code == 403:
+        return False
+
+    return True
+
+
+def get_caller_info(key, secret):  # pragma: no cover
     """
     Using requests, because we don't want to require boto3 for this one
     optional verification step.
@@ -170,10 +178,7 @@ def verify_aws_secret_access_key(key, secret):  # pragma: no cover
         data=body,
     )
 
-    if response.status_code == 403:
-        return False
-
-    return True
+    return response
 
 
 def _sign(key, message, hex=False):  # pragma: no cover
