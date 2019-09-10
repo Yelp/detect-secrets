@@ -8,7 +8,13 @@ import json
 import re
 
 from .base import RegexBasedDetector
-from detect_secrets.core.constants import VerifiedResult
+
+try:
+    # Python 2
+    from future_builtins import filter
+except ImportError:
+    # Python 3
+    pass
 
 
 class JwtTokenDetector(RegexBasedDetector):
@@ -17,7 +23,14 @@ class JwtTokenDetector(RegexBasedDetector):
         re.compile(r'eyJ[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*'),
     ]
 
-    def verify(self, token, content=''):
+    def secret_generator(self, string, *args, **kwargs):
+        return filter(
+            self.is_formally_valid,
+            super(JwtTokenDetector, self).secret_generator(string, *args, **kwargs),
+        )
+
+    @staticmethod
+    def is_formally_valid(token):
         parts = token.split('.')
         for idx, part in enumerate(parts):
             try:
@@ -28,14 +41,13 @@ class JwtTokenDetector(RegexBasedDetector):
                 if m == 1:
                     raise TypeError('Incorrect padding')
                 elif m == 2:
-                    part += '=='.encode('ascii')
+                    part += '=='.encode('utf-8')
                 elif m == 3:
-                    part += '==='.encode('ascii')
+                    part += '==='.encode('utf-8')
                 b64_decoded = base64.urlsafe_b64decode(part)
                 if idx < 2:
-                    _ = json.loads(b64_decoded.decode('ascii'))
-            except (TypeError, ValueError, UnicodeDecodeError) as error:
-                print(error)
-                return VerifiedResult.VERIFIED_FALSE
+                    _ = json.loads(b64_decoded.decode('utf-8'))
+            except (TypeError, ValueError, UnicodeDecodeError):
+                return False
 
-        return VerifiedResult.UNVERIFIED
+        return True
