@@ -6,6 +6,7 @@ from ..basic_auth import BasicAuthDetector                  # noqa: F401
 from ..common.util import get_mapping_from_secret_type_to_class_name
 from ..high_entropy_strings import Base64HighEntropyString  # noqa: F401
 from ..high_entropy_strings import HexHighEntropyString     # noqa: F401
+from ..jwt import JwtTokenDetector                          # noqa: F401
 from ..keyword import KeywordDetector                       # noqa: F401
 from ..mailchimp import MailchimpDetector                   # noqa: F401
 from ..private_key import PrivateKeyDetector                # noqa: F401
