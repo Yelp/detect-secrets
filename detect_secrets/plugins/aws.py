@@ -52,14 +52,21 @@ def get_secret_access_keys(content):
 
 
 def verify_aws_secret_access_key(key, secret):
-    response = get_caller_info(key, secret)
+    headers = {
+        'Host': 'sts.amazonaws.com',
+    }
+    body = {
+        'Action': 'GetCallerIdentity',
+        'Version': '2011-06-15',
+    }
+    response = query_aws(key, secret, headers, body)
     if response.status_code == 403:
         return False
 
     return True
 
 
-def get_caller_info(key, secret):  # pragma: no cover
+def query_aws(access_key, secret_access_key, headers, body):  # pragma: no cover
     """
     Using requests, because we don't want to require boto3 for this one
     optional verification step.
@@ -67,21 +74,17 @@ def get_caller_info(key, secret):  # pragma: no cover
     Loosely based off:
     https://docs.aws.amazon.com/general/latest/gr/sigv4-signed-request-examples.html
 
-    :type key: str
-    :type secret: str
+    Host is a required header. X-Amz-Date & Authorization need not be passed
+    because they are generated as a part of this function.
+
+    :type access_key: str
+    :type secret_access_key: str
+    :type headers: dict
+    :type body: dict
     """
     now = datetime.utcnow()
     amazon_datetime = now.strftime('%Y%m%dT%H%M%SZ')
-
-    headers = {
-        # This is a required header for the signing process
-        'Host': 'sts.amazonaws.com',
-        'X-Amz-Date': amazon_datetime,
-    }
-    body = {
-        'Action': 'GetCallerIdentity',
-        'Version': '2011-06-15',
-    }
+    headers['X-Amz-Date'] = amazon_datetime
 
     # Step #1: Canonical Request
     signed_headers = ';'.join(
@@ -142,7 +145,7 @@ def get_caller_info(key, secret):  # pragma: no cover
         _sign(
             _sign(
                 _sign(
-                    'AWS4{}'.format(secret).encode('utf-8'),
+                    'AWS4{}'.format(secret_access_key).encode('utf-8'),
                     now.strftime('%Y%m%d'),
                 ),
                 region,
@@ -165,7 +168,7 @@ def get_caller_info(key, secret):  # pragma: no cover
         'SignedHeaders={signed_headers}, '
         'Signature={signature}'
     ).format(
-        access_key=key,
+        access_key=access_key,
         scope=scope,
         signed_headers=signed_headers,
         signature=signature,
@@ -173,7 +176,7 @@ def get_caller_info(key, secret):  # pragma: no cover
 
     # Step #5: Finally send the request
     response = requests.post(
-        'https://sts.amazonaws.com',
+        'https://%s' % headers['Host'],
         headers=headers,
         data=body,
     )

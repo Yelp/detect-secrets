@@ -104,18 +104,30 @@ class TestAWSKeyDetector:
             ) == VerifiedResult.VERIFIED_TRUE
         assert potential_secret.other_factors['secret_access_key'] == EXAMPLE_SECRET
 
-    @mock.patch('detect_secrets.plugins.aws.get_caller_info')
-    def test_verify_aws_secret_access_key_valid(self, mock_get_caller_info):
-        mock_get_caller_info.return_value = mock.MagicMock(status_code=200)
+    @mock.patch('detect_secrets.plugins.aws.query_aws')
+    def test_verify_aws_secret_access_key_valid(self, mock_query_aws):
+        mock_query_aws.return_value = mock.MagicMock(status_code=200)
         result = verify_aws_secret_access_key('test-access-key', 'test-secret-access-key')
-        mock_get_caller_info.assert_called_with('test-access-key', 'test-secret-access-key')
+        mock_query_aws.assert_called_with(
+            'test-access-key', 'test-secret-access-key',
+            mock.ANY, {
+                'Action': 'GetCallerIdentity',
+                'Version': '2011-06-15',
+            },
+        )
         assert result is True
 
-    @mock.patch('detect_secrets.plugins.aws.get_caller_info')
-    def test_verify_aws_secret_access_key_invalid(self, mock_get_caller_info):
-        mock_get_caller_info.return_value = mock.MagicMock(status_code=403)
+    @mock.patch('detect_secrets.plugins.aws.query_aws')
+    def test_verify_aws_secret_access_key_invalid(self, mock_query_aws):
+        mock_query_aws.return_value = mock.MagicMock(status_code=403)
         result = verify_aws_secret_access_key('test-access-key', 'test-secret-access-key')
-        mock_get_caller_info.assert_called_with('test-access-key', 'test-secret-access-key')
+        mock_query_aws.assert_called_with(
+            'test-access-key', 'test-secret-access-key',
+            mock.ANY, {
+                'Action': 'GetCallerIdentity',
+                'Version': '2011-06-15',
+            },
+        )
         assert result is False
 
 
