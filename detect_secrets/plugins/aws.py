@@ -29,7 +29,7 @@ class AWSKeyDetector(RegexBasedDetector):
             return VerifiedResult.UNVERIFIED
 
         for candidate in secret_access_key:
-            if verify_aws_secret_access_key(token, candidate, potential_secret):
+            if verify_aws_secret_access_key(token, candidate):
                 potential_secret.other_factors['secret_access_key'] = candidate
                 return VerifiedResult.VERIFIED_TRUE
 
