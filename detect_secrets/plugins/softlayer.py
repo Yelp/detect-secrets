@@ -17,7 +17,7 @@ class SoftLayerDetector(RegexBasedDetector):
     opt_dash_undrscr = r'(?:_|-|)'
     opt_api = r'(?:api|)'
     key_or_pass = r'(?:key|pwd|password|pass|token)'
-    opt_space = r'(?: |)'
+    opt_space = r'(?: *)'
     opt_assignment = r'(?:=|:|:=|=>|)'
     secret = r'([a-z0-9]{64})'
     denylist = [

@@ -13,7 +13,7 @@ class GHDetector(RegexBasedDetector):
     secret_type = 'GitHub Credentials'
 
     opt_github = r'(?:github|gh|ghe|git|)'
-    opt_space = r'(?: |)'
+    opt_space = r'(?: *)'
     opt_quote = r'(?:"|\'|)'
     opt_assignment = r'(?:=|:|:=|=>|)'
     opt_dash_undrscr = r'(?:_|-|)'
