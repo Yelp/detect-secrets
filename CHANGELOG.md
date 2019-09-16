@@ -24,15 +24,52 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [@xxxx]: https://github.com/xxxx
 -->
 
+### v0.12.6
+##### September 16th, 2019
+
+#### :tada: New Features
+
+- Added a `MailchimpDetector` plugin ([#217], thanks [@dgzlopes])
+- Added verification for Slack webhooks ([#233], thanks [@Patil2099])
+
+#### :telescope: Accuracy
+
+- Added handling of binary secrets in YAML files ([#223])
+- Added various accuracy improvements to the `KeywordDetector` plugin ([#229])
+
+#### :bug: Bugfixes
+
+- Fixed a bug in the `audit` functionality where we crashed when the highlighter failed ([#228])
+- Fixed a bug in the `audit` functionality where there was no (b)ack audit functionality when a secret was not found ([#215], thanks [@dgzlopes])
+- Fixed a bug where we were not excluding SVG files ([#219])
+
+#### :snake: Miscellaneous
+
+- Added a unique exit code to identify baseline changes ([#214], thanks [@lirantal])
+- Updated and ran our pre-commit hooks ([#221], thanks [@killuazhu])
+
+
+[#214]: https://github.com/Yelp/detect-secrets/pull/214
+[#215]: https://github.com/Yelp/detect-secrets/pull/215
+[#217]: https://github.com/Yelp/detect-secrets/pull/217
+[#219]: https://github.com/Yelp/detect-secrets/pull/219
+[#221]: https://github.com/Yelp/detect-secrets/pull/221
+[#223]: https://github.com/Yelp/detect-secrets/pull/223
+[#228]: https://github.com/Yelp/detect-secrets/pull/228
+[#229]: https://github.com/Yelp/detect-secrets/pull/229
+[#233]: https://github.com/Yelp/detect-secrets/pull/233
+
+
+
 ### v0.12.5
 ##### July 23rd, 2019
 
 #### :tada: New Features
 
-- Added webhook detection to our Slack plugin ([#195], thanks [@adrianbn])
+- Added webhook detection to our `SlackDetector` plugin ([#195], thanks [@adrianbn])
 - Added support for scanning multiple files ([#188], thanks [@dgzlopes])
 - Added support for scanning multiple repositories ([#193])
-- Added verification for AWS and Slack secrets ([#194])
+- Added verification for AWS access keys and Slack tokens ([#194])
 - Added an `audit --display-results` feature to aid plugin development ([#205])
 
 #### :telescope: Accuracy
@@ -536,9 +573,11 @@ This includes using `# pragma: allowlist secret` now for inline allowlisting.
 - [@JoshuaRLi]
 - [@justineyster]
 - [@killuazhu]
+- [@lirantal]
 - [@Namburgesas]
 - [@neunkasulle]
 - [@nymous]
+- [@Patil2099]
 - [@richo]
 - [@whathejoe]
 - [@zioalex]
@@ -554,9 +593,11 @@ This includes using `# pragma: allowlist secret` now for inline allowlisting.
 [@JoshuaRLi]: https://github.com/JoshuaRLi
 [@justineyster]: https://github.com/justineyster
 [@killuazhu]: https://github.com/killuazhu
+[@lirantal]: https://github.com/lirantal
 [@Namburgesas]: https://github.com/Namburgesas
 [@neunkasulle]: https://github.com/neunkasulle
 [@nymous]: https://github.com/nymous
+[@Patil2099]: https://github.com/Patil2099
 [@richo]: https://github.com/richo
 [@whathejoe]: https://github.com/whathejoe
 [@zioalex]: https://github.com/zioalex
