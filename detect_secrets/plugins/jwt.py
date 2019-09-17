@@ -20,7 +20,7 @@ except ImportError:
 class JwtTokenDetector(RegexBasedDetector):
     secret_type = 'JSON Web Token'
     denylist = [
-        re.compile(r'eyJ[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*'),
+        re.compile(r'eyJ[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*?'),
     ]
 
     def secret_generator(self, string, *args, **kwargs):
