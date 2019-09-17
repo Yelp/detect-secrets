@@ -335,6 +335,11 @@ class PluginOptions(object):
             disable_flag_text='--no-mailchimp-scan',
             disable_help_text='Disable scanning for Mailchimp keys',
         ),
+        PluginDescriptor(
+            classname='JwtTokenDetector',
+            disable_flag_text='--no-jwt-scan',
+            disable_help_text='Disable scanning for JWTs',
+        ),
     ]
 
     def __init__(self, parser):

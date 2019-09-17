@@ -94,6 +94,7 @@ class TestMain(object):
                 Base64HighEntropyString: {}
                 BasicAuthDetector      : False
                 HexHighEntropyString   : {}
+                JwtTokenDetector       : False
                 KeywordDetector        : False
                 MailchimpDetector      : False
                 PrivateKeyDetector     : False
@@ -120,6 +121,7 @@ class TestMain(object):
                 Base64HighEntropyString: False (2.585)
                 BasicAuthDetector      : False
                 HexHighEntropyString   : False (2.121)
+                JwtTokenDetector       : False
                 KeywordDetector        : False
                 MailchimpDetector      : False
                 PrivateKeyDetector     : False
@@ -255,6 +257,9 @@ class TestMain(object):
                         'name': 'HexHighEntropyString',
                     },
                     {
+                        'name': 'JwtTokenDetector',
+                    },
+                    {
                         'name': 'KeywordDetector',
                     },
                     {
@@ -293,6 +298,9 @@ class TestMain(object):
                     {
                         'hex_limit': 3,
                         'name': 'HexHighEntropyString',
+                    },
+                    {
+                        'name': 'JwtTokenDetector',
                     },
                     {
                         'name': 'KeywordDetector',
@@ -388,6 +396,9 @@ class TestMain(object):
                         'name': 'BasicAuthDetector',
                     },
                     {
+                        'name': 'JwtTokenDetector',
+                    },
+                    {
                         'name': 'MailchimpDetector',
                     },
                     {
@@ -425,6 +436,9 @@ class TestMain(object):
                     },
                     {
                         'name': 'BasicAuthDetector',
+                    },
+                    {
+                        'name': 'JwtTokenDetector',
                     },
                     {
                         'name': 'MailchimpDetector',

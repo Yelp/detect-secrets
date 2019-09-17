@@ -192,6 +192,9 @@ class TestPreCommitHook(object):
                     'name': 'HexHighEntropyString',
                 },
                 {
+                    'name': 'JwtTokenDetector',
+                },
+                {
                     'name': 'KeywordDetector',
                 },
                 {

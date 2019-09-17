@@ -42,6 +42,7 @@ class TestPluginOptions(object):
             'ArtifactoryDetector': {},
             'StripeDetector': {},
             'MailchimpDetector': {},
+            'JwtTokenDetector': {},
         }
         assert not hasattr(args, 'no_private_key_scan')
 

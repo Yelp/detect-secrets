@@ -162,6 +162,8 @@ The current heuristic searches we implement out of the box include:
 
 * **RegexBasedDetector**: checks for any keys matching certain regular expressions (Artifactory, AWS, Slack, Stripe, Mailchimp).
 
+**JwtTokenDetector**: checks for formally correct JWTs.
+
 See [detect_secrets/
 plugins](https://github.com/Yelp/detect-secrets/tree/master/detect_secrets/plugins)
 for more details.
