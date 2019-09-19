@@ -275,7 +275,7 @@ This includes using `# pragma: allowlist secret` now for inline allowlisting.
 
 #### :telescope: Accuracy
 
-- [Added `null` to the `FALSE_POSITIVES` tuple for the `KeywordDetector` plugin, so we do not alert off of it](https://github.com/Yelp/detect-secrets/commit/58df82ce37d64f22cb885960c2031b5f8ebe4b75)
+- [Added `null` to the `FALSE_POSITIVES` tuple for the `KeywordDetector` plugin, so we don't alert off of it](https://github.com/Yelp/detect-secrets/commit/58df82ce37d64f22cb885960c2031b5f8ebe4b75)
 
 
 
@@ -286,7 +286,7 @@ This includes using `# pragma: allowlist secret` now for inline allowlisting.
 
 - Turned the `KeywordDetector` plugin back on, with new regexes and accuracy improvements ([#86])
 - Added an `AWSAccessKeyDetector` plugin ([#100])
-- Added the ability to scan `.ini` types files that do not have a header ([#106])
+- Added the ability to scan `.ini` types files that don't have a header ([#106])
 
 [#86]: https://github.com/Yelp/detect-secrets/pull/86
 [#100]: https://github.com/Yelp/detect-secrets/pull/100
