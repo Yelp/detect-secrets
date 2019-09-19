@@ -46,7 +46,8 @@ def _is_found_with_aho_corasick(secret, automaton):
         secret = secret.encode('utf-8')
 
     try:
-        next(automaton.iter(string=secret))
+        # .lower() to make everything case-insensitive
+        next(automaton.iter(string=secret.lower()))
         return True
     except StopIteration:
         return False

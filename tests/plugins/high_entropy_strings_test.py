@@ -148,7 +148,7 @@ class TestBase64HighEntropyStrings(HighEntropyStringsTest):
                 base64_limit=4.5,
                 exclude_lines_regex='CanonicalUser',
             ),
-            non_secret_string='c3VwZXIgc2VjcmV0IHZhbHVl',  # too short for high entropy
+            non_secret_string='c3VwZXIgc2VjcmV0IHZhbHVl',  # Too short for high entropy
             secret_string='c3VwZXIgbG9uZyBzdHJpbmcgc2hvdWxkIGNhdXNlIGVub3VnaCBlbnRyb3B5',
         )
 

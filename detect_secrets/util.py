@@ -30,7 +30,8 @@ def build_automaton(word_list):
 
     with open(word_list) as f:
         for line in f:
-            line = line.strip()
+            # .lower() to make everything case-insensitive
+            line = line.lower().strip()
             if line:
                 word_list_hash = hashlib.sha1(
                     (word_list_hash + line).encode('utf-8'),
