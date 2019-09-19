@@ -657,13 +657,9 @@ def get_raw_secret_value(
 
     plugin_secrets = plugin.analyze(file_handle, filename)
 
-    matching_secret = [
-        plugin_secret.secret_value
-        for plugin_secret in plugin_secrets
-        if plugin_secret.secret_hash == secret['hashed_secret']
-    ]
+    # Return value of matching secret
+    for plugin_secret in plugin_secrets:
+        if plugin_secret.secret_hash == secret['hashed_secret']:
+            return plugin_secret.secret_value
 
-    if not matching_secret:
-        raise SecretNotFoundOnSpecifiedLineError(secret['line_number'])
-
-    return matching_secret[0]
+    raise SecretNotFoundOnSpecifiedLineError(secret['line_number'])
