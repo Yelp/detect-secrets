@@ -23,9 +23,9 @@ ALLOWLIST_REGEXES = [
     ]
 ]
 
-# add to this mapping (and ALLOWLIST_REGEXES if applicable) lazily,
+# Add to this mapping (and ALLOWLIST_REGEXES if applicable) lazily,
 # as more language specific file parsers are implemented.
-# discussion: https://github.com/Yelp/detect-secrets/pull/105
+# Discussion: https://github.com/Yelp/detect-secrets/pull/105
 ALLOWLIST_REGEX = {
     'yaml': ALLOWLIST_REGEXES[0],
 }

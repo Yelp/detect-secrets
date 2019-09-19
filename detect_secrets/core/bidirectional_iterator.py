@@ -1,7 +1,7 @@
 class BidirectionalIterator(object):
     def __init__(self, collection):
         self.collection = collection
-        self.index = -1  # starts on -1, as index is increased _before_ getting result
+        self.index = -1  # Starts on -1, as index is increased _before_ getting result
         self.step_back_once = False
 
     def __next__(self):

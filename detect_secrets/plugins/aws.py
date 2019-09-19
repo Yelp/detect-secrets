@@ -176,7 +176,7 @@ def verify_aws_secret_access_key(key, secret):  # pragma: no cover
     return True
 
 
-def _sign(key, message, hex=False):   # pragma: no cover
+def _sign(key, message, hex=False):  # pragma: no cover
     value = hmac.new(key, message.encode('utf-8'), hashlib.sha256)
     if not hex:
         return value.digest()
