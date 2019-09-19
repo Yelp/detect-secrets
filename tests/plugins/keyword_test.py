@@ -1,10 +1,12 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import ahocorasick
 import pytest
 
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.keyword import KeywordDetector
+from detect_secrets.util import is_python_2
 from testing.mocks import mock_file_object
 
 
@@ -192,6 +194,28 @@ class TestKeywordDetector(object):
                 potential_secret.secret_hash
                 == PotentialSecret.hash_secret('m{{h}o)p${e]nob(ody[finds>-_$#thisone}}')
             )
+
+    @pytest.mark.parametrize(
+        'file_content',
+        STANDARD_POSITIVES,
+    )
+    def test_analyze_standard_positives_with_automaton(self, file_content):
+        automaton = ahocorasick.Automaton()
+
+        word = 'thisone'
+        if is_python_2():  # pragma: no cover
+            # Due to pyahocorasick
+            word = word.encode('utf-8')
+        automaton.add_word(word, word)
+
+        automaton.make_automaton()
+
+        logic = KeywordDetector(automaton=automaton)
+
+        f = mock_file_object(file_content)
+        output = logic.analyze(f, 'mock_filename')
+        # All skipped due to automaton
+        assert len(output) == 0
 
     @pytest.mark.parametrize(
         'file_content',

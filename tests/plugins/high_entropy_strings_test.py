@@ -293,3 +293,5 @@ class TestHexHighEntropyStrings(HighEntropyStringsTest):
         # This makes sure it only occurs with numbers.
         assert self.logic.calculate_shannon_entropy('12345a') == \
             original_scanner.calculate_shannon_entropy('12345a')
+        assert self.logic.calculate_shannon_entropy('0') == \
+            original_scanner.calculate_shannon_entropy('0')

@@ -18,17 +18,27 @@ def initialize(
     plugins,
     exclude_files_regex=None,
     exclude_lines_regex=None,
+    word_list_file=None,
+    word_list_hash=None,
     should_scan_all_files=False,
 ):
     """Scans the entire codebase for secrets, and returns a
     SecretsCollection object.
+
+    :type path: list
 
     :type plugins: tuple of detect_secrets.plugins.base.BasePlugin
     :param plugins: rules to initialize the SecretsCollection with.
 
     :type exclude_files_regex: str|None
     :type exclude_lines_regex: str|None
-    :type path: list
+
+    :type word_list_file: str|None
+    :param word_list_file: optional word list file for ignoring certain words.
+
+    :type word_list_hash: str|None
+    :param word_list_hash: optional iterated sha1 hash of the words in the word list.
+
     :type should_scan_all_files: bool
 
     :rtype: SecretsCollection
@@ -37,6 +47,8 @@ def initialize(
         plugins,
         exclude_files=exclude_files_regex,
         exclude_lines=exclude_lines_regex,
+        word_list_file=word_list_file,
+        word_list_hash=word_list_hash,
     )
 
     files_to_scan = []

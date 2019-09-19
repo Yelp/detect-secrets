@@ -4,18 +4,29 @@ from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.core.secrets_collection import SecretsCollection
 
 
-def potential_secret_factory(type_='type', filename='filename', secret='secret', lineno=1):
+def potential_secret_factory(
+    type_='type',
+    filename='filename',
+    secret='secret',
+    lineno=1,
+):
     """This is only marginally better than creating PotentialSecret objects directly,
     because of the default values.
     """
     return PotentialSecret(type_, filename, secret, lineno)
 
 
-def secrets_collection_factory(secrets=None, plugins=(), exclude_files_regex=None):
+def secrets_collection_factory(
+    secrets=None,
+    plugins=(),
+    exclude_files_regex=None,
+    word_list_file=None,
+    word_list_hash=None,
+):
     """
     :type secrets: list(dict)
     :param secrets: list of params to pass to add_secret.
-                    E.g. [ {'secret': 'blah'}, ]
+                    e.g. [ {'secret': 'blah'}, ]
 
     :type plugins: tuple
     :type exclude_files_regex: str|None
@@ -25,6 +36,8 @@ def secrets_collection_factory(secrets=None, plugins=(), exclude_files_regex=Non
     collection = SecretsCollection(
         plugins,
         exclude_files=exclude_files_regex,
+        word_list_file=word_list_file,
+        word_list_hash=word_list_hash,
     )
 
     if plugins:

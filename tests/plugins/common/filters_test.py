@@ -6,12 +6,10 @@ from detect_secrets.plugins.common import filters
 
 
 class TestIsSequentialString:
-    # TODO: More tests should be had.
-
     @pytest.mark.parametrize(
         'secret',
         (
-            # ascii sequence
+            # ASCII sequence
             'ABCDEF',
             'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
 
@@ -27,13 +25,13 @@ class TestIsSequentialString:
             '0123456789abcdef',
             'abcdef0123456789',
 
-            # base64 sequences
+            # Base64 sequences
             'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/',
             '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+/',
         ),
     )
     def test_success(self, secret):
-        assert filters.is_sequential_string(secret)
+        assert filters._is_sequential_string(secret)
 
     @pytest.mark.parametrize(
         'secret',
@@ -42,4 +40,4 @@ class TestIsSequentialString:
         ),
     )
     def test_failure(self, secret):
-        assert not filters.is_sequential_string(secret)
+        assert not filters._is_sequential_string(secret)

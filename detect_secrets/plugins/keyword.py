@@ -28,9 +28,10 @@ from __future__ import absolute_import
 
 import re
 
-from .base import BasePlugin
+from .base import WordListSupportedDetector
 from .common.filetype import determine_file_type
 from .common.filetype import FileType
+from .common.filters import is_false_positive
 from detect_secrets.core.potential_secret import PotentialSecret
 
 
@@ -246,16 +247,18 @@ QUOTES_REQUIRED_FILETYPES = {
 }
 
 
-class KeywordDetector(BasePlugin):
+class KeywordDetector(WordListSupportedDetector):
     """This checks if denylisted keywords
     are present in the analyzed string.
     """
 
     secret_type = 'Secret Keyword'
 
-    def __init__(self, keyword_exclude=None, exclude_lines_regex=None, **kwargs):
+    def __init__(self, keyword_exclude=None, exclude_lines_regex=None, automaton=None, **kwargs):
         super(KeywordDetector, self).__init__(
-            exclude_lines_regex,
+            exclude_lines_regex=exclude_lines_regex,
+            automaton=automaton,
+            **kwargs
         )
 
         self.keyword_exclude = None
@@ -276,6 +279,8 @@ class KeywordDetector(BasePlugin):
             string,
             filetype=determine_file_type(filename),
         ):
+            if is_false_positive(identifier, self.automaton):
+                continue
             secret = PotentialSecret(
                 self.secret_type,
                 filename,

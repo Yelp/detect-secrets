@@ -31,6 +31,8 @@ class TestMain(object):
             exclude_lines_regex=None,
             path='.',
             should_scan_all_files=False,
+            word_list_file=None,
+            word_list_hash=None,
         )
 
     def test_scan_with_rootdir(self, mock_baseline_initialize):
@@ -43,6 +45,8 @@ class TestMain(object):
             exclude_lines_regex=None,
             path=['test_data'],
             should_scan_all_files=False,
+            word_list_file=None,
+            word_list_hash=None,
         )
 
     def test_scan_with_exclude_args(self, mock_baseline_initialize):
@@ -57,6 +61,8 @@ class TestMain(object):
             exclude_lines_regex='other_patt',
             path='.',
             should_scan_all_files=False,
+            word_list_file=None,
+            word_list_hash=None,
         )
 
     @pytest.mark.parametrize(
@@ -139,6 +145,8 @@ class TestMain(object):
             exclude_lines_regex=None,
             path='.',
             should_scan_all_files=True,
+            word_list_file=None,
+            word_list_hash=None,
         )
 
     def test_reads_from_stdin(self, mock_merge_baseline):

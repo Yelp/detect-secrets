@@ -1,9 +1,12 @@
+import hashlib
 import subprocess
 
 import mock
 import pytest
 
 from detect_secrets import util
+from detect_secrets.plugins.common import filters
+from testing.mocks import mock_open
 
 GIT_REPO_SHA = b'cbb33d8c545ccf5c55fdcc7d5b0218078598e677'
 GIT_REMOTES_VERBOSE_ONE_URL = (
@@ -16,6 +19,26 @@ GIT_REMOTES_VERBOSE_TWO_URLS = (
     b'origin\tgit://b.com/b/b.git\t(fetch)\n'
     b'origin\tgit://b.com/b/b.git\t(push)\n'
 )
+
+
+def test_build_automaton():
+    word_list = """
+        foam\n
+    """
+    with mock_open(
+        data=word_list,
+        namespace='detect_secrets.util.open',
+    ):
+        automaton, word_list_hash = util.build_automaton(word_list='will_be_mocked.txt')
+        assert word_list_hash == hashlib.sha1('foam'.encode('utf-8')).hexdigest()
+        assert filters._is_found_with_aho_corasick(
+            secret='foam_roller',
+            automaton=automaton,
+        )
+        assert not filters._is_found_with_aho_corasick(
+            secret='no_words_in_word_list',
+            automaton=automaton,
+        )
 
 
 def test_get_git_sha():

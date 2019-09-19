@@ -47,13 +47,18 @@ class TestPreCommitHook(object):
         assert message_by_lines[3] == \
             'Location:    test_data/files/file_with_secrets.py:3'
 
+    def test_file_with_secrets_with_word_list(self):
+        assert_commit_succeeds(
+            'test_data/files/file_with_secrets.py --word-list test_data/word_list.txt',
+        )
+
     def test_file_no_secrets(self):
         assert_commit_succeeds('test_data/files/file_with_no_secrets.py')
 
     @pytest.mark.parametrize(
         'has_result, use_private_key_scan, hook_command, commit_succeeds',
         [
-            # basic case
+            # Basic case
             (True, True, '--baseline will_be_mocked test_data/files/file_with_secrets.py', True),
             # test_no_overwrite_pass_when_baseline_did_not_use_scanner
             (True, False, '--baseline will_be_mocked test_data/files/private_key', True),
@@ -170,6 +175,10 @@ class TestPreCommitHook(object):
             original_baseline = json.loads(baseline_string)
             assert original_baseline['exclude_regex'] == baseline_written['exclude']['files']
             assert original_baseline['results'] == baseline_written['results']
+
+            assert 'word_list' not in original_baseline
+            assert baseline_written['word_list']['file'] is None
+            assert baseline_written['word_list']['hash'] is None
 
             # See that we updated the plugins and version
             assert current_version == baseline_written['version']

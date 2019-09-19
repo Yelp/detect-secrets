@@ -1,27 +1,66 @@
 """
-Heuristic, false positive filters that are shared across all plugin types.
+False positive heuristic filters that are shared across all plugin types.
 This abstraction allows for development of later ML work, or further
 heuristical determinations (e.g. word filter, entropy comparator).
 """
 import string
 
+from detect_secrets.util import is_python_2
 
-def is_false_positive(secret):
+
+def is_false_positive(secret, automaton):
+    """
+    :type secret: str
+
+    :type automaton: ahocorasick.Automaton|None
+    :param automaton: optional automaton for ignoring certain words.
+
+    :rtype: bool
+    Returns True if any false positive heuristic function returns True.
+    """
     return any(
-        func(secret)
+        func(secret, automaton)
         for func in
         (
-            is_sequential_string,
+            _is_found_with_aho_corasick,
+            _is_sequential_string,
         )
     )
 
 
-def is_sequential_string(secret):
+def _is_found_with_aho_corasick(secret, automaton):
     """
-    Returns true if string is sequential.
+    :type secret: str
+
+    :type automaton: ahocorasick.Automaton|None
+    :param automaton: optional automaton for ignoring certain words.
+
+    :rtype: bool
+    Returns True if secret contains a word in the automaton.
+    """
+    if not automaton:
+        return False
+
+    if is_python_2():  # pragma: no cover
+        # Due to pyahocorasick
+        secret = secret.encode('utf-8')
+
+    try:
+        next(automaton.iter(string=secret))
+        return True
+    except StopIteration:
+        return False
+
+
+def _is_sequential_string(secret, *args):
+    """
+    :type secret: str
+
+    :rtype: bool
+    Returns True if string is sequential.
     """
     sequences = (
-        # base64 letters first
+        # Base64 letters first
         (
             string.ascii_uppercase +
             string.ascii_uppercase +
@@ -29,7 +68,7 @@ def is_sequential_string(secret):
             '+/'
         ),
 
-        # base64 numbers first
+        # Base64 numbers first
         (
             string.digits +
             string.ascii_uppercase +
@@ -41,7 +80,7 @@ def is_sequential_string(secret):
         # sequences, since those will happen to be caught by the
         # base64 checks.
 
-        # alphanumeric sequences
+        # Alphanumeric sequences
         (string.digits + string.ascii_uppercase) * 2,
 
         # Capturing any number sequences

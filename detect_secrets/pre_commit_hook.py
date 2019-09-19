@@ -13,6 +13,7 @@ from detect_secrets.core.log import get_logger
 from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.core.usage import ParserBuilder
 from detect_secrets.plugins.common import initialize
+from detect_secrets.util import build_automaton
 
 
 log = get_logger(format_string='%(message)s')
@@ -37,17 +38,24 @@ def main(argv=None):
         # Error logs handled within logic.
         return 1
 
+    automaton = None
+    word_list_hash = None
+    if args.word_list_file:
+        automaton, word_list_hash = build_automaton(args.word_list_file)
+
     plugins = initialize.from_parser_builder(
         args.plugins,
         exclude_lines_regex=args.exclude_lines,
+        automaton=automaton,
         should_verify_secrets=not args.no_verify,
     )
 
-    # Merge plugin from baseline
+    # Merge plugins from baseline
     if baseline_collection:
-        plugins = initialize.merge_plugin_from_baseline(
+        plugins = initialize.merge_plugins_from_baseline(
             baseline_collection.plugins,
             args,
+            automaton,
         )
         baseline_collection.plugins = plugins
 

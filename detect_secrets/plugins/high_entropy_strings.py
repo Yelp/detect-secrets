@@ -6,7 +6,6 @@ except ImportError:  # pragma: no cover
     import configparser
 import base64
 import math
-import os
 import re
 import string
 from abc import ABCMeta
@@ -15,27 +14,23 @@ from contextlib import contextmanager
 
 import yaml
 
-from .base import BasePlugin
+from .base import WordListSupportedDetector
+from .common.filetype import determine_file_type
+from .common.filetype import FileType
 from .common.filters import is_false_positive
 from .common.ini_file_parser import IniFileParser
 from .common.yaml_file_parser import YamlFileParser
 from detect_secrets.core.potential_secret import PotentialSecret
 
 
-YAML_EXTENSIONS = (
-    '.yaml',
-    '.yml',
-)
-
-
-class HighEntropyStringsPlugin(BasePlugin):
+class HighEntropyStringsPlugin(WordListSupportedDetector):
     """Base class for string pattern matching"""
 
     __metaclass__ = ABCMeta
 
     secret_type = 'High Entropy String'
 
-    def __init__(self, charset, limit, exclude_lines_regex, *args):
+    def __init__(self, charset, limit, exclude_lines_regex, automaton, *args):
         if limit < 0 or limit > 8:
             raise ValueError(
                 'The limit set for HighEntropyStrings must be between 0.0 and 8.0',
@@ -47,6 +42,7 @@ class HighEntropyStringsPlugin(BasePlugin):
 
         super(HighEntropyStringsPlugin, self).__init__(
             exclude_lines_regex=exclude_lines_regex,
+            automaton=automaton,
         )
 
     def analyze(self, file, filename):
@@ -95,7 +91,7 @@ class HighEntropyStringsPlugin(BasePlugin):
         output = {}
 
         for result in self.secret_generator(string):
-            if is_false_positive(result):
+            if is_false_positive(result, self.automaton):
                 continue
 
             secret = PotentialSecret(self.secret_type, filename, result, line_num)
@@ -135,22 +131,16 @@ class HighEntropyStringsPlugin(BasePlugin):
             return output
 
     @contextmanager
-    def non_quoted_string_regex(self, strict=True):
+    def non_quoted_string_regex(self):
         """For certain file formats, strings need not necessarily follow the
         normal convention of being denoted by single or double quotes. In these
         cases, we modify the regex accordingly.
 
         Public, because detect_secrets.core.audit needs to reference it.
-
-        :type strict: bool
-        :param strict: if True, the regex will match the entire string.
         """
         old_regex = self.regex
 
-        regex_alternative = r'([{}]+)'.format(re.escape(self.charset))
-        if strict:
-            regex_alternative = r'^' + regex_alternative + r'$'
-
+        regex_alternative = r'^([{}]+)$'.format(re.escape(self.charset))
         self.regex = re.compile(regex_alternative)
 
         try:
@@ -187,7 +177,7 @@ class HighEntropyStringsPlugin(BasePlugin):
         """
         :returns: same format as super().analyze()
         """
-        if os.path.splitext(filename)[1] not in YAML_EXTENSIONS:
+        if determine_file_type(filename) != FileType.YAML:
             # The yaml parser is pretty powerful. It eagerly
             # parses things when it's not even a yaml file. Therefore,
             # we use this heuristic to quit early if appropriate.
@@ -210,9 +200,11 @@ class HighEntropyStringsPlugin(BasePlugin):
                     if '__line__' in item and item['__line__'] not in ignored_lines:
                         # An isinstance check doesn't work in py2
                         # so we need the __is_binary__ field.
-                        string_to_scan = self.decode_binary(item['__value__']) \
-                            if item['__is_binary__'] \
+                        string_to_scan = (
+                            self.decode_binary(item['__value__'])
+                            if item['__is_binary__']
                             else item['__value__']
+                        )
 
                         secrets = self.analyze_string(
                             string_to_scan,
@@ -276,11 +268,12 @@ class HexHighEntropyString(HighEntropyStringsPlugin):
 
     secret_type = 'Hex High Entropy String'
 
-    def __init__(self, hex_limit, exclude_lines_regex=None, **kwargs):
+    def __init__(self, hex_limit, exclude_lines_regex=None, automaton=None, **kwargs):
         super(HexHighEntropyString, self).__init__(
             charset=string.hexdigits,
             limit=hex_limit,
             exclude_lines_regex=exclude_lines_regex,
+            automaton=automaton,
         )
 
     @property
@@ -334,11 +327,12 @@ class Base64HighEntropyString(HighEntropyStringsPlugin):
 
     secret_type = 'Base64 High Entropy String'
 
-    def __init__(self, base64_limit, exclude_lines_regex=None, **kwargs):
+    def __init__(self, base64_limit, exclude_lines_regex=None, automaton=None, **kwargs):
         super(Base64HighEntropyString, self).__init__(
             charset=string.ascii_letters + string.digits + '+/=',
             limit=base64_limit,
             exclude_lines_regex=exclude_lines_regex,
+            automaton=automaton,
         )
 
     @property

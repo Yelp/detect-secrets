@@ -148,7 +148,11 @@ class BasePlugin(object):
             <classname>: <returned-value>
         """
         # TODO: Handle multiple secrets on single line.
-        results = self.analyze_string(string, 0, 'does_not_matter')
+        results = self.analyze_string(
+            string,
+            line_num=0,
+            filename='does_not_matter',
+        )
         if not results:
             return 'False'
 
@@ -193,7 +197,7 @@ class BasePlugin(object):
 
 
 class RegexBasedDetector(BasePlugin):
-    """Base class for regular-expression based detectors.
+    """Parent class for regular-expression based detectors.
 
     To create a new regex-based detector, subclass this and set
     `secret_type` with a description and `denylist`
@@ -235,3 +239,28 @@ class RegexBasedDetector(BasePlugin):
         for regex in self.denylist:
             for match in regex.findall(string):
                 yield match
+
+
+class WordListSupportedDetector(BasePlugin):
+    """Parent class for detectors supporting a word list.
+
+    To create a new word list supported detector, subclass this
+    and pass `automaton` in __init__ like:
+
+    class BarDetector(WordListSupportedDetector):
+
+        secret_type = "bar"
+
+        def __init__(self, automaton=None, **kwargs):
+            super(BarDetector, self).__init__(
+                automaton,
+                **kwargs
+            )
+            ...
+    """
+    __metaclass__ = ABCMeta
+
+    def __init__(self, automaton=None, **kwargs):
+        super(WordListSupportedDetector, self).__init__(**kwargs)
+
+        self.automaton = automaton
