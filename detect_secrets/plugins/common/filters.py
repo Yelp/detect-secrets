@@ -7,13 +7,13 @@ import string
 
 
 def is_false_positive(secret):
-    for func in [
-        is_sequential_string,
-    ]:
-        if func(secret):
-            return True
-
-    return False
+    return any(
+        func(secret)
+        for func in
+        (
+            is_sequential_string,
+        )
+    )
 
 
 def is_sequential_string(secret):
