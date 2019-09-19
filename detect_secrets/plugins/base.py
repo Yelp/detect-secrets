@@ -68,7 +68,7 @@ class BasePlugin(object):
                 )
 
                 is_verified = self.verify(result.secret_value, content=str(snippet))
-                if is_verified != VerifiedResult.UNVERIFIED:
+                if is_verified == VerifiedResult.VERIFIED_TRUE:
                     result.is_verified = True
 
                 if is_verified != VerifiedResult.VERIFIED_FALSE:
