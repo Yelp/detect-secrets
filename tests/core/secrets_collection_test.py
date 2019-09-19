@@ -54,6 +54,14 @@ class TestScanFile(object):
 
             assert not logic.scan_file('does_not_matter')
 
+    def test_skip_ignored_file_extensions(self):
+        logic = secrets_collection_factory(
+            plugins=(MockPluginFixedValue(),),
+        )
+        with mock_open('junk text here, as it does not matter'):
+            skipped_extension = '.svg'
+            assert not logic.scan_file('some' + skipped_extension)
+
     def test_error_reading_file(self, mock_log):
         logic = secrets_collection_factory()
 
