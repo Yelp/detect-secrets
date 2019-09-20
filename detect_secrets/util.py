@@ -32,7 +32,7 @@ def build_automaton(word_list):
         for line in f:
             # .lower() to make everything case-insensitive
             line = line.lower().strip()
-            if line:
+            if len(line) > 3:
                 word_list_hash = hashlib.sha1(
                     (word_list_hash + line).encode('utf-8'),
                 ).hexdigest()
