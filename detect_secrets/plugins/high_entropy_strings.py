@@ -196,36 +196,34 @@ class HighEntropyStringsPlugin(WordListSupportedDetector):
             while len(to_search) > 0:
                 item = to_search.pop()
 
-                try:
-                    if '__line__' in item and item['__line__'] not in ignored_lines:
-                        # An isinstance check doesn't work in py2
-                        # so we need the __is_binary__ field.
-                        string_to_scan = (
-                            self.decode_binary(item['__value__'])
-                            if item['__is_binary__']
-                            else item['__value__']
-                        )
-
-                        secrets = self.analyze_string(
-                            string_to_scan,
-                            item['__line__'],
-                            filename,
-                        )
-
-                        if item['__is_binary__']:
-                            secrets = self._encode_yaml_binary_secrets(secrets)
-
-                        potential_secrets.update(secrets)
-
-                    if '__line__' in item:
-                        continue
-
+                if '__line__' not in item:
                     for key in item:
                         obj = item[key] if isinstance(item, dict) else key
                         if isinstance(obj, dict):
                             to_search.append(obj)
-                except TypeError:
-                    pass
+                    continue
+
+                if item['__line__'] in ignored_lines:
+                    continue
+
+                # An isinstance check doesn't work in py2
+                # so we need the __is_binary__ field.
+                string_to_scan = (
+                    self.decode_binary(item['__value__'])
+                    if item['__is_binary__']
+                    else item['__value__']
+                )
+
+                secrets = self.analyze_string(
+                    string_to_scan,
+                    item['__line__'],
+                    filename,
+                )
+
+                if item['__is_binary__']:
+                    secrets = self._encode_yaml_binary_secrets(secrets)
+
+                potential_secrets.update(secrets)
 
         return potential_secrets
 
