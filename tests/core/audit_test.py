@@ -529,7 +529,7 @@ class TestDetermineAuditResults(object):
         baseline_fixture = {
             'plugins_used': plugins_used,
             'results': {
-                'file': [
+                'mocked_file': [
                     {
                         'hashed_secret': 'a837eb90d815a852f68f56f70b1b3fab24c46c84',
                         'line_number': 1,
@@ -540,17 +540,17 @@ class TestDetermineAuditResults(object):
         }
 
         if is_secret is not None:
-            baseline_fixture['results']['file'][0]['is_secret'] = is_secret
+            baseline_fixture['results']['mocked_file'][0]['is_secret'] = is_secret
 
         return baseline_fixture
 
     @pytest.mark.parametrize(
         'plugins_used',
         [
-            # NOTE: The first config here needs to be
+            # Note: The first config here needs to be
             # the HexHighEntropyString config for this test to work.
-            [{'name': 'HexHighEntropyString'}],  # plugin w/o config
-            [{'name': 'HexHighEntropyString', 'hex_limit': 2}],  # plugin w/config
+            [{'name': 'HexHighEntropyString'}],  # Plugin w/o config
+            [{'name': 'HexHighEntropyString', 'hex_limit': 2}],  # Plugin w/config
             [
                 {'name': 'HexHighEntropyString'},
                 {'name': 'Base64HighEntropyString'},
@@ -570,15 +570,18 @@ class TestDetermineAuditResults(object):
 
         results = audit.determine_audit_results(baseline, '.secrets.baseline')
 
-        assert results['results']['HexHighEntropyString']['config'].items() \
-            >= plugins_used[0].items()
+        assert (
+            results['plugins']['HexHighEntropyString']['config'].items()
+            >=
+            plugins_used[0].items()
+        )
 
     @pytest.mark.parametrize(
         'is_secret, expected_audited_result',
         [
-            (True, 'positive'),
-            (False, 'negative'),
-            (None, 'unknown'),
+            (True, 'true-positives'),
+            (False, 'false-positives'),
+            (None, 'unknowns'),
         ],
     )
     def test_determine_audit_results_is_secret(
@@ -595,12 +598,17 @@ class TestDetermineAuditResults(object):
 
         results = audit.determine_audit_results(baseline, '.secrets.baseline')
 
-        for audited_result, list_of_secrets \
-                in results['results']['HexHighEntropyString']['results'].items():
+        for (
+            audited_result,
+            file_to_secrets,
+        ) in results['plugins']['HexHighEntropyString']['results'].items():
             if audited_result == expected_audited_result:
-                assert plaintext_secret in list_of_secrets
+                assert any(  # pragma: no cover
+                    secret['plaintext'] == plaintext_secret
+                    for secret in file_to_secrets['mocked_file']
+                )
             else:
-                assert len(list_of_secrets) == 0
+                assert len(file_to_secrets) == 0
 
     @pytest.mark.parametrize(
         'git_remotes, git_sha, expected_git_info',
@@ -662,8 +670,10 @@ class TestDetermineAuditResults(object):
         ):
             results = audit.determine_audit_results(baseline, '.secrets.baseline')
 
-        assert whole_plaintext_line in \
-            results['results']['HexHighEntropyString']['results']['positive']
+        hex_high_results = results['plugins']['HexHighEntropyString']['results']
+        assert len(hex_high_results['true-positives']['mocked_file']) == 1
+        assert hex_high_results['true-positives']['mocked_file'][0]['line'] == whole_plaintext_line
+        assert hex_high_results['true-positives']['mocked_file'][0]['plaintext'] is None
 
 
 class TestPrintAuditResults():

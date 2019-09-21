@@ -583,9 +583,14 @@ class TestMain(object):
                             'name': 'KeywordDetector',
                         },
                         'results': {
-                            'negative': [],
-                            'positive': [],
-                            'unknown': ['nothighenoughentropy'],
+                            'false-positives': {},
+                            'true-positives': {},
+                            'unknowns': {
+                                'test_data/short_files/first_line.php': [{
+                                    'line': "secret = 'notHighEnoughEntropy'",
+                                    'plaintext': 'nothighenoughentropy',
+                                }],
+                            },
                         },
                     },
                 },
@@ -608,7 +613,7 @@ class TestMain(object):
         ) as printer_shim:
             main(['audit', '--display-results', 'MOCKED'])
 
-            assert json.loads(uncolor(printer_shim.message))['results'] == expected_output
+            assert json.loads(uncolor(printer_shim.message))['plugins'] == expected_output
 
     def test_audit_diff_not_enough_files(self):
         assert main('audit --diff fileA'.split()) == 1
