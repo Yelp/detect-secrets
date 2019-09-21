@@ -109,9 +109,9 @@ def merge_plugins_from_baseline(baseline_plugins, args, automaton):
         ):
             try:
                 plugins_dict[plugin_name][param_name] = param_value
-            except KeyError:
+            except KeyError:  # pragma: no cover
                 log.warning(
-                    'Baseline contain plugin {} which is not in all plugins! Ignoring...',
+                    'Baseline contains plugin {} which is not in all plugins! Ignoring...',
                     plugin_name,
                 )
 

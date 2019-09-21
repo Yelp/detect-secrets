@@ -221,7 +221,7 @@ class TestMain(object):
     @pytest.mark.parametrize(
         'plugins_used, plugins_overwriten, plugins_wrote',
         [
-            (  # remove some plugins from baseline
+            (  # Remove some plugins from baseline
                 [
                     {
                         'base64_limit': 4.5,
@@ -238,7 +238,7 @@ class TestMain(object):
                     },
                 ],
             ),
-            (  # all plugins
+            (  # All plugins
                 [
                     {
                         'base64_limit': 1.5,
@@ -284,7 +284,7 @@ class TestMain(object):
                     },
                 ],
             ),
-            (  # remove some plugins from all plugins
+            (  # Remove some plugins from all plugins
                 [
                     {
                         'base64_limit': 4.5,
@@ -324,7 +324,7 @@ class TestMain(object):
                     },
                 ],
             ),
-            (  # use same plugin list from baseline
+            (  # Use same plugin list from baseline
                 [
                     {
                         'base64_limit': 3.5,
@@ -345,7 +345,7 @@ class TestMain(object):
                     },
                 ],
             ),
-            (  # overwrite base limit from CLI
+            (  # Overwrite base limit from CLI
                 [
                     {
                         'base64_limit': 3.5,
@@ -365,7 +365,7 @@ class TestMain(object):
                     },
                 ],
             ),
-            (  # does not overwrite base limit from CLI if baseline not using the plugin
+            (  # Does not overwrite base limit from CLI if baseline not using the plugin
                 [
                     {
                         'name': 'PrivateKeyDetector',
@@ -378,7 +378,7 @@ class TestMain(object):
                     },
                 ],
             ),
-            (  # use overwriten option from CLI only when using --use-all-plugins
+            (  # Use overwriten option from CLI only when using --use-all-plugins
                 [
                     {
                         'base64_limit': 3.5,
@@ -420,7 +420,7 @@ class TestMain(object):
                     },
                 ],
             ),
-            (  # use plugin limit from baseline when using --use-all-plugins and no input limit
+            (  # Use plugin limit from baseline when using --use-all-plugins and no input limit
                 [
                     {
                         'base64_limit': 2.5,
@@ -492,8 +492,11 @@ class TestMain(object):
                 ),
             ) == 0
 
-            assert file_writer.call_args[1]['data']['plugins_used'] == \
+            assert (
+                file_writer.call_args[1]['data']['plugins_used']
+                ==
                 plugins_wrote
+            )
 
     @pytest.mark.parametrize(
         'filename, expected_output',

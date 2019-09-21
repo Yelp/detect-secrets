@@ -60,6 +60,29 @@ class TestInitializeBaseline(object):
         assert len(results['test_data/files/file_with_secrets.py']) == 1
         assert len(results['test_data/files/tmp/file_with_secrets.py']) == 2
 
+    @pytest.mark.parametrize(
+        'path',
+        [
+            [
+                './test_data/files',
+            ],
+        ],
+    )
+    def test_error_when_getting_git_tracked_files(self, path):
+        with mock_git_calls(
+            'detect_secrets.core.baseline.subprocess.check_output',
+            (
+                SubprocessMock(
+                    expected_input='git -C ./test_data/files ls-files',
+                    should_throw_exception=True,
+                    mocked_output='',
+                ),
+            ),
+        ):
+            results = self.get_results(path=['./test_data/files'])
+
+        assert not results
+
     def test_with_multiple_files(self):
         results = self.get_results(
             path=[
@@ -80,7 +103,13 @@ class TestInitializeBaseline(object):
         assert not results
 
     def test_with_folders_and_files(self):
-        results = self.get_results(path=['test_data/', 'non-existent-file.B'])
+        results = self.get_results(
+            path=[
+                'non-existent-file.B',
+                'test_data/',
+                'test_data/empty_folder',
+            ],
+        )
 
         assert 'test_data/files/file_with_secrets.py' in results
         assert 'test_data/files/tmp/file_with_secrets.py' in results

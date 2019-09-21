@@ -419,11 +419,7 @@ class PluginOptions(object):
             # Consolidate related args
             related_args = {}
             for related_arg_tuple in plugin.related_args:
-                try:
-                    flag_name, default_value = related_arg_tuple
-                except ValueError:
-                    flag_name = related_arg_tuple
-                    default_value = None
+                flag_name, default_value = related_arg_tuple
 
                 arg_name = PluginOptions._convert_flag_text_to_argument_name(
                     flag_name,
