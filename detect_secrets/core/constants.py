@@ -15,6 +15,7 @@ IGNORED_FILE_EXTENSIONS = set(
             'bmp',
             'bz2',
             'dmg',
+            'eot',
             'exe',
             'gif',
             'gz',
@@ -22,6 +23,7 @@ IGNORED_FILE_EXTENSIONS = set(
             'jar',
             'jpg',
             'jpeg',
+            'mo',
             'png',
             'rar',
             'realm',
@@ -30,7 +32,11 @@ IGNORED_FILE_EXTENSIONS = set(
             'tar',
             'tif',
             'tiff',
+            'ttf',
             'webp',
+            'woff',
+            'xls',
+            'xlsx',
             'zip',
         )
     )
