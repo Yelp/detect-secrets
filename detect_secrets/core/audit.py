@@ -54,6 +54,21 @@ EMPTY_PLUGIN_AUDIT_RESULT = {
     },
     'config': {},
 }
+EMPTY_STATS_RESULT = {
+    'signal': 0,
+    'true-positives': {
+        'count': 0,
+        'files': defaultdict(int),
+    },
+    'false-positives': {
+        'count': 0,
+        'files': defaultdict(int),
+    },
+    'unknowns': {
+        'count': 0,
+        'files': defaultdict(int),
+    },
+}
 
 
 def audit_baseline(baseline_filename):
@@ -247,10 +262,12 @@ def determine_audit_results(baseline, baseline_path):
 
     audit_results = {
         'plugins': defaultdict(lambda: deepcopy(EMPTY_PLUGIN_AUDIT_RESULT)),
+        'stats': deepcopy(EMPTY_STATS_RESULT),
     }
 
     secret_type_to_plugin_name = get_mapping_from_secret_type_to_class_name()
 
+    total = 0
     for filename, secret in all_secrets:
         file_contents = _open_file_with_cache(filename)
 
@@ -269,6 +286,17 @@ def determine_audit_results(baseline, baseline_path):
         plugin_name = secret_type_to_plugin_name[secret['type']]
         audit_result = AUDIT_RESULT_TO_STRING[secret.get('is_secret')]
         audit_results['plugins'][plugin_name]['results'][audit_result][filename].append(secret_info)
+
+        audit_results['stats'][audit_result]['count'] += 1
+        audit_results['stats'][audit_result]['files'][filename] += 1
+        total += 1
+    audit_results['stats']['signal'] = str(
+        (
+            audit_results['stats']['true-positives']['count']
+            /
+            total
+        ) * 100,
+    )[:4] + '%'
 
     for plugin_config in baseline['plugins_used']:
         plugin_name = plugin_config['name']
