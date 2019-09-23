@@ -51,6 +51,19 @@ def test_get_git_sha():
         assert util.get_git_sha('.') == GIT_REPO_SHA.decode('utf-8')
 
 
+def test_get_relative_path_if_in_cwd():
+    with mock.patch(
+        'detect_secrets.util.os.path.isfile',
+        return_value=False,
+    ):
+        assert (
+            util.get_relative_path_if_in_cwd(
+                'test_data',
+                'config.env',
+            ) is None
+        )
+
+
 @pytest.mark.parametrize(
     'git_remotes_result, expected_urls',
     [

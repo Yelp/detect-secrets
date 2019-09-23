@@ -97,8 +97,18 @@ class TestInitializeBaseline(object):
         assert 'test_data/files/tmp/file_with_secrets.py' in results
 
     def test_with_multiple_non_existent_files(self):
-        results = self.get_results(path=['non-existent-file.A', 'non-existent-file.B'])
-
+        with mock.patch(
+            'detect_secrets.core.baseline.util.get_relative_path_if_in_cwd',
+            return_value=None,
+        ):
+            results = self.get_results(
+                path=[
+                    'non-existent-file.A',
+                    'non-existent-file.B',
+                    # Will be non-existant due to mock.patch
+                    'test_data/files/tmp/',
+                ],
+            )
         # No expected results, because files don't exist
         assert not results
 
@@ -162,6 +172,18 @@ class TestInitializeBaseline(object):
             scan_all_files=True,
         )
         assert len(results.keys()) == 2
+
+    def test_scan_all_files_with_bad_symlinks(self):
+        with mock.patch(
+            'detect_secrets.core.baseline.util.get_relative_path_if_in_cwd',
+            return_value=None,
+        ):
+            results = self.get_results(
+                # Will be non-existant due to mock.patch
+                path=['test_data/files'],
+                scan_all_files=True,
+            )
+        assert len(results.keys()) == 0
 
 
 class TestGetSecretsNotInBaseline(object):
