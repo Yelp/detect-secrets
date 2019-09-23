@@ -30,7 +30,7 @@ class ArtifactoryDetector(RegexBasedDetector):
             )
             if response.status_code == 200:
                 return VerifiedResult.VERIFIED_TRUE
-            elif response.status_code == 401:
+            elif response.status_code == 401 or response.status_code == 403:
                 return VerifiedResult.VERIFIED_FALSE
             else:
                 return VerifiedResult.UNVERIFIED

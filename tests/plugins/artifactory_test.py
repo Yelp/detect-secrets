@@ -56,6 +56,13 @@ class TestArtifactoryDetector(object):
 
         assert ArtifactoryDetector().verify(ARTIFACTORY_TOKEN) == VerifiedResult.VERIFIED_FALSE
 
+        responses.add(
+            responses.GET, 'https://%s/api/system/ping' % ArtifactoryDetector().artifactory_url,
+            status=403,
+        )
+
+        assert ArtifactoryDetector().verify(ARTIFACTORY_TOKEN) == VerifiedResult.VERIFIED_FALSE
+
     @responses.activate
     def test_verify_valid_secret(self):
         responses.add(
@@ -65,7 +72,7 @@ class TestArtifactoryDetector(object):
         assert ArtifactoryDetector().verify(ARTIFACTORY_TOKEN) == VerifiedResult.VERIFIED_TRUE
 
     @responses.activate
-    def test_verify_status_not_200_or_401(self):
+    def test_verify_status_not_200_401_403(self):
         responses.add(
             responses.GET, 'https://%s/api/system/ping' % ArtifactoryDetector().artifactory_url,
             status=500,
@@ -82,6 +89,14 @@ class TestArtifactoryDetector(object):
         assert ArtifactoryDetector().verify(ARTIFACTORY_TOKEN_BYTES) == \
             VerifiedResult.VERIFIED_FALSE
 
+        responses.add(
+            responses.GET, 'https://%s/api/system/ping' % ArtifactoryDetector().artifactory_url,
+            status=403,
+        )
+
+        assert ArtifactoryDetector().verify(ARTIFACTORY_TOKEN_BYTES) == \
+            VerifiedResult.VERIFIED_FALSE
+
     @responses.activate
     def test_verify_valid_secret_bytes(self):
         responses.add(
@@ -91,7 +106,7 @@ class TestArtifactoryDetector(object):
         assert ArtifactoryDetector().verify(ARTIFACTORY_TOKEN_BYTES) == VerifiedResult.VERIFIED_TRUE
 
     @responses.activate
-    def test_verify_status_not_200_or_401_bytes(self):
+    def test_verify_status_not_200_401_403_bytes(self):
         responses.add(
             responses.GET, 'https://%s/api/system/ping' % ArtifactoryDetector().artifactory_url,
             status=500,
