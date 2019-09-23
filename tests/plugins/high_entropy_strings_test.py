@@ -202,7 +202,7 @@ class TestBase64HighEntropyStrings(HighEntropyStringsTest):
 
         assert count == len(secrets)
 
-    def test_yaml_file(self):
+    def test_yaml_files(self):
         plugin = Base64HighEntropyString(
             base64_limit=3,
             exclude_lines_regex='CanonicalUser',
@@ -219,6 +219,10 @@ class TestBase64HighEntropyStrings(HighEntropyStringsTest):
                 'Location:    test_data/config.yaml:6',
                 'Location:    test_data/config.yaml:15',
             )
+
+        with open('test_data/only_comments.yaml') as f:
+            secrets = plugin.analyze(f, 'test_data/only_comments.yaml')
+        assert not secrets.values()
 
     def test_env_file(self):
         plugin = Base64HighEntropyString(4.5)

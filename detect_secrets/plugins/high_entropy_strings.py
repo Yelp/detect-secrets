@@ -188,6 +188,10 @@ class HighEntropyStringsPlugin(WordListSupportedDetector):
             exclude_lines_regex=self.exclude_lines_regex,
         )
         data = parser.json()
+        # If the file is all comments
+        if not data:
+            raise yaml.YAMLError
+
         ignored_lines = parser.get_ignored_lines()
         potential_secrets = {}
 
