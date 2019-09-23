@@ -13,6 +13,7 @@ from ..high_entropy_strings import Base64HighEntropyString  # noqa: F401
 from ..high_entropy_strings import HexHighEntropyString     # noqa: F401
 from ..jwt import JwtTokenDetector                          # noqa: F401
 from ..keyword import KeywordDetector                       # noqa: F401
+from ..mailchimp import MailchimpDetector                   # noqa: F401
 from ..private_key import PrivateKeyDetector                # noqa: F401
 from ..slack import SlackDetector                           # noqa: F401
 from ..stripe import StripeDetector                         # noqa: F401
