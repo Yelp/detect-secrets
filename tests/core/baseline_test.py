@@ -60,6 +60,29 @@ class TestInitializeBaseline(object):
         assert len(results['test_data/files/file_with_secrets.py']) == 1
         assert len(results['test_data/files/tmp/file_with_secrets.py']) == 2
 
+    @pytest.mark.parametrize(
+        'path',
+        [
+            [
+                './test_data/files',
+            ],
+        ],
+    )
+    def test_error_when_getting_git_tracked_files(self, path):
+        with mock_git_calls(
+            'detect_secrets.core.baseline.subprocess.check_output',
+            (
+                SubprocessMock(
+                    expected_input='git -C ./test_data/files ls-files',
+                    should_throw_exception=True,
+                    mocked_output='',
+                ),
+            ),
+        ):
+            results = self.get_results(path=['./test_data/files'])
+
+        assert not results
+
     def test_with_multiple_files(self):
         results = self.get_results(
             path=[
@@ -74,13 +97,29 @@ class TestInitializeBaseline(object):
         assert 'test_data/files/tmp/file_with_secrets.py' in results
 
     def test_with_multiple_non_existent_files(self):
-        results = self.get_results(path=['non-existent-file.A', 'non-existent-file.B'])
-
+        with mock.patch(
+            'detect_secrets.core.baseline.util.get_relative_path_if_in_cwd',
+            return_value=None,
+        ):
+            results = self.get_results(
+                path=[
+                    'non-existent-file.A',
+                    'non-existent-file.B',
+                    # Will be non-existant due to mock.patch
+                    'test_data/files/tmp/',
+                ],
+            )
         # No expected results, because files don't exist
         assert not results
 
     def test_with_folders_and_files(self):
-        results = self.get_results(path=['test_data/', 'non-existent-file.B'])
+        results = self.get_results(
+            path=[
+                'non-existent-file.B',
+                'test_data/',
+                'test_data/empty_folder',
+            ],
+        )
 
         assert 'test_data/files/file_with_secrets.py' in results
         assert 'test_data/files/tmp/file_with_secrets.py' in results
@@ -133,6 +172,18 @@ class TestInitializeBaseline(object):
             scan_all_files=True,
         )
         assert len(results.keys()) == 2
+
+    def test_scan_all_files_with_bad_symlinks(self):
+        with mock.patch(
+            'detect_secrets.core.baseline.util.get_relative_path_if_in_cwd',
+            return_value=None,
+        ):
+            results = self.get_results(
+                # Will be non-existant due to mock.patch
+                path=['test_data/files'],
+                scan_all_files=True,
+            )
+        assert len(results.keys()) == 0
 
 
 class TestGetSecretsNotInBaseline(object):

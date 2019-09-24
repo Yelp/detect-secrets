@@ -41,18 +41,33 @@ class RedundantComparisonError(Exception):
 
 
 AUDIT_RESULT_TO_STRING = {
-    True: 'positive',
-    False: 'negative',
-    None: 'unknown',
+    True: 'true-positives',
+    False: 'false-positives',
+    None: 'unknowns',
 }
 
 EMPTY_PLUGIN_AUDIT_RESULT = {
     'results': {
-        'positive': [],
-        'negative': [],
-        'unknown': [],
+        'true-positives': defaultdict(list),
+        'false-positives': defaultdict(list),
+        'unknowns': defaultdict(list),
     },
     'config': {},
+}
+EMPTY_STATS_RESULT = {
+    'signal': 0,
+    'true-positives': {
+        'count': 0,
+        'files': defaultdict(int),
+    },
+    'false-positives': {
+        'count': 0,
+        'files': defaultdict(int),
+    },
+    'unknowns': {
+        'count': 0,
+        'files': defaultdict(int),
+    },
 }
 
 
@@ -208,12 +223,30 @@ def determine_audit_results(baseline, baseline_path):
     Given a baseline which has been audited, returns
     a dictionary describing the results of each plugin in the following form:
     {
-        "results": {
+        "plugins": {
             "plugin_name1": {
                 "results": {
-                    "positive": [list of secrets with is_secret: true caught by this plugin],
-                    "negative": [list of secrets with is_secret: false caught by this plugin],
-                    "unknown": [list of secrets with no is_secret entry caught by this plugin]
+                    "true-positives": [
+                        list of {
+                            filename: {
+                                'line': '...',
+                                'plaintext':'...',
+                            }
+                        } for secrets with `is_secret: true` caught by this plugin],
+                    "false-positives": [
+                        list of {
+                            filename: {
+                                'line': '...',
+                                'plaintext':'...',
+                            }
+                        } for secrets with `is_secret: false` caught by this plugin],
+                    "unknowns": [
+                        list of {
+                            filename: {
+                                'line': '...',
+                                'plaintext':'...',
+                            }
+                        } for secrets with no `is_secret` entry caught by this plugin]
                 },
                 "config": {configuration used for the plugin}
             },
@@ -228,34 +261,49 @@ def determine_audit_results(baseline, baseline_path):
     all_secrets = _secret_generator(baseline)
 
     audit_results = {
-        'results': defaultdict(lambda: deepcopy(EMPTY_PLUGIN_AUDIT_RESULT)),
+        'plugins': defaultdict(lambda: deepcopy(EMPTY_PLUGIN_AUDIT_RESULT)),
+        'stats': deepcopy(EMPTY_STATS_RESULT),
     }
 
     secret_type_to_plugin_name = get_mapping_from_secret_type_to_class_name()
 
+    total = 0
     for filename, secret in all_secrets:
         file_contents = _open_file_with_cache(filename)
 
+        secret_info = {}
+        secret_info['line'] = _get_file_line(filename, secret['line_number'])
         try:
-            secret_plaintext = get_raw_secret_value(
+            secret_info['plaintext'] = get_raw_secret_value(
                 secret=secret,
                 plugin_settings=baseline['plugins_used'],
                 file_handle=io.StringIO(file_contents),
                 filename=filename,
             )
         except SecretNotFoundOnSpecifiedLineError:
-            secret_plaintext = _get_file_line(filename, secret['line_number'])
+            secret_info['plaintext'] = None
 
         plugin_name = secret_type_to_plugin_name[secret['type']]
         audit_result = AUDIT_RESULT_TO_STRING[secret.get('is_secret')]
-        audit_results['results'][plugin_name]['results'][audit_result].append(secret_plaintext)
+        audit_results['plugins'][plugin_name]['results'][audit_result][filename].append(secret_info)
+
+        audit_results['stats'][audit_result]['count'] += 1
+        audit_results['stats'][audit_result]['files'][filename] += 1
+        total += 1
+    audit_results['stats']['signal'] = str(
+        (
+            audit_results['stats']['true-positives']['count']
+            /
+            total
+        ) * 100,
+    )[:4] + '%'
 
     for plugin_config in baseline['plugins_used']:
         plugin_name = plugin_config['name']
-        if plugin_name not in audit_results['results']:
+        if plugin_name not in audit_results['plugins']:
             continue
 
-        audit_results['results'][plugin_name]['config'].update(plugin_config)
+        audit_results['plugins'][plugin_name]['config'].update(plugin_config)
 
     git_repo_path = os.path.dirname(os.path.abspath(baseline_path))
     git_sha = get_git_sha(git_repo_path)
@@ -657,13 +705,9 @@ def get_raw_secret_value(
 
     plugin_secrets = plugin.analyze(file_handle, filename)
 
-    matching_secret = [
-        plugin_secret.secret_value
-        for plugin_secret in plugin_secrets
-        if plugin_secret.secret_hash == secret['hashed_secret']
-    ]
+    # Return value of matching secret
+    for plugin_secret in plugin_secrets:
+        if plugin_secret.secret_hash == secret['hashed_secret']:
+            return plugin_secret.secret_value
 
-    if not matching_secret:
-        raise SecretNotFoundOnSpecifiedLineError(secret['line_number'])
-
-    return matching_secret[0]
+    raise SecretNotFoundOnSpecifiedLineError(secret['line_number'])

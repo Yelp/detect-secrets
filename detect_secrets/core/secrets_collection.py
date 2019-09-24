@@ -12,6 +12,7 @@ from detect_secrets.core.constants import IGNORED_FILE_EXTENSIONS
 from detect_secrets.core.log import log
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.common import initialize
+from detect_secrets.util import build_automaton
 
 
 class SecretsCollection(object):
@@ -21,6 +22,8 @@ class SecretsCollection(object):
         plugins=(),
         exclude_files=None,
         exclude_lines=None,
+        word_list_file=None,
+        word_list_hash=None,
     ):
         """
         :type plugins: tuple of detect_secrets.plugins.base.BasePlugin
@@ -32,14 +35,18 @@ class SecretsCollection(object):
         :type exclude_lines: str|None
         :param exclude_lines: optional regex for ignored lines.
 
-        :type version: str
-        :param version: version of detect-secrets that SecretsCollection
-            is valid at.
+        :type word_list_file: str|None
+        :param word_list_file: optional word list file for ignoring certain words.
+
+        :type word_list_hash: str|None
+        :param word_list_hash: optional iterated sha1 hash of the words in the word list.
         """
         self.data = {}
         self.plugins = plugins
         self.exclude_files = exclude_files
         self.exclude_lines = exclude_lines
+        self.word_list_file = word_list_file
+        self.word_list_hash = word_list_hash
         self.version = VERSION
 
     @classmethod
@@ -93,6 +100,17 @@ class SecretsCollection(object):
             result.exclude_files = data['exclude']['files']
             result.exclude_lines = data['exclude']['lines']
 
+        # In v0.12.7 the `--word-list` option got added
+        automaton = None
+        if 'word_list' in data:
+            result.word_list_file = data['word_list']['file']
+            result.word_list_hash = data['word_list']['hash']
+
+            if result.word_list_file:
+                # Always ignore the given `data['word_list']['hash']`
+                # The difference will show whenever the word list changes
+                automaton, result.word_list_hash = build_automaton(result.word_list_file)
+
         plugins = []
         for plugin in data['plugins_used']:
             plugin_classname = plugin.pop('name')
@@ -100,6 +118,7 @@ class SecretsCollection(object):
                 initialize.from_plugin_classname(
                     plugin_classname,
                     exclude_lines_regex=result.exclude_lines,
+                    automaton=automaton,
                     should_verify_secrets=False,
                     **plugin
                 ),
@@ -276,6 +295,10 @@ class SecretsCollection(object):
             'exclude': {
                 'files': self.exclude_files,
                 'lines': self.exclude_lines,
+            },
+            'word_list': {
+                'file': self.word_list_file,
+                'hash': self.word_list_hash,
             },
             'plugins_used': plugins_used,
             'results': results,

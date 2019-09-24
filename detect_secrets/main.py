@@ -13,6 +13,7 @@ from detect_secrets.core.log import log
 from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.core.usage import ParserBuilder
 from detect_secrets.plugins.common import initialize
+from detect_secrets.util import build_automaton
 
 
 def parse_args(argv):
@@ -30,11 +31,17 @@ def main(argv=None):
         log.set_debug_level(args.verbose)
 
     if args.action == 'scan':
+        automaton = None
+        word_list_hash = None
+        if args.word_list_file:
+            automaton, word_list_hash = build_automaton(args.word_list_file)
+
         # Plugins are *always* rescanned with fresh settings, because
         # we want to get the latest updates.
         plugins = initialize.from_parser_builder(
             args.plugins,
             exclude_lines_regex=args.exclude_lines,
+            automaton=automaton,
             should_verify_secrets=not args.no_verify,
         )
         if args.string:
@@ -46,7 +53,12 @@ def main(argv=None):
             _scan_string(line, plugins)
 
         else:
-            baseline_dict = _perform_scan(args, plugins)
+            baseline_dict = _perform_scan(
+                args,
+                plugins,
+                automaton,
+                word_list_hash,
+            )
 
             if args.import_filename:
                 write_baseline_to_file(
@@ -87,7 +99,7 @@ def main(argv=None):
     return 0
 
 
-def _get_plugin_from_baseline(old_baseline):
+def _get_plugins_from_baseline(old_baseline):
     plugins = []
     if old_baseline and 'plugins_used' in old_baseline:
         secrets_collection = SecretsCollection.load_baseline_from_dict(old_baseline)
@@ -114,17 +126,25 @@ def _scan_string(line, plugins):
     print('\n'.join(sorted(output)))
 
 
-def _perform_scan(args, plugins):
+def _perform_scan(args, plugins, automaton, word_list_hash):
     """
     :param args: output of `argparse.ArgumentParser.parse_args`
     :param plugins: tuple of initialized plugins
+
+    :type automaton: ahocorasick.Automaton|None
+    :param automaton: optional automaton for ignoring certain words.
+
+    :type word_list_hash: str|None
+    :param word_list_hash: optional iterated sha1 hash of the words in the word list.
 
     :rtype: dict
     """
     old_baseline = _get_existing_baseline(args.import_filename)
     if old_baseline:
-        plugins = initialize.merge_plugin_from_baseline(
-            _get_plugin_from_baseline(old_baseline), args,
+        plugins = initialize.merge_plugins_from_baseline(
+            _get_plugins_from_baseline(old_baseline),
+            args,
+            automaton=automaton,
         )
 
     # Favors `--exclude-files` and `--exclude-lines` CLI arguments
@@ -139,6 +159,12 @@ def _perform_scan(args, plugins):
         ):
             args.exclude_lines = old_baseline['exclude']['lines']
 
+        if (
+            not args.word_list_file
+            and old_baseline.get('word_list')
+        ):
+            args.word_list_file = old_baseline['word_list']['file']
+
     # If we have knowledge of an existing baseline file, we should use
     # that knowledge and add it to our exclude_files regex.
     if args.import_filename:
@@ -148,6 +174,8 @@ def _perform_scan(args, plugins):
         plugins=plugins,
         exclude_files_regex=args.exclude_files,
         exclude_lines_regex=args.exclude_lines,
+        word_list_file=args.word_list_file,
+        word_list_hash=word_list_hash,
         path=args.path,
         should_scan_all_files=args.all_files,
     ).format_for_baseline_output()

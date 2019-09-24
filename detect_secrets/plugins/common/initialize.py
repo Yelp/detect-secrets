@@ -19,6 +19,7 @@ from detect_secrets.core.usage import PluginOptions
 def from_parser_builder(
     plugins_dict,
     exclude_lines_regex=None,
+    automaton=None,
     should_verify_secrets=False,
 ):
     """
@@ -28,16 +29,21 @@ def from_parser_builder(
     :type exclude_lines_regex: str|None
     :param exclude_lines_regex: optional regex for ignored lines.
 
+    :type automaton: ahocorasick.Automaton|None
+    :param automaton: optional automaton for ignoring certain words.
+
     :type should_verify_secrets: bool
 
     :returns: tuple of initialized plugins
     """
     output = []
+
     for plugin_name in plugins_dict:
         output.append(
             from_plugin_classname(
                 plugin_name,
                 exclude_lines_regex=exclude_lines_regex,
+                automaton=automaton,
                 should_verify_secrets=should_verify_secrets,
                 **plugins_dict[plugin_name]
             ),
@@ -65,7 +71,7 @@ def _get_prioritized_parameters(plugins_dict, is_using_default_value_map, prefer
                 yield plugin_name, param_name, param_value
 
 
-def merge_plugin_from_baseline(baseline_plugins, args):
+def merge_plugins_from_baseline(baseline_plugins, args, automaton):
     """
     :type baseline_plugins: tuple of BasePlugin
     :param baseline_plugins: BasePlugin instances from baseline file
@@ -73,7 +79,10 @@ def merge_plugin_from_baseline(baseline_plugins, args):
     :type args: dict
     :param args: dictionary of arguments parsed from usage
 
-    param priority: input param > baseline param > default
+    :type automaton: ahocorasick.Automaton|None
+    :param automaton: optional automaton for ignoring certain words.
+
+    param priority is input param > baseline param > default
 
     :returns: tuple of initialized plugins
     """
@@ -89,10 +98,10 @@ def merge_plugin_from_baseline(baseline_plugins, args):
 
     # Use input plugin as starting point
     if args.use_all_plugins:
-        # input param and default param are used
+        # Input param and default param are used
         plugins_dict = dict(args.plugins)
 
-        # baseline param priority > default
+        # Baseline param priority > default
         for plugin_name, param_name, param_value in _get_prioritized_parameters(
             baseline_plugins_dict,
             args.is_using_default_value,
@@ -100,15 +109,16 @@ def merge_plugin_from_baseline(baseline_plugins, args):
         ):
             try:
                 plugins_dict[plugin_name][param_name] = param_value
-            except KeyError:
+            except KeyError:  # pragma: no cover
                 log.warning(
-                    'Baseline contain plugin {} which is not in all plugins! Ignoring...',
+                    'Baseline contains plugin {} which is not in all plugins! Ignoring...',
                     plugin_name,
                 )
 
         return from_parser_builder(
             plugins_dict,
             exclude_lines_regex=args.exclude_lines,
+            automaton=automaton,
             should_verify_secrets=not args.no_verify,
         )
 
@@ -120,7 +130,7 @@ def merge_plugin_from_baseline(baseline_plugins, args):
         if plugin_name not in disabled_plugins
     }
 
-    # input param priority > baseline
+    # Input param priority > baseline
     input_plugins_dict = dict(args.plugins)
     for plugin_name, param_name, param_value in _get_prioritized_parameters(
         input_plugins_dict,
@@ -139,12 +149,14 @@ def merge_plugin_from_baseline(baseline_plugins, args):
     return from_parser_builder(
         plugins_dict,
         exclude_lines_regex=args.exclude_lines,
+        automaton=automaton,
     )
 
 
 def from_plugin_classname(
     plugin_classname,
     exclude_lines_regex=None,
+    automaton=None,
     should_verify_secrets=False,
     **kwargs
 ):
@@ -155,6 +167,11 @@ def from_plugin_classname(
 
     :type exclude_lines_regex: str|None
     :param exclude_lines_regex: optional regex for ignored lines.
+
+    :type automaton: ahocorasick.Automaton|None
+    :param automaton: optional automaton for ignoring English-words.
+
+    :type should_verify_secrets: bool
     """
     klass = globals()[plugin_classname]
 
@@ -165,6 +182,7 @@ def from_plugin_classname(
     try:
         instance = klass(
             exclude_lines_regex=exclude_lines_regex,
+            automaton=automaton,
             should_verify=should_verify_secrets,
             **kwargs
         )
@@ -207,7 +225,10 @@ def from_secret_type(secret_type, settings):
             return from_plugin_classname(
                 classname,
 
-                # `audit` doesn't need verification
+                # `audit` does not need to
+                # perform exclusion, filtering or verification
+                exclude_lines_regex=None,
+                automaton=None,
                 should_verify_secrets=False,
 
                 **plugin_init_vars

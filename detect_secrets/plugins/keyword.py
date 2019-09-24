@@ -31,6 +31,7 @@ import re
 from .base import BasePlugin
 from .common.filetype import determine_file_type
 from .common.filetype import FileType
+from .common.filters import is_false_positive
 from detect_secrets.core.potential_secret import PotentialSecret
 
 
@@ -253,9 +254,10 @@ class KeywordDetector(BasePlugin):
 
     secret_type = 'Secret Keyword'
 
-    def __init__(self, keyword_exclude=None, exclude_lines_regex=None, **kwargs):
+    def __init__(self, keyword_exclude=None, exclude_lines_regex=None, automaton=None, **kwargs):
         super(KeywordDetector, self).__init__(
-            exclude_lines_regex,
+            exclude_lines_regex=exclude_lines_regex,
+            **kwargs
         )
 
         self.keyword_exclude = None
@@ -264,6 +266,8 @@ class KeywordDetector(BasePlugin):
                 keyword_exclude,
                 re.IGNORECASE,
             )
+
+        self.automaton = automaton
 
     def analyze_string_content(self, string, line_num, filename):
         output = {}
@@ -276,6 +280,8 @@ class KeywordDetector(BasePlugin):
             string,
             filetype=determine_file_type(filename),
         ):
+            if is_false_positive(identifier, self.automaton):
+                continue
             secret = PotentialSecret(
                 self.secret_type,
                 filename,

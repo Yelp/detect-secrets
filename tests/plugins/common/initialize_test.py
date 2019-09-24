@@ -55,7 +55,7 @@ class TestFromSecretType(object):
     def test_success(self):
         plugin = initialize.from_secret_type(
             'Base64 High Entropy String',
-            self.settings,
+            settings=self.settings,
         )
 
         assert isinstance(plugin, Base64HighEntropyString)
@@ -64,5 +64,11 @@ class TestFromSecretType(object):
     def test_failure(self):
         assert not initialize.from_secret_type(
             'some random secret_type',
-            self.settings,
+            settings=self.settings,
+        )
+
+    def test_secret_type_not_in_settings(self):
+        assert not initialize.from_secret_type(
+            'Base64 High Entropy String',
+            settings=[],
         )

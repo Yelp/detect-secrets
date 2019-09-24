@@ -7,7 +7,7 @@ from .base import RegexBasedDetector
 
 # This list is derived from RFC 3986 Section 2.2.
 #
-# We do not expect any of these delimiter characters to appear in
+# We don't expect any of these delimiter characters to appear in
 # the username/password component of the URL, seeing that this would probably
 # result in an unexpected URL parsing (and probably won't even work).
 RESERVED_CHARACTERS = ':/?#[]@'

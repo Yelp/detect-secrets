@@ -38,10 +38,10 @@ class IniFileParser(object):
         """
         self.parser = configparser.ConfigParser()
         try:
-            # python2.7 compatible
+            # Python2.7 compatible
             self.parser.optionxform = unicode
         except NameError:  # pragma: no cover
-            # python3 compatible
+            # Python3 compatible
             self.parser.optionxform = str
 
         self.exclude_lines_regex = exclude_lines_regex
@@ -53,10 +53,10 @@ class IniFileParser(object):
             content = '[global]\n' + content
 
         try:
-            # python2.7 compatible
+            # Python2.7 compatible
             self.parser.read_string(unicode(content))
         except NameError:  # pragma: no cover
-            # python3 compatible
+            # Python3 compatible
             self.parser.read_string(content)
 
         # Hacky way to keep track of line location
@@ -135,7 +135,7 @@ class IniFileParser(object):
 
             if current_value_list_index == len(values_list):
                 if index == 0:
-                    index = 1  # don't want to count the same line again
+                    index = 1  # Don't want to count the same line again
                 self.line_offset += index
                 self.lines = self.lines[index:]
                 lines_modified = True
@@ -163,7 +163,7 @@ class IniFileParser(object):
             >>> key = value0
             ...     value1
             ...
-            ...     # comment line here
+            ...     # Comment line here
             ...     value2
 
         given that normally, either value0 is supplied, or (value1, value2),

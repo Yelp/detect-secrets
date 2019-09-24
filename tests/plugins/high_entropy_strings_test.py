@@ -148,7 +148,7 @@ class TestBase64HighEntropyStrings(HighEntropyStringsTest):
                 base64_limit=4.5,
                 exclude_lines_regex='CanonicalUser',
             ),
-            non_secret_string='c3VwZXIgc2VjcmV0IHZhbHVl',  # too short for high entropy
+            non_secret_string='c3VwZXIgc2VjcmV0IHZhbHVl',  # Too short for high entropy
             secret_string='c3VwZXIgbG9uZyBzdHJpbmcgc2hvdWxkIGNhdXNlIGVub3VnaCBlbnRyb3B5',
         )
 
@@ -202,7 +202,7 @@ class TestBase64HighEntropyStrings(HighEntropyStringsTest):
 
         assert count == len(secrets)
 
-    def test_yaml_file(self):
+    def test_yaml_files(self):
         plugin = Base64HighEntropyString(
             base64_limit=3,
             exclude_lines_regex='CanonicalUser',
@@ -219,6 +219,10 @@ class TestBase64HighEntropyStrings(HighEntropyStringsTest):
                 'Location:    test_data/config.yaml:6',
                 'Location:    test_data/config.yaml:15',
             )
+
+        with open('test_data/only_comments.yaml') as f:
+            secrets = plugin.analyze(f, 'test_data/only_comments.yaml')
+        assert not secrets.values()
 
     def test_env_file(self):
         plugin = Base64HighEntropyString(4.5)
@@ -293,3 +297,5 @@ class TestHexHighEntropyStrings(HighEntropyStringsTest):
         # This makes sure it only occurs with numbers.
         assert self.logic.calculate_shannon_entropy('12345a') == \
             original_scanner.calculate_shannon_entropy('12345a')
+        assert self.logic.calculate_shannon_entropy('0') == \
+            original_scanner.calculate_shannon_entropy('0')

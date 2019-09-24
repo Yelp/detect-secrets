@@ -14,6 +14,18 @@ def add_exclude_lines_argument(parser):
     )
 
 
+def add_word_list_argument(parser):
+    parser.add_argument(
+        '--word-list',
+        type=str,
+        help=(
+            'Text file with a list of words, '
+            'if a secret contains a word in the list we ignore it.'
+        ),
+        dest='word_list_file',
+    )
+
+
 def add_use_all_plugins_argument(parser):
     parser.add_argument(
         '--use-all-plugins',
@@ -46,6 +58,7 @@ class ParserBuilder(object):
         self._add_filenames_argument()\
             ._add_set_baseline_argument()\
             ._add_exclude_lines_argument()\
+            ._add_word_list_argument()\
             ._add_use_all_plugins_argument()\
             ._add_no_verify_flag()
 
@@ -108,6 +121,10 @@ class ParserBuilder(object):
         add_exclude_lines_argument(self.parser)
         return self
 
+    def _add_word_list_argument(self):
+        add_word_list_argument(self.parser)
+        return self
+
     def _add_use_all_plugins_argument(self):
         add_use_all_plugins_argument(self.parser)
         return self
@@ -143,9 +160,10 @@ class ScanOptions(object):
             ),
         )
 
-        # Pairing `--exclude-lines` to both pre-commit and `--scan`
-        # because it can be used for both.
+        # Pairing `--exclude-lines` and `--word-list` to
+        # both pre-commit and `--scan` because it can be used for both.
         add_exclude_lines_argument(self.parser)
+        add_word_list_argument(self.parser)
 
         # Pairing `--exclude-files` with `--scan` because it's only used for the initialization.
         # The pre-commit hook framework already has an `exclude` option that can
@@ -401,11 +419,7 @@ class PluginOptions(object):
             # Consolidate related args
             related_args = {}
             for related_arg_tuple in plugin.related_args:
-                try:
-                    flag_name, default_value = related_arg_tuple
-                except ValueError:
-                    flag_name = related_arg_tuple
-                    default_value = None
+                flag_name, default_value = related_arg_tuple
 
                 arg_name = PluginOptions._convert_flag_text_to_argument_name(
                     flag_name,

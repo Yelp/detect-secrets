@@ -25,18 +25,18 @@ class AWSKeyDetector(RegexBasedDetector):
     )
 
     def verify(self, token, content):
-        secret_access_key = get_secret_access_key(content)
-        if not secret_access_key:
+        secret_access_key_candidates = get_secret_access_keys(content)
+        if not secret_access_key_candidates:
             return VerifiedResult.UNVERIFIED
 
-        for candidate in secret_access_key:
+        for candidate in secret_access_key_candidates:
             if verify_aws_secret_access_key(token, candidate):
                 return VerifiedResult.VERIFIED_TRUE
 
         return VerifiedResult.VERIFIED_FALSE
 
 
-def get_secret_access_key(content):
+def get_secret_access_keys(content):
     # AWS secret access keys are 40 characters long.
     regex = re.compile(
         r'= *([\'"]?)([%s]{40})(\1)$' % (
@@ -176,7 +176,7 @@ def verify_aws_secret_access_key(key, secret):  # pragma: no cover
     return True
 
 
-def _sign(key, message, hex=False):   # pragma: no cover
+def _sign(key, message, hex=False):  # pragma: no cover
     value = hmac.new(key, message.encode('utf-8'), hashlib.sha256)
     if not hex:
         return value.digest()

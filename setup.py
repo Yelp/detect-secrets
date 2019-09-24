@@ -29,6 +29,9 @@ setup(
             'future',
             'functools32',
         ],
+        'word_list': [
+            'pyahocorasick',
+        ],
     },
     entry_points={
         'console_scripts': [

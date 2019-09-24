@@ -4,7 +4,6 @@ from abc import abstractmethod
 from abc import abstractproperty
 
 from .common.constants import ALLOWLIST_REGEXES
-from .common.filters import is_false_positive
 from detect_secrets.core.code_snippet import CodeSnippetHighlighter
 from detect_secrets.core.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
@@ -69,7 +68,7 @@ class BasePlugin(object):
                 )
 
                 is_verified = self.verify(result.secret_value, content=str(snippet))
-                if is_verified != VerifiedResult.UNVERIFIED:
+                if is_verified == VerifiedResult.VERIFIED_TRUE:
                     result.is_verified = True
 
                 if is_verified != VerifiedResult.VERIFIED_FALSE:
@@ -149,7 +148,11 @@ class BasePlugin(object):
             <classname>: <returned-value>
         """
         # TODO: Handle multiple secrets on single line.
-        results = self.analyze_string(string, 0, 'does_not_matter')
+        results = self.analyze_string(
+            string,
+            line_num=0,
+            filename='does_not_matter',
+        )
         if not results:
             return 'False'
 
@@ -194,7 +197,7 @@ class BasePlugin(object):
 
 
 class RegexBasedDetector(BasePlugin):
-    """Base class for regular-expression based detectors.
+    """Parent class for regular-expression based detectors.
 
     To create a new regex-based detector, subclass this and set
     `secret_type` with a description and `denylist`
@@ -235,7 +238,4 @@ class RegexBasedDetector(BasePlugin):
     def secret_generator(self, string, *args, **kwargs):
         for regex in self.denylist:
             for match in regex.findall(string):
-                if is_false_positive(match):
-                    continue
-
                 yield match

@@ -18,17 +18,27 @@ def initialize(
     plugins,
     exclude_files_regex=None,
     exclude_lines_regex=None,
+    word_list_file=None,
+    word_list_hash=None,
     should_scan_all_files=False,
 ):
     """Scans the entire codebase for secrets, and returns a
     SecretsCollection object.
+
+    :type path: list
 
     :type plugins: tuple of detect_secrets.plugins.base.BasePlugin
     :param plugins: rules to initialize the SecretsCollection with.
 
     :type exclude_files_regex: str|None
     :type exclude_lines_regex: str|None
-    :type path: list
+
+    :type word_list_file: str|None
+    :param word_list_file: optional word list file for ignoring certain words.
+
+    :type word_list_hash: str|None
+    :param word_list_hash: optional iterated sha1 hash of the words in the word list.
+
     :type should_scan_all_files: bool
 
     :rtype: SecretsCollection
@@ -37,17 +47,21 @@ def initialize(
         plugins,
         exclude_files=exclude_files_regex,
         exclude_lines=exclude_lines_regex,
+        word_list_file=word_list_file,
+        word_list_hash=word_list_hash,
     )
 
     files_to_scan = []
     for element in path:
         if os.path.isdir(element):
             if should_scan_all_files:
-                files_to_scan.extend(_get_files_recursively(element))
+                files_to_scan.extend(
+                    _get_files_recursively(element),
+                )
             else:
-                files = _get_git_tracked_files(element)
-                if files:
-                    files_to_scan.extend(files)
+                files_to_scan.extend(
+                    _get_git_tracked_files(element),
+                )
         elif os.path.isfile(element):
             files_to_scan.append(element)
         else:
@@ -65,7 +79,7 @@ def initialize(
             files_to_scan,
         )
 
-    for file in files_to_scan:
+    for file in sorted(files_to_scan):
         output.scan_file(file)
 
     return output
@@ -267,6 +281,7 @@ def _get_git_tracked_files(rootdir='.'):
     :rtype: set|None
     :returns: filepaths to files which git currently tracks (locally)
     """
+    output = []
     try:
         with open(os.devnull, 'w') as fnull:
             git_files = subprocess.check_output(
@@ -277,13 +292,13 @@ def _get_git_tracked_files(rootdir='.'):
                 ],
                 stderr=fnull,
             )
-
-        return set([
-            util.get_relative_path(rootdir, filename)
-            for filename in git_files.decode('utf-8').split()
-        ])
+        for filename in git_files.decode('utf-8').split():
+            relative_path = util.get_relative_path_if_in_cwd(rootdir, filename)
+            if relative_path:
+                output.append(relative_path)
     except subprocess.CalledProcessError:
-        return None
+        pass
+    return output
 
 
 def _get_files_recursively(rootdir):
@@ -293,6 +308,7 @@ def _get_files_recursively(rootdir):
     output = []
     for root, _, files in os.walk(rootdir):
         for filename in files:
-            output.append(util.get_relative_path(root, filename))
-
+            relative_path = util.get_relative_path_if_in_cwd(root, filename)
+            if relative_path:
+                output.append(relative_path)
     return output
