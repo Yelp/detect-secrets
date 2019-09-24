@@ -26,23 +26,21 @@ def build_automaton(word_list):
     # See https://pyahocorasick.readthedocs.io/en/latest/
     # for more information.
     automaton = ahocorasick.Automaton()
-    word_list_hash = ''
+    word_list_hash = hashlib.sha1()
 
     with open(word_list) as f:
         for line in f:
             # .lower() to make everything case-insensitive
             line = line.lower().strip()
             if len(line) > 3:
-                word_list_hash = hashlib.sha1(
-                    (word_list_hash + line).encode('utf-8'),
-                ).hexdigest()
+                word_list_hash.update(line.encode('utf-8'))
                 automaton.add_word(line, line)
 
     automaton.make_automaton()
 
     return (
         automaton,
-        word_list_hash,
+        word_list_hash.hexdigest(),
     )
 
 
