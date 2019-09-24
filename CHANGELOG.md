@@ -24,6 +24,28 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [@xxxx]: https://github.com/xxxx
 -->
 
+### v0.12.7
+##### September 23rd, 2019
+
+#### :tada: New Features
+
+- Added a `JwtTokenDetector` plugin ([#239], thanks [@gdemarcsek])
+- [Added verification for Mailchimp API keys](https://github.com/Yelp/detect-secrets/pull/241/commits/977c4fb5606b42a9c73dfb598fa0a6cd0ab77c90)
+- [Added verification for Stripe secret API keys](https://github.com/Yelp/detect-secrets/pull/241/commits/9cabbe078c16ce476400859ebbdf160c82f6ea80)
+
+#### :telescope: Accuracy
+
+- Added a `--word-list` option for filtering secrets with words in them ([#241], do `pip install detect-secrets[word_list]` to use this feature)
+
+#### :bug: Bugfixes
+
+- [Fixed a bug where we were not skipping ignored file extensions](https://github.com/Yelp/detect-secrets/pull/241/commits/bb543c5b20372f507ae0f99f7d01872f66db3a83)
+- [Fixed a bug in the `audit` functionality where we crashed if the baseline had a Mailchimp secret in it](https://github.com/Yelp/detect-secrets/pull/241/commits/ef5d0006cc953784631f19f7de72ba3ab5972def)
+
+[#239]: https://github.com/Yelp/detect-secrets/pull/239
+[#241]: https://github.com/Yelp/detect-secrets/pull/241
+
+
 ### v0.12.6
 ##### September 16th, 2019
 
@@ -567,6 +589,7 @@ This includes using `# pragma: allowlist secret` now for inline allowlisting.
 - [@cclauss]
 - [@cleborys]
 - [@dgzlopes]
+- [@gdemarcsek]
 - [@guykisel]
 - [@hpandeycodeit]
 - [@jkozera]
@@ -587,6 +610,7 @@ This includes using `# pragma: allowlist secret` now for inline allowlisting.
 [@cclauss]: https://github.com/cclauss
 [@cleborys]: https://github.com/cleborys
 [@dgzlopes]: https://github.com/dgzlopes
+[@gdemarcsek]: https://github.com/gdemarcsek
 [@guykisel]: https://github.com/guykisel
 [@hpandeycodeit]: https://github.com/hpandeycodeit
 [@jkozera]: https://github.com/jkozera
