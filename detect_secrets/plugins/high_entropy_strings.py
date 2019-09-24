@@ -14,7 +14,7 @@ from contextlib import contextmanager
 
 import yaml
 
-from .base import WordListSupportedDetector
+from .base import BasePlugin
 from .common.filetype import determine_file_type
 from .common.filetype import FileType
 from .common.filters import is_false_positive
@@ -23,7 +23,7 @@ from .common.yaml_file_parser import YamlFileParser
 from detect_secrets.core.potential_secret import PotentialSecret
 
 
-class HighEntropyStringsPlugin(WordListSupportedDetector):
+class HighEntropyStringsPlugin(BasePlugin):
     """Base class for string pattern matching"""
 
     __metaclass__ = ABCMeta
@@ -38,11 +38,11 @@ class HighEntropyStringsPlugin(WordListSupportedDetector):
 
         self.charset = charset
         self.entropy_limit = limit
+        self.automaton = automaton
         self.regex = re.compile(r'([\'"])([%s]+)(\1)' % charset)
 
         super(HighEntropyStringsPlugin, self).__init__(
             exclude_lines_regex=exclude_lines_regex,
-            automaton=automaton,
         )
 
     def analyze(self, file, filename):

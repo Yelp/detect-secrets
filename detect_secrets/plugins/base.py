@@ -239,28 +239,3 @@ class RegexBasedDetector(BasePlugin):
         for regex in self.denylist:
             for match in regex.findall(string):
                 yield match
-
-
-class WordListSupportedDetector(BasePlugin):
-    """Parent class for detectors supporting a word list.
-
-    To create a new word list supported detector, subclass this
-    and pass `automaton` in __init__ like:
-
-    class BarDetector(WordListSupportedDetector):
-
-        secret_type = "bar"
-
-        def __init__(self, automaton=None, **kwargs):
-            super(BarDetector, self).__init__(
-                automaton,
-                **kwargs
-            )
-            ...
-    """
-    __metaclass__ = ABCMeta
-
-    def __init__(self, automaton=None, **kwargs):
-        super(WordListSupportedDetector, self).__init__(**kwargs)
-
-        self.automaton = automaton

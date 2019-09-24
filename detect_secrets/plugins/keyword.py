@@ -28,7 +28,7 @@ from __future__ import absolute_import
 
 import re
 
-from .base import WordListSupportedDetector
+from .base import BasePlugin
 from .common.filetype import determine_file_type
 from .common.filetype import FileType
 from .common.filters import is_false_positive
@@ -247,7 +247,7 @@ QUOTES_REQUIRED_FILETYPES = {
 }
 
 
-class KeywordDetector(WordListSupportedDetector):
+class KeywordDetector(BasePlugin):
     """This checks if denylisted keywords
     are present in the analyzed string.
     """
@@ -257,7 +257,6 @@ class KeywordDetector(WordListSupportedDetector):
     def __init__(self, keyword_exclude=None, exclude_lines_regex=None, automaton=None, **kwargs):
         super(KeywordDetector, self).__init__(
             exclude_lines_regex=exclude_lines_regex,
-            automaton=automaton,
             **kwargs
         )
 
@@ -267,6 +266,8 @@ class KeywordDetector(WordListSupportedDetector):
                 keyword_exclude,
                 re.IGNORECASE,
             )
+
+        self.automaton = automaton
 
     def analyze_string_content(self, string, line_num, filename):
         output = {}
