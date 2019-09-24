@@ -217,7 +217,7 @@ class HighEntropyStringsPlugin(BasePlugin):
                     else item['__value__']
                 )
 
-                secrets = self.analyze_string(
+                secrets = self.analyze_string_content(
                     string_to_scan,
                     item['__line__'],
                     filename,
