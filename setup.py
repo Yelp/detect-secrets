@@ -18,6 +18,7 @@ setup(
     install_requires=[
         'pyyaml',
         'requests',
+        'ibm_db',
     ],
     extras_require={
         'word_list': [

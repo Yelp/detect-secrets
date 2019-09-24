@@ -32,10 +32,9 @@ matrix:
           python: 3.6
         - env: TOXENV=py37
           python: 3.7
-          dist: xenial  # Required for Python >= 3.7 (travis-ci/travis-ci#9069)
-        - env: TOXENV=py38
-          python: 3.8
-          dist: xenial  # Required for Python >= 3.7 (travis-ci/travis-ci#9069)
+          dist: xenial  # required for Python >= 3.7 (travis-ci/travis-ci#9069)
+        # - env: TOXENV=pypy
+        #   python: pypy
 install:
     - pip install tox
 script: make test && docker build -t $DOCKER_IMAGE:$DOCKER_IMAGE_TAG --no-cache .
