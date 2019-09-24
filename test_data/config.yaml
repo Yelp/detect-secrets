@@ -1,5 +1,5 @@
 credentials:
-    some_value_here: not_a_secret
+    some_value_here: not_secret
     other_value_here: 1234567890a
     CanonicalUserGetSkippedByExcludeLines: 1234567890ab
     nested:

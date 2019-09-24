@@ -339,8 +339,15 @@ class Base64HighEntropyString(HighEntropyStringsPlugin):
     secret_type = 'Base64 High Entropy String'
 
     def __init__(self, base64_limit, exclude_lines_regex=None, automaton=None, **kwargs):
+        charset = (
+            string.ascii_letters
+            + string.digits
+            + '+/'  # regular base64
+            + '\\-_'  # url-safe base64
+            + '='  # padding
+        )
         super(Base64HighEntropyString, self).__init__(
-            charset=string.ascii_letters + string.digits + '+/=',
+            charset=charset,
             limit=base64_limit,
             exclude_lines_regex=exclude_lines_regex,
             automaton=automaton,
