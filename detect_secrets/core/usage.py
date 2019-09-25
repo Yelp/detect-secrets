@@ -426,6 +426,12 @@ class PluginOptions:
             disable_help_text='Disable scanning for SoftLayer keys',
             is_default=True,
         ),
+        PluginDescriptor(
+            classname='DB2Detector',
+            disable_flag_text='--no-db2-scan',
+            disable_help_text='Disable scanning for DB2 credentials',
+            is_default=True,
+        ),
     ]
 
     default_plugins_list = [

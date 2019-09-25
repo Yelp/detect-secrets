@@ -197,6 +197,9 @@ class TestPreCommitHook:
                     'name': 'BasicAuthDetector',
                 },
                 {
+                    'name': 'DB2Detector',
+                },
+                {
                     'name': 'GHDetector',
                 },
                 {

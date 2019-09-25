@@ -193,6 +193,7 @@ class TestMain:
                 ArtifactoryDetector    : False
                 Base64HighEntropyString: {}
                 BasicAuthDetector      : False
+                DB2Detector            : False
                 GHDetector             : False
                 HexHighEntropyString   : {}
                 KeywordDetector        : False
@@ -221,6 +222,7 @@ class TestMain:
                 AWSKeyDetector     : False
                 ArtifactoryDetector: False
                 BasicAuthDetector  : False
+                DB2Detector        : False
                 GHDetector         : False
                 PrivateKeyDetector : False
                 SlackDetector      : False
@@ -242,6 +244,7 @@ class TestMain:
                 ArtifactoryDetector    : False
                 Base64HighEntropyString: False (2.585)
                 BasicAuthDetector      : False
+                DB2Detector            : False
                 GHDetector             : False
                 HexHighEntropyString   : False (2.121)
                 KeywordDetector        : False
@@ -377,6 +380,9 @@ class TestMain:
                         'name': 'BasicAuthDetector',
                     },
                     {
+                        'name': 'DB2Detector',
+                    },
+                    {
                         'name': 'GHDetector',
                     },
                     {
@@ -418,6 +424,9 @@ class TestMain:
                     },
                     {
                         'name': 'BasicAuthDetector',
+                    },
+                    {
+                        'name': 'DB2Detector',
                     },
                     {
                         'name': 'GHDetector',
@@ -520,6 +529,9 @@ class TestMain:
                         'name': 'BasicAuthDetector',
                     },
                     {
+                        'name': 'DB2Detector',
+                    },
+                    {
                         'name': 'GHDetector',
                     },
                     {
@@ -560,6 +572,9 @@ class TestMain:
                     },
                     {
                         'name': 'BasicAuthDetector',
+                    },
+                    {
+                        'name': 'DB2Detector',
                     },
                     {
                         'name': 'GHDetector',
@@ -702,6 +717,9 @@ class TestMain:
             },
             {
                 'name': 'BasicAuthDetector',
+            },
+            {
+                'name': 'DB2Detector',
             },
             {
                 'name': 'GHDetector',

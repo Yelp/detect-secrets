@@ -50,6 +50,7 @@ class TestPluginOptions:
             'ArtifactoryDetector': {},
             'GHDetector': {},
             'SoftLayerDetector': {},
+            'DB2Detector': {},
         }
 >>>>>>> Define default plugin list
 

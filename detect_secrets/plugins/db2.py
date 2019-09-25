@@ -19,7 +19,7 @@ class DB2Detector(RegexBasedDetector):
     password_keyword = r'(?:password|pwd|pass|passwd)'
     opt_space = r'(?: *)'
     assignment = r'(?:=|:|:=|=>|::)'
-    password = r'[a-zA-Z0-9\W]+'
+    password = r'[^\n]+'
     denylist = (
         re.compile(
             r'{begin}{opt_quote}{opt_db}{opt_dash_undrscr}{password_keyword}{opt_quote}{opt_space}'
