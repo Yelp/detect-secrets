@@ -161,7 +161,7 @@ class HighEntropyStringsPlugin(BasePlugin):
                     exclude_lines_regex=self.exclude_lines_regex,
                 ).iterator():
                     potential_secrets.update(
-                        self.analyze_string(
+                        self.analyze_string_content(
                             value,
                             lineno,
                             filename,
