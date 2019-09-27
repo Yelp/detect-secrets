@@ -2,7 +2,10 @@ from __future__ import absolute_import
 
 import re
 
+import requests
+
 from .base import RegexBasedDetector
+from detect_secrets.core.constants import VerifiedResult
 
 
 class IBMCloudIAMDetector(RegexBasedDetector):
@@ -37,3 +40,22 @@ class IBMCloudIAMDetector(RegexBasedDetector):
             ), flags=re.IGNORECASE,
         ),
     ]
+
+    def verify(self, token, **kwargs):
+        if type(token) == bytes:
+            token = token.decode('UTF-8')
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json',
+        }
+        response = requests.post(
+            'https://iam.cloud.ibm.com/identity/token',
+            headers=headers,
+            data={
+                'grant_type': 'urn:ibm:params:oauth:grant-type:apikey',
+                'apikey': token,
+            },
+        )
+
+        return VerifiedResult.VERIFIED_TRUE if response.status_code == 200 \
+            else VerifiedResult.VERIFIED_FALSE
