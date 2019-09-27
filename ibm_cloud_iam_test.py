@@ -1,11 +1,14 @@
 from __future__ import absolute_import
 
 import pytest
+import responses
 
+from detect_secrets.core.constants import VerifiedResult
 from detect_secrets.plugins.ibm_cloud_iam import IBMCloudIAMDetector
 
 
 CLOUD_IAM_KEY = 'abcd1234abcd1234abcd1234abcd1234abcd1234--__'
+CLOUD_IAM_KEY_BYTES = b'abcd1234abcd1234abcd1234abcd1234abcd1234--__'
 
 
 class TestIBMCloudIamDetector(object):
@@ -55,3 +58,35 @@ class TestIBMCloudIamDetector(object):
 
         output = logic.analyze_string(payload, 1, 'mock_filename')
         assert len(output) == (1 if should_flag else 0)
+
+    @responses.activate
+    def test_verify_invalid_secret(self):
+        responses.add(
+            responses.POST, 'https://iam.cloud.ibm.com/identity/token', status=400,
+        )
+
+        assert IBMCloudIAMDetector().verify(CLOUD_IAM_KEY) == VerifiedResult.VERIFIED_FALSE
+
+    @responses.activate
+    def test_verify_valid_secret(self):
+        responses.add(
+            responses.POST, 'https://iam.cloud.ibm.com/identity/token', status=200,
+        )
+
+        IBMCloudIAMDetector().verify(CLOUD_IAM_KEY) == VerifiedResult.VERIFIED_TRUE
+
+    @responses.activate
+    def test_verify_invalid_secret_bytes(self):
+        responses.add(
+            responses.POST, 'https://iam.cloud.ibm.com/identity/token', status=400,
+        )
+
+        assert IBMCloudIAMDetector().verify(CLOUD_IAM_KEY_BYTES) == VerifiedResult.VERIFIED_FALSE
+
+    @responses.activate
+    def test_verify_valid_secret_byes(self):
+        responses.add(
+            responses.POST, 'https://iam.cloud.ibm.com/identity/token', status=200,
+        )
+
+        IBMCloudIAMDetector().verify(CLOUD_IAM_KEY_BYTES) == VerifiedResult.VERIFIED_TRUE
