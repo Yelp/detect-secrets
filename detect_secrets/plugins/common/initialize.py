@@ -12,6 +12,7 @@ from ..db2 import DB2Detector                               # noqa: F401
 from ..gh import GHDetector                                 # noqa: F401
 from ..high_entropy_strings import Base64HighEntropyString  # noqa: F401
 from ..high_entropy_strings import HexHighEntropyString     # noqa: F401
+from ..ibm_cloud_iam import IBMCloudIAMDetector             # noqa: F401
 from ..keyword import KeywordDetector                       # noqa: F401
 from ..private_key import PrivateKeyDetector                # noqa: F401
 from ..slack import SlackDetector                           # noqa: F401

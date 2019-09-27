@@ -212,6 +212,9 @@ class TestPreCommitHook:
                     'name': 'HexHighEntropyString',
                 },
                 {
+                    'name': 'IBMCloudIAMDetector',
+                },
+                {
                     'name': 'KeywordDetector',
                     'keyword_exclude': None,
                 },

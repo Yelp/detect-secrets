@@ -432,6 +432,12 @@ class PluginOptions:
             disable_help_text='Disable scanning for DB2 credentials',
             is_default=True,
         ),
+        PluginDescriptor(
+            classname='IBMCloudIAMDetector',
+            disable_flag_text='--no-ibm-cloud-iam-scan',
+            disable_help_text='Disable scanning for IBM Cloud IAM keys',
+            is_default=True,
+        ),
     ]
 
     default_plugins_list = [
