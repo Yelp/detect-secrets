@@ -19,6 +19,7 @@ from .base import classproperty
 from .common.filetype import determine_file_type
 from .common.filetype import FileType
 from .common.filters import is_false_positive
+from .common.filters import is_false_positive_with_line_context
 from .common.ini_file_parser import IniFileParser
 from .common.yaml_file_parser import YamlFileParser
 from detect_secrets.core.potential_secret import PotentialSecret
@@ -82,6 +83,21 @@ class HighEntropyStringsPlugin(BasePlugin):
                 entropy += - p_x * math.log(p_x, 2)
 
         return entropy
+
+    def analyze_string(self, string, line_num, filename):
+        output = super(HighEntropyStringsPlugin, self).analyze_string(
+            string,
+            line_num,
+            filename,
+        )
+
+        return {
+            key: value for key, value in output.items()
+            if not is_false_positive_with_line_context(
+                key.secret_value,
+                string,
+            )
+        }
 
     def analyze_string_content(self, string, line_num, filename):
         """Searches string for custom pattern, and captures all high entropy strings that

@@ -5,7 +5,7 @@ import pytest
 from detect_secrets.plugins.common import filters
 
 
-class TestIsSequentialString:
+class TestIsSequentialString(object):
     @pytest.mark.parametrize(
         'secret',
         (
@@ -31,7 +31,7 @@ class TestIsSequentialString:
         ),
     )
     def test_success(self, secret):
-        assert filters._is_sequential_string(secret)
+        assert filters.is_sequential_string(secret)
 
     @pytest.mark.parametrize(
         'secret',
@@ -40,4 +40,36 @@ class TestIsSequentialString:
         ),
     )
     def test_failure(self, secret):
-        assert not filters._is_sequential_string(secret)
+        assert not filters.is_sequential_string(secret)
+
+
+class TestIsLikelyIdString(object):
+    @pytest.mark.parametrize(
+        'secret, line',
+        [
+            ('RANDOM_STRING', 'id: RANDOM_STRING'),
+            ('RANDOM_STRING', 'id=RANDOM_STRING'),
+            ('RANDOM_STRING', 'id = RANDOM_STRING'),
+            ('RANDOM_STRING', 'myid: RANDOM_STRING'),
+            ('RANDOM_STRING', 'myid=RANDOM_STRING'),
+            ('RANDOM_STRING', 'myid = RANDOM_STRING'),
+        ],
+    )
+    def test_success(self, secret, line):
+        assert filters.is_likely_id_string(secret, line)
+
+    @pytest.mark.parametrize(
+        'secret, line',
+        [
+            # the word hidden has the word id in it, but lets
+            # not mark that as an id string
+            ('RANDOM_STRING', 'hidden_secret: RANDOM_STRING'),
+            ('RANDOM_STRING', 'hidden_secret=RANDOM_STRING'),
+            ('RANDOM_STRING', 'hidden_secret = RANDOM_STRING'),
+
+            # fail silently if the secret isn't even on the line
+            ('SOME_RANDOM_STRING', 'id: SOME_OTHER_RANDOM_STRING'),
+        ],
+    )
+    def test_failure(self, secret, line):
+        assert not filters.is_likely_id_string(secret, line)
