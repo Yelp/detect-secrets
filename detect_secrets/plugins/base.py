@@ -97,7 +97,7 @@ class BasePlugin(object):
         potential_secrets = {}
         file_lines = tuple(file.readlines())
         for line_num, line in enumerate(file_lines, start=1):
-            results = self.analyze_string(line, line_num, filename)
+            results = self.analyze_line(line, line_num, filename)
             if not self.should_verify:
                 potential_secrets.update(results)
                 continue
@@ -121,7 +121,7 @@ class BasePlugin(object):
 
         return potential_secrets
 
-    def analyze_string(self, string, line_num, filename):
+    def analyze_line(self, string, line_num, filename):
         """
         :param string:    string; the line to analyze
         :param line_num:  integer; line number that is currently being analyzed
@@ -163,7 +163,7 @@ class BasePlugin(object):
     @abstractmethod
     def secret_generator(self, string, *args, **kwargs):
         """Flags secrets in a given string, and yields the raw secret value.
-        Used in self.analyze_string for PotentialSecret creation.
+        Used in self.analyze_line for PotentialSecret creation.
 
         :type string: str
         :param string: the secret to scan
@@ -178,7 +178,7 @@ class BasePlugin(object):
         check what different plugins say regarding a single line/secret. This
         supports that.
 
-        This is very similar to self.analyze_string, but allows the flexibility
+        This is very similar to self.analyze_line, but allows the flexibility
         for subclasses to add any other notable info (rather than just a
         PotentialSecret type). e.g. HighEntropyStrings adds their Shannon
         entropy in which they made their decision.
@@ -191,7 +191,7 @@ class BasePlugin(object):
             <classname>: <returned-value>
         """
         # TODO: Handle multiple secrets on single line.
-        results = self.analyze_string(
+        results = self.analyze_line(
             string,
             line_num=0,
             filename='does_not_matter',

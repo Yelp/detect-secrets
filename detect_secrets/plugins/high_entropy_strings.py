@@ -84,8 +84,8 @@ class HighEntropyStringsPlugin(BasePlugin):
 
         return entropy
 
-    def analyze_string(self, string, line_num, filename):
-        output = super(HighEntropyStringsPlugin, self).analyze_string(
+    def analyze_line(self, string, line_num, filename):
+        output = super(HighEntropyStringsPlugin, self).analyze_line(
             string,
             line_num,
             filename,
@@ -130,7 +130,7 @@ class HighEntropyStringsPlugin(BasePlugin):
         # Since it's an individual string, it's just bad UX to require quotes
         # around the expected secret.
         with self.non_quoted_string_regex():
-            results = self.analyze_string(
+            results = self.analyze_line(
                 string,
                 line_num=0,
                 filename='does_not_matter',
