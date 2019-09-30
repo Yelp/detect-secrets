@@ -80,29 +80,37 @@ class DB2Detector(RegexBasedDetector):
             for database in database_matches:  # pragma: no cover
                 for port in port_matches:  # pragma: no cover
                     for hostname in hostname_matches:  # pragma: no cover
-                        try:
-                            conn_str = 'database={database};hostname={hostname};port={port};' + \
-                                       'protocol=tcpip;uid={username};pwd={token}'
-                            conn_str = conn_str.format(
-                                database=database,
-                                hostname=hostname,
-                                port=port,
-                                username=username,
-                                token=token,
-                            )
-                            ibm_db_conn = ibm_db.connect(conn_str, '', '')
-                            if ibm_db_conn:
-                                potential_secret.other_factors['database'] = database
-                                potential_secret.other_factors['hostname'] = hostname
-                                potential_secret.other_factors['port'] = port
-                                potential_secret.other_factors['username'] = username
-                                return VerifiedResult.VERIFIED_TRUE
-                            else:
-                                return VerifiedResult.VERIFIED_FALSE
-                        except Exception:
-                            return VerifiedResult.UNVERIFIED
+                        verify_result = verify_db2_credentials(
+                            database, hostname, port, username, token,
+                        )
+                        if verify_result == VerifiedResult.VERIFIED_TRUE:
+                            potential_secret.other_factors['database'] = database
+                            potential_secret.other_factors['hostname'] = hostname
+                            potential_secret.other_factors['port'] = port
+                            potential_secret.other_factors['username'] = username
+                        return verify_result
 
         return VerifiedResult.VERIFIED_FALSE
+
+
+def verify_db2_credentials(database, hostname, port, username, password):  # pragma: no cover
+    try:
+        conn_str = 'database={database};hostname={hostname};port={port};' + \
+                   'protocol=tcpip;uid={username};pwd={password}'
+        conn_str = conn_str.format(
+            database=database,
+            hostname=hostname,
+            port=port,
+            username=username,
+            password=password,
+        )
+        ibm_db_conn = ibm_db.connect(conn_str, '', '')
+        if ibm_db_conn:
+            return VerifiedResult.VERIFIED_TRUE
+        else:
+            return VerifiedResult.VERIFIED_FALSE
+    except Exception:
+        return VerifiedResult.UNVERIFIED
 
 
 def get_other_factor(content, factor_keyword_regex, factor_regex):
