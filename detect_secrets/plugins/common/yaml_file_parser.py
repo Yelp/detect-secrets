@@ -100,6 +100,11 @@ class YamlFileParser(object):
                         value=str(value.tag.endswith(':binary')),
                         tag='tag:yaml.org,2002:bool',
                     ),
+                    self._create_key_value_pair_for_mapping_node_value(
+                        key='__original_key__',
+                        value=key.value,
+                        tag='tag:yaml.org,2002:str',
+                    ),
                 ],
             )
 

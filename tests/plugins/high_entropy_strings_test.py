@@ -219,7 +219,7 @@ class TestRegularBase64HighEntropyStrings(HighEntropyStringsTest):
             assert location in (
                 'Location:    test_data/config.yaml:3',
                 'Location:    test_data/config.yaml:6',
-                'Location:    test_data/config.yaml:15',
+                'Location:    test_data/config.yaml:14',
             )
 
         with open('test_data/only_comments.yaml') as f:

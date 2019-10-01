@@ -84,6 +84,16 @@ class HighEntropyStringsPlugin(BasePlugin):
 
         return entropy
 
+    @staticmethod
+    def _check_for_false_positives_with_line_context(potential_secrets, line):
+        return {
+            key: value for key, value in potential_secrets.items()
+            if not is_false_positive_with_line_context(
+                key.secret_value,
+                line,
+            )
+        }
+
     def analyze_line(self, string, line_num, filename):
         output = super(HighEntropyStringsPlugin, self).analyze_line(
             string,
@@ -91,13 +101,10 @@ class HighEntropyStringsPlugin(BasePlugin):
             filename,
         )
 
-        return {
-            key: value for key, value in output.items()
-            if not is_false_positive_with_line_context(
-                key.secret_value,
-                string,
-            )
-        }
+        return HighEntropyStringsPlugin._check_for_false_positives_with_line_context(
+            output,
+            string,
+        )
 
     def analyze_string_content(self, string, line_num, filename):
         """Searches string for custom pattern, and captures all high entropy strings that
@@ -241,6 +248,15 @@ class HighEntropyStringsPlugin(BasePlugin):
 
                 if item['__is_binary__']:
                     secrets = self._encode_yaml_binary_secrets(secrets)
+
+                dumped_key_value = yaml.dump({
+                    item['__original_key__']: item['__value__'],
+                }).replace('\n', '')
+
+                secrets = HighEntropyStringsPlugin._check_for_false_positives_with_line_context(
+                    secrets,
+                    dumped_key_value,
+                )
 
                 potential_secrets.update(secrets)
 

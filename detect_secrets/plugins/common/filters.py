@@ -108,9 +108,9 @@ def is_likely_id_string(secret, line):
     return _ID_DETECTOR_REGEX.findall(line, pos=0, endpos=secret_index)
 
 
-ALL_FALSE_POSITIVE_WITH_LINE_CONTEXT_HEURISTICS = (
+ALL_FALSE_POSITIVE_WITH_LINE_CONTEXT_HEURISTICS = [
     is_likely_id_string,
-)
+]
 
 
 def is_false_positive(secret, automaton, functions=ALL_FALSE_POSITIVE_HEURISTICS):
@@ -150,7 +150,6 @@ def is_false_positive_with_line_context(
     Returns True if any false-positive heuristic which considers the whole file line
     returns true.
     """
-
     return any(
         func(secret, line)
         for func in functions
