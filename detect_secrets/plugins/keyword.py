@@ -96,6 +96,7 @@ FALSE_POSITIVES = {
     'none',
     'none,',
     'none}',
+    'nopasswd',
     'not',
     'not_real_key',
     'null',
