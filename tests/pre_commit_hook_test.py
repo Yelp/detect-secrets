@@ -13,6 +13,7 @@ from testing.factories import secrets_collection_factory
 from testing.mocks import mock_git_calls
 from testing.mocks import mock_log as mock_log_base
 from testing.mocks import SubprocessMock
+from testing.util import get_regex_based_plugins
 
 
 def assert_commit_blocked(command):
@@ -182,43 +183,29 @@ class TestPreCommitHook(object):
 
             # See that we updated the plugins and version
             assert current_version == baseline_written['version']
-            assert baseline_written['plugins_used'] == [
+
+            regex_based_plugins = [
                 {
-                    'name': 'AWSKeyDetector',
-                },
-                {
-                    'name': 'ArtifactoryDetector',
-                },
+                    'name': name,
+                }
+                for name in get_regex_based_plugins()
+            ]
+            regex_based_plugins.extend([
                 {
                     'base64_limit': 4.5,
                     'name': 'Base64HighEntropyString',
-                },
-                {
-                    'name': 'BasicAuthDetector',
                 },
                 {
                     'hex_limit': 3,
                     'name': 'HexHighEntropyString',
                 },
                 {
-                    'name': 'JwtTokenDetector',
-                },
-                {
                     'name': 'KeywordDetector',
                 },
-                {
-                    'name': 'MailchimpDetector',
-                },
-                {
-                    'name': 'PrivateKeyDetector',
-                },
-                {
-                    'name': 'SlackDetector',
-                },
-                {
-                    'name': 'StripeDetector',
-                },
-            ]
+            ])
+
+            assert baseline_written['plugins_used'] == \
+                sorted(regex_based_plugins, key=lambda x: x['name'])
 
     def test_writes_new_baseline_if_modified(self):
         baseline_string = _create_baseline()

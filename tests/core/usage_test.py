@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import pytest
 
 from detect_secrets.core.usage import ParserBuilder
+from detect_secrets.plugins.common.util import import_plugins
 
 
 class TestPluginOptions(object):
@@ -25,25 +26,21 @@ class TestPluginOptions(object):
         """Everything enabled by default, with default values"""
         args = self.parse_args()
 
-        assert args.plugins == {
+        regex_based_plugins = {
+            key: {}
+            for key in import_plugins()
+        }
+        regex_based_plugins.update({
             'HexHighEntropyString': {
                 'hex_limit': 3,
             },
-            'BasicAuthDetector': {},
             'Base64HighEntropyString': {
                 'base64_limit': 4.5,
             },
             'KeywordDetector': {
                 'keyword_exclude': None,
             },
-            'PrivateKeyDetector': {},
-            'AWSKeyDetector': {},
-            'SlackDetector': {},
-            'ArtifactoryDetector': {},
-            'StripeDetector': {},
-            'MailchimpDetector': {},
-            'JwtTokenDetector': {},
-        }
+        })
         assert not hasattr(args, 'no_private_key_scan')
 
     def test_consolidates_removes_disabled_plugins(self):
