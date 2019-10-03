@@ -85,6 +85,15 @@ def verify_ibm_cos_hmac_credentials(
     secret_key,
     host='s3.us.cloud-object-storage.appdomain.cloud',
 ):
+    response = query_ibm_cos_hmac(access_key, secret_key, host)
+    return response.status_code == 200
+
+
+def query_ibm_cos_hmac(
+    access_key,
+    secret_key,
+    host='s3.us.cloud-object-storage.appdomain.cloud',
+):
     # Sample code referenced from link below
     # https://cloud.ibm.com/docs/services/cloud-object-storage/api-reference?topic=cloud-object-storage-hmac-signature  # noqa: E501
 
@@ -151,4 +160,4 @@ def verify_ibm_cos_hmac_credentials(
 
     request = requests.get(request_url, headers=headers)
 
-    return request.status_code == 200
+    return request
