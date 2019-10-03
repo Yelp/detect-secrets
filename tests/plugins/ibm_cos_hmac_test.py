@@ -1,13 +1,12 @@
 import textwrap
 
 import pytest
-import requests
 import responses
 from mock import patch
 
 from detect_secrets.core.constants import VerifiedResult
-from detect_secrets.plugins.ibm_cos_hmac import find_access_key_id
-from detect_secrets.plugins.ibm_cos_hmac import IbmCosHmacDetector
+from detect_secrets.core.potential_secret import PotentialSecret
+from detect_secrets.plugins.ibm_cos_hmac import IBMCosHmacDetector
 from detect_secrets.plugins.ibm_cos_hmac import verify_ibm_cos_hmac_credentials
 
 
@@ -15,11 +14,18 @@ ACCESS_KEY_ID = '1234567890abcdef1234567890abcdef'
 SECRET_ACCESS_KEY = '1234567890abcdef1234567890abcdef1234567890abcdef'
 
 
-class TestIbmCosHmacDetector:
+class TestIbmCosHmacDetector(object):
+class TestIBMCosHmacDetector(object):
 
     @pytest.mark.parametrize(
         'payload, should_flag',
         [
+            ('"secret_access_key": "1234567890abcdef1234567890abcdef1234567890abcdef"', True),
+            ('"secret_access_key": "1234567890abcdef1234567890abcdef1234567890abcdef"', True,),
+            ('secret_access_key=1234567890abcdef1234567890abcdef1234567890abcdef', True),
+            ('secret_access_key="1234567890abcdef1234567890abcdef1234567890abcdef"', True),
+            ('secret_access_key=\'1234567890abcdef1234567890abcdef1234567890abcdef\'', True),
+            ('secret_access_key = "1234567890abcdef1234567890abcdef1234567890abcdef"', True),
             (
                 '"secret_access_key": "{secret}"'.format(secret=SECRET_ACCESS_KEY),
                 True,
@@ -93,9 +99,9 @@ class TestIbmCosHmacDetector:
         ],
     )
     def test_analyze_string(self, payload, should_flag):
-        logic = IbmCosHmacDetector()
+        logic = IBMCosHmacDetector()
 
-        output = logic.analyze_line(payload, 1, 'mock_filename')
+        output = logic.analyze_string(payload, 1, 'mock_filename')
         assert len(output) == int(should_flag)
         if should_flag:
             assert list(output.values())[0].secret_value == SECRET_ACCESS_KEY
@@ -104,9 +110,11 @@ class TestIbmCosHmacDetector:
     def test_verify_invalid_secret(self, mock_hmac_verify):
         mock_hmac_verify.return_value = False
 
-        assert IbmCosHmacDetector().verify(
+        potential_secret = PotentialSecret('test', 'test filename', SECRET_ACCESS_KEY)
+        assert IBMCosHmacDetector().verify(
             SECRET_ACCESS_KEY,
             '''access_key_id={}'''.format(ACCESS_KEY_ID),
+            potential_secret,
         ) == VerifiedResult.VERIFIED_FALSE
 
         mock_hmac_verify.assert_called_with(ACCESS_KEY_ID, SECRET_ACCESS_KEY)
@@ -115,31 +123,37 @@ class TestIbmCosHmacDetector:
     def test_verify_valid_secret(self, mock_hmac_verify):
         mock_hmac_verify.return_value = True
 
-        assert IbmCosHmacDetector().verify(
+        potential_secret = PotentialSecret('test', 'test filename', SECRET_ACCESS_KEY)
+        assert IBMCosHmacDetector().verify(
             SECRET_ACCESS_KEY,
             '''access_key_id={}'''.format(ACCESS_KEY_ID),
+            potential_secret,
         ) == VerifiedResult.VERIFIED_TRUE
 
         mock_hmac_verify.assert_called_with(ACCESS_KEY_ID, SECRET_ACCESS_KEY)
 
     @patch('detect_secrets.plugins.ibm_cos_hmac.verify_ibm_cos_hmac_credentials')
     def test_verify_unverified_secret(self, mock_hmac_verify):
-        mock_hmac_verify.side_effect = requests.exceptions.RequestException('oops')
+        mock_hmac_verify.side_effect = Exception('oops')
 
-        assert IbmCosHmacDetector().verify(
+        potential_secret = PotentialSecret('test', 'test filename', SECRET_ACCESS_KEY)
+        assert IBMCosHmacDetector().verify(
             SECRET_ACCESS_KEY,
             '''access_key_id={}'''.format(ACCESS_KEY_ID),
+            potential_secret,
         ) == VerifiedResult.UNVERIFIED
 
         mock_hmac_verify.assert_called_with(ACCESS_KEY_ID, SECRET_ACCESS_KEY)
 
     @patch('detect_secrets.plugins.ibm_cos_hmac.verify_ibm_cos_hmac_credentials')
     def test_verify_unverified_secret_no_match(self, mock_hmac_verify):
-        mock_hmac_verify.side_effect = requests.exceptions.RequestException('oops')
+        mock_hmac_verify.side_effect = Exception('oops')
 
-        assert IbmCosHmacDetector().verify(
+        potential_secret = PotentialSecret('test', 'test filename', SECRET_ACCESS_KEY)
+        assert IBMCosHmacDetector().verify(
             SECRET_ACCESS_KEY,
             '''something={}'''.format(ACCESS_KEY_ID),
+            potential_secret,
         ) == VerifiedResult.UNVERIFIED
 
         mock_hmac_verify.assert_not_called()
@@ -176,10 +190,6 @@ class TestIbmCosHmacDetector:
                 [ACCESS_KEY_ID],
             ),
             (
-                "access_key = '{}'".format(ACCESS_KEY_ID),
-                [ACCESS_KEY_ID],
-            ),
-            (
                 "[\"access_key_id\"] = '{}'".format(ACCESS_KEY_ID),
                 [ACCESS_KEY_ID],
             ),
@@ -189,15 +199,15 @@ class TestIbmCosHmacDetector:
             ),
         ),
     )
-    def test_find_access_key_id(self, content, expected_output):
-        assert find_access_key_id(content) == expected_output
+    def test_get_access_key_id(self, content, expected_output):
+        assert IBMCosHmacDetector().get_access_key_id(content) == expected_output
 
 
 @pytest.mark.parametrize(
     'status_code, validation_result',
     [
-        (200, True),
-        (403, False),
+        (200, True,),
+        (403, False,),
     ],
 )
 @responses.activate

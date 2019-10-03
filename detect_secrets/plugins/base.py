@@ -274,6 +274,42 @@ class RegexBasedDetector(BasePlugin):
     def denylist(self):
         raise NotImplementedError
 
+    @staticmethod
+    def assign_regex_generator(prefix_regex, password_keyword_regex, password_regex):
+        """Generate assignment regex
+
+        It read 3 input parameters, each stands for regex. The return regex would look for
+        secret in following format.
+
+        <prefix_regex>(-|_|)<password_keyword_regex> <assignment> <password_regex>
+
+        assignment would include =,:,:=,::
+        keyname and value supports optional quotes
+        """
+        begin = r'(?:(?<=\W)|(?<=^))'
+        opt_quote = r'(?:"|\'|)'
+        opt_open_square_bracket = r'(?:\[|)'
+        opt_close_square_bracket = r'(?:\]|)'
+        opt_dash_undrscr = r'(?:_|-|)'
+        opt_space = r'(?: *)'
+        assignment = r'(?:=|:|:=|=>|::)'
+        return re.compile(
+            r'{begin}{opt_open_square_bracket}{opt_quote}{prefix_regex}{opt_dash_undrscr}'
+            '{password_keyword_regex}{opt_quote}{opt_close_square_bracket}{opt_space}'
+            '{assignment}{opt_space}{opt_quote}{password_regex}{opt_quote}'.format(
+                begin=begin,
+                opt_open_square_bracket=opt_open_square_bracket,
+                opt_quote=opt_quote,
+                prefix_regex=prefix_regex,
+                opt_dash_undrscr=opt_dash_undrscr,
+                password_keyword_regex=password_keyword_regex,
+                opt_close_square_bracket=opt_close_square_bracket,
+                opt_space=opt_space,
+                assignment=assignment,
+                password_regex=password_regex,
+            ), flags=re.IGNORECASE,
+        )
+
     def analyze_string_content(self, string, line_num, filename, output_raw=False):
         output = {}
 

@@ -8,8 +8,7 @@ from .base import RegexBasedDetector
 from detect_secrets.core.constants import VerifiedResult
 
 
-class IbmCosHmacDetector(RegexBasedDetector):
-    """Scans for IBM Cloud Object Storage HMAC credentials."""
+class IBMCosHmacDetector(RegexBasedDetector):
     # requires 3 factors
     #
     #   access_key: access_key_id
@@ -24,13 +23,30 @@ class IbmCosHmacDetector(RegexBasedDetector):
     denylist = (
         RegexBasedDetector.assign_regex_generator(
             prefix_regex=token_prefix,
-            secret_keyword_regex=password_keyword,
-            secret_regex=password,
+            password_keyword_regex=password_keyword,
+            password_regex=password,
         ),
     )
 
-    def verify(self, token, content):
-        key_id_matches = find_access_key_id(content)
+    def get_access_key_id(self, content):
+        key_id_keyword_regex = r'(?:access(?:_|-|)(?:key|)(?:_|-|)id|key(?:_|-|)id)'
+        key_id_regex = r'([a-f0-9]{32})'
+
+        regex = RegexBasedDetector.assign_regex_generator(
+            prefix_regex=self.token_prefix,
+            password_keyword_regex=key_id_keyword_regex,
+            password_regex=key_id_regex,
+        )
+
+        return [
+            match
+            for line in content.splitlines()
+            for match in regex.findall(line)
+        ]
+
+    def verify(self, token, content, potential_secret=None):
+
+        key_id_matches = self.get_access_key_id(content)
 
         if not key_id_matches:
             return VerifiedResult.UNVERIFIED
@@ -40,29 +56,13 @@ class IbmCosHmacDetector(RegexBasedDetector):
                 verify_result = verify_ibm_cos_hmac_credentials(
                     key_id, token,
                 )
-                if verify_result:
+                if verify_result is True:
+                    potential_secret.other_factors['access_key_id'] = key_id
                     return VerifiedResult.VERIFIED_TRUE
-        except requests.exceptions.RequestException:
+        except Exception:
             return VerifiedResult.UNVERIFIED
 
         return VerifiedResult.VERIFIED_FALSE
-
-
-def find_access_key_id(content):
-    key_id_keyword_regex = r'(?:access[-_]?(?:key)?[-_]?(?:id)?|key[-_]?id)'
-    key_id_regex = r'([a-f0-9]{32})'
-
-    regex = RegexBasedDetector.assign_regex_generator(
-        prefix_regex=IbmCosHmacDetector.token_prefix,
-        secret_keyword_regex=key_id_keyword_regex,
-        secret_regex=key_id_regex,
-    )
-
-    return [
-        match
-        for line in content.splitlines()
-        for match in regex.findall(line)
-    ]
 
 
 def hash(key, msg):
@@ -79,15 +79,6 @@ def createSignatureKey(key, datestamp, region, service):
 
 
 def verify_ibm_cos_hmac_credentials(
-    access_key,
-    secret_key,
-    host='s3.us.cloud-object-storage.appdomain.cloud',
-):
-    response = query_ibm_cos_hmac(access_key, secret_key, host)
-    return response.status_code == 200
-
-
-def query_ibm_cos_hmac(
     access_key,
     secret_key,
     host='s3.us.cloud-object-storage.appdomain.cloud',
@@ -158,4 +149,4 @@ def query_ibm_cos_hmac(
 
     request = requests.get(request_url, headers=headers)
 
-    return request
+    return request.status_code == 200
