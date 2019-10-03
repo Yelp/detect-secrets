@@ -87,7 +87,7 @@ There are many examples of existing plugins to reference, under
 ### Tips
 
 - There should be a total of three modified files in a minimal new plugin: the
-  plugin file, it's corresponding code, and an updated README.
+  plugin file, it's corresponding test, and an updated README.
 - If your plugin uses customizable options (e.g. entropy limit in `HighEntropyStrings`)
   be sure to add default options to the plugin's `default_options`.
 

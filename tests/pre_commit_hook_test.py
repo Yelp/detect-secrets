@@ -205,10 +205,8 @@ class TestPreCommitHook(object):
                 },
             ])
 
-            assert baseline_written['plugins_used'] == sorted(
-                regex_based_plugins,
-                key=lambda x: x['name'],
-            )
+            expected = sorted(regex_based_plugins, key=lambda x: x['name'])
+            assert baseline_written['plugins_used'] == expected
 
     def test_writes_new_baseline_if_modified(self):
         baseline_string = _create_baseline()

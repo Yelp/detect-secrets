@@ -15,8 +15,8 @@ from detect_secrets.util import get_root_directory
 def get_mapping_from_secret_type_to_class_name():
     """Returns secret_type => plugin classname"""
     return {
-        value.secret_type: key
-        for key, value in import_plugins().items()
+        plugin.secret_type: name
+        for name, plugin in import_plugins().items()
     }
 
 
