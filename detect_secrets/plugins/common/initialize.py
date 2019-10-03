@@ -162,7 +162,12 @@ def from_plugin_classname(
 
     :type should_verify_secrets: bool
     """
-    klass = import_plugins()[plugin_classname]
+    try:
+        klass = import_plugins()[plugin_classname]
+    except KeyError:
+        log.warning('No such plugin to initialize.')
+        raise TypeError
+
     try:
         instance = klass(
             exclude_lines_regex=exclude_lines_regex,
@@ -171,9 +176,7 @@ def from_plugin_classname(
             **kwargs
         )
     except TypeError:
-        log.warning(
-            'Unable to initialize plugin!',
-        )
+        log.warning('Unable to initialize plugin!')
         raise
 
     return instance

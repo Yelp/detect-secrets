@@ -1,6 +1,3 @@
-"""
-This plugin searches for Stripe keys
-"""
 from __future__ import absolute_import
 
 import re
@@ -13,7 +10,7 @@ from detect_secrets.core.constants import VerifiedResult
 
 
 class StripeDetector(RegexBasedDetector):
-
+    """Scans for Stripe keys."""
     secret_type = 'Stripe Access Key'
 
     denylist = (

@@ -4,6 +4,7 @@ import argparse
 from collections import namedtuple
 
 from detect_secrets import VERSION
+from detect_secrets.plugins.common.util import import_plugins
 
 
 def add_exclude_lines_argument(parser):
@@ -279,7 +280,6 @@ class PluginDescriptor(
         ],
     ),
 ):
-
     def __new__(cls, related_args=None, **kwargs):
         if not related_args:
             related_args = []
@@ -290,74 +290,46 @@ class PluginDescriptor(
             **kwargs
         )
 
+    @classmethod
+    def from_plugin_class(cls, plugin, name):
+        """
+        :type plugin: Type[TypeVar('Plugin', bound=BasePlugin)]
+        :type name: str
+        """
+        related_args = None
+        if plugin.default_options:
+            related_args = []
+            for arg_name, value in plugin.default_options.items():
+                related_args.append((
+                    '--{}'.format(arg_name.replace('_', '-')),
+                    value,
+                ))
+
+        return cls(
+            classname=name,
+            disable_flag_text='--{}'.format(plugin.disable_flag_text),
+            disable_help_text=cls.get_disabled_help_text(plugin),
+            related_args=related_args,
+        )
+
+    @staticmethod
+    def get_disabled_help_text(plugin):
+        for line in plugin.__doc__.splitlines():
+            line = line.strip().lstrip()
+            if line:
+                break
+        else:
+            raise NotImplementedError('Plugins must declare a docstring.')
+
+        line = line[0].lower() + line[1:]
+        return 'Disables {}'.format(line)
+
 
 class PluginOptions(object):
 
     all_plugins = [
-        PluginDescriptor(
-            classname='HexHighEntropyString',
-            disable_flag_text='--no-hex-string-scan',
-            disable_help_text='Disables scanning for hex high entropy strings',
-            related_args=[
-                ('--hex-limit', 3),
-            ],
-        ),
-        PluginDescriptor(
-            classname='Base64HighEntropyString',
-            disable_flag_text='--no-base64-string-scan',
-            disable_help_text='Disables scanning for base64 high entropy strings',
-            related_args=[
-                ('--base64-limit', 4.5),
-            ],
-        ),
-        PluginDescriptor(
-            classname='PrivateKeyDetector',
-            disable_flag_text='--no-private-key-scan',
-            disable_help_text='Disables scanning for private keys.',
-        ),
-        PluginDescriptor(
-            classname='BasicAuthDetector',
-            disable_flag_text='--no-basic-auth-scan',
-            disable_help_text='Disables scanning for Basic Auth formatted URIs.',
-        ),
-        PluginDescriptor(
-            classname='KeywordDetector',
-            disable_flag_text='--no-keyword-scan',
-            disable_help_text='Disables scanning for secret keywords.',
-            related_args=[
-                ('--keyword-exclude', None),
-            ],
-        ),
-        PluginDescriptor(
-            classname='AWSKeyDetector',
-            disable_flag_text='--no-aws-key-scan',
-            disable_help_text='Disables scanning for AWS keys.',
-        ),
-        PluginDescriptor(
-            classname='SlackDetector',
-            disable_flag_text='--no-slack-scan',
-            disable_help_text='Disables scanning for Slack tokens.',
-        ),
-        PluginDescriptor(
-            classname='ArtifactoryDetector',
-            disable_flag_text='--no-artifactory-scan',
-            disable_help_text='Disable scanning for Artifactory credentials',
-        ),
-        PluginDescriptor(
-            classname='StripeDetector',
-            disable_flag_text='--no-stripe-scan',
-            disable_help_text='Disable scanning for Stripe keys',
-        ),
-        PluginDescriptor(
-            classname='MailchimpDetector',
-            disable_flag_text='--no-mailchimp-scan',
-            disable_help_text='Disable scanning for Mailchimp keys',
-        ),
-        PluginDescriptor(
-            classname='JwtTokenDetector',
-            disable_flag_text='--no-jwt-scan',
-            disable_help_text='Disable scanning for JWTs',
-        ),
+        PluginDescriptor.from_plugin_class(plugin, name)
+        for name, plugin in import_plugins().items()
     ]
 
     def __init__(self, parser):

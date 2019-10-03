@@ -19,12 +19,39 @@ from detect_secrets.core.potential_secret import PotentialSecret
 LINES_OF_CONTEXT = 5
 
 
-class BasePlugin(object):
-    """This is an abstract class to define Plugins API"""
+class classproperty(property):
+    def __get__(self, cls, owner):
+        return classmethod(self.fget).__get__(None, owner)()
 
+
+class BasePlugin(object):
+    """
+    This is an abstract class to define Plugins API.
+
+    :type secret_type: str
+    :param secret_type: uniquely identifies the type of secret found in the baseline.
+        e.g. {
+            "hashed_secret": <hash>,
+            "line_number": 123,
+            "type": <secret_type>,
+        }
+
+        Be warned of modifying the `secret_type` once rolled out to clients since
+        the hashed_secret uses this value to calculate a unique hash (and the baselines
+        will no longer match).
+
+    :type disable_flag_text: str
+    :param disable_flag_text: text used as an command line argument flag to disable
+        this specific plugin scan. does not include the `--` prefix.
+
+    :type default_options: Dict[str, Any]
+    :param default_options: configurable options to modify plugin behavior
+    """
     __metaclass__ = ABCMeta
 
-    secret_type = None
+    @abstractproperty
+    def secret_type(self):
+        raise NotImplementedError
 
     def __init__(self, exclude_lines_regex=None, should_verify=False, **kwargs):
         """
@@ -33,14 +60,30 @@ class BasePlugin(object):
 
         :type should_verify: bool
         """
-        if not self.secret_type:
-            raise ValueError('Plugins need to declare a secret_type.')
-
         self.exclude_lines_regex = None
         if exclude_lines_regex:
             self.exclude_lines_regex = re.compile(exclude_lines_regex)
 
         self.should_verify = should_verify
+
+    @classproperty
+    def disable_flag_text(cls):
+        name = cls.__name__
+        if name.endswith('Detector'):
+            name = name[:-len('Detector')]
+
+        # turn camel case into hyphenated strings
+        name_hyphen = ''
+        for letter in name:
+            if letter.upper() == letter and name_hyphen:
+                name_hyphen += '-'
+            name_hyphen += letter.lower()
+
+        return 'no-{}-scan'.format(name_hyphen)
+
+    @classproperty
+    def default_options(cls):
+        return {}
 
     def analyze(self, file, filename):
         """
@@ -212,10 +255,6 @@ class RegexBasedDetector(BasePlugin):
         )
     """
     __metaclass__ = ABCMeta
-
-    @abstractproperty
-    def secret_type(self):
-        raise NotImplementedError
 
     @abstractproperty
     def denylist(self):

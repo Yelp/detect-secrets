@@ -15,6 +15,7 @@ from contextlib import contextmanager
 import yaml
 
 from .base import BasePlugin
+from .base import classproperty
 from .common.filetype import determine_file_type
 from .common.filetype import FileType
 from .common.filters import is_false_positive
@@ -27,8 +28,6 @@ class HighEntropyStringsPlugin(BasePlugin):
     """Base class for string pattern matching"""
 
     __metaclass__ = ABCMeta
-
-    secret_type = 'High Entropy String'
 
     def __init__(self, charset, limit, exclude_lines_regex, automaton, *args):
         if limit < 0 or limit > 8:
@@ -266,7 +265,7 @@ class HighEntropyStringsPlugin(BasePlugin):
 
 
 class HexHighEntropyString(HighEntropyStringsPlugin):
-    """HighEntropyStringsPlugin for hex encoded strings"""
+    """Scans for random-looking hex encoded strings."""
 
     secret_type = 'Hex High Entropy String'
 
@@ -277,6 +276,16 @@ class HexHighEntropyString(HighEntropyStringsPlugin):
             exclude_lines_regex=exclude_lines_regex,
             automaton=automaton,
         )
+
+    @classproperty
+    def disable_flag_text(cls):
+        return 'no-hex-string-scan'
+
+    @classproperty
+    def default_options(cls):
+        return {
+            'hex_limit': 3,
+        }
 
     @property
     def __dict__(self):
@@ -325,7 +334,7 @@ class HexHighEntropyString(HighEntropyStringsPlugin):
 
 
 class Base64HighEntropyString(HighEntropyStringsPlugin):
-    """HighEntropyStringsPlugin for base64 encoded strings"""
+    """Scans for random-looking base64 encoded strings."""
 
     secret_type = 'Base64 High Entropy String'
 
@@ -336,6 +345,16 @@ class Base64HighEntropyString(HighEntropyStringsPlugin):
             exclude_lines_regex=exclude_lines_regex,
             automaton=automaton,
         )
+
+    @classproperty
+    def disable_flag_text(cls):
+        return 'no-base64-string-scan'
+
+    @classproperty
+    def default_options(cls):
+        return {
+            'base64_limit': 4.5,
+        }
 
     @property
     def __dict__(self):

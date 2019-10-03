@@ -13,7 +13,7 @@ from detect_secrets.core.constants import VerifiedResult
 
 
 class MailchimpDetector(RegexBasedDetector):
-
+    """Scans for Mailchimp keys."""
     secret_type = 'Mailchimp Access Key'
 
     denylist = (

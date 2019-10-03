@@ -7,6 +7,7 @@ import base64
 import json
 import re
 
+from .base import classproperty
 from .base import RegexBasedDetector
 
 try:
@@ -18,10 +19,15 @@ except ImportError:  # pragma: no cover
 
 
 class JwtTokenDetector(RegexBasedDetector):
+    """Scans for JWTs."""
     secret_type = 'JSON Web Token'
     denylist = [
         re.compile(r'eyJ[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*?'),
     ]
+
+    @classproperty
+    def disable_flag_text(cls):
+        return 'no-jwt-scan'
 
     def secret_generator(self, string, *args, **kwargs):
         return filter(

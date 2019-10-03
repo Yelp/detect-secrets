@@ -32,7 +32,10 @@ from .base import RegexBasedDetector
 
 
 class PrivateKeyDetector(RegexBasedDetector):
-    """This checks for private keys by determining whether the denylisted
+    """
+    Scans for private keys.
+
+    This checks for private keys by determining whether the denylisted
     lines are present in the analyzed string.
     """
 

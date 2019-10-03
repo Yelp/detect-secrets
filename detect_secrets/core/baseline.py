@@ -65,7 +65,7 @@ def initialize(
         elif os.path.isfile(element):
             files_to_scan.append(element)
         else:
-            log.error('detect-secrets: ' + element + ': No such file or directory')
+            log.error('detect-secrets: %s: No such file or directory', element)
 
     if not files_to_scan:
         return output

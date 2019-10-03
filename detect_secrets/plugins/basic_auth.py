@@ -15,7 +15,7 @@ SUB_DELIMITER_CHARACTERS = '!$&\'()*+,;='
 
 
 class BasicAuthDetector(RegexBasedDetector):
-
+    """Scans for Basic Auth formatted URIs."""
     secret_type = 'Basic Auth Credentials'
 
     denylist = [

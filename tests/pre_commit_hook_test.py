@@ -150,7 +150,7 @@ class TestPreCommitHook(object):
             ('0.8.8', '1.0.0'),
         ],
     )
-    def test_that_baseline_gets_updated(
+    def test_baseline_gets_updated(
         self,
         mock_log,
         baseline_version,
@@ -201,6 +201,7 @@ class TestPreCommitHook(object):
                 },
                 {
                     'name': 'KeywordDetector',
+                    'keyword_exclude': None,
                 },
             ])
 

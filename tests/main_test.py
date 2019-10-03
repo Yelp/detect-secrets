@@ -10,10 +10,66 @@ from detect_secrets import main as main_module
 from detect_secrets import VERSION
 from detect_secrets.core import audit as audit_module
 from detect_secrets.main import main
+from detect_secrets.plugins.common.util import import_plugins
 from testing.factories import secrets_collection_factory
 from testing.mocks import Any
 from testing.mocks import mock_printer
 from testing.util import uncolor
+
+
+def get_list_of_plugins(include=None, exclude=None):
+    """
+    :type include: List[Dict[str, Any]]
+    :type exclude: Iterable[str]
+    :rtype: List[Dict[str, Any]]
+    """
+    included_plugins = []
+    if include:
+        included_plugins = [
+            config['name']
+            for config in include
+        ]
+
+    output = []
+    for name, plugin in import_plugins().items():
+        if (
+            name in included_plugins or
+            exclude and name in exclude
+        ):
+            continue
+
+        output.append({
+            'name': name,
+            **plugin.default_options,
+        })
+
+    if include:
+        output.extend(include)
+
+    return sorted(output, key=lambda x: x['name'])
+
+
+def get_plugin_report(extra=None):
+    """
+    :type extra: Dict[str, str]
+    """
+    if not extra:
+        extra = {}
+
+    longest_name_length = max([
+        len(name)
+        for name in import_plugins()
+    ])
+
+    return '\n'.join(
+        sorted([
+            '{name}: {result}'.format(
+                name=name + ' ' * (longest_name_length - len(name)),
+                result='False' if name not in extra else extra[name],
+            )
+            for name in import_plugins()
+        ]),
+    ) + '\n'
 
 
 class TestMain(object):
@@ -93,24 +149,10 @@ class TestMain(object):
             main_module,
         ) as printer_shim:
             assert main('scan --string'.split()) == 0
-            assert uncolor(printer_shim.message) == textwrap.dedent(
-                """
-                AWSKeyDetector         : False
-                ArtifactoryDetector    : False
-                Base64HighEntropyString: {}
-                BasicAuthDetector      : False
-                HexHighEntropyString   : {}
-                JwtTokenDetector       : False
-                KeywordDetector        : False
-                MailchimpDetector      : False
-                PrivateKeyDetector     : False
-                SlackDetector          : False
-                StripeDetector         : False
-            """.format(
-                    expected_base64_result,
-                    expected_hex_result,
-                ),
-            )[1:]
+            assert uncolor(printer_shim.message) == get_plugin_report({
+                'Base64HighEntropyString': expected_base64_result,
+                'HexHighEntropyString': expected_hex_result,
+            })
 
         mock_baseline_initialize.assert_not_called()
 
@@ -121,19 +163,10 @@ class TestMain(object):
             main_module,
         ) as printer_shim:
             assert main('scan --string 012345'.split()) == 0
-            assert uncolor(printer_shim.message) == textwrap.dedent("""
-                AWSKeyDetector         : False
-                ArtifactoryDetector    : False
-                Base64HighEntropyString: False (2.585)
-                BasicAuthDetector      : False
-                HexHighEntropyString   : False (2.121)
-                JwtTokenDetector       : False
-                KeywordDetector        : False
-                MailchimpDetector      : False
-                PrivateKeyDetector     : False
-                SlackDetector          : False
-                StripeDetector         : False
-            """)[1:]
+            assert uncolor(printer_shim.message) == get_plugin_report({
+                'Base64HighEntropyString': 'False (2.585)',
+                'HexHighEntropyString': 'False (2.121)',
+            })
 
     def test_scan_with_all_files_flag(self, mock_baseline_initialize):
         with mock_stdin():
@@ -246,43 +279,14 @@ class TestMain(object):
                     },
                 ],
                 '--use-all-plugins',
-                [
-                    {
-                        'name': 'AWSKeyDetector',
-                    },
-                    {
-                        'name': 'ArtifactoryDetector',
-                    },
-                    {
-                        'base64_limit': 1.5,
-                        'name': 'Base64HighEntropyString',
-                    },
-                    {
-                        'name': 'BasicAuthDetector',
-                    },
-                    {
-                        'hex_limit': 3,
-                        'name': 'HexHighEntropyString',
-                    },
-                    {
-                        'name': 'JwtTokenDetector',
-                    },
-                    {
-                        'name': 'KeywordDetector',
-                    },
-                    {
-                        'name': 'MailchimpDetector',
-                    },
-                    {
-                        'name': 'PrivateKeyDetector',
-                    },
-                    {
-                        'name': 'SlackDetector',
-                    },
-                    {
-                        'name': 'StripeDetector',
-                    },
-                ],
+                get_list_of_plugins(
+                    include=[
+                        {
+                            'base64_limit': 1.5,
+                            'name': 'Base64HighEntropyString',
+                        },
+                    ],
+                ),
             ),
             (  # Remove some plugins from all plugins
                 [
@@ -293,36 +297,12 @@ class TestMain(object):
                 ],
 
                 '--use-all-plugins --no-base64-string-scan --no-private-key-scan',
-                [
-                    {
-                        'name': 'AWSKeyDetector',
-                    },
-                    {
-                        'name': 'ArtifactoryDetector',
-                    },
-                    {
-                        'name': 'BasicAuthDetector',
-                    },
-                    {
-                        'hex_limit': 3,
-                        'name': 'HexHighEntropyString',
-                    },
-                    {
-                        'name': 'JwtTokenDetector',
-                    },
-                    {
-                        'name': 'KeywordDetector',
-                    },
-                    {
-                        'name': 'MailchimpDetector',
-                    },
-                    {
-                        'name': 'SlackDetector',
-                    },
-                    {
-                        'name': 'StripeDetector',
-                    },
-                ],
+                get_list_of_plugins(
+                    exclude=(
+                        'Base64HighEntropyString',
+                        'PrivateKeyDetector',
+                    ),
+                ),
             ),
             (  # Use same plugin list from baseline
                 [
@@ -389,36 +369,18 @@ class TestMain(object):
                     },
                 ],
                 '--use-all-plugins --base64-limit=5.5 --no-hex-string-scan --no-keyword-scan',
-                [
-                    {
-                        'name': 'AWSKeyDetector',
-                    },
-                    {
-                        'name': 'ArtifactoryDetector',
-                    },
-                    {
-                        'base64_limit': 5.5,
-                        'name': 'Base64HighEntropyString',
-                    },
-                    {
-                        'name': 'BasicAuthDetector',
-                    },
-                    {
-                        'name': 'JwtTokenDetector',
-                    },
-                    {
-                        'name': 'MailchimpDetector',
-                    },
-                    {
-                        'name': 'PrivateKeyDetector',
-                    },
-                    {
-                        'name': 'SlackDetector',
-                    },
-                    {
-                        'name': 'StripeDetector',
-                    },
-                ],
+                get_list_of_plugins(
+                    include=[
+                        {
+                            'base64_limit': 5.5,
+                            'name': 'Base64HighEntropyString',
+                        },
+                    ],
+                    exclude=(
+                        'HexHighEntropyString',
+                        'KeywordDetector',
+                    ),
+                ),
             ),
             (  # Use plugin limit from baseline when using --use-all-plugins and no input limit
                 [
@@ -431,36 +393,18 @@ class TestMain(object):
                     },
                 ],
                 '--use-all-plugins --no-hex-string-scan --no-keyword-scan',
-                [
-                    {
-                        'name': 'AWSKeyDetector',
-                    },
-                    {
-                        'name': 'ArtifactoryDetector',
-                    },
-                    {
-                        'base64_limit': 2.5,
-                        'name': 'Base64HighEntropyString',
-                    },
-                    {
-                        'name': 'BasicAuthDetector',
-                    },
-                    {
-                        'name': 'JwtTokenDetector',
-                    },
-                    {
-                        'name': 'MailchimpDetector',
-                    },
-                    {
-                        'name': 'PrivateKeyDetector',
-                    },
-                    {
-                        'name': 'SlackDetector',
-                    },
-                    {
-                        'name': 'StripeDetector',
-                    },
-                ],
+                get_list_of_plugins(
+                    include=[
+                        {
+                            'base64_limit': 2.5,
+                            'name': 'Base64HighEntropyString',
+                        },
+                    ],
+                    exclude=(
+                        'HexHighEntropyString',
+                        'KeywordDetector',
+                    ),
+                ),
             ),
         ],
     )
@@ -584,6 +528,7 @@ class TestMain(object):
                     'KeywordDetector': {
                         'config': {
                             'name': 'KeywordDetector',
+                            'keyword_exclude': None,
                         },
                         'results': {
                             'false-positives': {},
