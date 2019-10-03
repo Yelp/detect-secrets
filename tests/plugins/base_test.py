@@ -23,10 +23,10 @@ from testing.mocks import mock_file_object
 def test_disable_flag_text(name, expected):
     class MockPlugin(BasePlugin):
         @property
-        def secret_type(self):
+        def secret_type(self):      # pragma: no cover
             return ''
 
-    MockPlugin.__name__ = name
+    MockPlugin.__name__ = str(name)
 
     assert MockPlugin.disable_flag_text == expected
 

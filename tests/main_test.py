@@ -38,10 +38,12 @@ def get_list_of_plugins(include=None, exclude=None):
         ):
             continue
 
-        output.append({
+        payload = {
             'name': name,
-            **plugin.default_options,
-        })
+        }
+        payload.update(plugin.default_options)
+
+        output.append(payload)
 
     if include:
         output.extend(include)
@@ -53,7 +55,7 @@ def get_plugin_report(extra=None):
     """
     :type extra: Dict[str, str]
     """
-    if not extra:
+    if not extra:       # pragma: no cover
         extra = {}
 
     longest_name_length = max([

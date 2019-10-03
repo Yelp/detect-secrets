@@ -265,10 +265,12 @@ class KeywordDetector(BasePlugin):
 
     @property
     def __dict__(self):
-        return {
+        output = {
             'keyword_exclude': self.keyword_exclude,
-            **super().__dict__,
         }
+        output.update(super(KeywordDetector, self).__dict__)
+
+        return output
 
     def __init__(self, keyword_exclude=None, exclude_lines_regex=None, automaton=None, **kwargs):
         super(KeywordDetector, self).__init__(
