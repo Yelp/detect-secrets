@@ -19,7 +19,7 @@ class DB2Detector(RegexBasedDetector):
     password_keyword = r'(?:password|pwd|pass|passwd)'
     opt_space = r'(?: *)'
     assignment = r'(?:=|:|:=|=>|::)'
-    password = r'[^\n]+'
+    password = r'([^\n"]+)'
     denylist = (
         re.compile(
             r'{begin}{opt_quote}{opt_db}{opt_dash_undrscr}{password_keyword}{opt_quote}{opt_space}'
@@ -36,7 +36,7 @@ class DB2Detector(RegexBasedDetector):
         ),
     )
 
-    username_keyword_regex = r'(?:user|user(?:_|-|)name|uid|user(?:_|-|)id)'
+    username_keyword_regex = r'(?:user|user(?:_|-|)name|uid|user(?:_|-|)id|u(?:_|-|)name)'
     username_regex = r'([a-zA-Z0-9_]+)'
 
     database_keyword_regex = r'(?:database|db|database(?:_|-|)name|db(?:_|-|)name)'
@@ -72,6 +72,15 @@ class DB2Detector(RegexBasedDetector):
             content, self.hostname_keyword_regex,
             self.hostname_regex,
         )
+
+        url_matches = get_hostname_port_database_from_url(
+            content, self.hostname_regex, self.port_regex, self.database_regex,
+        )
+        for match in url_matches:
+            hostname, port, database = match
+            hostname_matches.append(hostname)
+            port_matches.append(port)
+            database_matches.append(database)
 
         if not username_matches or not database_matches or not port_matches or not hostname_matches:
             return VerifiedResult.UNVERIFIED
@@ -136,6 +145,28 @@ def get_other_factor(content, factor_keyword_regex, factor_regex):
 
     return [
         match
+        for line in content.splitlines()
+        for match in regex.findall(line)
+    ]
+
+
+def get_hostname_port_database_from_url(content, hostname_regex, port_regex, database_regex):
+    """
+    Gets hostname, port, and database factors from a jdbc db2 url
+    Accepts: content to scan, regexes to capture hostname, port, and database
+    Returns: list of tuples of format (hostname, port, database),
+             or empty list if no matches
+    """
+    regex = re.compile(
+        r'jdbc:db2:\/\/{hostname}:{port}\/{database}'.format(
+            hostname=hostname_regex,
+            port=port_regex,
+            database=database_regex,
+        ),
+    )
+
+    return [
+        (match[0], match[1], match[2])
         for line in content.splitlines()
         for match in regex.findall(line)
     ]

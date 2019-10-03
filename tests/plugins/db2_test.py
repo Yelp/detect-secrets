@@ -9,6 +9,7 @@ from mock import patch
 from detect_secrets.core.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.db2 import DB2Detector
+from detect_secrets.plugins.db2 import get_hostname_port_database_from_url
 from detect_secrets.plugins.db2 import get_other_factor
 
 
@@ -31,28 +32,31 @@ DB2_CONN_STRING = DB2_CONN_STRING.format(
 class TestGHDetector(object):
 
     @pytest.mark.parametrize(
-        'payload, should_flag',
+        'token, payload, should_flag',
         [
             (
+                'secret',
                 'database=test;hostname=host.test.com;'
                 'port=1;protocol=tcpip;uid=testid;pwd=secret', True,
             ),
-            ('dbpwd=$omespeci@!ch@r$', True),
-            ('db2_password = "astring"', True),
-            ('"password": "Iusedb2!"', True),
-            ('password =    "ilikespaces"', True),
-            ('pwd::anothersyntax!', True),
-            ('DB2_PASSWORD = "@#!%#"', True),
-            ('dashdb-password = "pass"', True),
-            ('dashdb_host = notapassword', False),
-            ('someotherpassword = "doesnt start right"', False),
+            ('$omespeci@!ch@r$', 'dbpwd=$omespeci@!ch@r$', True),
+            ('astring', 'db2_password = "astring"', True),
+            ('Iusedb2!', '"password": "Iusedb2!"', True),
+            ('ilikespaces', 'password =    "ilikespaces"', True),
+            (':anothersyntax!', 'pwd::anothersyntax!', True),
+            ('@#!%#', 'DB2_PASSWORD = "@#!%#"', True),
+            ('pass', 'dashdb-password = "pass"', True),
+            ('', 'dashdb_host = notapassword', False),
+            ('', 'someotherpassword = "doesnt start right"', False),
         ],
     )
-    def test_analyze_string(self, payload, should_flag):
+    def test_analyze_string(self, token, payload, should_flag):
         logic = DB2Detector()
 
         output = logic.analyze_string(payload, 1, 'mock_filename')
         assert len(output) == int(should_flag)
+        if len(output) > 0:
+            assert list(output.keys())[0].secret == token
 
     @patch('detect_secrets.plugins.db2.ibm_db.connect')
     def test_verify_invalid_secret(self, mock_db2_connect):
@@ -83,6 +87,22 @@ class TestGHDetector(object):
                database={},
                host={},
                port={}'''.format(DB2_USER, DB2_PASSWORD, DB2_DATABASE, DB2_HOSTNAME, DB2_PORT),
+            potential_secret,
+        ) == VerifiedResult.VERIFIED_TRUE
+
+        mock_db2_connect.assert_called_with(DB2_CONN_STRING, '', '')
+
+    @patch('detect_secrets.plugins.db2.ibm_db.connect')
+    def test_verify_from_url(self, mock_db2_connect):
+        mock_db2_connect.return_value = MagicMock()
+
+        potential_secret = PotentialSecret('test db2', 'test filename', DB2_PASSWORD)
+        assert DB2Detector().verify(
+            DB2_PASSWORD,
+            '''user={},
+               password={},
+               url=jdbc:db2://{}:{}/{},
+            '''.format(DB2_USER, DB2_PASSWORD, DB2_HOSTNAME, DB2_PORT, DB2_DATABASE),
             potential_secret,
         ) == VerifiedResult.VERIFIED_TRUE
 
@@ -159,3 +179,50 @@ class TestGHDetector(object):
 )
 def test_get_other_factor(content, factor_keyword_regex, factor_regex, expected_output):
     assert get_other_factor(content, factor_keyword_regex, factor_regex) == expected_output
+
+
+@pytest.mark.parametrize(
+    'content, hostname_regex, port_regex, database_regex, expected_output',
+    (
+        (
+            textwrap.dedent("""
+                jdbc:db2://{}:{}/{}
+            """)[1:-1].format(
+                DB2_HOSTNAME,
+                DB2_PORT,
+                DB2_DATABASE,
+            ),
+            DB2Detector().hostname_regex,
+            DB2Detector().port_regex,
+            DB2Detector().database_regex,
+            [(DB2_HOSTNAME, DB2_PORT, DB2_DATABASE)],
+        ),
+        (
+            textwrap.dedent("""
+                jdbc:db2://{}:{}/
+            """)[1:-1].format(
+                DB2_HOSTNAME,
+                DB2_PORT,
+            ),
+            DB2Detector().hostname_regex,
+            DB2Detector().port_regex,
+            DB2Detector().database_regex,
+            [],
+        ),
+        (
+            textwrap.dedent("""
+                nonsense
+            """),
+            DB2Detector().hostname_regex,
+            DB2Detector().port_regex,
+            DB2Detector().database_regex,
+            [],
+        ),
+    ),
+)
+def test_get_hostname_port_database_from_url(
+        content, hostname_regex, port_regex, database_regex, expected_output,
+):
+    assert get_hostname_port_database_from_url(
+        content, hostname_regex, port_regex, database_regex,
+    ) == expected_output
