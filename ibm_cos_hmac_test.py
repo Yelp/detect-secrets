@@ -21,7 +21,7 @@ class TestIBMCosHmacDetector(object):
     @pytest.mark.parametrize(
         'payload, should_flag',
         [
-            ('"secret_access_key": "1234567890abcdef1234567890abcdef1234567890abcdef"', True,),
+            ('"secret_access_key": "1234567890abcdef1234567890abcdef1234567890abcdef"', True),
             ('secret_access_key=1234567890abcdef1234567890abcdef1234567890abcdef', True),
             ('secret_access_key="1234567890abcdef1234567890abcdef1234567890abcdef"', True),
             ('secret_access_key=\'1234567890abcdef1234567890abcdef1234567890abcdef\'', True),
@@ -139,6 +139,10 @@ class TestIBMCosHmacDetector(object):
                 [ACCESS_KEY_ID],
             ),
             (
+                "access_key = '{}'".format(ACCESS_KEY_ID),
+                [ACCESS_KEY_ID],
+            ),
+            (
                 "[\"access_key_id\"] = '{}'".format(ACCESS_KEY_ID),
                 [ACCESS_KEY_ID],
             ),
@@ -155,8 +159,8 @@ class TestIBMCosHmacDetector(object):
 @pytest.mark.parametrize(
     'status_code, validation_result',
     [
-        (200, True,),
-        (403, False,),
+        (200, True),
+        (403, False),
     ],
 )
 @responses.activate

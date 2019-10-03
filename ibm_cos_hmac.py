@@ -21,7 +21,7 @@ class IBMCosHmacDetector(RegexBasedDetector):
 
     token_prefix = r'(?:(?:ibm)?[-_]?cos[-_]?(?:hmac)?|)'
     password_keyword = r'(?:secret[-_]?(?:access)?[-_]?key)'
-    password = r'[a-f0-9]{48}'
+    password = r'([a-f0-9]{48})'
     denylist = (
         RegexBasedDetector.assign_regex_generator(
             prefix_regex=token_prefix,
@@ -31,7 +31,7 @@ class IBMCosHmacDetector(RegexBasedDetector):
     )
 
     def get_access_key_id(self, content):
-        key_id_keyword_regex = r'(?:access(?:_|-|)(?:key|)(?:_|-|)id|key(?:_|-|)id)'
+        key_id_keyword_regex = r'(?:access[-_]?(?:key)?[-_]?(?:id)?|key[-_]?id)'
         key_id_regex = r'([a-f0-9]{32})'
 
         regex = RegexBasedDetector.assign_regex_generator(
