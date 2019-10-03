@@ -438,6 +438,12 @@ class PluginOptions:
             disable_help_text='Disable scanning for IBM Cloud IAM keys',
             is_default=True,
         ),
+        PluginDescriptor(
+            classname='IBMCosHmacDetector',
+            disable_flag_text='--no-ibm-cos-hmac-scan',
+            disable_help_text='Disable scanning for IBM Cloud Object Storage HMAC keys',
+            is_default=True,
+        ),
     ]
 
     default_plugins_list = [

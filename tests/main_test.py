@@ -197,6 +197,7 @@ class TestMain:
                 GHDetector             : False
                 HexHighEntropyString   : {}
                 IBMCloudIAMDetector    : False
+                IBMCosHmacDetector     : False
                 KeywordDetector        : False
                 PrivateKeyDetector     : False
                 SlackDetector          : False
@@ -226,6 +227,7 @@ class TestMain:
                 DB2Detector        : False
                 GHDetector         : False
                 IBMCloudIAMDetector: False
+                IBMCosHmacDetector : False
                 PrivateKeyDetector : False
                 SlackDetector      : False
                 SoftLayerDetector  : False
@@ -250,6 +252,7 @@ class TestMain:
                 GHDetector             : False
                 HexHighEntropyString   : False (2.121)
                 IBMCloudIAMDetector    : False
+                IBMCosHmacDetector     : False
                 KeywordDetector        : False
                 PrivateKeyDetector     : False
                 SlackDetector          : False
@@ -396,6 +399,9 @@ class TestMain:
                         'name': 'IBMCloudIAMDetector',
                     },
                     {
+                        'name': 'IBMCosHmacDetector',
+                    },
+                    {
                         'name': 'KeywordDetector',
                     },
                     {
@@ -443,6 +449,9 @@ class TestMain:
                     },
                     {
                         'name': 'IBMCloudIAMDetector',
+                    },
+                    {
+                        'name': 'IBMCosHmacDetector',
                     },
                     {
                         'name': 'KeywordDetector',
@@ -547,6 +556,9 @@ class TestMain:
                         'name': 'IBMCloudIAMDetector',
                     },
                     {
+                        'name': 'IBMCosHmacDetector',
+                    },
+                    {
                         'name': 'PrivateKeyDetector',
                     },
                     {
@@ -593,6 +605,9 @@ class TestMain:
                     },
                     {
                         'name': 'IBMCloudIAMDetector',
+                    },
+                    {
+                        'name': 'IBMCosHmacDetector',
                     },
                     {
                         'name': 'PrivateKeyDetector',
@@ -741,6 +756,9 @@ class TestMain:
             },
             {
                 'name': 'IBMCloudIAMDetector',
+            },
+            {
+                'name': 'IBMCosHmacDetector',
             },
             {
                 'name': 'PrivateKeyDetector',

@@ -215,6 +215,9 @@ class TestPreCommitHook:
                     'name': 'IBMCloudIAMDetector',
                 },
                 {
+                    'name': 'IBMCosHmacDetector',
+                },
+                {
                     'name': 'KeywordDetector',
                     'keyword_exclude': None,
                 },
