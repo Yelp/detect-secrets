@@ -1,17 +1,6 @@
 """Intelligent initialization of plugins."""
-from ..artifactory import ArtifactoryDetector               # noqa: F401
-from ..aws import AWSKeyDetector                            # noqa: F401
-from ..base import BasePlugin
-from ..basic_auth import BasicAuthDetector                  # noqa: F401
-from ..common.util import get_mapping_from_secret_type_to_class_name
-from ..high_entropy_strings import Base64HighEntropyString  # noqa: F401
-from ..high_entropy_strings import HexHighEntropyString     # noqa: F401
-from ..jwt import JwtTokenDetector                          # noqa: F401
-from ..keyword import KeywordDetector                       # noqa: F401
-from ..mailchimp import MailchimpDetector                   # noqa: F401
-from ..private_key import PrivateKeyDetector                # noqa: F401
-from ..slack import SlackDetector                           # noqa: F401
-from ..stripe import StripeDetector                         # noqa: F401
+from .util import get_mapping_from_secret_type_to_class_name
+from .util import import_plugins
 from detect_secrets.core.log import log
 from detect_secrets.core.usage import PluginOptions
 
@@ -173,10 +162,10 @@ def from_plugin_classname(
 
     :type should_verify_secrets: bool
     """
-    klass = globals()[plugin_classname]
-
-    # Make sure the instance is a BasePlugin type, before creating it.
-    if not issubclass(klass, BasePlugin):  # pragma: no cover
+    try:
+        klass = import_plugins()[plugin_classname]
+    except KeyError:
+        log.warning('No such plugin to initialize.')
         raise TypeError
 
     try:
@@ -187,9 +176,7 @@ def from_plugin_classname(
             **kwargs
         )
     except TypeError:
-        log.warning(
-            'Unable to initialize plugin!',
-        )
+        log.warning('Unable to initialize plugin!')
         raise
 
     return instance

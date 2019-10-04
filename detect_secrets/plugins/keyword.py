@@ -29,6 +29,7 @@ from __future__ import absolute_import
 import re
 
 from .base import BasePlugin
+from .base import classproperty
 from .common.filetype import determine_file_type
 from .common.filetype import FileType
 from .common.filters import is_false_positive
@@ -249,11 +250,27 @@ QUOTES_REQUIRED_FILETYPES = {
 
 
 class KeywordDetector(BasePlugin):
-    """This checks if denylisted keywords
-    are present in the analyzed string.
     """
+    Scans for secret-sounding variable names.
 
+    This checks if denylisted keywords are present in the analyzed string.
+    """
     secret_type = 'Secret Keyword'
+
+    @classproperty
+    def default_options(cls):
+        return {
+            'keyword_exclude': None,
+        }
+
+    @property
+    def __dict__(self):
+        output = {
+            'keyword_exclude': self.keyword_exclude,
+        }
+        output.update(super(KeywordDetector, self).__dict__)
+
+        return output
 
     def __init__(self, keyword_exclude=None, exclude_lines_regex=None, automaton=None, **kwargs):
         super(KeywordDetector, self).__init__(

@@ -6,7 +6,7 @@ from .base import RegexBasedDetector
 
 
 class ArtifactoryDetector(RegexBasedDetector):
-
+    """Scans for Artifactory credentials."""
     secret_type = 'Artifactory Credentials'
 
     denylist = [

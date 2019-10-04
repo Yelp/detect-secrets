@@ -78,22 +78,18 @@ There are many examples of existing plugins to reference, under
    Be sure to write comments about **why** your particular regex was crafted
    as it is!
 
-3. Register your plugin
-
-   Once your plugin is written and tested, you need to register it so that
-   it can be disabled if other users don't need it. Be sure to add it to
-   `detect_secrets.core.usage.PluginOptions` as a new option for users to
-   use.
-
-   Check out the following PRs for examples:
-     - https://github.com/Yelp/detect-secrets/pull/74/files
-     - https://github.com/Yelp/detect-secrets/pull/157/files
-
-4. Update documentation
+3. Update documentation
 
    Be sure to add your changes to the `README.md` and `CHANGELOG.md` so that
    it will be easier for maintainers to bump the version and for other
    downstream consumers to get the latest information about plugins available.
+
+### Tips
+
+- There should be a total of three modified files in a minimal new plugin: the
+  plugin file, it's corresponding test, and an updated README.
+- If your plugin uses customizable options (e.g. entropy limit in `HighEntropyStrings`)
+  be sure to add default options to the plugin's `default_options`.
 
 ## Running Tests
 

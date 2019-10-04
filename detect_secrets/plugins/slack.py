@@ -12,7 +12,7 @@ from detect_secrets.core.constants import VerifiedResult
 
 
 class SlackDetector(RegexBasedDetector):
-
+    """Scans for Slack tokens."""
     secret_type = 'Slack Token'
 
     denylist = (

@@ -12,19 +12,23 @@ from testing.factories import potential_secret_factory
 from testing.mocks import mock_file_object
 
 
-def test_fails_if_no_secret_type_defined():
-    class MockPlugin(BasePlugin):  # pragma: no cover
+@pytest.mark.parametrize(
+    'name, expected',
+    (
+        ('HexHighEntropyString', 'no-hex-high-entropy-string-scan'),
+        ('KeywordDetector', 'no-keyword-scan'),
+        ('PrivateKeyDetector', 'no-private-key-scan'),
+    ),
+)
+def test_disable_flag_text(name, expected):
+    class MockPlugin(BasePlugin):
+        @property
+        def secret_type(self):      # pragma: no cover
+            return ''
 
-        def analyze_string_content(self, *args, **kwargs):
-            pass
+    MockPlugin.__name__ = str(name)
 
-        def secret_generator(self, *args, **kwargs):
-            pass
-
-    with pytest.raises(ValueError) as excinfo:
-        MockPlugin()
-
-    assert 'Plugins need to declare a secret_type.' == str(excinfo.value)
+    assert MockPlugin.disable_flag_text == expected
 
 
 class TestVerify:
