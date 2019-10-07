@@ -93,6 +93,42 @@ class TestGHDetector(object):
         mock_db2_connect.assert_called_with(DB2_CONN_STRING, '', '')
 
     @patch('detect_secrets.plugins.db2.ibm_db.connect')
+    def test_verify_valid_secret_in_single_quotes(self, mock_db2_connect):
+        mock_db2_connect.return_value = MagicMock()
+
+        potential_secret = PotentialSecret('test db2', 'test filename', DB2_PASSWORD)
+        assert DB2Detector().verify(
+            DB2_PASSWORD,
+            '''user='{}',
+               password='{}',
+               database='{}',
+               host='{}',
+               port='{}'
+            '''.format(DB2_USER, DB2_PASSWORD, DB2_DATABASE, DB2_HOSTNAME, DB2_PORT),
+            potential_secret,
+        ) == VerifiedResult.VERIFIED_TRUE
+
+        mock_db2_connect.assert_called_with(DB2_CONN_STRING, '', '')
+
+    @patch('detect_secrets.plugins.db2.ibm_db.connect')
+    def test_verify_valid_secret_in_double_quotes(self, mock_db2_connect):
+        mock_db2_connect.return_value = MagicMock()
+
+        potential_secret = PotentialSecret('test db2', 'test filename', DB2_PASSWORD)
+        assert DB2Detector().verify(
+            DB2_PASSWORD,
+            '''user="{}",
+               password="{}",
+               database="{}",
+               host="{}",
+               port="{}"
+            '''.format(DB2_USER, DB2_PASSWORD, DB2_DATABASE, DB2_HOSTNAME, DB2_PORT),
+            potential_secret,
+        ) == VerifiedResult.VERIFIED_TRUE
+
+        mock_db2_connect.assert_called_with(DB2_CONN_STRING, '', '')
+
+    @patch('detect_secrets.plugins.db2.ibm_db.connect')
     def test_verify_from_url(self, mock_db2_connect):
         mock_db2_connect.return_value = MagicMock()
 
