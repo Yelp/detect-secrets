@@ -378,9 +378,9 @@ class Base64HighEntropyString(HighEntropyStringsPlugin):
         charset = (
             string.ascii_letters
             + string.digits
-            + '+/'  # regular base64
-            + '\\-_'  # url-safe base64
-            + '='  # padding
+            + '+/'  # Regular base64
+            + '\\-_'  # Url-safe base64
+            + '='  # Padding
         )
         super(Base64HighEntropyString, self).__init__(
             charset=charset,
