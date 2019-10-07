@@ -85,7 +85,7 @@ class HighEntropyStringsPlugin(BasePlugin):
         return entropy
 
     @staticmethod
-    def _check_for_false_positives_with_line_context(potential_secrets, line):
+    def _filter_false_positives_with_line_ctx(potential_secrets, line):
         return {
             key: value for key, value in potential_secrets.items()
             if not is_false_positive_with_line_context(
@@ -101,7 +101,7 @@ class HighEntropyStringsPlugin(BasePlugin):
             filename,
         )
 
-        return HighEntropyStringsPlugin._check_for_false_positives_with_line_context(
+        return self._filter_false_positives_with_line_ctx(
             output,
             string,
         )
@@ -175,23 +175,27 @@ class HighEntropyStringsPlugin(BasePlugin):
         :returns: same format as super().analyze()
         """
         def wrapped(file, filename):
-            potential_secrets = {}
+            output = {}
 
             with self.non_quoted_string_regex():
-                for value, lineno in IniFileParser(
+                for key, value, lineno in IniFileParser(
                     file,
                     add_header,
                     exclude_lines_regex=self.exclude_lines_regex,
                 ).iterator():
-                    potential_secrets.update(
-                        self.analyze_string_content(
-                            value,
-                            lineno,
-                            filename,
-                        ),
+                    potential_secrets = self.analyze_string_content(
+                        value,
+                        lineno,
+                        filename,
                     )
+                    line = u'{key}={value}'.format(key=key, value=value)
+                    potential_secrets = self._filter_false_positives_with_line_ctx(
+                        potential_secrets,
+                        line,
+                    )
+                    output.update(potential_secrets)
 
-            return potential_secrets
+            return output
 
         return wrapped
 
@@ -253,7 +257,7 @@ class HighEntropyStringsPlugin(BasePlugin):
                     item['__original_key__']: item['__value__'],
                 }).replace('\n', '')
 
-                secrets = HighEntropyStringsPlugin._check_for_false_positives_with_line_context(
+                secrets = self._filter_false_positives_with_line_ctx(
                     secrets,
                     dumped_key_value,
                 )

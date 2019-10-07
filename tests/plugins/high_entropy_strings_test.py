@@ -166,6 +166,7 @@ class TestRegularBase64HighEntropyStrings(HighEntropyStringsTest):
                     'Location:    test_data/config.ini:15',
                     'Location:    test_data/config.ini:21',
                     'Location:    test_data/config.ini:22',
+                    'Location:    test_data/config.ini:32',
                 ],
             ),
             (
