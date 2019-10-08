@@ -17,37 +17,48 @@ class CloudantDetector(RegexBasedDetector):
     opt_dashes = r'(?:--|)'
     opt_dot = r'(?:\.|)'
     dot = r'\.'
-    cl_account = r'[0-9a-z\-\_]*'
-    cl = r'(cloudant|cl|clou)'
+    cl_account = r'[0-9a-z\-\_]+'
+    cl = r'(?:cloudant|cl|clou)'
     opt_dash_undrscr = r'(?:_|-|)'
     opt_api = r'(?:api|)'
-    cl_key_or_pass = cl + opt_dash_undrscr + r'(?:key|pwd|pw|password|pass|token)'
+    cl_key_or_pass = opt_api + r'(?:key|pwd|pw|password|pass|token)'
     opt_space = r'(?: |)'
     assignment = r'(?:=|:|:=|=>)'
-    cl_secret = r'[0-9a-f]{64}'
+    cl_pw = r'([0-9a-f]{64})'
+    cl_api_key = r'([a-z]{24})'
     colon = r'\:'
     at = r'\@'
-    http = r'(?:http\:\/\/|https\:\/\/)'
+    http = r'(?:https?\:\/\/)'
     cloudant_api_url = r'cloudant\.com'
     denylist = [
-        re.compile(
-            r'{cl_key_or_pass}{opt_space}{assignment}{opt_space}{opt_quote}{cl_secret}'.format(
-                cl_key_or_pass=cl_key_or_pass,
-                opt_quote=opt_quote,
-                cl_account=cl_account,
-                opt_dash_undrscr=opt_dash_undrscr,
-                opt_api=opt_api,
-                opt_space=opt_space,
-                assignment=assignment,
-                cl_secret=cl_secret,
-            ), flags=re.IGNORECASE,
+        RegexBasedDetector.assign_regex_generator(
+            prefix_regex=cl,
+            password_keyword_regex=cl_key_or_pass,
+            password_regex=cl_pw,
+        ),
+        RegexBasedDetector.assign_regex_generator(
+            prefix_regex=cl,
+            password_keyword_regex=cl_key_or_pass,
+            password_regex=cl_api_key,
         ),
         re.compile(
-            r'{http}{cl_account}{colon}{cl_secret}{at}{cl_account}{dot}{cloudant_api_url}'.format(
+            r'{http}{cl_account}{colon}{cl_pw}{at}{cl_account}{dot}{cloudant_api_url}'.format(
                 http=http,
                 colon=colon,
                 cl_account=cl_account,
-                cl_secret=cl_secret,
+                cl_pw=cl_pw,
+                at=at,
+                dot=dot,
+                cloudant_api_url=cloudant_api_url,
+            ),
+            flags=re.IGNORECASE,
+        ),
+        re.compile(
+            r'{http}{cl_account}{colon}{cl_api_key}{at}{cl_account}{dot}{cloudant_api_url}'.format(
+                http=http,
+                colon=colon,
+                cl_account=cl_account,
+                cl_api_key=cl_api_key,
                 at=at,
                 dot=dot,
                 cloudant_api_url=cloudant_api_url,
@@ -105,7 +116,7 @@ def verify_cloudant_key(hostname, token, potential_secret=None):
         request_url = 'https://{hostname}:' \
             '{token}' \
             '@{hostname}.' \
-            'cloudant.com/_api/v2'.format(
+            'cloudant.com'.format(
                 hostname=hostname,
                 token=token,
             )

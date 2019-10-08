@@ -11,8 +11,11 @@ from detect_secrets.plugins.cloudant import CloudantDetector
 from detect_secrets.plugins.cloudant import get_host
 
 CL_HOST = 'testy_test'  # also called user
-# only detecting 64 hex
-CL_TOKEN = 'abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234'
+# only detecting 64 hex CL generated password
+CL_PW = 'abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234'
+
+# detecting 24 alpha for CL generated API KEYS
+CL_API_KEY = 'abcdefghijabcdefghijabcd'
 
 
 class TestCloudantDetector(object):
@@ -21,25 +24,42 @@ class TestCloudantDetector(object):
         'payload, should_flag',
         [
             (
-                'https://{cl_host}:{cl_token}@{cl_host}.cloudant.com"'.format(
-                    cl_host=CL_HOST, cl_token=CL_TOKEN,
+                'https://{cl_host}:{cl_pw}@{cl_host}.cloudant.com"'.format(
+                    cl_host=CL_HOST, cl_pw=CL_PW,
                 ), True,
             ),
             (
-                'https://{cl_host}:{cl_token}@{cl_host}.cloudant.com/_api/v2/'.format(
-                    cl_host=CL_HOST, cl_token=CL_TOKEN,
+                'https://{cl_host}:{cl_pw}@{cl_host}.cloudant.com/_api/v2/'.format(
+                    cl_host=CL_HOST, cl_pw=CL_PW,
                 ), True,
             ),
             (
-                'https://{cl_host}:{cl_token}.cloudant.com'.format(
-                    cl_host=CL_HOST, cl_token=CL_TOKEN,
+                'https://{cl_host}:{cl_pw}@{cl_host}.cloudant.com/_api/v2/'.format(
+                    cl_host=CL_HOST, cl_pw=CL_PW,
+                ), True,
+            ),
+            (
+                'https://{cl_host}:{cl_pw}@{cl_host}.cloudant.com'.format(
+                    cl_host=CL_HOST, cl_pw=CL_PW,
+                ), True,
+            ),
+            (
+                'https://{cl_host}:{cl_api_key}@{cl_host}.cloudant.com'.format(
+                    cl_host=CL_HOST, cl_api_key=CL_API_KEY,
+                ), True,
+            ),
+            (
+                'https://{cl_host}:{cl_pw}.cloudant.com'.format(
+                    cl_host=CL_HOST, cl_pw=CL_PW,
                 ), False,
             ),
-            ('cloudant_password=\'{cl_token}\''.format(cl_token=CL_TOKEN), True),
-            ('cloudant_pw=\'{cl_token}\''.format(cl_token=CL_TOKEN), True),
-            ('cloudant_pw="{cl_token}"'.format(cl_token=CL_TOKEN), True),
-            ('clou_pw = "{cl_token}"'.format(cl_token=CL_TOKEN), True),
+            ('cloudant_password=\'{cl_pw}\''.format(cl_pw=CL_PW), True),
+            ('cloudant_pw=\'{cl_pw}\''.format(cl_pw=CL_PW), True),
+            ('cloudant_pw="{cl_pw}"'.format(cl_pw=CL_PW), True),
+            ('clou_pw = "{cl_pw}"'.format(cl_pw=CL_PW), True),
+            ('cloudant_key = "{cl_api_key}"'.format(cl_api_key=CL_API_KEY), True),
             ('cloudant_password = "a-fake-tooshort-key"', False),
+            ('cl_api_key = "a-fake-api-key"', False),
         ],
     )
     def test_analyze_string(self, payload, should_flag):
@@ -50,31 +70,31 @@ class TestCloudantDetector(object):
 
     @responses.activate
     def test_verify_invalid_secret(self):
-        cl_api_url = 'https://{cl_host}:{cl_token}@{cl_host}.cloudant.com/_api/v2'.format(
-            cl_host=CL_HOST, cl_token=CL_TOKEN,
+        cl_api_url = 'https://{cl_host}:{cl_pw}@{cl_host}.cloudant.com'.format(
+            cl_host=CL_HOST, cl_pw=CL_PW,
         )
         responses.add(
             responses.GET, cl_api_url,
-            json={'error': 'Access denied. '}, status=401,
+            json={'error': 'unauthorized'}, status=401,
         )
 
         assert CloudantDetector().verify(
-            CL_TOKEN,
+            CL_PW,
             'cloudant_host={}'.format(CL_HOST),
         ) == VerifiedResult.VERIFIED_FALSE
 
     @responses.activate
     def test_verify_valid_secret(self):
-        cl_api_url = 'https://{cl_host}:{cl_token}@{cl_host}.cloudant.com/_api/v2'.format(
-            cl_host=CL_HOST, cl_token=CL_TOKEN,
+        cl_api_url = 'https://{cl_host}:{cl_pw}@{cl_host}.cloudant.com'.format(
+            cl_host=CL_HOST, cl_pw=CL_PW,
         )
         responses.add(
             responses.GET, cl_api_url,
             json={'id': 1}, status=200,
         )
-        potential_secret = PotentialSecret('test cloudant', 'test filename', CL_TOKEN)
+        potential_secret = PotentialSecret('test cloudant', 'test filename', CL_PW)
         assert CloudantDetector().verify(
-            CL_TOKEN,
+            CL_PW,
             'cloudant_host={}'.format(CL_HOST),
             potential_secret,
         ) == VerifiedResult.VERIFIED_TRUE
@@ -83,13 +103,13 @@ class TestCloudantDetector(object):
     @responses.activate
     def test_verify_unverified_secret(self):
         assert CloudantDetector().verify(
-            CL_TOKEN,
+            CL_PW,
             'cloudant_host={}'.format(CL_HOST),
         ) == VerifiedResult.UNVERIFIED
 
     def test_verify_no_secret(self):
         assert CloudantDetector().verify(
-            CL_TOKEN,
+            CL_PW,
             'no_un={}'.format(CL_HOST),
         ) == VerifiedResult.UNVERIFIED
 
