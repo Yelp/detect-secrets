@@ -80,8 +80,10 @@ def is_sequential_string(secret, *args):
     return False
 
 
-# This only finds UUIDs which only have lowercase characters.
-_UUID_REGEX = re.compile(r'[a-f0-9]{8}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{12}')
+_UUID_REGEX = re.compile(
+    r'[a-f0-9]{8}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{12}',
+    re.IGNORECASE,
+)
 
 
 def is_potential_uuid(secret, *args):
@@ -98,7 +100,7 @@ def is_potential_uuid(secret, *args):
     # will find us more false-positives than if we just tried validate
     # the input string as a UUID (for example, if the string has a prefix
     # or suffix).
-    return len(_UUID_REGEX.findall(secret.lower())) > 0
+    return len(_UUID_REGEX.findall(secret)) > 0
 
 
 DEFAULT_FALSE_POSITIVE_HEURISTICS = [
@@ -109,7 +111,7 @@ DEFAULT_FALSE_POSITIVE_HEURISTICS = [
 
 # NOTE: this doesn't handle multiple key-values on a line properly.
 # NOTE: words that end in "id" will be treated as ids
-_ID_DETECTOR_REGEX = re.compile(r'[iI][dD][^A-Za-z0-9]')
+_ID_DETECTOR_REGEX = re.compile(r'id[^a-z0-9]', re.IGNORECASE)
 
 
 def is_likely_id_string(secret, line):
