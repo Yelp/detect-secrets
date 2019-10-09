@@ -15,3 +15,5 @@ high_entropy_binary_secret: !!binary MjNjcnh1IDJieXJpdXYyeXJpaTJidnl1MnI4OXkyb3U
 
 # this should be ignored as a potential id
 allowlisted_id: 'ToCynx5Se4e2PtoZxEhW7lUJcOX15c54'
+
+uuid_should_be_ignored: '203db13e-70c7-462b-9a3d-bf32640cb0be'

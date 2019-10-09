@@ -20,6 +20,8 @@ from .common.filetype import determine_file_type
 from .common.filetype import FileType
 from .common.filters import is_false_positive
 from .common.filters import is_false_positive_with_line_context
+from .common.filters import is_potential_uuid
+from .common.filters import DEFAULT_FALSE_POSITIVE_HEURISTICS
 from .common.ini_file_parser import IniFileParser
 from .common.yaml_file_parser import YamlFileParser
 from detect_secrets.core.potential_secret import PotentialSecret
@@ -113,7 +115,11 @@ class HighEntropyStringsPlugin(BasePlugin):
         output = {}
 
         for result in self.secret_generator(string):
-            if is_false_positive(result, self.automaton):
+            # py2+py3 compatible way of copying a list
+            functions = list(DEFAULT_FALSE_POSITIVE_HEURISTICS)
+            functions.append(is_potential_uuid)
+
+            if is_false_positive(result, self.automaton, functions=functions):
                 continue
 
             secret = PotentialSecret(self.secret_type, filename, result, line_num)

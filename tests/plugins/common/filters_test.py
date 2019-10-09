@@ -73,3 +73,16 @@ class TestIsLikelyIdString(object):
     )
     def test_failure(self, secret, line):
         assert not filters.is_likely_id_string(secret, line)
+
+
+class TestIsPotentialUuid(object):
+    @pytest.mark.parametrize(
+        'secret',
+        [
+            '3636dd46-ea21-11e9-81b4-2a2ae2dbcce4',  # uuid1
+            '97fb0431-46ac-41df-9ef9-1a18545ce2a0',  # uuid4
+            'prefix-3636dd46-ea21-11e9-81b4-2a2ae2dbcce4-suffix',  # uuid in middle of string
+        ],
+    )
+    def test_success(self, secret):
+        assert filters.is_potential_uuid(secret)

@@ -80,13 +80,34 @@ def is_sequential_string(secret, *args):
     return False
 
 
-ALL_FALSE_POSITIVE_HEURISTICS = (
+# This only finds UUIDs which only have lowercase characters.
+_UUID_REGEX = re.compile(r'[a-f0-9]{8}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{4}\-[a-f0-9]{12}')
+
+
+def is_potential_uuid(secret, *args):
+    """
+    Determines if a potential secret contains any UUIDs.
+
+    :type secret: str
+
+    :rtype: bool
+    Returns True if the string has a UUID, false otherwise.
+    """
+
+    # Using a regex to find strings that look like false-positives
+    # will find us more false-positives than if we just tried validate
+    # the input string as a UUID (for example, if the string has a prefix
+    # or suffix).
+    return len(_UUID_REGEX.findall(secret.lower())) > 0
+
+
+DEFAULT_FALSE_POSITIVE_HEURISTICS = [
     is_found_with_aho_corasick,
     is_sequential_string,
-)
+]
 
 
-# NOTE: this doesn't handle key-values on a line properly.
+# NOTE: this doesn't handle multiple key-values on a line properly.
 # NOTE: words that end in "id" will be treated as ids
 _ID_DETECTOR_REGEX = re.compile(r'[iI][dD][^A-Za-z0-9]')
 
@@ -108,12 +129,12 @@ def is_likely_id_string(secret, line):
     return _ID_DETECTOR_REGEX.findall(line, pos=0, endpos=secret_index)
 
 
-ALL_FALSE_POSITIVE_WITH_LINE_CONTEXT_HEURISTICS = [
+DEFAULT_FALSE_POSITIVE_WITH_LINE_CONTEXT_HEURISTICS = [
     is_likely_id_string,
 ]
 
 
-def is_false_positive(secret, automaton, functions=ALL_FALSE_POSITIVE_HEURISTICS):
+def is_false_positive(secret, automaton, functions=DEFAULT_FALSE_POSITIVE_HEURISTICS):
     """
     :type secret: str
 
@@ -135,7 +156,7 @@ def is_false_positive(secret, automaton, functions=ALL_FALSE_POSITIVE_HEURISTICS
 def is_false_positive_with_line_context(
     secret,
     line,
-    functions=ALL_FALSE_POSITIVE_WITH_LINE_CONTEXT_HEURISTICS,
+    functions=DEFAULT_FALSE_POSITIVE_WITH_LINE_CONTEXT_HEURISTICS,
 ):
     """
     :type secret: str
