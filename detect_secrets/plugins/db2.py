@@ -57,7 +57,7 @@ class DB2Detector(RegexBasedDetector):
         r'*(?:.\[A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]))'
     )
 
-    def verify(self, token, content, potential_secret=None):
+    def verify(self, token, content, potential_secret=None, timeout=5):
 
         username_matches = get_other_factor(
             content, self.username_keyword_regex,
@@ -93,7 +93,7 @@ class DB2Detector(RegexBasedDetector):
                 for port in port_matches:  # pragma: no cover
                     for hostname in hostname_matches:  # pragma: no cover
                         verify_result = verify_db2_credentials(
-                            database, hostname, port, username, token,
+                            database, hostname, port, username, token, timeout,
                         )
                         if verify_result == VerifiedResult.VERIFIED_TRUE:
                             potential_secret.other_factors['database'] = database
@@ -105,24 +105,31 @@ class DB2Detector(RegexBasedDetector):
         return VerifiedResult.VERIFIED_FALSE
 
 
-def verify_db2_credentials(database, hostname, port, username, password):  # pragma: no cover
+def verify_db2_credentials(
+    database, hostname, port, username, password, timeout=5,
+):  # pragma: no cover
     try:
         conn_str = 'database={database};hostname={hostname};port={port};' + \
-                   'protocol=tcpip;uid={username};pwd={password}'
+                   'protocol=tcpip;uid={username};pwd={password};' + \
+                   'ConnectTimeout={timeout}'
         conn_str = conn_str.format(
             database=database,
             hostname=hostname,
             port=port,
             username=username,
             password=password,
+            timeout=timeout,
         )
         ibm_db_conn = ibm_db.connect(conn_str, '', '')
         if ibm_db_conn:
             return VerifiedResult.VERIFIED_TRUE
         else:
             return VerifiedResult.VERIFIED_FALSE
-    except Exception:
-        return VerifiedResult.UNVERIFIED
+    except Exception as e:
+        if 'Timeout' in str(e):
+            return VerifiedResult.UNVERIFIED
+        else:
+            return VerifiedResult.VERIFIED_FALSE
 
 
 def get_other_factor(content, factor_keyword_regex, factor_regex):
