@@ -19,6 +19,7 @@ setup(
         'pyyaml',
         'requests',
         'ibm_db',
+        'boxsdk[jwt]',
     ],
     extras_require={
         'word_list': [
