@@ -8,7 +8,7 @@ import responses
 from detect_secrets.core.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.cloudant import CloudantDetector
-from detect_secrets.plugins.cloudant import get_host
+from detect_secrets.plugins.cloudant import find_host
 
 CL_HOST = 'testy_test'  # also called user
 # only detecting 64 hex CL generated password
@@ -113,50 +113,49 @@ class TestCloudantDetector(object):
             'no_un={}'.format(CL_HOST),
         ) == VerifiedResult.UNVERIFIED
 
-
-@pytest.mark.parametrize(
-    'content, expected_output',
-    (
+    @pytest.mark.parametrize(
+        'content, expected_output',
         (
-            textwrap.dedent("""
-                --cloudant-hostname = {}
-            """)[1:-1].format(
-                CL_HOST,
+            (
+                textwrap.dedent("""
+                    --cloudant-hostname = {}
+                """)[1:-1].format(
+                    CL_HOST,
+                ),
+                [CL_HOST],
             ),
-            [CL_HOST],
-        ),
 
-        # With quotes
-        (
-            textwrap.dedent("""
-                cl_host = "{}"
-            """)[1:-1].format(
-                CL_HOST,
+            # With quotes
+            (
+                textwrap.dedent("""
+                    cl_host = "{}"
+                """)[1:-1].format(
+                    CL_HOST,
+                ),
+                [CL_HOST],
             ),
-            [CL_HOST],
-        ),
 
-        # multiple candidates
-        (
-            textwrap.dedent("""
-                cloudant_id = '{}'
-                cl-user = '{}'
-                CLOUDANT_USERID = '{}'
-                cloudant-uname: {}
-            """)[1:-1].format(
-                CL_HOST,
-                'test2_testy_test',
-                'test3-testy-testy',
-                'notanemail',
+            # multiple candidates
+            (
+                textwrap.dedent("""
+                    cloudant_id = '{}'
+                    cl-user = '{}'
+                    CLOUDANT_USERID = '{}'
+                    cloudant-uname: {}
+                """)[1:-1].format(
+                    CL_HOST,
+                    'test2_testy_test',
+                    'test3-testy-testy',
+                    'notanemail',
+                ),
+                [
+                    CL_HOST,
+                    'test2_testy_test',
+                    'test3-testy-testy',
+                    'notanemail',
+                ],
             ),
-            [
-                CL_HOST,
-                'test2_testy_test',
-                'test3-testy-testy',
-                'notanemail',
-            ],
         ),
-    ),
-)
-def test_get_host(content, expected_output):
-    assert get_host(content) == expected_output
+    )
+    def test_find_host(self, content, expected_output):
+        assert find_host(content) == expected_output

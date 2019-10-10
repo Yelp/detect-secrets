@@ -69,7 +69,7 @@ class CloudantDetector(RegexBasedDetector):
 
     def verify(self, token, content, potential_secret=None):
 
-        hosts = get_host(content)
+        hosts = find_host(content)
         if not hosts:
             return VerifiedResult.UNVERIFIED
 
@@ -79,28 +79,15 @@ class CloudantDetector(RegexBasedDetector):
         return VerifiedResult.VERIFIED_FALSE
 
 
-def get_host(content):
-
-    # opt means optional
-    opt_quote = r'(?:"|\'|)'
-    opt_cl = r'(?:cloudant|cl|)'
-    opt_dash_undrscr = r'(?:_|-|)'
+def find_host(content):
     opt_hostname_keyword = r'(?:hostname|host|username|id|user|userid|user-id|user-name|' \
         'name|user_id|user_name|uname)'
-    opt_space = r'(?: |)'
-    assignment = r'(?:\=|:|:=|=>)+'
     hostname = r'(\w(?:\w|_|-)+)'
-    regex = re.compile(
-        r'{opt_quote}{opt_cl}{opt_dash_undrscr}{opt_hostname_keyword}{opt_space}{opt_quote}'
-        '{assignment}{opt_space}{opt_quote}{hostname}{opt_quote}'.format(
-            opt_quote=opt_quote,
-            opt_cl=opt_cl,
-            opt_dash_undrscr=opt_dash_undrscr,
-            opt_hostname_keyword=opt_hostname_keyword,
-            opt_space=opt_space,
-            hostname=hostname,
-            assignment=assignment,
-        ), flags=re.IGNORECASE,
+
+    regex = RegexBasedDetector.assign_regex_generator(
+        prefix_regex=CloudantDetector.cl,
+        password_keyword_regex=opt_hostname_keyword,
+        password_regex=hostname,
     )
 
     return [
