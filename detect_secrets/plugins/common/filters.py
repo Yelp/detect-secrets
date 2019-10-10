@@ -100,7 +100,7 @@ def is_potential_uuid(secret, *args):
     # will find us more false-positives than if we just tried validate
     # the input string as a UUID (for example, if the string has a prefix
     # or suffix).
-    return len(_UUID_REGEX.findall(secret)) > 0
+    return bool(_UUID_REGEX.search(secret))
 
 
 DEFAULT_FALSE_POSITIVE_HEURISTICS = [
@@ -128,7 +128,7 @@ def is_likely_id_string(secret, line):
         return False
 
     secret_index = line.index(secret)
-    return _ID_DETECTOR_REGEX.findall(line, pos=0, endpos=secret_index)
+    return bool(_ID_DETECTOR_REGEX.search(line, pos=0, endpos=secret_index))
 
 
 DEFAULT_FALSE_POSITIVE_WITH_LINE_CONTEXT_HEURISTICS = [
