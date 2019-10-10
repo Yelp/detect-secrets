@@ -30,25 +30,8 @@ class IBMCosHmacDetector(RegexBasedDetector):
         ),
     )
 
-    def get_access_key_id(self, content):
-        key_id_keyword_regex = r'(?:access[-_]?(?:key)?[-_]?(?:id)?|key[-_]?id)'
-        key_id_regex = r'([a-f0-9]{32})'
-
-        regex = RegexBasedDetector.assign_regex_generator(
-            prefix_regex=self.token_prefix,
-            password_keyword_regex=key_id_keyword_regex,
-            password_regex=key_id_regex,
-        )
-
-        return [
-            match
-            for line in content.splitlines()
-            for match in regex.findall(line)
-        ]
-
     def verify(self, token, content, potential_secret=None):
-
-        key_id_matches = self.get_access_key_id(content)
+        key_id_matches = find_access_key_id(content)
 
         if not key_id_matches:
             return VerifiedResult.UNVERIFIED
@@ -65,6 +48,23 @@ class IBMCosHmacDetector(RegexBasedDetector):
             return VerifiedResult.UNVERIFIED
 
         return VerifiedResult.VERIFIED_FALSE
+
+
+def find_access_key_id(content):
+    key_id_keyword_regex = r'(?:access[-_]?(?:key)?[-_]?(?:id)?|key[-_]?id)'
+    key_id_regex = r'([a-f0-9]{32})'
+
+    regex = RegexBasedDetector.assign_regex_generator(
+        prefix_regex=IBMCosHmacDetector.token_prefix,
+        password_keyword_regex=key_id_keyword_regex,
+        password_regex=key_id_regex,
+    )
+
+    return [
+        match
+        for line in content.splitlines()
+        for match in regex.findall(line)
+    ]
 
 
 def hash(key, msg):
