@@ -57,21 +57,21 @@ class DB2Detector(RegexBasedDetector):
         r'*(?:.\[A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]))'
     )
 
-    def verify(self, token, content, potential_secret=None, timeout=5):
+    def verify(self, token, content, potential_secret, timeout=5):
 
-        username_matches = get_other_factor(
+        username_matches = find_other_factor(
             content, self.username_keyword_regex,
             self.username_regex,
         )
-        database_matches = get_other_factor(
+        database_matches = find_other_factor(
             content, self.database_keyword_regex,
             self.database_regex,
         )
-        port_matches = get_other_factor(
+        port_matches = find_other_factor(
             content, self.port_keyword_regex,
             self.port_regex,
         )
-        hostname_matches = get_other_factor(
+        hostname_matches = find_other_factor(
             content, self.hostname_keyword_regex,
             self.hostname_regex,
         )
@@ -132,7 +132,7 @@ def verify_db2_credentials(
             return VerifiedResult.VERIFIED_FALSE
 
 
-def get_other_factor(content, factor_keyword_regex, factor_regex):
+def find_other_factor(content, factor_keyword_regex, factor_regex):
     begin = r'(?:(?<=\W)|(?<=^))'
     opt_quote = r'(?:"|\'|)'
     opt_db = r'(?:db2|dashdb|db|)'

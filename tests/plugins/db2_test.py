@@ -9,8 +9,8 @@ from mock import patch
 from detect_secrets.core.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.db2 import DB2Detector
+from detect_secrets.plugins.db2 import find_other_factor
 from detect_secrets.plugins.db2 import get_hostname_port_database_from_url
-from detect_secrets.plugins.db2 import get_other_factor
 
 
 DB2_USER = 'fake_user'
@@ -108,6 +108,10 @@ class TestGHDetector(object):
         ) == VerifiedResult.VERIFIED_TRUE
 
         mock_db2_connect.assert_called_with(DB2_CONN_STRING, '', '')
+        assert potential_secret.other_factors['database'] == DB2_DATABASE
+        assert potential_secret.other_factors['hostname'] == DB2_HOSTNAME
+        assert potential_secret.other_factors['port'] == DB2_PORT
+        assert potential_secret.other_factors['username'] == DB2_USER
 
     @patch('detect_secrets.plugins.db2.ibm_db.connect')
     def test_verify_valid_secret_in_single_quotes(self, mock_db2_connect):
@@ -126,6 +130,10 @@ class TestGHDetector(object):
         ) == VerifiedResult.VERIFIED_TRUE
 
         mock_db2_connect.assert_called_with(DB2_CONN_STRING, '', '')
+        assert potential_secret.other_factors['database'] == DB2_DATABASE
+        assert potential_secret.other_factors['hostname'] == DB2_HOSTNAME
+        assert potential_secret.other_factors['port'] == DB2_PORT
+        assert potential_secret.other_factors['username'] == DB2_USER
 
     @patch('detect_secrets.plugins.db2.ibm_db.connect')
     def test_verify_valid_secret_in_double_quotes(self, mock_db2_connect):
@@ -144,6 +152,10 @@ class TestGHDetector(object):
         ) == VerifiedResult.VERIFIED_TRUE
 
         mock_db2_connect.assert_called_with(DB2_CONN_STRING, '', '')
+        assert potential_secret.other_factors['database'] == DB2_DATABASE
+        assert potential_secret.other_factors['hostname'] == DB2_HOSTNAME
+        assert potential_secret.other_factors['port'] == DB2_PORT
+        assert potential_secret.other_factors['username'] == DB2_USER
 
     @patch('detect_secrets.plugins.db2.ibm_db.connect')
     def test_verify_from_url(self, mock_db2_connect):
@@ -160,6 +172,10 @@ class TestGHDetector(object):
         ) == VerifiedResult.VERIFIED_TRUE
 
         mock_db2_connect.assert_called_with(DB2_CONN_STRING, '', '')
+        assert potential_secret.other_factors['database'] == DB2_DATABASE
+        assert potential_secret.other_factors['hostname'] == DB2_HOSTNAME
+        assert potential_secret.other_factors['port'] == DB2_PORT
+        assert potential_secret.other_factors['username'] == DB2_USER
 
     @patch('detect_secrets.plugins.db2.ibm_db.connect')
     def test_verify_times_out(self, mock_db2_connect):
@@ -179,9 +195,11 @@ class TestGHDetector(object):
         mock_db2_connect.assert_called_with(DB2_CONN_STRING, '', '')
 
     def test_verify_no_other_factors(self):
+        potential_secret = PotentialSecret('test db2', 'test filename', DB2_PASSWORD)
         assert DB2Detector().verify(
             DB2_PASSWORD,
             'password={}'.format(DB2_PASSWORD),
+            potential_secret,
         ) == VerifiedResult.UNVERIFIED
 
 
@@ -230,8 +248,8 @@ class TestGHDetector(object):
         ),
     ),
 )
-def test_get_other_factor(content, factor_keyword_regex, factor_regex, expected_output):
-    assert get_other_factor(content, factor_keyword_regex, factor_regex) == expected_output
+def test_find_other_factor(content, factor_keyword_regex, factor_regex, expected_output):
+    assert find_other_factor(content, factor_keyword_regex, factor_regex) == expected_output
 
 
 @pytest.mark.parametrize(
