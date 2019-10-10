@@ -444,6 +444,12 @@ class PluginOptions:
             disable_help_text='Disable scanning for IBM Cloud Object Storage HMAC keys',
             is_default=True,
         ),
+        PluginDescriptor(
+            classname='BoxDetector',
+            disable_flag_text='--no-box-scan',
+            disable_help_text='Disable scanning for Box API credentials',
+            is_default=True,
+        ),
     ]
 
     default_plugins_list = [

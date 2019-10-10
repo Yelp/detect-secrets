@@ -9,6 +9,7 @@ from ..artifactory import ArtifactoryDetector               # noqa: F401
 from ..aws import AWSKeyDetector                            # noqa: F401
 from ..base import BasePlugin
 from ..basic_auth import BasicAuthDetector                  # noqa: F401
+from ..box import BoxDetector                               # noqa: F401
 from ..db2 import DB2Detector                               # noqa: F401
 from ..high_entropy_strings import Base64HighEntropyString  # noqa: F401
 from ..high_entropy_strings import HexHighEntropyString     # noqa: F401

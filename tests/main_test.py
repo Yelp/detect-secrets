@@ -193,6 +193,7 @@ class TestMain:
                 ArtifactoryDetector    : False
                 Base64HighEntropyString: {}
                 BasicAuthDetector      : False
+                BoxDetector            : False
                 DB2Detector            : False
                 GHDetector             : False
                 HexHighEntropyString   : {}
@@ -224,6 +225,7 @@ class TestMain:
                 AWSKeyDetector     : False
                 ArtifactoryDetector: False
                 BasicAuthDetector  : False
+                BoxDetector        : False
                 DB2Detector        : False
                 GHDetector         : False
                 IBMCloudIAMDetector: False
@@ -248,6 +250,7 @@ class TestMain:
                 ArtifactoryDetector    : False
                 Base64HighEntropyString: False (2.585)
                 BasicAuthDetector      : False
+                BoxDetector            : False
                 DB2Detector            : False
                 GHDetector             : False
                 HexHighEntropyString   : False (2.121)
@@ -386,6 +389,9 @@ class TestMain:
                         'name': 'BasicAuthDetector',
                     },
                     {
+                        'name': 'BoxDetector',
+                    },
+                    {
                         'name': 'DB2Detector',
                     },
                     {
@@ -436,6 +442,9 @@ class TestMain:
                     },
                     {
                         'name': 'BasicAuthDetector',
+                    },
+                    {
+                        'name': 'BoxDetector',
                     },
                     {
                         'name': 'DB2Detector',
@@ -547,6 +556,9 @@ class TestMain:
                         'name': 'BasicAuthDetector',
                     },
                     {
+                        'name': 'BoxDetector',
+                    },
+                    {
                         'name': 'DB2Detector',
                     },
                     {
@@ -596,6 +608,9 @@ class TestMain:
                     },
                     {
                         'name': 'BasicAuthDetector',
+                    },
+                    {
+                        'name': 'BoxDetector',
                     },
                     {
                         'name': 'DB2Detector',
@@ -747,6 +762,9 @@ class TestMain:
             },
             {
                 'name': 'BasicAuthDetector',
+            },
+            {
+                'name': 'BoxDetector',
             },
             {
                 'name': 'DB2Detector',
