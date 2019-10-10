@@ -133,24 +133,10 @@ def verify_db2_credentials(
 
 
 def find_other_factor(content, factor_keyword_regex, factor_regex):
-    begin = r'(?:(?<=\W)|(?<=^))'
-    opt_quote = r'(?:"|\'|)'
-    opt_db = r'(?:db2|dashdb|db|)'
-    opt_dash_undrscr = r'(?:_|-|)'
-    opt_space = r'(?: *)'
-    assignment = r'(?:=|:|:=|=>|::)'
-    regex = re.compile(
-        r'{begin}{opt_quote}{opt_db}{opt_dash_undrscr}{factor_keyword}{opt_quote}{opt_space}'
-        '{assignment}{opt_space}{opt_quote}{factor}{opt_quote}'.format(
-            begin=begin,
-            opt_quote=opt_quote,
-            opt_db=opt_db,
-            opt_dash_undrscr=opt_dash_undrscr,
-            factor_keyword=factor_keyword_regex,
-            opt_space=opt_space,
-            assignment=assignment,
-            factor=factor_regex,
-        ), flags=re.IGNORECASE,
+    regex = RegexBasedDetector.assign_regex_generator(
+        prefix_regex=DB2Detector.opt_db,
+        password_keyword_regex=factor_keyword_regex,
+        password_regex=factor_regex,
     )
 
     return [

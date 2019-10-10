@@ -7,7 +7,7 @@ import responses
 
 from detect_secrets.core.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
-from detect_secrets.plugins.softlayer import get_username
+from detect_secrets.plugins.softlayer import find_username
 from detect_secrets.plugins.softlayer import SoftLayerDetector
 
 SL_USERNAME = 'test@testy.test'
@@ -123,50 +123,49 @@ class TestSoftLayerDetector(object):
             'no_un={}'.format(SL_USERNAME),
         ) == VerifiedResult.UNVERIFIED
 
-
-@pytest.mark.parametrize(
-    'content, expected_output',
-    (
+    @pytest.mark.parametrize(
+        'content, expected_output',
         (
-            textwrap.dedent("""
-                --softlayer-username = {}
-            """)[1:-1].format(
-                SL_USERNAME,
+            (
+                textwrap.dedent("""
+                    --softlayer-username = {}
+                """)[1:-1].format(
+                    SL_USERNAME,
+                ),
+                [SL_USERNAME],
             ),
-            [SL_USERNAME],
-        ),
 
-        # With quotes
-        (
-            textwrap.dedent("""
-                sl_user_id = "{}"
-            """)[1:-1].format(
-                SL_USERNAME,
+            # With quotes
+            (
+                textwrap.dedent("""
+                    sl_user_id = "{}"
+                """)[1:-1].format(
+                    SL_USERNAME,
+                ),
+                [SL_USERNAME],
             ),
-            [SL_USERNAME],
-        ),
 
-        # multiple candidates
-        (
-            textwrap.dedent("""
-                softlayer_id = '{}'
-                sl-user = '{}'
-                SOFTLAYER_USERID = '{}'
-                softlayer-uname: {}
-            """)[1:-1].format(
-                SL_USERNAME,
-                'test2@testy.test',
-                'test3@testy.testy',
-                'notanemail',
+            # multiple candidates
+            (
+                textwrap.dedent("""
+                    softlayer_id = '{}'
+                    sl-user = '{}'
+                    SOFTLAYER_USERID = '{}'
+                    softlayer-uname: {}
+                """)[1:-1].format(
+                    SL_USERNAME,
+                    'test2@testy.test',
+                    'test3@testy.testy',
+                    'notanemail',
+                ),
+                [
+                    SL_USERNAME,
+                    'test2@testy.test',
+                    'test3@testy.testy',
+                    'notanemail',
+                ],
             ),
-            [
-                SL_USERNAME,
-                'test2@testy.test',
-                'test3@testy.testy',
-                'notanemail',
-            ],
         ),
-    ),
-)
-def test_get_username(content, expected_output):
-    assert get_username(content) == expected_output
+    )
+    def test_find_username(self, content, expected_output):
+        assert find_username(content) == expected_output

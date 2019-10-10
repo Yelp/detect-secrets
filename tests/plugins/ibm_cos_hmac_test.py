@@ -6,6 +6,7 @@ from mock import patch
 
 from detect_secrets.core.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
+from detect_secrets.plugins.ibm_cos_hmac import find_access_key_id
 from detect_secrets.plugins.ibm_cos_hmac import IBMCosHmacDetector
 from detect_secrets.plugins.ibm_cos_hmac import verify_ibm_cos_hmac_credentials
 
@@ -201,8 +202,8 @@ class TestIBMCosHmacDetector(object):
             ),
         ),
     )
-    def test_get_access_key_id(self, content, expected_output):
-        assert IBMCosHmacDetector().get_access_key_id(content) == expected_output
+    def test_find_access_key_id(self, content, expected_output):
+        assert find_access_key_id(content) == expected_output
 
 
 @pytest.mark.parametrize(

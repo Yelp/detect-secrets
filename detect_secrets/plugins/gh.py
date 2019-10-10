@@ -12,12 +12,9 @@ class GHDetector(RegexBasedDetector):
 
     secret_type = 'GitHub Credentials'
 
-    opt_github = r'(?:github|gh|ghe|git|)'
+    opt_github_prefix = r'(?:github|gh|ghe|git|)(?:_|-|)(?:api|)'
     opt_space = r'(?: *)'
     opt_quote = r'(?:"|\'|)'
-    opt_assignment = r'(?:=|:|:=|=>|)'
-    opt_dash_undrscr = r'(?:_|-|)'
-    opt_api = r'(?:api|)'
     header_keyword = r'(?:token|bearer|Basic)'
     key_or_pass = r'(?:key|pwd|password|pass|token|oauth)'
     api_endpoint = r'(?:github.ibm.com|api.github.ibm.com)'
@@ -25,19 +22,10 @@ class GHDetector(RegexBasedDetector):
     b64_encoded_token = r'(?:(?<=\W)|(?<=^))([A-Za-z0-9+/]{55}=)(?:(?=\W)|(?=$))'
     opt_username = r'(?:[a-zA-Z0-9-]+:|)'
     denylist = [
-        re.compile(
-            r'{opt_quote}{opt_github}{opt_dash_undrscr}{opt_api}{opt_dash_undrscr}{key_or_pass}'
-            '{opt_quote}{opt_space}{opt_assignment}{opt_space}{opt_quote}{forty_hex}'
-            '{opt_quote}'.format(
-                opt_quote=opt_quote,
-                opt_github=opt_github,
-                opt_dash_undrscr=opt_dash_undrscr,
-                opt_api=opt_api,
-                key_or_pass=key_or_pass,
-                opt_space=opt_space,
-                opt_assignment=opt_assignment,
-                forty_hex=forty_hex,
-            ), flags=re.IGNORECASE,
+        RegexBasedDetector.assign_regex_generator(
+            prefix_regex=opt_github_prefix,
+            password_keyword_regex=key_or_pass,
+            password_regex=forty_hex,
         ),
         re.compile(
             r'https://{opt_username}{forty_hex}@{api_endpoint}'.format(
