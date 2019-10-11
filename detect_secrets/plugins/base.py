@@ -53,18 +53,34 @@ class BasePlugin(object):
     def secret_type(self):
         raise NotImplementedError
 
-    def __init__(self, exclude_lines_regex=None, should_verify=False, **kwargs):
+    def __init__(
+        self,
+        exclude_lines_regex=None,
+        should_verify=False,
+        false_positive_heuristics=None,
+        **kwargs
+    ):
         """
         :type exclude_lines_regex: str|None
         :param exclude_lines_regex: optional regex for ignored lines.
 
         :type should_verify: bool
+
+        :type false_positive_heuristics: List[Callable]|None
+        :param false_positive_heuristics: List of fp-heuristic functions
+        applicable to this plugin
         """
         self.exclude_lines_regex = None
         if exclude_lines_regex:
             self.exclude_lines_regex = re.compile(exclude_lines_regex)
 
         self.should_verify = should_verify
+
+        self.false_positive_heuristics = (
+            false_positive_heuristics
+            if false_positive_heuristics
+            else []
+        )
 
     @classproperty
     def disable_flag_text(cls):
@@ -231,6 +247,19 @@ class BasePlugin(object):
         :rtype: VerifiedResult
         """
         return VerifiedResult.UNVERIFIED
+
+    def is_secret_false_positive(self, token):
+        """
+        Checks if the input secret is a false-positive according to
+        this plugin's heuristics.
+
+        :type token: str
+        :param token: secret found by current plugin
+        """
+        return any(
+            func(token)
+            for func in self.false_positive_heuristics
+        ) if self.false_positive_heuristics else False
 
     @property
     def __dict__(self):

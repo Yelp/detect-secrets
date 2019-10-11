@@ -34,6 +34,19 @@ def is_found_with_aho_corasick(secret, automaton):
         return False
 
 
+def get_aho_corasick_helper(automaton):
+    """
+    Returns a function which determines if a word matches the
+    input automaton.
+
+    :type automaton: ahocorasick.Automaton
+    """
+    def fn(secret):
+        return is_found_with_aho_corasick(secret, automaton)
+
+    return fn
+
+
 def is_sequential_string(secret, *args):
     """
     :type secret: str
@@ -103,12 +116,6 @@ def is_potential_uuid(secret, *args):
     return bool(_UUID_REGEX.search(secret))
 
 
-DEFAULT_FALSE_POSITIVE_HEURISTICS = [
-    is_found_with_aho_corasick,
-    is_sequential_string,
-]
-
-
 # NOTE: this doesn't handle multiple key-values on a line properly.
 # NOTE: words that end in "id" will be treated as ids
 _ID_DETECTOR_REGEX = re.compile(r'id[^a-z0-9]', re.IGNORECASE)
@@ -134,25 +141,6 @@ def is_likely_id_string(secret, line):
 DEFAULT_FALSE_POSITIVE_WITH_LINE_CONTEXT_HEURISTICS = [
     is_likely_id_string,
 ]
-
-
-def is_false_positive(secret, automaton, functions=DEFAULT_FALSE_POSITIVE_HEURISTICS):
-    """
-    :type secret: str
-
-    :type automaton: ahocorasick.Automaton|None
-    :param automaton: optional automaton for ignoring certain words.
-
-    :type functions: Iterable[Callable]
-    :param functions: list of heuristics to use
-
-    :rtype: bool
-    Returns True if any false positive heuristic function returns True.
-    """
-    return any(
-        func(secret, automaton)
-        for func in functions
-    )
 
 
 def is_false_positive_with_line_context(

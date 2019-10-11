@@ -18,10 +18,10 @@ from .base import BasePlugin
 from .base import classproperty
 from .common.filetype import determine_file_type
 from .common.filetype import FileType
-from .common.filters import is_false_positive
+from .common.filters import get_aho_corasick_helper
 from .common.filters import is_false_positive_with_line_context
 from .common.filters import is_potential_uuid
-from .common.filters import DEFAULT_FALSE_POSITIVE_HEURISTICS
+from .common.filters import is_sequential_string
 from .common.ini_file_parser import IniFileParser
 from .common.yaml_file_parser import YamlFileParser
 from detect_secrets.core.potential_secret import PotentialSecret
@@ -40,11 +40,17 @@ class HighEntropyStringsPlugin(BasePlugin):
 
         self.charset = charset
         self.entropy_limit = limit
-        self.automaton = automaton
         self.regex = re.compile(r'([\'"])([%s]+)(\1)' % charset)
+
+        false_positive_heuristics = [
+            get_aho_corasick_helper(automaton),
+            is_sequential_string,
+            is_potential_uuid,
+        ]
 
         super(HighEntropyStringsPlugin, self).__init__(
             exclude_lines_regex=exclude_lines_regex,
+            false_positive_heuristics=false_positive_heuristics,
         )
 
     def analyze(self, file, filename):
@@ -115,11 +121,7 @@ class HighEntropyStringsPlugin(BasePlugin):
         output = {}
 
         for result in self.secret_generator(string):
-            # py2+py3 compatible way of copying a list
-            functions = list(DEFAULT_FALSE_POSITIVE_HEURISTICS)
-            functions.append(is_potential_uuid)
-
-            if is_false_positive(result, self.automaton, functions=functions):
+            if self.is_secret_false_positive(result):
                 continue
 
             secret = PotentialSecret(self.secret_type, filename, result, line_num)
