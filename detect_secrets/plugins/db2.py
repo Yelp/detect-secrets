@@ -63,6 +63,9 @@ class DB2Detector(RegexBasedDetector):
             content, self.username_keyword_regex,
             self.username_regex,
         )
+        if not username_matches:
+            return VerifiedResult.UNVERIFIED
+
         database_matches = find_other_factor(
             content, self.database_keyword_regex,
             self.database_regex,
@@ -85,7 +88,7 @@ class DB2Detector(RegexBasedDetector):
             port_matches.append(port)
             database_matches.append(database)
 
-        if not username_matches or not database_matches or not port_matches or not hostname_matches:
+        if not database_matches or not port_matches or not hostname_matches:
             return VerifiedResult.UNVERIFIED
 
         for username in username_matches:  # pragma: no cover
