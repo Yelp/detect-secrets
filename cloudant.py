@@ -13,17 +13,11 @@ class CloudantDetector(RegexBasedDetector):
     secret_type = 'Cloudant Credentials'
 
     # opt means optional
-    opt_quote = r'(?:"|\'|)'
-    opt_dashes = r'(?:--|)'
-    opt_dot = r'(?:\.|)'
     dot = r'\.'
-    cl_account = r'[0-9a-z\-\_]+'
+    cl_account = r'[\w\-]+'
     cl = r'(?:cloudant|cl|clou)'
-    opt_dash_undrscr = r'(?:_|-|)'
     opt_api = r'(?:api|)'
     cl_key_or_pass = opt_api + r'(?:key|pwd|pw|password|pass|token)'
-    opt_space = r'(?: |)'
-    assignment = r'(?:=|:|:=|=>)'
     cl_pw = r'([0-9a-f]{64})'
     cl_api_key = r'([a-z]{24})'
     colon = r'\:'
@@ -69,7 +63,7 @@ class CloudantDetector(RegexBasedDetector):
 
     def verify(self, token, content, potential_secret=None):
 
-        hosts = find_host(content)
+        hosts = find_account(content)
         if not hosts:
             return VerifiedResult.UNVERIFIED
 
@@ -79,20 +73,35 @@ class CloudantDetector(RegexBasedDetector):
         return VerifiedResult.VERIFIED_FALSE
 
 
-def find_host(content):
+def find_account(content):
     opt_hostname_keyword = r'(?:hostname|host|username|id|user|userid|user-id|user-name|' \
-        'name|user_id|user_name|uname)'
-    hostname = r'(\w(?:\w|_|-)+)'
+        'name|user_id|user_name|uname|account)'
+    account = r'(\w[\w\-]*)'
+    opt_basic_auth = r'(?:[\w\-:%]*\@)?'
 
-    regex = RegexBasedDetector.assign_regex_generator(
-        prefix_regex=CloudantDetector.cl,
-        password_keyword_regex=opt_hostname_keyword,
-        password_regex=hostname,
+    regexes = (
+        RegexBasedDetector.assign_regex_generator(
+            prefix_regex=CloudantDetector.cl,
+            password_keyword_regex=opt_hostname_keyword,
+            password_regex=account,
+        ),
+        re.compile(
+            r'{http}{opt_basic_auth}{cl_account}{dot}{cloudant_api_url}'.format(
+                http=CloudantDetector.http,
+                opt_basic_auth=opt_basic_auth,
+                cl_account=account,
+                cl_api_key=CloudantDetector.cl_api_key,
+                dot=CloudantDetector.dot,
+                cloudant_api_url=CloudantDetector.cloudant_api_url,
+            ),
+            flags=re.IGNORECASE,
+        ),
     )
 
     return [
         match
         for line in content.splitlines()
+        for regex in regexes
         for match in regex.findall(line)
     ]
 
