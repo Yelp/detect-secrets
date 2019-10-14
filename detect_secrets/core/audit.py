@@ -292,7 +292,7 @@ def determine_audit_results(baseline, baseline_path):
         total += 1
     audit_results['stats']['signal'] = str(
         (
-            audit_results['stats']['true-positives']['count']
+            float(audit_results['stats']['true-positives']['count'])
             /
             total
         ) * 100,
