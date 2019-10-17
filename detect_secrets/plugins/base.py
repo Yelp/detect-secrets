@@ -85,7 +85,7 @@ class BasePlugin(object):
     def default_options(cls):
         return {}
 
-    def analyze(self, file, filename, debug_output_raw=False, output_verified_false=False):
+    def analyze(self, file, filename, debug_output_raw=False, debug_output_verified_false=False):
         """
         :param file:     The File object itself.
         :param filename: string; filename of File object, used for creating
@@ -117,7 +117,7 @@ class BasePlugin(object):
 
                 if is_verified != VerifiedResult.VERIFIED_FALSE:  # unverified or true
                     filtered_results[result] = result
-                elif is_verified == VerifiedResult.VERIFIED_FALSE and output_verified_false:
+                elif is_verified == VerifiedResult.VERIFIED_FALSE and debug_output_verified_false:
                     filtered_results[result] = result
 
             potential_secrets.update(filtered_results)

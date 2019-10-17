@@ -44,11 +44,11 @@ def add_no_verify_flag(parser):
     )
 
 
-def add_output_verified_false_flag(parser):
+def add_debug_output_verified_false_flag(parser):
     parser.add_argument(
-        '--output-verified-false',
+        '--debug-output-verified-false',
         action='store_true',
-        help='Output secrets that are verified false.',
+        help='Debug option to output secrets that are verified false.',
     )
 
 
@@ -70,7 +70,7 @@ class ParserBuilder(object):
             ._add_word_list_argument()\
             ._add_use_all_plugins_argument()\
             ._add_no_verify_flag() \
-            ._add_output_verified_false_flag()
+            ._add_debug_output_verified_false_flag()
 
         PluginOptions(self.parser).add_arguments()
 
@@ -143,8 +143,8 @@ class ParserBuilder(object):
         add_no_verify_flag(self.parser)
         return self
 
-    def _add_output_verified_false_flag(self):
-        add_output_verified_false_flag(self.parser)
+    def _add_debug_output_verified_false_flag(self):
+        add_debug_output_verified_false_flag(self.parser)
         return self
 
 
@@ -210,7 +210,7 @@ class ScanOptions(object):
         )
 
         add_no_verify_flag(self.parser)
-        add_output_verified_false_flag(self.parser)
+        add_debug_output_verified_false_flag(self.parser)
 
         return self
 

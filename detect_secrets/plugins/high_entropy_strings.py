@@ -44,7 +44,7 @@ class HighEntropyStringsPlugin(BasePlugin):
             exclude_lines_regex=exclude_lines_regex,
         )
 
-    def analyze(self, file, filename, debug_output_raw=False, output_verified_false=False):
+    def analyze(self, file, filename, debug_output_raw=False, debug_output_verified_false=False):
         file_type_analyzers = (
             (self._analyze_ini_file(), configparser.Error),
             (self._analyze_yaml_file, yaml.YAMLError),

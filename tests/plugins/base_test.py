@@ -66,12 +66,12 @@ class TestVerify:
 
         assert len(result) == 0
 
-    def test_analyze_verified_false_with_output_verified_false_flag(self):
+    def test_analyze_verified_false_with_debug_output_verified_false_flag(self):
         with self.create_test_plugin(VerifiedResult.VERIFIED_FALSE) as plugin:
             file = mock_file_object('does not matter')
             result = plugin.analyze(
                 file, 'does not matter',
-                output_verified_false=True,
+                debug_output_verified_false=True,
             )
 
         assert len(result) == 1

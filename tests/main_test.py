@@ -92,7 +92,7 @@ class TestMain(object):
             word_list_file=None,
             word_list_hash=None,
             debug_output_raw=False,
-            output_verified_false=False,
+            debug_output_verified_false=False,
         )
 
     def test_scan_with_rootdir(self, mock_baseline_initialize):
@@ -108,7 +108,7 @@ class TestMain(object):
             word_list_file=None,
             word_list_hash=None,
             debug_output_raw=False,
-            output_verified_false=False,
+            debug_output_verified_false=False,
         )
 
     def test_scan_with_exclude_args(self, mock_baseline_initialize):
@@ -126,7 +126,7 @@ class TestMain(object):
             word_list_file=None,
             word_list_hash=None,
             debug_output_raw=False,
-            output_verified_false=False,
+            debug_output_verified_false=False,
         )
 
     def test_scan_with_debug_output_raw(self, mock_baseline_initialize):
@@ -144,13 +144,13 @@ class TestMain(object):
             word_list_file=None,
             word_list_hash=None,
             debug_output_raw=True,
-            output_verified_false=False,
+            debug_output_verified_false=False,
         )
 
-    def test_scan_with_output_verified_false(self, mock_baseline_initialize):
+    def test_scan_with_debug_output_verified_false(self, mock_baseline_initialize):
         with mock_stdin():
             assert main(
-                'scan --output-verified-false'.split(),
+                'scan --debug-output-verified-false'.split(),
             ) == 0
 
         mock_baseline_initialize.assert_called_once_with(
@@ -162,7 +162,7 @@ class TestMain(object):
             word_list_file=None,
             word_list_hash=None,
             debug_output_raw=False,
-            output_verified_false=True,
+            debug_output_verified_false=True,
         )
 
     @pytest.mark.parametrize(
@@ -225,7 +225,7 @@ class TestMain(object):
             word_list_file=None,
             word_list_hash=None,
             debug_output_raw=False,
-            output_verified_false=False,
+            debug_output_verified_false=False,
         )
 
     def test_reads_from_stdin(self, mock_merge_baseline):
