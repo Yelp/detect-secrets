@@ -11,15 +11,15 @@ class IBMCloudIAMDetector(RegexBasedDetector):
     secret_type = 'IBM Cloud IAM Key'
 
     # opt means optional
-    ibm_cloud_iam = r'(?:ibm(?:_|-|)cloud(?:_|-|)iam|cloud(?:_|-|)iam|' + \
-                    r'ibm(?:_|-|)cloud|ibm(?:_|-|)iam|ibm|iam|cloud)'
+    opt_ibm_cloud_iam = r'(?:ibm(?:_|-|)cloud(?:_|-|)iam|cloud(?:_|-|)iam|' + \
+        r'ibm(?:_|-|)cloud|ibm(?:_|-|)iam|ibm|iam|cloud|)'
     opt_dash_undrscr = r'(?:_|-|)'
     opt_api = r'(?:api|)'
     key_or_pass = r'(?:key|pwd|password|pass|token)'
-    secret = r'([a-zA-z0-9_\-]{44})'
+    secret = r'([a-zA-Z0-9_\-]{44})'
     denylist = [
         RegexBasedDetector.assign_regex_generator(
-            prefix_regex=ibm_cloud_iam + opt_dash_undrscr + opt_api,
+            prefix_regex=opt_ibm_cloud_iam + opt_dash_undrscr + opt_api,
             password_keyword_regex=key_or_pass,
             password_regex=secret,
         ),

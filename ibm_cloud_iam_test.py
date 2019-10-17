@@ -7,8 +7,8 @@ from detect_secrets.core.constants import VerifiedResult
 from detect_secrets.plugins.ibm_cloud_iam import IBMCloudIAMDetector
 
 
-CLOUD_IAM_KEY = 'abcd1234abcd1234abcd1234abcd1234abcd1234--__'
-CLOUD_IAM_KEY_BYTES = b'abcd1234abcd1234abcd1234abcd1234abcd1234--__'
+CLOUD_IAM_KEY = 'abcd1234abcd1234abcd1234ABCD1234ABCD1234--__'
+CLOUD_IAM_KEY_BYTES = b'abcd1234abcd1234abcd1234ABCD1234ABCD1234--__'
 
 
 class TestIBMCloudIamDetector(object):
@@ -47,6 +47,7 @@ class TestIBMCloudIamDetector(object):
             ('ibm_api_key:="{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             ('ibm_password = "{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             ('ibm-cloud-pwd = {cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
+            ('apikey:{cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             ('iam_api_key="%s" % IBM_IAM_API_KEY_ENV', False),
             ('CLOUD_APIKEY: "insert_key_here"', False),
             ('cloud-iam-key:=afakekey', False),
