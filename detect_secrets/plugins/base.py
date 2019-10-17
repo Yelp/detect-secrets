@@ -85,11 +85,12 @@ class BasePlugin(object):
     def default_options(cls):
         return {}
 
-    def analyze(self, file, filename):
+    def analyze(self, file, filename, debug_output_raw=False):
         """
         :param file:     The File object itself.
         :param filename: string; filename of File object, used for creating
                          PotentialSecret objects
+        :param debug_output_raw: whether or not to output the raw, unhashed secret
         :returns         dictionary representation of set (for random access by hash)
                          { detect_secrets.core.potential_secret.__hash__:
                                detect_secrets.core.potential_secret         }
@@ -97,7 +98,7 @@ class BasePlugin(object):
         potential_secrets = {}
         file_lines = tuple(file.readlines())
         for line_num, line in enumerate(file_lines, start=1):
-            results = self.analyze_string(line, line_num, filename)
+            results = self.analyze_string(line, line_num, filename, debug_output_raw)
             if not self.should_verify:
                 potential_secrets.update(results)
                 continue
@@ -121,11 +122,12 @@ class BasePlugin(object):
 
         return potential_secrets
 
-    def analyze_string(self, string, line_num, filename):
+    def analyze_string(self, string, line_num, filename, debug_output_raw=False):
         """
         :param string:    string; the line to analyze
         :param line_num:  integer; line number that is currently being analyzed
         :param filename:  string; name of file being analyzed
+        :param debug_output_raw: whether or not to output the raw, unhashed secret
         :returns:         dictionary
 
         NOTE: line_num and filename are used for PotentialSecret creation only.
@@ -146,14 +148,16 @@ class BasePlugin(object):
             string,
             line_num,
             filename,
+            debug_output_raw,
         )
 
     @abstractmethod
-    def analyze_string_content(self, string, line_num, filename):
+    def analyze_string_content(self, string, line_num, filename, debug_output_raw=False):
         """
         :param string:    string; the line to analyze
         :param line_num:  integer; line number that is currently being analyzed
         :param filename:  string; name of file being analyzed
+        :param debug_output_raw: whether or not to output the raw, unhashed secret
         :returns:         dictionary
 
         NOTE: line_num and filename are used for PotentialSecret creation only.
@@ -260,7 +264,7 @@ class RegexBasedDetector(BasePlugin):
     def denylist(self):
         raise NotImplementedError
 
-    def analyze_string_content(self, string, line_num, filename):
+    def analyze_string_content(self, string, line_num, filename, debug_output_raw=False):
         output = {}
 
         for identifier in self.secret_generator(string):
@@ -269,6 +273,7 @@ class RegexBasedDetector(BasePlugin):
                 filename,
                 identifier,
                 line_num,
+                debug_output_raw=debug_output_raw,
             )
             output[secret] = secret
 

@@ -178,6 +178,7 @@ def _perform_scan(args, plugins, automaton, word_list_hash):
         word_list_hash=word_list_hash,
         path=args.path,
         should_scan_all_files=args.all_files,
+        debug_output_raw=args.debug_output_raw,
     ).format_for_baseline_output()
 
     if old_baseline:

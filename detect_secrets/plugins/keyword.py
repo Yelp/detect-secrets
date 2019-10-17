@@ -287,7 +287,7 @@ class KeywordDetector(BasePlugin):
 
         self.automaton = automaton
 
-    def analyze_string_content(self, string, line_num, filename):
+    def analyze_string_content(self, string, line_num, filename, debug_output_raw=False):
         output = {}
         if (
             self.keyword_exclude
@@ -305,6 +305,7 @@ class KeywordDetector(BasePlugin):
                 filename,
                 identifier,
                 line_num,
+                debug_output_raw=debug_output_raw,
             )
             output[secret] = secret
 

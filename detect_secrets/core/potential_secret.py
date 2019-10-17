@@ -21,6 +21,7 @@ class PotentialSecret(object):
         secret,
         lineno=0,
         is_secret=None,
+        debug_output_raw=False,
     ):
         """
         :type typ: str
@@ -43,6 +44,9 @@ class PotentialSecret(object):
 
         :type is_verified: bool
         :param is_verified: whether the secret has been externally verified
+
+        :type debug_output_raw: bool|None
+        :param debug_output_raw: whether or not to output the raw, unhashed secret
         """
         self.type = typ
         self.filename = filename
@@ -50,6 +54,7 @@ class PotentialSecret(object):
         self.set_secret(secret)
         self.is_secret = is_secret
         self.is_verified = False
+        self.debug_output_raw = debug_output_raw
 
         # If two PotentialSecrets have the same values for these fields,
         # they are considered equal. Note that line numbers aren't included
@@ -68,6 +73,10 @@ class PotentialSecret(object):
         #       we don't want to create a file that contains all plaintext secrets
         #       in the repository.
         self.secret_value = secret
+        # If two PotentialSecrets have the same values for these fields,
+        # they are considered equal. Note that line numbers aren't included
+        # in this, because line numbers are subject to change.
+        self.fields_to_compare = ['filename', 'secret_hash', 'type']
 
     @staticmethod
     def hash_secret(secret):
@@ -88,6 +97,9 @@ class PotentialSecret(object):
             'hashed_secret': self.secret_hash,
             'is_verified': self.is_verified,
         }
+
+        if self.debug_output_raw:
+            attributes['secret'] = self.secret_value
 
         if self.is_secret is not None:
             attributes['is_secret'] = self.is_secret

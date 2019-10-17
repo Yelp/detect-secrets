@@ -144,7 +144,8 @@ class ScanOptions(object):
 
     def add_arguments(self):
         self._add_initialize_baseline_argument()\
-            ._add_adhoc_scanning_argument()
+            ._add_adhoc_scanning_argument()\
+            ._add_debug_output_raw_argument()
 
         PluginOptions(self.parser).add_arguments()
 
@@ -209,6 +210,19 @@ class ScanOptions(object):
                 'plugins\' verdict.'
             ),
         )
+        return self
+
+    def _add_debug_output_raw_argument(self):
+        self.parser.add_argument(
+            '--debug-output-raw',
+            action='store_true',
+            help=(
+                'Outputs the raw secret in the baseline file.'
+                'For development/debug purposes.'
+                'Do NOT use this option in a repo scanning context.'
+            ),
+        )
+        return self
 
 
 class AuditOptions(object):
