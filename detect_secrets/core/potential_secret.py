@@ -21,7 +21,7 @@ class PotentialSecret(object):
         secret,
         lineno=0,
         is_secret=None,
-        output_raw=False,
+        debug_output_raw=False,
     ):
         """
         :type typ: str
@@ -45,8 +45,8 @@ class PotentialSecret(object):
         :type is_verified: bool
         :param is_verified: whether the secret has been externally verified
 
-        :type output_raw: bool|None
-        :param output_raw: whether or not to output the raw, unhashed secret
+        :type debug_output_raw: bool|None
+        :param debug_output_raw: whether or not to output the raw, unhashed secret
         """
         self.type = typ
         self.filename = filename
@@ -54,7 +54,7 @@ class PotentialSecret(object):
         self.set_secret(secret)
         self.is_secret = is_secret
         self.is_verified = False
-        self.output_raw = output_raw
+        self.debug_output_raw = debug_output_raw
 
         # If two PotentialSecrets have the same values for these fields,
         # they are considered equal. Note that line numbers aren't included
@@ -98,7 +98,7 @@ class PotentialSecret(object):
             'is_verified': self.is_verified,
         }
 
-        if self.output_raw:
+        if self.debug_output_raw:
             attributes['secret'] = self.secret_value
 
         if self.is_secret is not None:

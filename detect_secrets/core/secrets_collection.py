@@ -24,7 +24,7 @@ class SecretsCollection(object):
         exclude_lines=None,
         word_list_file=None,
         word_list_hash=None,
-        output_raw=False,
+        debug_output_raw=False,
     ):
         """
         :type plugins: tuple of detect_secrets.plugins.base.BasePlugin
@@ -45,8 +45,8 @@ class SecretsCollection(object):
         :param version: version of detect-secrets that SecretsCollection
             is valid at.
 
-        :type output_raw: bool|None
-        :param output_raw: whether or not to output the raw, unhashed secret
+        :type debug_output_raw: bool|None
+        :param debug_output_raw: whether or not to output the raw, unhashed secret
         """
         self.data = {}
         self.plugins = plugins
@@ -54,7 +54,7 @@ class SecretsCollection(object):
         self.exclude_lines = exclude_lines
         self.word_list_file = word_list_file
         self.word_list_hash = word_list_hash
-        self.output_raw = output_raw
+        self.debug_output_raw = debug_output_raw
         self.version = VERSION
 
     @classmethod
@@ -268,7 +268,7 @@ class SecretsCollection(object):
             # (and therefore, its hash)
             tmp_secret = PotentialSecret(
                 type_, filename, secret='will be overriden',
-                output_raw=self.output_raw,
+                debug_output_raw=self.debug_output_raw,
             )
             tmp_secret.secret_hash = secret
 
@@ -348,7 +348,7 @@ class SecretsCollection(object):
             log.info('Checking file: %s', filename)
 
             for results, plugin in self._results_accumulator(filename):
-                results.update(plugin.analyze(f, filename, self.output_raw))
+                results.update(plugin.analyze(f, filename, self.debug_output_raw))
                 f.seek(0)
 
         except UnicodeDecodeError:

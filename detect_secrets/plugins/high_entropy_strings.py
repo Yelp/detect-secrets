@@ -44,7 +44,7 @@ class HighEntropyStringsPlugin(BasePlugin):
             exclude_lines_regex=exclude_lines_regex,
         )
 
-    def analyze(self, file, filename, output_raw=False):
+    def analyze(self, file, filename, debug_output_raw=False):
         file_type_analyzers = (
             (self._analyze_ini_file(), configparser.Error),
             (self._analyze_yaml_file, yaml.YAMLError),
@@ -83,7 +83,7 @@ class HighEntropyStringsPlugin(BasePlugin):
 
         return entropy
 
-    def analyze_string_content(self, string, line_num, filename, output_raw=False):
+    def analyze_string_content(self, string, line_num, filename, debug_output_raw=False):
         """Searches string for custom pattern, and captures all high entropy strings that
         match self.regex, with a limit defined as self.entropy_limit.
         """
@@ -99,7 +99,7 @@ class HighEntropyStringsPlugin(BasePlugin):
                 filename,
                 result,
                 line_num,
-                output_raw=output_raw,
+                debug_output_raw=debug_output_raw,
             )
             output[secret] = secret
 

@@ -91,7 +91,7 @@ class TestMain(object):
             should_scan_all_files=False,
             word_list_file=None,
             word_list_hash=None,
-            output_raw=False,
+            debug_output_raw=False,
         )
 
     def test_scan_with_rootdir(self, mock_baseline_initialize):
@@ -106,7 +106,7 @@ class TestMain(object):
             should_scan_all_files=False,
             word_list_file=None,
             word_list_hash=None,
-            output_raw=False,
+            debug_output_raw=False,
         )
 
     def test_scan_with_exclude_args(self, mock_baseline_initialize):
@@ -123,13 +123,13 @@ class TestMain(object):
             should_scan_all_files=False,
             word_list_file=None,
             word_list_hash=None,
-            output_raw=False,
+            debug_output_raw=False,
         )
 
-    def test_scan_with_output_raw(self, mock_baseline_initialize):
+    def test_scan_with_debug_output_raw(self, mock_baseline_initialize):
         with mock_stdin():
             assert main(
-                'scan --output-raw'.split(),
+                'scan --debug-output-raw'.split(),
             ) == 0
 
         mock_baseline_initialize.assert_called_once_with(
@@ -140,7 +140,7 @@ class TestMain(object):
             should_scan_all_files=False,
             word_list_file=None,
             word_list_hash=None,
-            output_raw=True,
+            debug_output_raw=True,
         )
 
     @pytest.mark.parametrize(
@@ -202,7 +202,7 @@ class TestMain(object):
             should_scan_all_files=True,
             word_list_file=None,
             word_list_hash=None,
-            output_raw=False,
+            debug_output_raw=False,
         )
 
     def test_reads_from_stdin(self, mock_merge_baseline):
