@@ -138,6 +138,8 @@ class TestMain(object):
             exclude_lines_regex=None,
             path='.',
             should_scan_all_files=False,
+            word_list_file=None,
+            word_list_hash=None,
             output_raw=True,
         )
 
