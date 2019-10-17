@@ -428,14 +428,12 @@ class TestBaselineInputOutput(object):
                     {
                         'type': 'B',
                         'is_verified': False,
-                        'verified_result': None,
                         'line_number': 2,
                         'hashed_secret': secret_hash,
                     },
                     {
                         'type': 'A',
                         'is_verified': False,
-                        'verified_result': None,
                         'line_number': 3,
                         'hashed_secret': secret_hash,
                     },
@@ -444,7 +442,6 @@ class TestBaselineInputOutput(object):
                     {
                         'type': 'C',
                         'is_verified': False,
-                        'verified_result': None,
                         'line_number': 1,
                         'hashed_secret': secret_hash,
                     },
