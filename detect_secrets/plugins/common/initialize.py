@@ -8,6 +8,7 @@ from ..aws import AWSKeyDetector                            # noqa: F401
 from ..base import BasePlugin
 from ..basic_auth import BasicAuthDetector                  # noqa: F401
 from ..box import BoxDetector                               # noqa: F401
+from ..cloudant import CloudantDetector                     # noqa: F401
 from ..common.util import get_mapping_from_secret_type_to_class_name
 from ..db2 import DB2Detector                               # noqa: F401
 from ..gh import GHDetector                                 # noqa: F401
