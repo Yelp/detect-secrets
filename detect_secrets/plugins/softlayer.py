@@ -9,6 +9,7 @@ from detect_secrets.core.constants import VerifiedResult
 
 
 class SoftLayerDetector(RegexBasedDetector):
+    """Scans for Softlayer credentials."""
 
     secret_type = 'SoftLayer Credentials'
 
@@ -29,13 +30,13 @@ class SoftLayerDetector(RegexBasedDetector):
         ),
     ]
 
-    def verify(self, token, content, potential_secret=None):
+    def verify(self, token, content):
         usernames = find_username(content)
         if not usernames:
             return VerifiedResult.UNVERIFIED
 
         for username in usernames:
-            return verify_softlayer_key(username, token, potential_secret)
+            return verify_softlayer_key(username, token)
 
         return VerifiedResult.VERIFIED_FALSE
 
@@ -60,7 +61,7 @@ def find_username(content):
     ]
 
 
-def verify_softlayer_key(username, token, potential_secret=None):
+def verify_softlayer_key(username, token):
     try:
         headers = {'Content-type': 'application/json'}
         response = requests.get(
@@ -69,8 +70,6 @@ def verify_softlayer_key(username, token, potential_secret=None):
         )
 
         if response.status_code == 200:
-            if potential_secret:
-                potential_secret.other_factors['username'] = username
             return VerifiedResult.VERIFIED_TRUE
         else:
             return VerifiedResult.VERIFIED_FALSE
