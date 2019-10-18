@@ -17,13 +17,13 @@ from detect_secrets.util import build_automaton
 log = get_logger(format_string='%(message)s')
 
 
-def parse_args(argv):
+def parse_args(argv):  # pragma: no cover (Mocked)
     return ParserBuilder()\
         .add_pre_commit_arguments()\
         .parse_args(argv)
 
 
-def main(argv=None):
+def main(argv=sys.argv[1:]):
     args = parse_args(argv)
     if args.verbose:  # pragma: no cover
         log.set_debug_level(args.verbose)
@@ -42,7 +42,8 @@ def main(argv=None):
         automaton, word_list_hash = build_automaton(args.word_list_file)
 
     plugins = initialize.from_parser_builder(
-        args.plugins,
+        plugins_dict=args.plugins,
+        custom_plugin_paths=args.custom_plugin_paths,
         exclude_lines_regex=args.exclude_lines,
         automaton=automaton,
         should_verify_secrets=not args.no_verify,
@@ -51,13 +52,14 @@ def main(argv=None):
     # Merge plugins from baseline
     if baseline_collection:
         plugins = initialize.merge_plugins_from_baseline(
-            baseline_collection.plugins,
-            args,
-            automaton,
+            baseline_plugins=baseline_collection.plugins,
+            args=args,
+            automaton=automaton,
         )
         baseline_collection.plugins = plugins
 
     results = find_secrets_in_files(args, plugins)
+
     if baseline_collection:
         original_results = results
         results = get_secrets_not_in_baseline(

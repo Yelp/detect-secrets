@@ -59,7 +59,7 @@ class PotentialSecret:
     def set_secret(self, secret):
         self.secret_hash = self.hash_secret(secret)
 
-        # NOTE: Originally, we never wanted to keep the secret value in memory,
+        # Note: Originally, we never wanted to keep the secret value in memory,
         #       after finding it in the codebase. However, to support verifiable
         #       secrets (and avoid the pain of re-scanning again), we need to
         #       keep the plaintext in memory as such.

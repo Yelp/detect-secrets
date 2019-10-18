@@ -1,32 +1,25 @@
 import pytest
 
-from detect_secrets.core.usage import ParserBuilder
 from detect_secrets.plugins.common.util import import_plugins
+from testing.util import parse_pre_commit_args_with_correct_prog
 
 
 class TestPluginOptions:
 
-    @staticmethod
-    def parse_args(argument_string=''):
-        # PluginOptions are added in pre-commit hook
-        return ParserBuilder()\
-            .add_pre_commit_arguments()\
-            .parse_args(argument_string.split())
-
     def test_added_by_default(self):
         # This is what happens with unrecognized arguments
         with pytest.raises(SystemExit):
-            self.parse_args('--unrecognized-argument')
+            parse_pre_commit_args_with_correct_prog('--unrecognized-argument')
 
-        self.parse_args('--no-private-key-scan')
+        parse_pre_commit_args_with_correct_prog('--no-private-key-scan')
 
     def test_consolidates_output_basic(self):
         """Everything enabled by default, with default values"""
-        args = self.parse_args()
+        args = parse_pre_commit_args_with_correct_prog()
 
         regex_based_plugins = {
             key: {}
-            for key in import_plugins()
+            for key in import_plugins(custom_plugin_paths=())
         }
         regex_based_plugins.update({
             'HexHighEntropyString': {
@@ -42,9 +35,13 @@ class TestPluginOptions:
         assert not hasattr(args, 'no_private_key_scan')
 
     def test_consolidates_removes_disabled_plugins(self):
-        args = self.parse_args('--no-private-key-scan')
+        args = parse_pre_commit_args_with_correct_prog('--no-private-key-scan')
 
         assert 'PrivateKeyDetector' not in args.plugins
+
+    def test_help(self):
+        with pytest.raises(SystemExit):
+            parse_pre_commit_args_with_correct_prog('--help')
 
     @pytest.mark.parametrize(
         'argument_string,expected_value',
@@ -59,13 +56,31 @@ class TestPluginOptions:
     )
     def test_custom_limit(self, argument_string, expected_value):
         if expected_value is not None:
-            args = self.parse_args(argument_string)
+            args = parse_pre_commit_args_with_correct_prog(argument_string)
 
             assert (
                 args.plugins['HexHighEntropyString']['hex_limit']
-
                 == expected_value
             )
         else:
             with pytest.raises(SystemExit):
-                self.parse_args(argument_string)
+                parse_pre_commit_args_with_correct_prog(argument_string)
+
+    @pytest.mark.parametrize(
+        'argument_string,expected_value',
+        [
+            ('--custom-plugins testing', ('testing',)),
+            ('--custom-plugins does_not_exist', None),
+        ],
+    )
+    def test_custom_plugins(self, argument_string, expected_value):
+        if expected_value is not None:
+            args = parse_pre_commit_args_with_correct_prog(argument_string)
+
+            assert (
+                args.custom_plugin_paths
+                == expected_value
+            )
+        else:
+            with pytest.raises(SystemExit):
+                parse_pre_commit_args_with_correct_prog(argument_string)

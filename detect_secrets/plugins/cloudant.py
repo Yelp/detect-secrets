@@ -2,8 +2,8 @@ import re
 
 import requests
 
-from .base import RegexBasedDetector
 from detect_secrets.core.constants import VerifiedResult
+from detect_secrets.plugins.base import RegexBasedDetector
 
 
 class CloudantDetector(RegexBasedDetector):
@@ -89,7 +89,6 @@ def find_account(content):
                 http=CloudantDetector.http,
                 opt_basic_auth=opt_basic_auth,
                 cl_account=account,
-                cl_api_key=CloudantDetector.cl_api_key,
                 dot=CloudantDetector.dot,
                 cloudant_api_url=CloudantDetector.cloudant_api_url,
             ),

@@ -1,6 +1,6 @@
 import yaml
 
-from .constants import ALLOWLIST_REGEX
+from detect_secrets.plugins.common.constants import ALLOWLIST_REGEX
 
 
 class YamlFileParser:

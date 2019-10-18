@@ -14,6 +14,7 @@ log = get_logger(format_string='%(message)s')
 def initialize(
     path,
     plugins,
+    custom_plugin_paths,
     exclude_files_regex=None,
     exclude_lines_regex=None,
     word_list_file=None,
@@ -27,6 +28,9 @@ def initialize(
 
     :type plugins: tuple of detect_secrets.plugins.base.BasePlugin
     :param plugins: rules to initialize the SecretsCollection with.
+
+    :type custom_plugin_paths: Tuple[str]
+    :param custom_plugin_paths: possibly empty tuple of paths that have custom plugins.
 
     :type exclude_files_regex: str|None
     :type exclude_lines_regex: str|None
@@ -43,6 +47,7 @@ def initialize(
     """
     output = SecretsCollection(
         plugins,
+        custom_plugin_paths=custom_plugin_paths,
         exclude_files=exclude_files_regex,
         exclude_lines=exclude_lines_regex,
         word_list_file=word_list_file,
@@ -125,7 +130,7 @@ def get_secrets_not_in_baseline(results, baseline):
 
 def trim_baseline_of_removed_secrets(results, baseline, filelist):
     """
-    NOTE: filelist is not a comprehensive list of all files in the repo
+    Note: filelist is not a comprehensive list of all files in the repo
     (because we can't be sure whether --all-files is passed in as a
     parameter to pre-commit).
 
@@ -254,7 +259,11 @@ def format_baseline_for_output(baseline):
     for filename, secret_list in baseline['results'].items():
         baseline['results'][filename] = sorted(
             secret_list,
-            key=lambda x: (x['line_number'], x['hashed_secret']),
+            key=lambda secret: (
+                secret['line_number'],
+                secret['hashed_secret'],
+                secret['type'],
+            ),
         )
 
     return json.dumps(

@@ -5,8 +5,8 @@ import base64
 import json
 import re
 
-from .base import classproperty
-from .base import RegexBasedDetector
+from detect_secrets.plugins.base import classproperty
+from detect_secrets.plugins.base import RegexBasedDetector
 
 
 class JwtTokenDetector(RegexBasedDetector):

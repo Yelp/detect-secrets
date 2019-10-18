@@ -1,5 +1,4 @@
 import json
-import shlex
 import textwrap
 from contextlib import contextmanager
 
@@ -9,12 +8,12 @@ import pytest
 from detect_secrets import main as main_module
 from detect_secrets import VERSION
 from detect_secrets.core import audit as audit_module
-from detect_secrets.main import main
 from detect_secrets.plugins.common.util import import_plugins
 from testing.factories import secrets_collection_factory
 from testing.mocks import Any
 from testing.mocks import mock_printer
 from testing.util import uncolor
+from testing.util import wrap_detect_secrets_main
 
 
 def get_list_of_plugins(include=None, exclude=None):
@@ -31,7 +30,7 @@ def get_list_of_plugins(include=None, exclude=None):
         ]
 
     output = []
-    for name, plugin in import_plugins().items():
+    for name, plugin in import_plugins(custom_plugin_paths=()).items():
         if (
             name in included_plugins or
             exclude and name in exclude
@@ -48,19 +47,19 @@ def get_list_of_plugins(include=None, exclude=None):
     if include:
         output.extend(include)
 
-    return sorted(output, key=lambda x: x['name'])
+    return sorted(output, key=lambda plugin: plugin['name'])
 
 
 def get_plugin_report(extra=None):
     """
     :type extra: Dict[str, str]
     """
-    if not extra:       # pragma: no cover
+    if not extra:  # pragma: no cover
         extra = {}
 
     longest_name_length = max([
         len(name)
-        for name in import_plugins()
+        for name in import_plugins(custom_plugin_paths=())
     ])
 
     return '\n'.join(
@@ -69,7 +68,7 @@ def get_plugin_report(extra=None):
                 name=name + ' ' * (longest_name_length - len(name)),
                 result='False' if name not in extra else extra[name],
             )
-            for name in import_plugins()
+            for name in import_plugins(custom_plugin_paths=())
         ]),
     ) + '\n'
 
@@ -81,10 +80,11 @@ class TestMain:
 
     def test_scan_basic(self, mock_baseline_initialize):
         with mock_stdin():
-            assert main(['scan']) == 0
+            assert wrap_detect_secrets_main('scan') == 0
 
         mock_baseline_initialize.assert_called_once_with(
             plugins=Any(tuple),
+            custom_plugin_paths=Any(tuple),
             exclude_files_regex=None,
             exclude_lines_regex=None,
             path='.',
@@ -95,10 +95,11 @@ class TestMain:
 
     def test_scan_with_rootdir(self, mock_baseline_initialize):
         with mock_stdin():
-            assert main('scan test_data'.split()) == 0
+            assert wrap_detect_secrets_main('scan test_data') == 0
 
         mock_baseline_initialize.assert_called_once_with(
             plugins=Any(tuple),
+            custom_plugin_paths=Any(tuple),
             exclude_files_regex=None,
             exclude_lines_regex=None,
             path=['test_data'],
@@ -109,12 +110,13 @@ class TestMain:
 
     def test_scan_with_exclude_args(self, mock_baseline_initialize):
         with mock_stdin():
-            assert main(
-                'scan --exclude-files some_pattern_here --exclude-lines other_patt'.split(),
+            assert wrap_detect_secrets_main(
+                'scan --exclude-files some_pattern_here --exclude-lines other_patt',
             ) == 0
 
         mock_baseline_initialize.assert_called_once_with(
             plugins=Any(tuple),
+            custom_plugin_paths=Any(tuple),
             exclude_files_regex='some_pattern_here',
             exclude_lines_regex='other_patt',
             path='.',
@@ -155,7 +157,7 @@ class TestMain:
         ), mock_printer(
             main_module,
         ) as printer_shim:
-            assert main('scan --string'.split()) == 0
+            assert wrap_detect_secrets_main('scan --string') == 0
             assert uncolor(printer_shim.message) == get_plugin_report({
                 'Base64HighEntropyString': expected_base64_result,
                 'HexHighEntropyString': expected_hex_result,
@@ -169,7 +171,7 @@ class TestMain:
         ), mock_printer(
             main_module,
         ) as printer_shim:
-            assert main('scan --string 012345'.split()) == 0
+            assert wrap_detect_secrets_main('scan --string 012345') == 0
             assert uncolor(printer_shim.message) == get_plugin_report({
                 'Base64HighEntropyString': 'False (2.585)',
                 'HexHighEntropyString': 'False (2.121)',
@@ -177,10 +179,11 @@ class TestMain:
 
     def test_scan_with_all_files_flag(self, mock_baseline_initialize):
         with mock_stdin():
-            assert main('scan --all-files'.split()) == 0
+            assert wrap_detect_secrets_main('scan --all-files') == 0
 
         mock_baseline_initialize.assert_called_once_with(
             plugins=Any(tuple),
+            custom_plugin_paths=Any(tuple),
             exclude_files_regex=None,
             exclude_lines_regex=None,
             path='.',
@@ -191,7 +194,7 @@ class TestMain:
 
     def test_reads_from_stdin(self, mock_merge_baseline):
         with mock_stdin(json.dumps({'key': 'value'})):
-            assert main(['scan']) == 0
+            assert wrap_detect_secrets_main('scan') == 0
 
         mock_merge_baseline.assert_called_once_with(
             {'key': 'value'},
@@ -205,7 +208,7 @@ class TestMain:
         ) as m_read, mock.patch(
             'detect_secrets.main.write_baseline_to_file',
         ) as m_write:
-            assert main('scan --update old_baseline_file'.split()) == 0
+            assert wrap_detect_secrets_main('scan --update old_baseline_file') == 0
             assert m_read.call_args[0][0] == 'old_baseline_file'
             assert m_write.call_args[1]['filename'] == 'old_baseline_file'
             assert m_write.call_args[1]['data'] == Any(dict)
@@ -245,11 +248,9 @@ class TestMain:
             # We don't want to be creating a file during test
             'detect_secrets.main.write_baseline_to_file',
         ) as file_writer:
-            assert main(
-                shlex.split(
-                    'scan --update old_baseline_file {}'.format(
-                        exclude_files_arg,
-                    ),
+            assert wrap_detect_secrets_main(
+                'scan --update old_baseline_file {}'.format(
+                    exclude_files_arg,
                 ),
             ) == 0
 
@@ -435,11 +436,9 @@ class TestMain:
             # We don't want to be creating a file during test
             'detect_secrets.main.write_baseline_to_file',
         ) as file_writer:
-            assert main(
-                shlex.split(
-                    'scan --update old_baseline_file {}'.format(
-                        plugins_overwriten,
-                    ),
+            assert wrap_detect_secrets_main(
+                'scan --update old_baseline_file {}'.format(
+                    plugins_overwriten,
                 ),
             ) == 0
 
@@ -489,10 +488,11 @@ class TestMain:
             # To extract the baseline output
             main_module,
         ) as printer_shim:
-            main(['scan', filename])
+            wrap_detect_secrets_main('scan ' + filename)
             baseline = printer_shim.message
 
         baseline_dict = json.loads(baseline)
+        baseline_dict['custom_plugin_paths'] = tuple(baseline_dict['custom_plugin_paths'])
         with mock_stdin(), mock.patch(
             # To pipe in printer_shim
             'detect_secrets.core.audit._get_baseline_from_file',
@@ -510,7 +510,7 @@ class TestMain:
         ), mock_printer(
             audit_module,
         ) as printer_shim:
-            main('audit will_be_mocked'.split())
+            wrap_detect_secrets_main('audit will_be_mocked')
 
             assert uncolor(printer_shim.message) == textwrap.dedent("""
                 Secret:      1 of 1
@@ -556,26 +556,27 @@ class TestMain:
         with mock_stdin(), mock_printer(
             main_module,
         ) as printer_shim:
-            main(['scan', filename])
+            wrap_detect_secrets_main('scan ' + filename)
             baseline = printer_shim.message
 
         baseline_dict = json.loads(baseline)
+        baseline_dict['custom_plugin_paths'] = tuple(baseline_dict['custom_plugin_paths'])
         with mock.patch(
             'detect_secrets.core.audit._get_baseline_from_file',
             return_value=baseline_dict,
         ), mock_printer(
             audit_module,
         ) as printer_shim:
-            main(['audit', '--display-results', 'MOCKED'])
+            wrap_detect_secrets_main('audit --display-results MOCKED')
 
             assert json.loads(uncolor(printer_shim.message))['plugins'] == expected_output
 
     def test_audit_diff_not_enough_files(self):
-        assert main('audit --diff fileA'.split()) == 1
+        assert wrap_detect_secrets_main('audit --diff fileA') == 1
 
     def test_audit_same_file(self):
         with mock_printer(main_module) as printer_shim:
-            assert main('audit --diff .secrets.baseline .secrets.baseline'.split()) == 0
+            assert wrap_detect_secrets_main('audit --diff .secrets.baseline .secrets.baseline') == 0
             assert printer_shim.message.strip() == (
                 'No difference, because it\'s the same file!'
             )

@@ -17,9 +17,9 @@ def parse_args(argv):
         .parse_args(argv)
 
 
-def main(argv=None):
+def main(argv=sys.argv[1:]):
     if len(sys.argv) == 1:  # pragma: no cover
-        sys.argv.append('-h')
+        sys.argv.append('--help')
 
     args = parse_args(argv)
     if args.verbose:  # pragma: no cover
@@ -34,7 +34,8 @@ def main(argv=None):
         # Plugins are *always* rescanned with fresh settings, because
         # we want to get the latest updates.
         plugins = initialize.from_parser_builder(
-            args.plugins,
+            plugins_dict=args.plugins,
+            custom_plugin_paths=args.custom_plugin_paths,
             exclude_lines_regex=args.exclude_lines,
             automaton=automaton,
             should_verify_secrets=not args.no_verify,
@@ -142,8 +143,7 @@ def _perform_scan(args, plugins, automaton, word_list_hash):
             automaton=automaton,
         )
 
-    # Favors `--exclude-files` and `--exclude-lines` CLI arguments
-    # over existing baseline's regexes (if given)
+    # Favors CLI arguments over existing baseline configuration
     if old_baseline:
         if not args.exclude_files:
             args.exclude_files = _get_exclude_files(old_baseline)
@@ -160,18 +160,25 @@ def _perform_scan(args, plugins, automaton, word_list_hash):
         ):
             args.word_list_file = old_baseline['word_list']['file']
 
+        if (
+            not args.custom_plugin_paths
+            and old_baseline.get('custom_plugin_paths')
+        ):
+            args.custom_plugin_paths = old_baseline['custom_plugin_paths']
+
     # If we have knowledge of an existing baseline file, we should use
     # that knowledge and add it to our exclude_files regex.
     if args.import_filename:
         _add_baseline_to_exclude_files(args)
 
     new_baseline = baseline.initialize(
+        path=args.path,
         plugins=plugins,
+        custom_plugin_paths=args.custom_plugin_paths,
         exclude_files_regex=args.exclude_files,
         exclude_lines_regex=args.exclude_lines,
         word_list_file=args.word_list_file,
         word_list_hash=word_list_hash,
-        path=args.path,
         should_scan_all_files=args.all_files,
     ).format_for_baseline_output()
 
