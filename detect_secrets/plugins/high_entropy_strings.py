@@ -382,6 +382,7 @@ class HexHighEntropyString(HighEntropyStringsPlugin):
             return entropy
 
         try:
+            # Check if str is that of a number
             int(data)
 
             # This multiplier was determined through trial and error, with the
