@@ -7,13 +7,13 @@ import responses
 
 from detect_secrets.core.constants import VerifiedResult
 from detect_secrets.plugins.softlayer import find_username
-from detect_secrets.plugins.softlayer import SoftLayerDetector
+from detect_secrets.plugins.softlayer import SoftlayerDetector
 
 SL_USERNAME = 'test@testy.test'
 SL_TOKEN = 'abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234'
 
 
-class TestSoftLayerDetector(object):
+class TestSoftlayerDetector(object):
 
     @pytest.mark.parametrize(
         'payload, should_flag',
@@ -78,7 +78,7 @@ class TestSoftLayerDetector(object):
         ],
     )
     def test_analyze_string(self, payload, should_flag):
-        logic = SoftLayerDetector()
+        logic = SoftlayerDetector()
 
         output = logic.analyze_string(payload, 1, 'mock_filename')
         assert len(output) == (1 if should_flag else 0)
@@ -90,7 +90,7 @@ class TestSoftLayerDetector(object):
             json={'error': 'Access denied. '}, status=401,
         )
 
-        assert SoftLayerDetector().verify(
+        assert SoftlayerDetector().verify(
             SL_TOKEN,
             'softlayer_username={}'.format(SL_USERNAME),
         ) == VerifiedResult.VERIFIED_FALSE
@@ -101,20 +101,20 @@ class TestSoftLayerDetector(object):
             responses.GET, 'https://api.softlayer.com/rest/v3/SoftLayer_Account.json',
             json={'id': 1}, status=200,
         )
-        assert SoftLayerDetector().verify(
+        assert SoftlayerDetector().verify(
             SL_TOKEN,
             'softlayer_username={}'.format(SL_USERNAME),
         ) == VerifiedResult.VERIFIED_TRUE
 
     @responses.activate
     def test_verify_unverified_secret(self):
-        assert SoftLayerDetector().verify(
+        assert SoftlayerDetector().verify(
             SL_TOKEN,
             'softlayer_username={}'.format(SL_USERNAME),
         ) == VerifiedResult.UNVERIFIED
 
     def test_verify_no_secret(self):
-        assert SoftLayerDetector().verify(
+        assert SoftlayerDetector().verify(
             SL_TOKEN,
             'no_un={}'.format(SL_USERNAME),
         ) == VerifiedResult.UNVERIFIED
