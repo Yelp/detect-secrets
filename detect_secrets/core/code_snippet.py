@@ -1,7 +1,7 @@
 import itertools
 
-from .color import AnsiColor
-from .color import colorize
+from detect_secrets.core.color import AnsiColor
+from detect_secrets.core.color import colorize
 
 
 class CodeSnippetHighlighter:

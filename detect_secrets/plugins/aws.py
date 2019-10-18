@@ -10,9 +10,9 @@ from datetime import datetime
 
 import requests
 
-from .base import classproperty
-from .base import RegexBasedDetector
 from detect_secrets.core.constants import VerifiedResult
+from detect_secrets.plugins.base import classproperty
+from detect_secrets.plugins.base import RegexBasedDetector
 
 
 class AWSKeyDetector(RegexBasedDetector):
