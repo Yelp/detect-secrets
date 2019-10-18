@@ -16,7 +16,7 @@ from detect_secrets.core.potential_secret import PotentialSecret
 #       This number can be tweaked if desired, at the cost of performance.
 #
 #       https://www.ndss-symposium.org/wp-content/uploads/2019/02/ndss2019_04B-3_Meli_paper.pdf
-LINES_OF_CONTEXT = 5
+LINES_OF_CONTEXT = 7
 
 
 class classproperty(property):

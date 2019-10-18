@@ -84,6 +84,10 @@ class BoxDetector(RegexBasedDetector):
                 for privatekey in privatekey_matches:
                     for passphrase in passphrase_matches:
                         for enterpriseid in enterpriseid_matches:
+                            # fix private key newlines
+                            privatekey = privatekey + '\\n'
+                            privatekey = privatekey.replace('\\n', '\n')
+                            # validate
                             response = get_box_user(
                                 clientid, token, enterpriseid,
                                 publickeyid, passphrase, privatekey,
@@ -108,7 +112,7 @@ def get_box_user(
         client_secret=token,
         enterprise_id=enterpriseid,
         jwt_key_id=publickeyid,
-        rsa_private_key_passphrase=passphrase,
+        rsa_private_key_passphrase=passphrase.encode(),
         rsa_private_key_data=privatekey,
     )
     try:
