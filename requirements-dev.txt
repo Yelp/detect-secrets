@@ -6,7 +6,7 @@ pre-commit==1.11.2
 pyahocorasick
 pytest
 pyyaml
-tox>=3.8
-tox-pip-extensions
-unidiff
 responses
+tox-pip-extensions
+tox>=3.8
+unidiff

@@ -20,8 +20,8 @@ class SoftlayerDetector(RegexBasedDetector):
     denylist = [
         RegexBasedDetector.assign_regex_generator(
             prefix_regex=sl,
-            password_keyword_regex=key_or_pass,
-            password_regex=secret,
+            secret_keyword_regex=key_or_pass,
+            secret_regex=secret,
         ),
 
         re.compile(
@@ -43,14 +43,18 @@ class SoftlayerDetector(RegexBasedDetector):
 
 def find_username(content):
     # opt means optional
-    username_keyword = r'(?:username|id|user|userid|user-id|user-name|' + \
-        r'name|user_id|user_name|uname)'
+    username_keyword = (
+        r'(?:'
+        r'username|id|user|userid|user-id|user-name|'
+        r'name|user_id|user_name|uname'
+        r')'
+    )
     username = r'(\w(?:\w|_|@|\.|-)+)'
     regex = re.compile(
         RegexBasedDetector.assign_regex_generator(
             prefix_regex=SoftlayerDetector.sl,
-            password_keyword_regex=username_keyword,
-            password_regex=username,
+            secret_keyword_regex=username_keyword,
+            secret_regex=username,
         ),
     )
 
@@ -62,16 +66,16 @@ def find_username(content):
 
 
 def verify_softlayer_key(username, token):
+    headers = {'Content-type': 'application/json'}
     try:
-        headers = {'Content-type': 'application/json'}
         response = requests.get(
             'https://api.softlayer.com/rest/v3/SoftLayer_Account.json',
             auth=(username, token), headers=headers,
         )
-
-        if response.status_code == 200:
-            return VerifiedResult.VERIFIED_TRUE
-        else:
-            return VerifiedResult.VERIFIED_FALSE
-    except Exception:
+    except requests.exceptions.RequestException:
         return VerifiedResult.UNVERIFIED
+
+    if response.status_code == 200:
+        return VerifiedResult.VERIFIED_TRUE
+    else:
+        return VerifiedResult.VERIFIED_FALSE

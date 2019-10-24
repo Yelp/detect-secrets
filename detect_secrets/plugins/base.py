@@ -261,11 +261,11 @@ class RegexBasedDetector(BasePlugin):
         raise NotImplementedError
 
     @staticmethod
-    def assign_regex_generator(prefix_regex, password_keyword_regex, password_regex):
+    def assign_regex_generator(prefix_regex, secret_keyword_regex, secret_regex):
         """Generate assignment regex
-        It read 3 input parameters, each stands for regex. The return regex would look for
+        It reads 3 input parameters, each stands for regex. The return regex would look for
         secret in following format.
-        <prefix_regex>(-|_|)<password_keyword_regex> <assignment> <password_regex>
+        <prefix_regex>(-|_|)<secret_keyword_regex> <assignment> <secret_regex>
         assignment would include =,:,:=,::
         keyname and value supports optional quotes
         """
@@ -278,18 +278,18 @@ class RegexBasedDetector(BasePlugin):
         assignment = r'(?:=|:|:=|=>| +|::)'
         return re.compile(
             r'{begin}{opt_open_square_bracket}{opt_quote}{prefix_regex}{opt_dash_undrscr}'
-            '{password_keyword_regex}{opt_quote}{opt_close_square_bracket}{opt_space}'
-            '{assignment}{opt_space}{opt_quote}{password_regex}{opt_quote}'.format(
+            '{secret_keyword_regex}{opt_quote}{opt_close_square_bracket}{opt_space}'
+            '{assignment}{opt_space}{opt_quote}{secret_regex}{opt_quote}'.format(
                 begin=begin,
                 opt_open_square_bracket=opt_open_square_bracket,
                 opt_quote=opt_quote,
                 prefix_regex=prefix_regex,
                 opt_dash_undrscr=opt_dash_undrscr,
-                password_keyword_regex=password_keyword_regex,
+                secret_keyword_regex=secret_keyword_regex,
                 opt_close_square_bracket=opt_close_square_bracket,
                 opt_space=opt_space,
                 assignment=assignment,
-                password_regex=password_regex,
+                secret_regex=secret_regex,
             ), flags=re.IGNORECASE,
         )
 
