@@ -164,6 +164,8 @@ The current heuristic searches we implement out of the box include:
 
 * **JwtTokenDetector**: checks for formally correct JWTs.
 
+* **SoftlayerDetector**: checks for Softlayer tokens.
+
 See [detect_secrets/
 plugins](https://github.com/Yelp/detect-secrets/tree/master/detect_secrets/plugins)
 for more details.
