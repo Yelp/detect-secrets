@@ -37,8 +37,8 @@ class TestArtifactoryDetector(object):
             ('artifactory:_password=AKCxxxxxxxx', False),
         ],
     )
-    def test_analyze_string(self, payload, should_flag):
+    def test_analyze_line(self, payload, should_flag):
         logic = ArtifactoryDetector()
 
-        output = logic.analyze_string(payload, 1, 'mock_filename')
+        output = logic.analyze_line(payload, 1, 'mock_filename')
         assert len(output) == int(should_flag)

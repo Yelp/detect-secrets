@@ -120,6 +120,8 @@ class HighEntropyStringsTest(object):
             '"CanonicalUser": "{secret}"',
             # Not a string
             '{secret}',
+            # id occurs before the string, probably a false-positive
+            'id = "{secret}"',
         ],
     )
     def test_ignored_lines(self, content_to_format):
@@ -139,10 +141,10 @@ class HighEntropyStringsTest(object):
             Base64HighEntropyString(15)
 
 
-class TestBase64HighEntropyStrings(HighEntropyStringsTest):
+class TestRegularBase64HighEntropyStrings(HighEntropyStringsTest):
 
     def setup(self):
-        super(TestBase64HighEntropyStrings, self).setup(
+        super(TestRegularBase64HighEntropyStrings, self).setup(
             # Testing default limit, as suggested by truffleHog.
             logic=Base64HighEntropyString(
                 base64_limit=4.5,
@@ -164,6 +166,7 @@ class TestBase64HighEntropyStrings(HighEntropyStringsTest):
                     'Location:    test_data/config.ini:15',
                     'Location:    test_data/config.ini:21',
                     'Location:    test_data/config.ini:22',
+                    'Location:    test_data/config.ini:32',
                 ],
             ),
             (
@@ -217,7 +220,7 @@ class TestBase64HighEntropyStrings(HighEntropyStringsTest):
             assert location in (
                 'Location:    test_data/config.yaml:3',
                 'Location:    test_data/config.yaml:6',
-                'Location:    test_data/config.yaml:15',
+                'Location:    test_data/config.yaml:14',
             )
 
         with open('test_data/only_comments.yaml') as f:
@@ -235,6 +238,19 @@ class TestBase64HighEntropyStrings(HighEntropyStringsTest):
             assert location in (
                 'Location:    test_data/config.env:1',
             )
+
+
+class TestUrlSafeBase64HighEntropyStrings(HighEntropyStringsTest):
+    def setup(self):
+        super(TestUrlSafeBase64HighEntropyStrings, self).setup(
+            # Testing default limit, as suggested by truffleHog.
+            logic=Base64HighEntropyString(
+                base64_limit=4.5,
+                exclude_lines_regex='CanonicalUser',
+            ),
+            non_secret_string='Zrm-ySTAq7D2sHk=',  # too short for high entropy
+            secret_string='I6FwzQZFL9l-44nviI1F04OTmorMaVQf9GS4Oe07qxL_vNkW6CRas4Lo42vqJMT0M6riJfma_f-pTAuoX2U=',  # noqa: E501
+        )
 
 
 class HexHighEntropyStringsWithStandardEntropy(HexHighEntropyString):

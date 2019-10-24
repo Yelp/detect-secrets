@@ -44,4 +44,5 @@ class TestYamlFileParser(object):
             '__value__': expected_value,
             '__is_binary__': expected_is_binary,
             '__line__': mock.ANY,
+            '__original_key__': mock.ANY,
         }

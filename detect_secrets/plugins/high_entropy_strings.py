@@ -18,7 +18,10 @@ from .base import BasePlugin
 from .base import classproperty
 from .common.filetype import determine_file_type
 from .common.filetype import FileType
-from .common.filters import is_false_positive
+from .common.filters import get_aho_corasick_helper
+from .common.filters import is_false_positive_with_line_context
+from .common.filters import is_potential_uuid
+from .common.filters import is_sequential_string
 from .common.ini_file_parser import IniFileParser
 from .common.yaml_file_parser import YamlFileParser
 from detect_secrets.core.potential_secret import PotentialSecret
@@ -37,11 +40,17 @@ class HighEntropyStringsPlugin(BasePlugin):
 
         self.charset = charset
         self.entropy_limit = limit
-        self.automaton = automaton
         self.regex = re.compile(r'([\'"])([%s]+)(\1)' % charset)
+
+        false_positive_heuristics = [
+            get_aho_corasick_helper(automaton),
+            is_sequential_string,
+            is_potential_uuid,
+        ]
 
         super(HighEntropyStringsPlugin, self).__init__(
             exclude_lines_regex=exclude_lines_regex,
+            false_positive_heuristics=false_positive_heuristics,
         )
 
     def analyze(self, file, filename):
@@ -83,6 +92,28 @@ class HighEntropyStringsPlugin(BasePlugin):
 
         return entropy
 
+    @staticmethod
+    def _filter_false_positives_with_line_ctx(potential_secrets, line):
+        return {
+            key: value for key, value in potential_secrets.items()
+            if not is_false_positive_with_line_context(
+                key.secret_value,
+                line,
+            )
+        }
+
+    def analyze_line(self, string, line_num, filename):
+        output = super(HighEntropyStringsPlugin, self).analyze_line(
+            string,
+            line_num,
+            filename,
+        )
+
+        return self._filter_false_positives_with_line_ctx(
+            output,
+            string,
+        )
+
     def analyze_string_content(self, string, line_num, filename):
         """Searches string for custom pattern, and captures all high entropy strings that
         match self.regex, with a limit defined as self.entropy_limit.
@@ -90,7 +121,7 @@ class HighEntropyStringsPlugin(BasePlugin):
         output = {}
 
         for result in self.secret_generator(string):
-            if is_false_positive(result, self.automaton):
+            if self.is_secret_false_positive(result):
                 continue
 
             secret = PotentialSecret(self.secret_type, filename, result, line_num)
@@ -114,7 +145,7 @@ class HighEntropyStringsPlugin(BasePlugin):
         # Since it's an individual string, it's just bad UX to require quotes
         # around the expected secret.
         with self.non_quoted_string_regex():
-            results = self.analyze_string(
+            results = self.analyze_line(
                 string,
                 line_num=0,
                 filename='does_not_matter',
@@ -152,23 +183,27 @@ class HighEntropyStringsPlugin(BasePlugin):
         :returns: same format as super().analyze()
         """
         def wrapped(file, filename):
-            potential_secrets = {}
+            output = {}
 
             with self.non_quoted_string_regex():
-                for value, lineno in IniFileParser(
+                for key, value, lineno in IniFileParser(
                     file,
                     add_header,
                     exclude_lines_regex=self.exclude_lines_regex,
                 ).iterator():
-                    potential_secrets.update(
-                        self.analyze_string(
-                            value,
-                            lineno,
-                            filename,
-                        ),
+                    potential_secrets = self.analyze_string_content(
+                        value,
+                        lineno,
+                        filename,
                     )
+                    line = u'{key}={value}'.format(key=key, value=value)
+                    potential_secrets = self._filter_false_positives_with_line_ctx(
+                        potential_secrets,
+                        line,
+                    )
+                    output.update(potential_secrets)
 
-            return potential_secrets
+            return output
 
         return wrapped
 
@@ -217,7 +252,7 @@ class HighEntropyStringsPlugin(BasePlugin):
                     else item['__value__']
                 )
 
-                secrets = self.analyze_string(
+                secrets = self.analyze_string_content(
                     string_to_scan,
                     item['__line__'],
                     filename,
@@ -225,6 +260,15 @@ class HighEntropyStringsPlugin(BasePlugin):
 
                 if item['__is_binary__']:
                     secrets = self._encode_yaml_binary_secrets(secrets)
+
+                dumped_key_value = yaml.dump({
+                    item['__original_key__']: item['__value__'],
+                }).replace('\n', '')
+
+                secrets = self._filter_false_positives_with_line_ctx(
+                    secrets,
+                    dumped_key_value,
+                )
 
                 potential_secrets.update(secrets)
 
@@ -339,8 +383,15 @@ class Base64HighEntropyString(HighEntropyStringsPlugin):
     secret_type = 'Base64 High Entropy String'
 
     def __init__(self, base64_limit, exclude_lines_regex=None, automaton=None, **kwargs):
+        charset = (
+            string.ascii_letters
+            + string.digits
+            + '+/'  # Regular base64
+            + '\\-_'  # Url-safe base64
+            + '='  # Padding
+        )
         super(Base64HighEntropyString, self).__init__(
-            charset=string.ascii_letters + string.digits + '+/=',
+            charset=charset,
             limit=base64_limit,
             exclude_lines_regex=exclude_lines_regex,
             automaton=automaton,

@@ -358,7 +358,7 @@ class SecretsCollection(object):
             for line in chunk.target_lines():
                 if line.is_added:
                     output.update(
-                        plugin.analyze_string(
+                        plugin.analyze_line(
                             line.value,
                             line.target_line_no,
                             filename,

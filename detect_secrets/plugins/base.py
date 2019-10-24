@@ -53,18 +53,34 @@ class BasePlugin(object):
     def secret_type(self):
         raise NotImplementedError
 
-    def __init__(self, exclude_lines_regex=None, should_verify=False, **kwargs):
+    def __init__(
+        self,
+        exclude_lines_regex=None,
+        should_verify=False,
+        false_positive_heuristics=None,
+        **kwargs
+    ):
         """
         :type exclude_lines_regex: str|None
         :param exclude_lines_regex: optional regex for ignored lines.
 
         :type should_verify: bool
+
+        :type false_positive_heuristics: List[Callable]|None
+        :param false_positive_heuristics: List of fp-heuristic functions
+        applicable to this plugin
         """
         self.exclude_lines_regex = None
         if exclude_lines_regex:
             self.exclude_lines_regex = re.compile(exclude_lines_regex)
 
         self.should_verify = should_verify
+
+        self.false_positive_heuristics = (
+            false_positive_heuristics
+            if false_positive_heuristics
+            else []
+        )
 
     @classproperty
     def disable_flag_text(cls):
@@ -97,7 +113,7 @@ class BasePlugin(object):
         potential_secrets = {}
         file_lines = tuple(file.readlines())
         for line_num, line in enumerate(file_lines, start=1):
-            results = self.analyze_string(line, line_num, filename)
+            results = self.analyze_line(line, line_num, filename)
             if not self.should_verify:
                 potential_secrets.update(results)
                 continue
@@ -121,7 +137,7 @@ class BasePlugin(object):
 
         return potential_secrets
 
-    def analyze_string(self, string, line_num, filename):
+    def analyze_line(self, string, line_num, filename):
         """
         :param string:    string; the line to analyze
         :param line_num:  integer; line number that is currently being analyzed
@@ -163,7 +179,7 @@ class BasePlugin(object):
     @abstractmethod
     def secret_generator(self, string, *args, **kwargs):
         """Flags secrets in a given string, and yields the raw secret value.
-        Used in self.analyze_string for PotentialSecret creation.
+        Used in self.analyze_line for PotentialSecret creation.
 
         :type string: str
         :param string: the secret to scan
@@ -178,7 +194,7 @@ class BasePlugin(object):
         check what different plugins say regarding a single line/secret. This
         supports that.
 
-        This is very similar to self.analyze_string, but allows the flexibility
+        This is very similar to self.analyze_line, but allows the flexibility
         for subclasses to add any other notable info (rather than just a
         PotentialSecret type). e.g. HighEntropyStrings adds their Shannon
         entropy in which they made their decision.
@@ -191,7 +207,7 @@ class BasePlugin(object):
             <classname>: <returned-value>
         """
         # TODO: Handle multiple secrets on single line.
-        results = self.analyze_string(
+        results = self.analyze_line(
             string,
             line_num=0,
             filename='does_not_matter',
@@ -231,6 +247,19 @@ class BasePlugin(object):
         :rtype: VerifiedResult
         """
         return VerifiedResult.UNVERIFIED
+
+    def is_secret_false_positive(self, token):
+        """
+        Checks if the input secret is a false-positive according to
+        this plugin's heuristics.
+
+        :type token: str
+        :param token: secret found by current plugin
+        """
+        return any(
+            func(token)
+            for func in self.false_positive_heuristics
+        ) if self.false_positive_heuristics else False
 
     @property
     def __dict__(self):

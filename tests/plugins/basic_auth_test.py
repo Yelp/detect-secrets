@@ -18,8 +18,8 @@ class TestBasicAuthDetector(object):
             ('https://url:8000/ @something else', False),
         ],
     )
-    def test_analyze_string(self, payload, should_flag):
+    def test_analyze_line(self, payload, should_flag):
         logic = BasicAuthDetector()
 
-        output = logic.analyze_string(payload, 1, 'mock_filename')
+        output = logic.analyze_line(payload, 1, 'mock_filename')
         assert len(output) == int(should_flag)

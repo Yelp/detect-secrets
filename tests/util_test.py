@@ -31,11 +31,11 @@ def test_build_automaton():
     ):
         automaton, word_list_hash = util.build_automaton(word_list='will_be_mocked.txt')
         assert word_list_hash == hashlib.sha1('foam'.encode('utf-8')).hexdigest()
-        assert filters._is_found_with_aho_corasick(
+        assert filters.is_found_with_aho_corasick(
             secret='foam_roller',
             automaton=automaton,
         )
-        assert not filters._is_found_with_aho_corasick(
+        assert not filters.is_found_with_aho_corasick(
             secret='no_words_in_word_list',
             automaton=automaton,
         )

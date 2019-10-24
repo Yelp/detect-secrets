@@ -77,7 +77,7 @@ class IniFileParser(object):
                     key,
                     values,
                 ):
-                    yield value, offset
+                    yield key, value, offset
 
     def _get_value_and_line_offset(self, key, values):
         """Returns the index of the location of key, value pair in lines.

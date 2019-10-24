@@ -32,7 +32,8 @@ from .base import BasePlugin
 from .base import classproperty
 from .common.filetype import determine_file_type
 from .common.filetype import FileType
-from .common.filters import is_false_positive
+from .common.filters import get_aho_corasick_helper
+from .common.filters import is_sequential_string
 from detect_secrets.core.potential_secret import PotentialSecret
 
 
@@ -273,8 +274,14 @@ class KeywordDetector(BasePlugin):
         return output
 
     def __init__(self, keyword_exclude=None, exclude_lines_regex=None, automaton=None, **kwargs):
+        false_positive_heuristics = [
+            get_aho_corasick_helper(automaton),
+            is_sequential_string,
+        ]
+
         super(KeywordDetector, self).__init__(
             exclude_lines_regex=exclude_lines_regex,
+            false_positive_heuristics=false_positive_heuristics,
             **kwargs
         )
 
@@ -298,7 +305,7 @@ class KeywordDetector(BasePlugin):
             string,
             filetype=determine_file_type(filename),
         ):
-            if is_false_positive(identifier, self.automaton):
+            if self.is_secret_false_positive(identifier):
                 continue
             secret = PotentialSecret(
                 self.secret_type,
