@@ -6,7 +6,8 @@ from .base import RegexBasedDetector
 from detect_secrets.core.constants import VerifiedResult
 
 
-class IBMCloudIAMDetector(RegexBasedDetector):
+class IbmCloudIamDetector(RegexBasedDetector):
+    """Scans for IBM Cloud IAM Key."""
 
     secret_type = 'IBM Cloud IAM Key'
 
@@ -20,8 +21,8 @@ class IBMCloudIAMDetector(RegexBasedDetector):
     denylist = [
         RegexBasedDetector.assign_regex_generator(
             prefix_regex=opt_ibm_cloud_iam + opt_dash_undrscr + opt_api,
-            password_keyword_regex=key_or_pass,
-            password_regex=secret,
+            secret_keyword_regex=key_or_pass,
+            secret_regex=secret,
         ),
     ]
 

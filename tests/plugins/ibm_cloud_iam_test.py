@@ -4,7 +4,7 @@ import pytest
 import responses
 
 from detect_secrets.core.constants import VerifiedResult
-from detect_secrets.plugins.ibm_cloud_iam import IBMCloudIAMDetector
+from detect_secrets.plugins.ibm_cloud_iam import IbmCloudIamDetector
 
 
 CLOUD_IAM_KEY = 'abcd1234abcd1234abcd1234ABCD1234ABCD1234--__'
@@ -16,34 +16,34 @@ class TestIBMCloudIamDetector(object):
     @pytest.mark.parametrize(
         'payload, should_flag',
         [
-            ('ibm-cloud_api_key: {cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True,),
-            ('ibm_cloud_iam-key : {cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True,),
-            ('IBM-API-KEY : "{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True,),
-            ('"iam_api_key" : "{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True,),
-            ('cloud-api-key: "{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True,),
-            ('"iam-password": "{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True,),
-            ('CLOUD_IAM_API_KEY:"{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True,),
-            ('ibm-cloud-key:{cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True,),
-            ('ibm_key:"{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True,),
+            ('ibm-cloud_api_key: {cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
+            ('ibm_cloud_iam-key : {cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
+            ('IBM-API-KEY : "{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
+            ('"iam_api_key" : "{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
+            ('cloud-api-key: "{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
+            ('"iam-password": "{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
+            ('CLOUD_IAM_API_KEY:"{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
+            ('ibm-cloud-key:{cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
+            ('ibm_key:"{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             (
                 '"ibm_cloud_iam_api_key":"{cloud_iam_key}"'.format(
                     cloud_iam_key=CLOUD_IAM_KEY,
                 ), True,
             ),
-            ('ibm_cloud_iamapikey= {cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True,),
-            ('ibm_cloud_api_key= "{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True,),
-            ('IBMCLOUDIAMAPIKEY={cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True,),
-            ('cloud_iam_api_key="{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True,),
-            ('ibm_api_key := {cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True,),
-            ('"ibm-iam_key" := "{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True,),
+            ('ibm_cloud_iamapikey= {cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
+            ('ibm_cloud_api_key= "{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
+            ('IBMCLOUDIAMAPIKEY={cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
+            ('cloud_iam_api_key="{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
+            ('ibm_api_key := {cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
+            ('"ibm-iam_key" := "{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             (
                 '"ibm_cloud_iam_api_key":= "{cloud_iam_key}"'.format(
                     cloud_iam_key=CLOUD_IAM_KEY,
                 ), True,
             ),
-            ('ibm-cloud_api_key:={cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True,),
-            ('"cloud_iam_api_key":="{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True,),
-            ('ibm_iam_key:= "{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True,),
+            ('ibm-cloud_api_key:={cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
+            ('"cloud_iam_api_key":="{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
+            ('ibm_iam_key:= "{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             ('ibm_api_key:="{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             ('ibm_password = "{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             ('ibm-cloud-pwd = {cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
@@ -54,10 +54,10 @@ class TestIBMCloudIamDetector(object):
             ('fake-cloud-iam-key= "not_long_enough"', False),
         ],
     )
-    def test_analyze_string(self, payload, should_flag):
-        logic = IBMCloudIAMDetector()
+    def test_analyze_string_content(self, payload, should_flag):
+        logic = IbmCloudIamDetector()
 
-        output = logic.analyze_string(payload, 1, 'mock_filename')
+        output = logic.analyze_string_content(payload, 1, 'mock_filename')
         assert len(output) == (1 if should_flag else 0)
 
     @responses.activate
@@ -66,7 +66,7 @@ class TestIBMCloudIamDetector(object):
             responses.POST, 'https://iam.cloud.ibm.com/identity/token', status=400,
         )
 
-        assert IBMCloudIAMDetector().verify(CLOUD_IAM_KEY) == VerifiedResult.VERIFIED_FALSE
+        assert IbmCloudIamDetector().verify(CLOUD_IAM_KEY) == VerifiedResult.VERIFIED_FALSE
 
     @responses.activate
     def test_verify_valid_secret(self):
@@ -74,7 +74,7 @@ class TestIBMCloudIamDetector(object):
             responses.POST, 'https://iam.cloud.ibm.com/identity/token', status=200,
         )
 
-        IBMCloudIAMDetector().verify(CLOUD_IAM_KEY) == VerifiedResult.VERIFIED_TRUE
+        IbmCloudIamDetector().verify(CLOUD_IAM_KEY) == VerifiedResult.VERIFIED_TRUE
 
     @responses.activate
     def test_verify_invalid_secret_bytes(self):
@@ -82,7 +82,7 @@ class TestIBMCloudIamDetector(object):
             responses.POST, 'https://iam.cloud.ibm.com/identity/token', status=400,
         )
 
-        assert IBMCloudIAMDetector().verify(CLOUD_IAM_KEY_BYTES) == VerifiedResult.VERIFIED_FALSE
+        assert IbmCloudIamDetector().verify(CLOUD_IAM_KEY_BYTES) == VerifiedResult.VERIFIED_FALSE
 
     @responses.activate
     def test_verify_valid_secret_byes(self):
@@ -90,4 +90,4 @@ class TestIBMCloudIamDetector(object):
             responses.POST, 'https://iam.cloud.ibm.com/identity/token', status=200,
         )
 
-        IBMCloudIAMDetector().verify(CLOUD_IAM_KEY_BYTES) == VerifiedResult.VERIFIED_TRUE
+        IbmCloudIamDetector().verify(CLOUD_IAM_KEY_BYTES) == VerifiedResult.VERIFIED_TRUE
