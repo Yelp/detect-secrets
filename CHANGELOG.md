@@ -24,6 +24,43 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [@xxxx]: https://github.com/xxxx
 -->
 
+# v0.13.0
+##### October 28th, 2019
+
+#### :newspaper: News
+
+- Rationale for the minor version bump:
+    - Some accuracy changes that might change baselines significantly
+    - @OiCMudkips' first release increases spookiness
+    - It being almost Halloweeen increases spookiness
+
+#### :tada: New Features
+
+- Added a Softlayer plugin ([#254], thanks to [@killuazhu] and [@justineyster])
+- Support URL-safe base64 strings in the base64 plugin ([#245])
+
+#### :sparkles: Usability
+
+- Make it easier to add new plugins to detect-secrets ([#248])
+
+#### :telescope: Accuracy
+
+- Exclude NOPASSWD from the keyword detector ([#247], thanks to [@security-architecture])
+- Ignore lines with `id` in them in the high-entropy plugins ([#245])
+- Ignore UUIDs detected by the base64 plugin ([#245])
+
+#### :bug: Bugfixes
+
+- Fix the signal metric in the audit results view ([#251])
+
+[#245]: https://github.com/Yelp/detect-secrets/pull/245
+[#247]: https://github.com/Yelp/detect-secrets/pull/247
+[#248]: https://github.com/Yelp/detect-secrets/pull/248
+[#251]: https://github.com/Yelp/detect-secrets/pull/251
+[#254]: https://github.com/Yelp/detect-secrets/pull/254
+
+
+
 ### v0.12.7
 ##### September 23rd, 2019
 
@@ -602,6 +639,7 @@ This includes using `# pragma: allowlist secret` now for inline allowlisting.
 - [@nymous]
 - [@Patil2099]
 - [@richo]
+- [@security-architecture]
 - [@whathejoe]
 - [@zioalex]
 
@@ -623,5 +661,6 @@ This includes using `# pragma: allowlist secret` now for inline allowlisting.
 [@nymous]: https://github.com/nymous
 [@Patil2099]: https://github.com/Patil2099
 [@richo]: https://github.com/richo
+[@security-architecture]: https://github.com/security-architecture
 [@whathejoe]: https://github.com/whathejoe
 [@zioalex]: https://github.com/zioalex
