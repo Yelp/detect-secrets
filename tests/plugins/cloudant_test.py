@@ -6,7 +6,6 @@ import pytest
 import responses
 
 from detect_secrets.core.constants import VerifiedResult
-from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.cloudant import CloudantDetector
 from detect_secrets.plugins.cloudant import find_account
 
@@ -64,7 +63,7 @@ class TestCloudantDetector(object):
     )
     def test_analyze_string(self, payload, should_flag):
         logic = CloudantDetector()
-        output = logic.analyze_string(payload, 1, 'mock_filename')
+        output = logic.analyze_line(payload, 1, 'mock_filename')
 
         assert len(output) == (1 if should_flag else 0)
 
@@ -92,13 +91,10 @@ class TestCloudantDetector(object):
             responses.GET, cl_api_url,
             json={'id': 1}, status=200,
         )
-        potential_secret = PotentialSecret('test cloudant', 'test filename', CL_PW)
         assert CloudantDetector().verify(
             CL_PW,
             'cloudant_host={}'.format(CL_ACCOUNT),
-            potential_secret,
         ) == VerifiedResult.VERIFIED_TRUE
-        assert potential_secret.other_factors['hostname'] == CL_ACCOUNT
 
     @responses.activate
     def test_verify_unverified_secret(self):

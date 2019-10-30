@@ -9,6 +9,7 @@ from detect_secrets.core.constants import VerifiedResult
 
 
 class CloudantDetector(RegexBasedDetector):
+    """Scans for Cloudant credentials."""
 
     secret_type = 'Cloudant Credentials'
 
@@ -27,13 +28,13 @@ class CloudantDetector(RegexBasedDetector):
     denylist = [
         RegexBasedDetector.assign_regex_generator(
             prefix_regex=cl,
-            password_keyword_regex=cl_key_or_pass,
-            password_regex=cl_pw,
+            secret_keyword_regex=cl_key_or_pass,
+            secret_regex=cl_pw,
         ),
         RegexBasedDetector.assign_regex_generator(
             prefix_regex=cl,
-            password_keyword_regex=cl_key_or_pass,
-            password_regex=cl_api_key,
+            secret_keyword_regex=cl_key_or_pass,
+            secret_regex=cl_api_key,
         ),
         re.compile(
             r'{http}{cl_account}{colon}{cl_pw}{at}{cl_account}{dot}{cloudant_api_url}'.format(
@@ -61,14 +62,14 @@ class CloudantDetector(RegexBasedDetector):
         ),
     ]
 
-    def verify(self, token, content, potential_secret=None):
+    def verify(self, token, content):
 
         hosts = find_account(content)
         if not hosts:
             return VerifiedResult.UNVERIFIED
 
         for host in hosts:
-            return verify_cloudant_key(host, token, potential_secret)
+            return verify_cloudant_key(host, token)
 
         return VerifiedResult.VERIFIED_FALSE
 
@@ -82,8 +83,8 @@ def find_account(content):
     regexes = (
         RegexBasedDetector.assign_regex_generator(
             prefix_regex=CloudantDetector.cl,
-            password_keyword_regex=opt_hostname_keyword,
-            password_regex=account,
+            secret_keyword_regex=opt_hostname_keyword,
+            secret_regex=account,
         ),
         re.compile(
             r'{http}{opt_basic_auth}{cl_account}{dot}{cloudant_api_url}'.format(
@@ -106,7 +107,7 @@ def find_account(content):
     ]
 
 
-def verify_cloudant_key(hostname, token, potential_secret=None):
+def verify_cloudant_key(hostname, token):
     try:
         headers = {'Content-type': 'application/json'}
         request_url = 'https://{hostname}:' \
@@ -123,8 +124,6 @@ def verify_cloudant_key(hostname, token, potential_secret=None):
         )
 
         if response.status_code == 200:
-            if potential_secret:
-                potential_secret.other_factors['hostname'] = hostname
             return VerifiedResult.VERIFIED_TRUE
         else:
             return VerifiedResult.VERIFIED_FALSE
