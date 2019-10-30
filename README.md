@@ -166,6 +166,9 @@ The current heuristic searches we implement out of the box include:
 
 * **SoftlayerDetector**: checks for Softlayer tokens.
 
+* **IbmCloudIamDetector**: checks for IBM Cloud IAM key.
+
+
 See [detect_secrets/
 plugins](https://github.com/Yelp/detect-secrets/tree/master/detect_secrets/plugins)
 for more details.
