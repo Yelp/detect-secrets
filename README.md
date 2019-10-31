@@ -168,6 +168,8 @@ The current heuristic searches we implement out of the box include:
 
 * **IbmCloudIamDetector**: checks for IBM Cloud IAM key.
 
+* **CloudantDetector**: checks for Cloudant credentials.
+
 
 See [detect_secrets/
 plugins](https://github.com/Yelp/detect-secrets/tree/master/detect_secrets/plugins)
