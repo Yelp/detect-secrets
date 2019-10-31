@@ -77,6 +77,7 @@ FALSE_POSITIVES = {
     '<input',
     '<password>',
     '<redacted>',
+    '<secret',
     '>',
     '=',
     '\\"$(shell',
