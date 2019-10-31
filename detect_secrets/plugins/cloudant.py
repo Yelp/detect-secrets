@@ -108,24 +108,24 @@ def find_account(content):
 
 
 def verify_cloudant_key(hostname, token):
-    try:
-        headers = {'Content-type': 'application/json'}
-        request_url = 'https://{hostname}:' \
-            '{token}' \
-            '@{hostname}.' \
-            'cloudant.com'.format(
-                hostname=hostname,
-                token=token,
-            )
+    headers = {'Content-type': 'application/json'}
+    request_url = 'https://{hostname}:' \
+        '{token}' \
+        '@{hostname}.' \
+        'cloudant.com'.format(
+            hostname=hostname,
+            token=token,
+        )
 
+    try:
         response = requests.get(
             request_url,
             headers=headers,
         )
-
-        if response.status_code == 200:
-            return VerifiedResult.VERIFIED_TRUE
-        else:
-            return VerifiedResult.VERIFIED_FALSE
-    except Exception:
+    except requests.exceptions.RequestException:
         return VerifiedResult.UNVERIFIED
+
+    if response.status_code == 200:
+        return VerifiedResult.VERIFIED_TRUE
+    else:
+        return VerifiedResult.VERIFIED_FALSE
