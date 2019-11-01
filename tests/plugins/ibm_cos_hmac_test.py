@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import textwrap
 
 import pytest
+import requests
 import responses
 from mock import patch
 
@@ -79,7 +80,7 @@ class TestIbmCosHmacDetector(object):
 
     @patch('detect_secrets.plugins.ibm_cos_hmac.verify_ibm_cos_hmac_credentials')
     def test_verify_unverified_secret(self, mock_hmac_verify):
-        mock_hmac_verify.side_effect = Exception('oops')
+        mock_hmac_verify.side_effect = requests.exceptions.RequestException('oops')
 
         assert IbmCosHmacDetector().verify(
             SECRET_ACCESS_KEY,
@@ -90,7 +91,7 @@ class TestIbmCosHmacDetector(object):
 
     @patch('detect_secrets.plugins.ibm_cos_hmac.verify_ibm_cos_hmac_credentials')
     def test_verify_unverified_secret_no_match(self, mock_hmac_verify):
-        mock_hmac_verify.side_effect = Exception('oops')
+        mock_hmac_verify.side_effect = requests.exceptions.RequestException('oops')
 
         assert IbmCosHmacDetector().verify(
             SECRET_ACCESS_KEY,

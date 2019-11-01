@@ -44,7 +44,7 @@ class IbmCosHmacDetector(RegexBasedDetector):
                 )
                 if verify_result is True:
                     return VerifiedResult.VERIFIED_TRUE
-        except Exception:
+        except requests.exceptions.RequestException:
             return VerifiedResult.UNVERIFIED
 
         return VerifiedResult.VERIFIED_FALSE
