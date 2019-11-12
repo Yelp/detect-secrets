@@ -42,7 +42,7 @@ class IbmCosHmacDetector(RegexBasedDetector):
                 verify_result = verify_ibm_cos_hmac_credentials(
                     key_id, token,
                 )
-                if verify_result is True:
+                if verify_result:
                     return VerifiedResult.VERIFIED_TRUE
         except requests.exceptions.RequestException:
             return VerifiedResult.UNVERIFIED
