@@ -23,4 +23,4 @@ class TestTwilioKeyDetector(object):
     def test_analyze(self, payload, should_flag):
         logic = TwilioKeyDetector()
         output = logic.analyze_line(payload, 1, 'mock_filename')
-        assert len(output) == int(should_flag)
+        assert output
