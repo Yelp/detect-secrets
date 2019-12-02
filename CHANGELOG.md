@@ -24,6 +24,14 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [@xxxx]: https://github.com/xxxx
 -->
 
+### Unreleased
+
+#### :tada: New Features
+
+- Adding plugin for IBM's Cloudant ([#261], thanks to [@killuazhu])
+- Adding plugin for IBM Cloud Object Storage HMAC ([#263], thanks to [@killuazhu])
+- Adding Twilio plugin ([#267], thanks to [@EdOverflow])
+
 # v0.13.0
 ##### October 28th, 2019
 
