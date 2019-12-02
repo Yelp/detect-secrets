@@ -160,7 +160,7 @@ The current heuristic searches we implement out of the box include:
 
 * **KeywordDetector**: checks to see if certain keywords are being used e.g. `password` or `secret`
 
-* **RegexBasedDetector**: checks for any keys matching certain regular expressions (Artifactory, AWS, Slack, Stripe, Mailchimp).
+* **RegexBasedDetector**: checks for any keys matching certain regular expressions (Artifactory, AWS, Slack, Stripe, Mailchimp, Twilio).
 
 * **JwtTokenDetector**: checks for formally correct JWTs.
 
