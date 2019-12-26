@@ -28,9 +28,15 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 #### :tada: New Features
 
-- Adding plugin for IBM's Cloudant ([#261], thanks to [@killuazhu])
-- Adding plugin for IBM Cloud Object Storage HMAC ([#263], thanks to [@killuazhu])
-- Adding Twilio plugin ([#267], thanks to [@EdOverflow])
+- Adding plugin for IBM's Cloudant ([#261], thanks [@killuazhu])
+- Adding plugin for IBM Cloud Object Storage HMAC ([#263], thanks [@killuazhu])
+- Adding Twilio plugin ([#267], thanks [@EdOverflow])
+
+[#261]: https://github.com/Yelp/detect-secrets/pull/261
+[#263]: https://github.com/Yelp/detect-secrets/pull/263
+[#267]: https://github.com/Yelp/detect-secrets/pull/267
+
+
 
 # v0.13.0
 ##### October 28th, 2019
@@ -44,7 +50,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 #### :tada: New Features
 
-- Added a Softlayer plugin ([#254], thanks to [@killuazhu] and [@justineyster])
+- Added a Softlayer plugin ([#254], thanks [@killuazhu] and [@justineyster])
 - Support URL-safe base64 strings in the base64 plugin ([#245])
 
 #### :sparkles: Usability
@@ -53,7 +59,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 #### :telescope: Accuracy
 
-- Exclude NOPASSWD from the keyword detector ([#247], thanks to [@security-architecture])
+- Exclude NOPASSWD from the keyword detector ([#247], thanks [@security-architecture])
 - Ignore lines with `id` in them in the high-entropy plugins ([#245])
 - Ignore UUIDs detected by the base64 plugin ([#245])
 
@@ -89,6 +95,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 [#239]: https://github.com/Yelp/detect-secrets/pull/239
 [#241]: https://github.com/Yelp/detect-secrets/pull/241
+
 
 
 ### v0.12.6
@@ -634,6 +641,7 @@ This includes using `# pragma: allowlist secret` now for inline allowlisting.
 - [@cclauss]
 - [@cleborys]
 - [@dgzlopes]
+- [@EdOverflow]
 - [@gdemarcsek]
 - [@guykisel]
 - [@hpandeycodeit]
@@ -656,6 +664,7 @@ This includes using `# pragma: allowlist secret` now for inline allowlisting.
 [@cclauss]: https://github.com/cclauss
 [@cleborys]: https://github.com/cleborys
 [@dgzlopes]: https://github.com/dgzlopes
+[@EdOverflow]: https://github.com/EdOverflow
 [@gdemarcsek]: https://github.com/gdemarcsek
 [@guykisel]: https://github.com/guykisel
 [@hpandeycodeit]: https://github.com/hpandeycodeit
