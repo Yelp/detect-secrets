@@ -61,7 +61,8 @@ class TestIBMCloudIamDetector:
     @responses.activate
     def test_verify_invalid_secret(self):
         responses.add(
-            responses.POST, 'https://iam.cloud.ibm.com/identity/token', status=400,
+            responses.POST, 'https://iam.cloud.ibm.com/identity/introspect', status=200,
+            json={'active': False}, headers={'content-type': 'application/json'},
         )
 
         assert IBMCloudIAMDetector().verify(CLOUD_IAM_KEY) == VerifiedResult.VERIFIED_FALSE
@@ -69,15 +70,17 @@ class TestIBMCloudIamDetector:
     @responses.activate
     def test_verify_valid_secret(self):
         responses.add(
-            responses.POST, 'https://iam.cloud.ibm.com/identity/token', status=200,
+            responses.POST, 'https://iam.cloud.ibm.com/identity/introspect', status=200,
+            json={'active': True}, headers={'content-type': 'application/json'},
         )
 
-        IBMCloudIAMDetector().verify(CLOUD_IAM_KEY) == VerifiedResult.VERIFIED_TRUE
+        assert IBMCloudIAMDetector().verify(CLOUD_IAM_KEY) == VerifiedResult.VERIFIED_TRUE
 
     @responses.activate
     def test_verify_invalid_secret_bytes(self):
         responses.add(
-            responses.POST, 'https://iam.cloud.ibm.com/identity/token', status=400,
+            responses.POST, 'https://iam.cloud.ibm.com/identity/introspect', status=200,
+            json={'active': False}, headers={'content-type': 'application/json'},
         )
 
         assert IBMCloudIAMDetector().verify(CLOUD_IAM_KEY_BYTES) == VerifiedResult.VERIFIED_FALSE
@@ -85,7 +88,34 @@ class TestIBMCloudIamDetector:
     @responses.activate
     def test_verify_valid_secret_byes(self):
         responses.add(
-            responses.POST, 'https://iam.cloud.ibm.com/identity/token', status=200,
+            responses.POST, 'https://iam.cloud.ibm.com/identity/introspect', status=200,
+            json={'active': True}, headers={'content-type': 'application/json'},
         )
 
-        IBMCloudIAMDetector().verify(CLOUD_IAM_KEY_BYTES) == VerifiedResult.VERIFIED_TRUE
+        assert IBMCloudIAMDetector().verify(CLOUD_IAM_KEY_BYTES) == VerifiedResult.VERIFIED_TRUE
+
+    @responses.activate
+    def test_verify_bad_response(self):
+        responses.add(
+            responses.POST, 'https://iam.cloud.ibm.com/identity/introspect', status=404,
+        )
+
+        assert IBMCloudIAMDetector().verify(CLOUD_IAM_KEY_BYTES) == VerifiedResult.UNVERIFIED
+
+    @responses.activate
+    def test_verify_invalid_payload(self):
+        responses.add(
+            responses.POST, 'https://iam.cloud.ibm.com/identity/introspect', status=200,
+            json={'not-the-field': 'we expect'}, headers={'content-type': 'application/json'},
+        )
+
+        assert IBMCloudIAMDetector().verify(CLOUD_IAM_KEY) == VerifiedResult.UNVERIFIED
+
+    @responses.activate
+    def test_verify_payload_not_json(self):
+        responses.add(
+            responses.POST, 'https://iam.cloud.ibm.com/identity/introspect', status=200,
+            body='not json', headers={'content-type': 'not/json'},
+        )
+
+        assert IBMCloudIAMDetector().verify(CLOUD_IAM_KEY) == VerifiedResult.UNVERIFIED

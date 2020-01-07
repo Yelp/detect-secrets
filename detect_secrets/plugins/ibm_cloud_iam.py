@@ -27,9 +27,19 @@ class IBMCloudIAMDetector(RegexBasedDetector):
 
     def verify(self, token, **kwargs):
         response = verify_cloud_iam_api_key(token)
+        try:
+            if response.status_code != 200:
+                return VerifiedResult.UNVERIFIED
 
-        return VerifiedResult.VERIFIED_TRUE if response.status_code == 200 \
-            else VerifiedResult.VERIFIED_FALSE
+            if 'active' not in response.json():
+                return VerifiedResult.UNVERIFIED
+
+            if response.json()['active']:
+                return VerifiedResult.VERIFIED_TRUE
+            else:
+                return VerifiedResult.VERIFIED_FALSE
+        except Exception:
+            return VerifiedResult.UNVERIFIED
 
 
 def verify_cloud_iam_api_key(apikey):  # pragma: no cover
@@ -40,10 +50,9 @@ def verify_cloud_iam_api_key(apikey):  # pragma: no cover
         'Accept': 'application/json',
     }
     response = requests.post(
-        'https://iam.cloud.ibm.com/identity/token',
+        'https://iam.cloud.ibm.com/identity/introspect',
         headers=headers,
         data={
-            'grant_type': 'urn:ibm:params:oauth:grant-type:apikey',
             'apikey': apikey,
         },
     )
