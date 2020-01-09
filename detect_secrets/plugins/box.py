@@ -8,6 +8,7 @@ from detect_secrets.core.constants import VerifiedResult
 
 
 class BoxDetector(RegexBasedDetector):
+    """ Scans for Box credentials """
 
     secret_type = 'Box Credentials'
 

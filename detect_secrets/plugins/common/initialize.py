@@ -1,27 +1,6 @@
 """Intelligent initialization of plugins."""
-<<<<<<< HEAD
 from .util import get_mapping_from_secret_type_to_class_name
 from .util import import_plugins
-=======
-from ..artifactory import ArtifactoryDetector               # noqa: F401
-from ..aws import AWSKeyDetector                            # noqa: F401
-from ..base import BasePlugin
-from ..basic_auth import BasicAuthDetector                  # noqa: F401
-from ..box import BoxDetector                               # noqa: F401
-from ..cloudant import CloudantDetector                     # noqa: F401
-from ..common.util import get_mapping_from_secret_type_to_class_name
-from ..db2 import DB2Detector                               # noqa: F401
-from ..gh import GHDetector                                 # noqa: F401
-from ..high_entropy_strings import Base64HighEntropyString  # noqa: F401
-from ..high_entropy_strings import HexHighEntropyString     # noqa: F401
-from ..ibm_cloud_iam import IBMCloudIAMDetector             # noqa: F401
-from ..ibm_cos_hmac import IBMCosHmacDetector               # noqa: F401
-from ..keyword import KeywordDetector                       # noqa: F401
-from ..private_key import PrivateKeyDetector                # noqa: F401
-from ..slack import SlackDetector                           # noqa: F401
-from ..softlayer import SoftLayerDetector                   # noqa: F401
-from ..stripe import StripeDetector                         # noqa: F401
->>>>>>> Add GH detector
 from detect_secrets.core.log import log
 from detect_secrets.core.usage import PluginOptions
 
@@ -81,32 +60,7 @@ def _get_prioritized_parameters(plugins_dict, is_using_default_value_map, prefer
                 yield plugin_name, param_name, param_value
 
 
-<<<<<<< HEAD
 def merge_plugins_from_baseline(baseline_plugins, args, automaton):
-=======
-def remove_non_default_plugins(plugins, args):
-    """
-    :type plugins: tuple of BasePlugin
-    :param plugins: BasePlugin instances from input
-
-    :type args: dict
-    :param args: dictionary of arguments parsed from usage
-
-    :Returns tuple of default plugins if use_all_plugins is not used
-    """
-
-    if args.use_all_plugins:
-        return plugins
-    else:
-        return tuple([
-            plugin
-            for plugin in plugins
-            if vars(plugin)['name'] in PluginOptions.default_plugins_list
-        ])
-
-
-def merge_plugin_from_baseline(baseline_plugins, args):
->>>>>>> Define default plugin list
     """
     :type baseline_plugins: tuple of BasePlugin
     :param baseline_plugins: BasePlugin instances from baseline file
@@ -153,12 +107,8 @@ def merge_plugin_from_baseline(baseline_plugins, args):
         return from_parser_builder(
             plugins_dict,
             exclude_lines_regex=args.exclude_lines,
-<<<<<<< HEAD
             automaton=automaton,
             should_verify_secrets=not args.no_verify,
-=======
-            should_verify_secrets=args.verify,
->>>>>>> No verify by default (#166)
         )
 
     # Use baseline plugin as starting point

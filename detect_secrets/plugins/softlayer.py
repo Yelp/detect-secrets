@@ -7,6 +7,7 @@ from detect_secrets.core.constants import VerifiedResult
 
 
 class SoftLayerDetector(RegexBasedDetector):
+    """ Scans for SoftLayer Credentials """
 
     secret_type = 'SoftLayer Credentials'
 

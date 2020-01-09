@@ -25,7 +25,7 @@ class SecretNotFoundOnSpecifiedLineError(Exception):
     def __init__(self, line):
         super(SecretNotFoundOnSpecifiedLineError, self).__init__(
             'ERROR: Secret not found on line {}!\n'.format(line)
-            + 'Try recreating or updating your baseline to fix this issue.',
+            + 'Try recreating your baseline to fix this issue.',
         )
 
 
@@ -202,7 +202,7 @@ def compare_baselines(old_baseline_filename, new_baseline_filename):
         except SecretNotFoundOnSpecifiedLineError:
             decision = _get_user_decision(prompt_secret_decision=False)
 
-        if decision == 'q':  # pragma: no cover
+        if decision == 'q':
             print('Quitting...')
             break
 
@@ -539,7 +539,7 @@ def _print_context(  # pragma: no cover
         raise error_obj
 
 
-def _get_user_decision(prompt_secret_decision=True, can_step_back=False):  # pragma: no cover
+def _get_user_decision(prompt_secret_decision=True, can_step_back=False):
     """
     :type prompt_secret_decision: bool
     :param prompt_secret_decision: if False, won't ask to label secret.
@@ -551,7 +551,7 @@ def _get_user_decision(prompt_secret_decision=True, can_step_back=False):  # pra
         allowable_user_input.append('b')
 
     user_input = None
-    while user_input not in allowable_user_input:  # pragma: no cover
+    while user_input not in allowable_user_input:
         if user_input:
             print('Invalid input.')
 

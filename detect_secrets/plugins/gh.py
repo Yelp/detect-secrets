@@ -9,6 +9,7 @@ from detect_secrets.core.constants import VerifiedResult
 
 
 class GHDetector(RegexBasedDetector):
+    """ Scans for GitHub credentials """
 
     secret_type = 'GitHub Credentials'
 

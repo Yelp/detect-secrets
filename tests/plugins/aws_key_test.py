@@ -6,7 +6,7 @@ import pytest
 from detect_secrets.core.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.aws import AWSKeyDetector
-from detect_secrets.plugins.aws import get_secret_access_key
+from detect_secrets.plugins.aws import get_secret_access_keys
 from detect_secrets.plugins.aws import verify_aws_secret_access_key
 from testing.mocks import mock_file_object
 
@@ -176,5 +176,5 @@ class TestAWSKeyDetector:
         ),
     ),
 )
-def test_get_secret_access_key(content, expected_output):
+def test_get_secret_access_keys(content, expected_output):
     assert get_secret_access_keys(content) == expected_output

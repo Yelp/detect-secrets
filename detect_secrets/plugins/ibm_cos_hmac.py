@@ -9,6 +9,7 @@ from detect_secrets.core.constants import VerifiedResult
 
 
 class IBMCosHmacDetector(RegexBasedDetector):
+    """ Scans for IBM Cloud Object Storage HMAC keys """
     # requires 3 factors
     #
     #   access_key: access_key_id

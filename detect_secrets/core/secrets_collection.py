@@ -20,23 +20,22 @@ class SecretsCollection:
         plugins=(),
         exclude_files=None,
         exclude_lines=None,
+        word_list_file=None,
+        word_list_hash=None,
         output_raw=False,
         output_verified_false=False,
     ):
         """
         :type plugins: tuple of detect_secrets.plugins.base.BasePlugin
         :param plugins: rules to determine whether a string is a secret
-
         :type exclude_files: str|None
         :param exclude_files: optional regex for ignored paths.
-
         :type exclude_lines: str|None
         :param exclude_lines: optional regex for ignored lines.
-
-        :type version: str
-        :param version: version of detect-secrets that SecretsCollection
-            is valid at.
-
+        :type word_list_file: str|None
+        :param word_list_file: optional word list file for ignoring certain words.
+        :type word_list_hash: str|None
+        :param word_list_hash: optional iterated sha1 hash of the words in the word list.
         :type output_raw: bool|None
         :param output_raw: whether or not to output the raw, unhashed secret
         """
@@ -44,9 +43,11 @@ class SecretsCollection:
         self.plugins = plugins
         self.exclude_files = exclude_files
         self.exclude_lines = exclude_lines
+        self.word_list_file = word_list_file
+        self.word_list_hash = word_list_hash
+        self.version = VERSION
         self.output_raw = output_raw
         self.output_verified_false = output_verified_false
-        self.version = VERSION
 
     @classmethod
     def load_baseline_from_string(cls, string):
@@ -334,10 +335,12 @@ class SecretsCollection:
             log.info('Checking file: %s', filename)
 
             for results, plugin in self._results_accumulator(filename):
-                results.update(plugin.analyze(
-                    f, filename, self.output_raw,
-                    self.output_verified_false,
-                ))
+                results.update(
+                    plugin.analyze(
+                        f, filename, self.output_raw,
+                        self.output_verified_false,
+                    ),
+                )
                 f.seek(0)
 
         except UnicodeDecodeError:

@@ -118,7 +118,7 @@ class HighEntropyStringsTest:
             # Not a string
             '{secret}',
             # id occurs before the string, probably a false-positive
-            'id = "{secret}"',
+            # 'id = "{secret}"',
         ],
     )
     def test_ignored_lines(self, content_to_format):

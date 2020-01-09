@@ -78,6 +78,31 @@ class BasePlugin:
 
         self.should_verify = should_verify
 
+        self.false_positive_heuristics = (
+            false_positive_heuristics
+            if false_positive_heuristics
+            else []
+        )
+
+    @classproperty
+    def disable_flag_text(cls):
+        name = cls.__name__
+        if name.endswith('Detector'):
+            name = name[:-len('Detector')]
+
+        # turn camel case into hyphenated strings
+        name_hyphen = ''
+        for letter in name:
+            if letter.upper() == letter and name_hyphen:
+                name_hyphen += '-'
+            name_hyphen += letter.lower()
+
+        return 'no-{}-scan'.format(name_hyphen)
+
+    @classproperty
+    def default_options(cls):
+        return {}
+
     def analyze(self, file, filename, output_raw=False, output_verified_false=False):
         """
         :param file:     The File object itself.
@@ -89,7 +114,8 @@ class BasePlugin:
                                detect_secrets.core.potential_secret         }
         """
         potential_secrets = {}
-        for line_num, line in enumerate(file.readlines(), start=1):
+        file_lines = tuple(file.readlines())
+        for line_num, line in enumerate(file_lines, start=1):
             results = self.analyze_string(line, line_num, filename, output_raw)
             if not self.should_verify:
                 potential_secrets.update(results)
@@ -141,6 +167,32 @@ class BasePlugin:
             line_num,
             filename,
             output_raw,
+        )
+
+    def analyze_line(self, string, line_num, filename):
+        """
+        :param string:    string; the line to analyze
+        :param line_num:  integer; line number that is currently being analyzed
+        :param filename:  string; name of file being analyzed
+        :returns:         dictionary
+        NOTE: line_num and filename are used for PotentialSecret creation only.
+        """
+        if (
+            any(
+                allowlist_regex.search(string) for allowlist_regex in ALLOWLIST_REGEXES
+            )
+
+            or (
+                self.exclude_lines_regex and
+                self.exclude_lines_regex.search(string)
+            )
+        ):
+            return {}
+
+        return self.analyze_string_content(
+            string,
+            line_num,
+            filename,
         )
 
     @abstractmethod

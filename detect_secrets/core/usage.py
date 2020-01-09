@@ -33,11 +33,12 @@ def add_use_all_plugins_argument(parser):
     )
 
 
-def add_verify_flag(parser):
+def add_no_verify_flag(parser):
     parser.add_argument(
-        '--verify',
+        '-n',
+        '--no-verify',
         action='store_true',
-        help='Enables additional verification of secrets via network call.',
+        help='Disables additional verification of secrets via network call.',
     )
 
 
@@ -66,7 +67,7 @@ class ParserBuilder(object):
             ._add_exclude_lines_argument()\
             ._add_word_list_argument()\
             ._add_use_all_plugins_argument()\
-            ._add_verify_flag() \
+            ._add_no_verify_flag() \
             ._add_output_verified_false_flag()
 
         PluginOptions(self.parser).add_arguments()
@@ -136,8 +137,8 @@ class ParserBuilder(object):
         add_use_all_plugins_argument(self.parser)
         return self
 
-    def _add_verify_flag(self):
-        add_verify_flag(self.parser)
+    def _add_no_verify_flag(self):
+        add_no_verify_flag(self.parser)
         return self
 
     def _add_output_verified_false_flag(self):
@@ -206,7 +207,7 @@ class ScanOptions:
             help='Scan all files recursively (as compared to only scanning git tracked files).',
         )
 
-        add_verify_flag(self.parser)
+        add_no_verify_flag(self.parser)
         add_output_verified_false_flag(self.parser)
 
         return self
@@ -277,35 +278,34 @@ class AuditOptions:
         return self
 
 
-class PluginDescriptor(namedtuple(
-    'PluginDescriptor',
-    [
-        # Classname of plugin; used for initialization
-        'classname',
+class PluginDescriptor(
+    namedtuple(
+        'PluginDescriptor',
+        [
+            # Classname of plugin; used for initialization
+            'classname',
 
-        # Flag to disable plugin. e.g. `--no-hex-string-scan`
-        'disable_flag_text',
+            # Flag to disable plugin. e.g. `--no-hex-string-scan`
+            'disable_flag_text',
 
-        # Description for disable flag.
-        'disable_help_text',
+            # Description for disable flag.
+            'disable_help_text',
 
-        # type: list
-        # Allows the bundling of all related command line provided
-        # arguments together, under one plugin name.
-        # Assumes there is no shared related arg.
-        #
-        # Furthermore, each related arg can have its own default
-        # value (paired together, with a tuple). This allows us to
-        # distinguish the difference between a default value, and
-        # whether a user has entered the same value as a default value.
-        # Therefore, only populate the default value upon consolidation
-        # (rather than relying on argparse default).
-        'related_args',
-
-        # If this plugin is enabled by default
-        'is_default',
-    ],
-)):
+            # type: list
+            # Allows the bundling of all related command line provided
+            # arguments together, under one plugin name.
+            # Assumes there is no shared related arg.
+            #
+            # Furthermore, each related arg can have its own default
+            # value (paired together, with a tuple). This allows us to
+            # distinguish the difference between a default value, and
+            # whether a user has entered the same value as a default value.
+            # Therefore, only populate the default value upon consolidation
+            # (rather than relying on argparse default).
+            'related_args',
+        ],
+    ),
+):
 
     def __new__(cls, related_args=None, **kwargs):
         return super(PluginDescriptor, cls).__new__(
@@ -352,127 +352,17 @@ class PluginDescriptor(namedtuple(
 class PluginOptions:
 
     all_plugins = [
-        PluginDescriptor(
-            classname='HexHighEntropyString',
-            disable_flag_text='--no-hex-string-scan',
-            disable_help_text='Disables scanning for hex high entropy strings.' +
-            ' (Disabled by default)',
-            related_args=[
-                ('--hex-limit', 3,),
-            ],
-            is_default=False,
-        ),
-        PluginDescriptor(
-            classname='Base64HighEntropyString',
-            disable_flag_text='--no-base64-string-scan',
-            disable_help_text='Disables scanning for base64 high entropy strings.' +
-            ' (Disabled by default)',
-            related_args=[
-                ('--base64-limit', 4.5,),
-            ],
-            is_default=False,
-        ),
-        PluginDescriptor(
-            classname='PrivateKeyDetector',
-            disable_flag_text='--no-private-key-scan',
-            disable_help_text='Disables scanning for private keys.',
-            is_default=True,
-        ),
-        PluginDescriptor(
-            classname='BasicAuthDetector',
-            disable_flag_text='--no-basic-auth-scan',
-            disable_help_text='Disables scanning for Basic Auth formatted URIs.',
-            is_default=True,
-        ),
-        PluginDescriptor(
-            classname='KeywordDetector',
-            disable_flag_text='--no-keyword-scan',
-            disable_help_text='Disables scanning for secret keywords. (Disabled by default)',
-            is_default=False,
-        ),
-        PluginDescriptor(
-            classname='AWSKeyDetector',
-            disable_flag_text='--no-aws-key-scan',
-            disable_help_text='Disables scanning for AWS keys.',
-            is_default=True,
-        ),
-        PluginDescriptor(
-            classname='SlackDetector',
-            disable_flag_text='--no-slack-scan',
-            disable_help_text='Disables scanning for Slack tokens.',
-            is_default=True,
-        ),
-        PluginDescriptor(
-            classname='ArtifactoryDetector',
-            disable_flag_text='--no-artifactory-scan',
-            disable_help_text='Disable scanning for Artifactory credentials',
-            is_default=True,
-        ),
-        PluginDescriptor(
-            classname='StripeDetector',
-            disable_flag_text='--no-stripe-scan',
-            disable_help_text='Disable scanning for Stripe keys',
-            is_default=True,
-        ),
-        PluginDescriptor(
-            classname='GHDetector',
-            disable_flag_text='--no-gh-scan',
-            disable_help_text='Disable v2 scanner for GH credentials',
-            is_default=True,
-        ),
-        PluginDescriptor(
-            classname='SoftLayerDetector',
-            disable_flag_text='--no-sl-scan',
-            disable_help_text='Disable scanning for SoftLayer keys',
-            is_default=True,
-        ),
-        PluginDescriptor(
-            classname='DB2Detector',
-            disable_flag_text='--no-db2-scan',
-            disable_help_text='Disable scanning for DB2 credentials',
-            is_default=True,
-        ),
-        PluginDescriptor(
-            classname='IBMCloudIAMDetector',
-            disable_flag_text='--no-ibm-cloud-iam-scan',
-            disable_help_text='Disable scanning for IBM Cloud IAM keys',
-            is_default=True,
-        ),
-        PluginDescriptor(
-            classname='IBMCosHmacDetector',
-            disable_flag_text='--no-ibm-cos-hmac-scan',
-            disable_help_text='Disable scanning for IBM Cloud Object Storage HMAC keys',
-            is_default=True,
-        ),
-        PluginDescriptor(
-            classname='BoxDetector',
-            disable_flag_text='--no-box-scan',
-            disable_help_text='Disable scanning for Box API credentials',
-            is_default=True,
-        ),
-        PluginDescriptor(
-            classname='CloudantDetector',
-            disable_flag_text='--no-cloudant-scan',
-            disable_help_text='Disable scanning for Cloudant credentials',
-            is_default=True,
-        ),
-    ]
-
-    default_plugins_list = [
-        plugin.classname for plugin in all_plugins if plugin.is_default
+        PluginDescriptor.from_plugin_class(plugin, name)
+        for name, plugin in import_plugins().items()
     ]
 
     def __init__(self, parser):
-        default_plugins_name_list = ', '.join(self.default_plugins_list)
         self.parser = parser.add_argument_group(
             title='plugins',
             description=(
                 'Configure settings for each secret scanning '
-                'ruleset. By default, only selected plugins are enabled. '
-                'Some high false positive ratio plugins such as keyword '
-                'and entropy based scans are disabled. You can explicitly '
-                'enable them to use more scans. '
-                'The default plugins are %s.' % default_plugins_name_list
+                'ruleset. By default, all plugins are enabled '
+                'unless explicitly disabled.'
             ),
         )
 

@@ -3,8 +3,10 @@ import os
 import re
 import subprocess
 
+from detect_secrets import util
 from detect_secrets.core.log import get_logger
 from detect_secrets.core.secrets_collection import SecretsCollection
+
 
 log = get_logger(format_string='%(message)s')
 
@@ -39,12 +41,15 @@ def initialize(
 
     :type should_scan_all_files: bool
     :type output_raw: bool
+    :type output_verified_false: bool
     :rtype: SecretsCollection
     """
     output = SecretsCollection(
         plugins,
         exclude_files=exclude_files_regex,
         exclude_lines=exclude_lines_regex,
+        word_list_file=word_list_file,
+        word_list_hash=word_list_hash,
         output_raw=output_raw,
         output_verified_false=output_verified_false,
     )
@@ -285,8 +290,8 @@ def _get_git_tracked_files(rootdir='.'):
             git_files = subprocess.check_output(
                 [
                     'git',
+                    '-C', rootdir,
                     'ls-files',
-                    rootdir,
                 ],
                 stderr=fnull,
             )

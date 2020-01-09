@@ -22,7 +22,7 @@ class TestGHDetector(object):
             ('git-token => "abcdef0123456789abcdef0123456789abcdef01"', True),
             ('"GHE_API_KEY": "abcdef0123456789abcdef0123456789abcdef01"', True),
             ('GITHUB_API_TOKEN := "abcdef0123456789abcdef0123456789abcdef01"', True),
-            ('https://username:abcdef0123456789abcdef0123456789abcdef01@github.ibm.com', True,),
+            ('https://username:abcdef0123456789abcdef0123456789abcdef01@github.ibm.com', True),
             (
                 'https://username:abcdef0123456789abcdef0123456789abcdef01@'
                 'api.github.ibm.com', True,
@@ -32,9 +32,9 @@ class TestGHDetector(object):
                 'Authorization: Basic '
                 'YWJjZWRmYWJlZmQzMzMzMTQ1OTA4YWJjZGRmY2JkZGUxMTQ1Njc4OQo=', True,
             ),
-            ('password abcdef0123456789abcdef0123456789abcdef01', True,),
-            ('git+https://abcdef0123456789abcdef0123456789abcdef01@github.ibm.com', True,),
-            ('sonar.github.oauth=abcdef0123456789abcdef0123456789abcdef01', True,),
+            ('password abcdef0123456789abcdef0123456789abcdef01', True),
+            ('git+https://abcdef0123456789abcdef0123456789abcdef01@github.ibm.com', True),
+            ('sonar.github.oauth=abcdef0123456789abcdef0123456789abcdef01', True),
             (
                 'https://x-oauth-basic:abcdef0123456789abcdef0123456789abcdef01'
                 '@github.ibm.com/org/repo.git', True,

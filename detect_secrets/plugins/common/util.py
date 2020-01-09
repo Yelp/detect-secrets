@@ -3,23 +3,12 @@ try:
 except ImportError:  # pragma: no cover
     from functools32 import lru_cache
 
-# These plugins need to be imported here so that globals()
-# can find them.
-from ..artifactory import ArtifactoryDetector               # noqa: F401
-from ..aws import AWSKeyDetector                            # noqa: F401
-from ..base import BasePlugin
-from ..basic_auth import BasicAuthDetector                  # noqa: F401
-from ..box import BoxDetector                               # noqa: F401
-from ..cloudant import CloudantDetector                     # noqa: F401
-from ..db2 import DB2Detector                               # noqa: F401
-from ..high_entropy_strings import Base64HighEntropyString  # noqa: F401
-from ..high_entropy_strings import HexHighEntropyString     # noqa: F401
-from ..ibm_cloud_iam import IBMCloudIAMDetector             # noqa: F401
-from ..ibm_cos_hmac import IBMCosHmacDetector               # noqa: F401
-from ..keyword import KeywordDetector                       # noqa: F401
-from ..private_key import PrivateKeyDetector                # noqa: F401
-from ..slack import SlackDetector                           # noqa: F401
-from ..stripe import StripeDetector                         # noqa: F401
+import os
+from abc import abstractproperty
+from importlib import import_module
+
+from detect_secrets.plugins.base import BasePlugin
+from detect_secrets.util import get_root_directory
 
 
 @lru_cache(maxsize=1)

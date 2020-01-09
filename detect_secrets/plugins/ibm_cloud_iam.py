@@ -7,6 +7,7 @@ from detect_secrets.core.constants import VerifiedResult
 
 
 class IBMCloudIAMDetector(RegexBasedDetector):
+    """ Scans for IBM Cloud IAM credentials """
 
     secret_type = 'IBM Cloud IAM Key'
 

@@ -91,6 +91,8 @@ class TestMain:
             should_scan_all_files=False,
             output_raw=False,
             output_verified_false=False,
+            word_list_file=None,
+            word_list_hash=None,
         )
 
     def test_scan_with_rootdir(self, mock_baseline_initialize):
@@ -105,6 +107,8 @@ class TestMain:
             should_scan_all_files=False,
             output_raw=False,
             output_verified_false=False,
+            word_list_file=None,
+            word_list_hash=None,
         )
 
     def test_scan_with_exclude_args(self, mock_baseline_initialize):
@@ -121,38 +125,8 @@ class TestMain:
             should_scan_all_files=False,
             output_raw=False,
             output_verified_false=False,
-        )
-
-    def test_scan_with_output_raw(self, mock_baseline_initialize):
-        with mock_stdin():
-            assert main(
-                'scan --output-raw'.split(),
-            ) == 0
-
-        mock_baseline_initialize.assert_called_once_with(
-            plugins=Any(tuple),
-            exclude_files_regex=None,
-            exclude_lines_regex=None,
-            path='.',
-            should_scan_all_files=False,
-            output_raw=True,
-            output_verified_false=False,
-        )
-
-    def test_scan_with_output_verified_false(self, mock_baseline_initialize):
-        with mock_stdin():
-            assert main(
-                'scan --verify --output-verified-false'.split(),
-            ) == 0
-
-        mock_baseline_initialize.assert_called_once_with(
-            plugins=Any(tuple),
-            exclude_files_regex=None,
-            exclude_lines_regex=None,
-            path='.',
-            should_scan_all_files=False,
-            output_raw=False,
-            output_verified_false=True,
+            word_list_file=None,
+            word_list_hash=None,
         )
 
     @pytest.mark.parametrize(
@@ -187,56 +161,11 @@ class TestMain:
         ), mock_printer(
             main_module,
         ) as printer_shim:
-            assert main('scan --use-all-plugins --string'.split()) == 0
-            assert uncolor(printer_shim.message) == textwrap.dedent("""
-                AWSKeyDetector         : False
-                ArtifactoryDetector    : False
-                Base64HighEntropyString: {}
-                BasicAuthDetector      : False
-                BoxDetector            : False
-                CloudantDetector       : False
-                DB2Detector            : False
-                GHDetector             : False
-                HexHighEntropyString   : {}
-                IBMCloudIAMDetector    : False
-                IBMCosHmacDetector     : False
-                KeywordDetector        : False
-                PrivateKeyDetector     : False
-                SlackDetector          : False
-                SoftLayerDetector      : False
-                StripeDetector         : False
-            """.format(
-                expected_base64_result,
-                expected_hex_result,
-            ))[1:]
-
-        mock_baseline_initialize.assert_not_called()
-
-    def test_scan_string_basic_default(
-        self,
-        mock_baseline_initialize,
-    ):
-        with mock_stdin(
-            '012345678ab',
-        ), mock_printer(
-            main_module,
-        ) as printer_shim:
             assert main('scan --string'.split()) == 0
-            assert uncolor(printer_shim.message) == textwrap.dedent("""
-                AWSKeyDetector     : False
-                ArtifactoryDetector: False
-                BasicAuthDetector  : False
-                BoxDetector        : False
-                CloudantDetector   : False
-                DB2Detector        : False
-                GHDetector         : False
-                IBMCloudIAMDetector: False
-                IBMCosHmacDetector : False
-                PrivateKeyDetector : False
-                SlackDetector      : False
-                SoftLayerDetector  : False
-                StripeDetector     : False
-            """)[1:]
+            assert uncolor(printer_shim.message) == get_plugin_report({
+                'Base64HighEntropyString': expected_base64_result,
+                'HexHighEntropyString': expected_hex_result,
+            })
 
         mock_baseline_initialize.assert_not_called()
 
@@ -246,25 +175,11 @@ class TestMain:
         ), mock_printer(
             main_module,
         ) as printer_shim:
-            assert main('scan --use-all-plugins --string 012345'.split()) == 0
-            assert uncolor(printer_shim.message) == textwrap.dedent("""
-                AWSKeyDetector         : False
-                ArtifactoryDetector    : False
-                Base64HighEntropyString: False (2.585)
-                BasicAuthDetector      : False
-                BoxDetector            : False
-                CloudantDetector       : False
-                DB2Detector            : False
-                GHDetector             : False
-                HexHighEntropyString   : False (2.121)
-                IBMCloudIAMDetector    : False
-                IBMCosHmacDetector     : False
-                KeywordDetector        : False
-                PrivateKeyDetector     : False
-                SlackDetector          : False
-                SoftLayerDetector      : False
-                StripeDetector         : False
-            """)[1:]
+            assert main('scan --string 012345'.split()) == 0
+            assert uncolor(printer_shim.message) == get_plugin_report({
+                'Base64HighEntropyString': 'False (2.585)',
+                'HexHighEntropyString': 'False (2.121)',
+            })
 
     def test_scan_with_all_files_flag(self, mock_baseline_initialize):
         with mock_stdin():
@@ -278,6 +193,8 @@ class TestMain:
             should_scan_all_files=True,
             output_raw=False,
             output_verified_false=False,
+            word_list_file=None,
+            word_list_hash=None,
         )
 
     def test_reads_from_stdin(self, mock_merge_baseline):
@@ -377,58 +294,14 @@ class TestMain:
                     },
                 ],
                 '--use-all-plugins',
-                [
-                    {
-                        'name': 'AWSKeyDetector',
-                    },
-                    {
-                        'name': 'ArtifactoryDetector',
-                    },
-                    {
-                        'base64_limit': 1.5,
-                        'name': 'Base64HighEntropyString',
-                    },
-                    {
-                        'name': 'BasicAuthDetector',
-                    },
-                    {
-                        'name': 'BoxDetector',
-                    },
-                    {
-                        'name': 'CloudantDetector',
-                    },
-                    {
-                        'name': 'DB2Detector',
-                    },
-                    {
-                        'name': 'GHDetector',
-                    },
-                    {
-                        'hex_limit': 3,
-                        'name': 'HexHighEntropyString',
-                    },
-                    {
-                        'name': 'IBMCloudIAMDetector',
-                    },
-                    {
-                        'name': 'IBMCosHmacDetector',
-                    },
-                    {
-                        'name': 'KeywordDetector',
-                    },
-                    {
-                        'name': 'PrivateKeyDetector',
-                    },
-                    {
-                        'name': 'SlackDetector',
-                    },
-                    {
-                        'name': 'SoftLayerDetector',
-                    },
-                    {
-                        'name': 'StripeDetector',
-                    },
-                ],
+                get_list_of_plugins(
+                    include=[
+                        {
+                            'base64_limit': 1.5,
+                            'name': 'Base64HighEntropyString',
+                        },
+                    ],
+                ),
             ),
             (  # Remove some plugins from all plugins
                 [
@@ -439,51 +312,12 @@ class TestMain:
                 ],
 
                 '--use-all-plugins --no-base64-string-scan --no-private-key-scan',
-                [
-                    {
-                        'name': 'AWSKeyDetector',
-                    },
-                    {
-                        'name': 'ArtifactoryDetector',
-                    },
-                    {
-                        'name': 'BasicAuthDetector',
-                    },
-                    {
-                        'name': 'BoxDetector',
-                    },
-                    {
-                        'name': 'CloudantDetector',
-                    },
-                    {
-                        'name': 'DB2Detector',
-                    },
-                    {
-                        'name': 'GHDetector',
-                    },
-                    {
-                        'hex_limit': 3,
-                        'name': 'HexHighEntropyString',
-                    },
-                    {
-                        'name': 'IBMCloudIAMDetector',
-                    },
-                    {
-                        'name': 'IBMCosHmacDetector',
-                    },
-                    {
-                        'name': 'KeywordDetector',
-                    },
-                    {
-                        'name': 'SlackDetector',
-                    },
-                    {
-                        'name': 'SoftLayerDetector',
-                    },
-                    {
-                        'name': 'StripeDetector',
-                    },
-                ],
+                get_list_of_plugins(
+                    exclude=(
+                        'Base64HighEntropyString',
+                        'PrivateKeyDetector',
+                    ),
+                ),
             ),
             (  # Use same plugin list from baseline
                 [
@@ -550,51 +384,18 @@ class TestMain:
                     },
                 ],
                 '--use-all-plugins --base64-limit=5.5 --no-hex-string-scan --no-keyword-scan',
-                [
-                    {
-                        'name': 'AWSKeyDetector',
-                    },
-                    {
-                        'name': 'ArtifactoryDetector',
-                    },
-                    {
-                        'base64_limit': 5.5,
-                        'name': 'Base64HighEntropyString',
-                    },
-                    {
-                        'name': 'BasicAuthDetector',
-                    },
-                    {
-                        'name': 'BoxDetector',
-                    },
-                    {
-                        'name': 'CloudantDetector',
-                    },
-                    {
-                        'name': 'DB2Detector',
-                    },
-                    {
-                        'name': 'GHDetector',
-                    },
-                    {
-                        'name': 'IBMCloudIAMDetector',
-                    },
-                    {
-                        'name': 'IBMCosHmacDetector',
-                    },
-                    {
-                        'name': 'PrivateKeyDetector',
-                    },
-                    {
-                        'name': 'SlackDetector',
-                    },
-                    {
-                        'name': 'SoftLayerDetector',
-                    },
-                    {
-                        'name': 'StripeDetector',
-                    },
-                ],
+                get_list_of_plugins(
+                    include=[
+                        {
+                            'base64_limit': 5.5,
+                            'name': 'Base64HighEntropyString',
+                        },
+                    ],
+                    exclude=(
+                        'HexHighEntropyString',
+                        'KeywordDetector',
+                    ),
+                ),
             ),
             (  # Use plugin limit from baseline when using --use-all-plugins and no input limit
                 [
@@ -607,51 +408,18 @@ class TestMain:
                     },
                 ],
                 '--use-all-plugins --no-hex-string-scan --no-keyword-scan',
-                [
-                    {
-                        'name': 'AWSKeyDetector',
-                    },
-                    {
-                        'name': 'ArtifactoryDetector',
-                    },
-                    {
-                        'base64_limit': 2.5,
-                        'name': 'Base64HighEntropyString',
-                    },
-                    {
-                        'name': 'BasicAuthDetector',
-                    },
-                    {
-                        'name': 'BoxDetector',
-                    },
-                    {
-                        'name': 'CloudantDetector',
-                    },
-                    {
-                        'name': 'DB2Detector',
-                    },
-                    {
-                        'name': 'GHDetector',
-                    },
-                    {
-                        'name': 'IBMCloudIAMDetector',
-                    },
-                    {
-                        'name': 'IBMCosHmacDetector',
-                    },
-                    {
-                        'name': 'PrivateKeyDetector',
-                    },
-                    {
-                        'name': 'SlackDetector',
-                    },
-                    {
-                        'name': 'SoftLayerDetector',
-                    },
-                    {
-                        'name': 'StripeDetector',
-                    },
-                ],
+                get_list_of_plugins(
+                    include=[
+                        {
+                            'base64_limit': 2.5,
+                            'name': 'Base64HighEntropyString',
+                        },
+                    ],
+                    exclude=(
+                        'HexHighEntropyString',
+                        'KeywordDetector',
+                    ),
+                ),
             ),
         ],
     )
@@ -729,7 +497,7 @@ class TestMain:
             # To extract the baseline output
             main_module,
         ) as printer_shim:
-            main(['scan', '--use-all-plugins', filename])
+            main(['scan', filename])
             baseline = printer_shim.message
 
         baseline_dict = json.loads(baseline)
@@ -766,50 +534,33 @@ class TestMain:
                 expected_output,
             )
 
-    def test_scan_with_default_plugin(self):
-        filename = 'test_data/short_files/last_line.ini'
-        plugins_used = [
-            {
-                'name': 'AWSKeyDetector',
-            },
-            {
-                'name': 'ArtifactoryDetector',
-            },
-            {
-                'name': 'BasicAuthDetector',
-            },
-            {
-                'name': 'BoxDetector',
-            },
-            {
-                'name': 'CloudantDetector',
-            },
-            {
-                'name': 'DB2Detector',
-            },
-            {
-                'name': 'GHDetector',
-            },
-            {
-                'name': 'IBMCloudIAMDetector',
-            },
-            {
-                'name': 'IBMCosHmacDetector',
-            },
-            {
-                'name': 'PrivateKeyDetector',
-            },
-            {
-                'name': 'SlackDetector',
-            },
-            {
-                'name': 'SoftLayerDetector',
-            },
-            {
-                'name': 'StripeDetector',
-            },
-        ]
-
+    @pytest.mark.parametrize(
+        'filename, expected_output',
+        [
+            (
+                'test_data/short_files/first_line.php',
+                {
+                    'KeywordDetector': {
+                        'config': {
+                            'name': 'KeywordDetector',
+                            'keyword_exclude': None,
+                        },
+                        'results': {
+                            'false-positives': {},
+                            'true-positives': {},
+                            'unknowns': {
+                                'test_data/short_files/first_line.php': [{
+                                    'line': "secret = 'notHighEnoughEntropy'",
+                                    'plaintext': 'nothighenoughentropy',
+                                }],
+                            },
+                        },
+                    },
+                },
+            ),
+        ],
+    )
+    def test_audit_display_results(self, filename, expected_output):
         with mock_stdin(), mock_printer(
             main_module,
         ) as printer_shim:

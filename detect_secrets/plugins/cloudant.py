@@ -7,6 +7,7 @@ from detect_secrets.core.constants import VerifiedResult
 
 
 class CloudantDetector(RegexBasedDetector):
+    """ Scans for Cloudant Credentials """
 
     secret_type = 'Cloudant Credentials'
 

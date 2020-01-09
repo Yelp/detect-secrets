@@ -212,8 +212,6 @@ class TestPreCommitHook:
                     'name': 'GHDetectorV2',
                 },
                 {
-=======
->>>>>>> Delete GHDetector V1 (#186)
                     'hex_limit': 3,
                     'name': 'HexHighEntropyString',
                 },
@@ -239,7 +237,7 @@ class TestPreCommitHook:
                 {
                     'name': 'StripeDetector',
                 },
-            ]
+            ])
 
     def test_writes_new_baseline_if_modified(self):
         baseline_string = _create_baseline()

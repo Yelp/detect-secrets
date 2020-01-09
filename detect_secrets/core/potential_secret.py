@@ -58,14 +58,6 @@ class PotentialSecret:
         self.verified_result = None
         self.other_factors = {}
 
-        # If two PotentialSecrets have the same values for these fields,
-        # they are considered equal. Note that line numbers aren't included
-        # in this, because line numbers are subject to change.
-        self.fields_to_compare = ['filename', 'secret_hash', 'type']
-
-    def set_secret(self, secret):
-        self.secret_hash = self.hash_secret(secret)
-
         # NOTE: Originally, we never wanted to keep the secret value in memory,
         #       after finding it in the codebase. However, to support verifiable
         #       secrets (and avoid the pain of re-scanning again), we need to
@@ -76,10 +68,15 @@ class PotentialSecret:
         #       in the repository.
         self.secret_value = secret
         self.output_raw = output_raw
+
         # If two PotentialSecrets have the same values for these fields,
         # they are considered equal. Note that line numbers aren't included
         # in this, because line numbers are subject to change.
         self.fields_to_compare = ['filename', 'secret_hash', 'type']
+
+    def set_secret(self, secret):
+        self.secret_hash = self.hash_secret(secret)
+        self.secret_value = secret
 
     @staticmethod
     def hash_secret(secret):

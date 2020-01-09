@@ -87,6 +87,28 @@ class HighEntropyStringsPlugin(BasePlugin):
 
         return entropy
 
+    @staticmethod
+    def _filter_false_positives_with_line_ctx(potential_secrets, line):
+        return {
+            key: value for key, value in potential_secrets.items()
+            if not is_false_positive_with_line_context(
+                key.secret_value,
+                line,
+            )
+        }
+
+    def analyze_line(self, string, line_num, filename):
+        output = super(HighEntropyStringsPlugin, self).analyze_line(
+            string,
+            line_num,
+            filename,
+        )
+
+        return self._filter_false_positives_with_line_ctx(
+            output,
+            string,
+        )
+
     def analyze_string_content(self, string, line_num, filename, output_raw=False):
         """Searches string for custom pattern, and captures all high entropy strings that
         match self.regex, with a limit defined as self.entropy_limit.
@@ -97,7 +119,6 @@ class HighEntropyStringsPlugin(BasePlugin):
             if self.is_secret_false_positive(result):
                 continue
 
-            secret = PotentialSecret(self.secret_type, filename, result, line_num)
             secret = PotentialSecret(
                 self.secret_type,
                 filename,

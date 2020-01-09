@@ -9,6 +9,7 @@ from detect_secrets.core.constants import VerifiedResult
 
 
 class DB2Detector(RegexBasedDetector):
+    """ Scans for DB2 Credentials """
 
     secret_type = 'DB2 Credentials'
 
