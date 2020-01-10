@@ -4,6 +4,7 @@ import re
 
 import ibm_db
 
+from .base import classproperty
 from .base import RegexBasedDetector
 from detect_secrets.core.constants import VerifiedResult
 
@@ -57,6 +58,10 @@ class DB2Detector(RegexBasedDetector):
         r'((?:(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)'
         r'*(?:.\[A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]))'
     )
+
+    @classproperty
+    def disable_flag_text(cls):
+        return 'no-db2-scan'
 
     def verify(self, token, content, potential_secret, timeout=5):
 

@@ -4,6 +4,7 @@ import hmac
 
 import requests
 
+from .base import classproperty
 from .base import RegexBasedDetector
 from detect_secrets.core.constants import VerifiedResult
 
@@ -28,6 +29,10 @@ class IBMCosHmacDetector(RegexBasedDetector):
             password_regex=password,
         ),
     )
+
+    @classproperty
+    def disable_flag_text(cls):
+        return 'no-ibm-cos-hmac-scan'
 
     def verify(self, token, content, potential_secret=None):
         key_id_matches = find_access_key_id(content)

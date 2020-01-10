@@ -26,6 +26,7 @@ THE SOFTWARE.
 """
 import re
 
+from .base import classproperty
 from .base import RegexBasedDetector
 
 
@@ -52,3 +53,7 @@ class PrivateKeyDetector(RegexBasedDetector):
             r'PuTTY-User-Key-File-2',
         )
     ]
+
+    @classproperty
+    def disable_flag_text(cls):
+        return 'no-private-key-scan'

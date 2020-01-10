@@ -3,6 +3,7 @@ This plugin searches for Twilio API keys
 """
 import re
 
+from .base import classproperty
 from .base import RegexBasedDetector
 
 
@@ -17,3 +18,7 @@ class TwilioKeyDetector(RegexBasedDetector):
         # Auth token (SKxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx)
         re.compile(r'SK[a-z0-9]{32}'),
     ]
+
+    @classproperty
+    def disable_flag_text(cls):
+        return 'no-twilio-scan'

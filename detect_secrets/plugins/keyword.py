@@ -258,6 +258,10 @@ class KeywordDetector(BasePlugin):
     secret_type = 'Secret Keyword'
 
     @classproperty
+    def disable_flag_text(cls):
+        return 'no-keyword-scan'
+
+    @classproperty
     def default_options(cls):
         return {
             'keyword_exclude': None,

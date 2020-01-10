@@ -2,6 +2,7 @@ import re
 
 import requests
 
+from .base import classproperty
 from .base import RegexBasedDetector
 from detect_secrets.core.constants import VerifiedResult
 
@@ -27,6 +28,10 @@ class SoftLayerDetector(RegexBasedDetector):
             flags=re.IGNORECASE,
         ),
     ]
+
+    @classproperty
+    def disable_flag_text(cls):
+        return 'no-softlayer-scan'
 
     def verify(self, token, content, potential_secret=None):
         usernames = find_username(content)
