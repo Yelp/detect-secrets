@@ -3,7 +3,6 @@ from __future__ import absolute_import
 from boxsdk import Client
 from boxsdk import JWTAuth
 
-from .base import classproperty
 from .base import RegexBasedDetector
 from detect_secrets.core.constants import VerifiedResult
 
@@ -44,10 +43,6 @@ class BoxDetector(RegexBasedDetector):
     enterpriseid_prefix = r'(?:enterprise)'
     enterpriseid_factor_keyword = r'(?:id)'
     enterpriseid_factor = r'([0-9]+)'
-
-    @classproperty
-    def disable_flag_text(cls):
-        return 'no-box-scan'
 
     def verify(self, token, content, potential_secret):
         clientid_matches = find_other_factor(

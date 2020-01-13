@@ -6,7 +6,6 @@ from base64 import b64encode
 
 import requests
 
-from .base import classproperty
 from .base import RegexBasedDetector
 from detect_secrets.core.constants import VerifiedResult
 
@@ -18,10 +17,6 @@ class MailchimpDetector(RegexBasedDetector):
     denylist = (
         re.compile(r'[0-9a-z]{32}-us[0-9]{1,2}'),
     )
-
-    @classproperty
-    def disable_flag_text(cls):
-        return 'no-mailchimp-scan'
 
     def verify(self, token, **kwargs):  # pragma: no cover
         _, datacenter_number = token.split('-us')

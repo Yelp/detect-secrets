@@ -3,7 +3,6 @@ from base64 import b64encode
 
 import requests
 
-from .base import classproperty
 from .base import RegexBasedDetector
 from detect_secrets.core.constants import VerifiedResult
 
@@ -16,10 +15,6 @@ class StripeDetector(RegexBasedDetector):
         # Stripe standard keys begin with sk_live and restricted with rk_live
         re.compile(r'(?:r|s)k_live_[0-9a-zA-Z]{24}'),
     )
-
-    @classproperty
-    def disable_flag_text(cls):
-        return 'no-stripe-scan'
 
     def verify(self, token, **kwargs):  # pragma: no cover
         response = requests.get(

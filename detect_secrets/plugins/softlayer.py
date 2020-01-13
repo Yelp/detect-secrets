@@ -2,12 +2,11 @@ import re
 
 import requests
 
-from .base import classproperty
 from .base import RegexBasedDetector
 from detect_secrets.core.constants import VerifiedResult
 
 
-class SoftLayerDetector(RegexBasedDetector):
+class SoftlayerDetector(RegexBasedDetector):
     """ Scans for SoftLayer Credentials """
 
     secret_type = 'SoftLayer Credentials'
@@ -29,10 +28,6 @@ class SoftLayerDetector(RegexBasedDetector):
         ),
     ]
 
-    @classproperty
-    def disable_flag_text(cls):
-        return 'no-softlayer-scan'
-
     def verify(self, token, content, potential_secret=None):
         usernames = find_username(content)
         if not usernames:
@@ -51,7 +46,7 @@ def find_username(content):
     username = r'(\w(?:\w|_|@|\.|-)+)'
     regex = re.compile(
         RegexBasedDetector.assign_regex_generator(
-            prefix_regex=SoftLayerDetector.sl,
+            prefix_regex=SoftlayerDetector.sl,
             password_keyword_regex=username_keyword,
             password_regex=username,
         ),

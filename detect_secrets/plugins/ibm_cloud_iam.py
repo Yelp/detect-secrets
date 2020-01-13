@@ -2,7 +2,6 @@ from __future__ import absolute_import
 
 import requests
 
-from .base import classproperty
 from .base import RegexBasedDetector
 from detect_secrets.core.constants import VerifiedResult
 
@@ -26,10 +25,6 @@ class IbmCloudIamDetector(RegexBasedDetector):
             password_regex=secret,
         ),
     ]
-
-    @classproperty
-    def disable_flag_text(cls):
-        return 'no-ibm-cloud-iam-scan'
 
     def verify(self, token, **kwargs):
         response = verify_cloud_iam_api_key(token)

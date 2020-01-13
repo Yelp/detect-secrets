@@ -1,6 +1,5 @@
 import re
 
-from .base import classproperty
 from .base import RegexBasedDetector
 
 
@@ -16,10 +15,6 @@ SUB_DELIMITER_CHARACTERS = '!$&\'()*+,;='
 class BasicAuthDetector(RegexBasedDetector):
     """Scans for Basic Auth formatted URIs."""
     secret_type = 'Basic Auth Credentials'
-
-    @classproperty
-    def disable_flag_text(cls):
-        return 'no-basic-auth-scan'
 
     denylist = [
         re.compile(
