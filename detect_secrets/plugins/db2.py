@@ -3,7 +3,6 @@ from __future__ import absolute_import
 import re
 
 import ibm_db
-import requests
 
 from .base import classproperty
 from .base import RegexBasedDetector
@@ -135,7 +134,7 @@ def verify_db2_credentials(
             return VerifiedResult.VERIFIED_TRUE
         else:
             return VerifiedResult.VERIFIED_FALSE
-    except requests.exceptions.RequestException as e:
+    except Exception as e:
         if 'Timeout' in str(e):
             return VerifiedResult.UNVERIFIED
         else:

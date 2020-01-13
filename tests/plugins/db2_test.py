@@ -3,7 +3,6 @@ from __future__ import absolute_import
 import textwrap
 
 import pytest
-import requests
 from mock import MagicMock
 from mock import patch
 
@@ -78,7 +77,7 @@ class TestGheDetector(object):
 
     @patch('detect_secrets.plugins.db2.ibm_db.connect')
     def test_verify_invalid_connect_throws_exception(self, mock_db2_connect):
-        mock_db2_connect.side_effect = requests.exceptions.RequestException('oops')
+        mock_db2_connect.side_effect = Exception('oops')
 
         potential_secret = PotentialSecret('test db2', 'test filename', DB2_PASSWORD)
         assert Db2Detector().verify(
@@ -180,7 +179,7 @@ class TestGheDetector(object):
 
     @patch('detect_secrets.plugins.db2.ibm_db.connect')
     def test_verify_times_out(self, mock_db2_connect):
-        mock_db2_connect.side_effect = requests.exceptions.RequestException('Timeout')
+        mock_db2_connect.side_effect = Exception('Timeout')
 
         potential_secret = PotentialSecret('test db2', 'test filename', DB2_PASSWORD)
         assert Db2Detector().verify(
