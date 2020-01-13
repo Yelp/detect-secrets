@@ -9,7 +9,7 @@ from .base import RegexBasedDetector
 from detect_secrets.core.constants import VerifiedResult
 
 
-class IBMCosHmacDetector(RegexBasedDetector):
+class IbmCosHmacDetector(RegexBasedDetector):
     """ Scans for IBM Cloud Object Storage HMAC keys """
     # requires 3 factors
     #
@@ -48,7 +48,7 @@ class IBMCosHmacDetector(RegexBasedDetector):
                 if verify_result is True:
                     potential_secret.other_factors['access_key_id'] = key_id
                     return VerifiedResult.VERIFIED_TRUE
-        except Exception:
+        except requests.exceptions.RequestException:
             return VerifiedResult.UNVERIFIED
 
         return VerifiedResult.VERIFIED_FALSE
@@ -59,7 +59,7 @@ def find_access_key_id(content):
     key_id_regex = r'([a-f0-9]{32})'
 
     regex = RegexBasedDetector.assign_regex_generator(
-        prefix_regex=IBMCosHmacDetector.token_prefix,
+        prefix_regex=IbmCosHmacDetector.token_prefix,
         password_keyword_regex=key_id_keyword_regex,
         password_regex=key_id_regex,
     )

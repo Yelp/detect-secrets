@@ -78,5 +78,5 @@ def verify_softlayer_key(username, token, potential_secret=None):
             return VerifiedResult.VERIFIED_TRUE
         else:
             return VerifiedResult.VERIFIED_FALSE
-    except Exception:
+    except requests.exceptions.RequestException:
         return VerifiedResult.UNVERIFIED

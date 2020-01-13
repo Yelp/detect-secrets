@@ -3,13 +3,14 @@ from __future__ import absolute_import
 import re
 
 import ibm_db
+import requests
 
 from .base import classproperty
 from .base import RegexBasedDetector
 from detect_secrets.core.constants import VerifiedResult
 
 
-class DB2Detector(RegexBasedDetector):
+class Db2Detector(RegexBasedDetector):
     """ Scans for DB2 Credentials """
 
     secret_type = 'DB2 Credentials'
@@ -134,7 +135,7 @@ def verify_db2_credentials(
             return VerifiedResult.VERIFIED_TRUE
         else:
             return VerifiedResult.VERIFIED_FALSE
-    except Exception as e:
+    except requests.exceptions.RequestException as e:
         if 'Timeout' in str(e):
             return VerifiedResult.UNVERIFIED
         else:
@@ -143,7 +144,7 @@ def verify_db2_credentials(
 
 def find_other_factor(content, factor_keyword_regex, factor_regex):
     regex = RegexBasedDetector.assign_regex_generator(
-        prefix_regex=DB2Detector.opt_db,
+        prefix_regex=Db2Detector.opt_db,
         password_keyword_regex=factor_keyword_regex,
         password_regex=factor_regex,
     )

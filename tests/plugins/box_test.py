@@ -28,10 +28,10 @@ class TestBoxDetector(object):
             ('"clientSecret": "12345678abcdnotenough"', False),
         ],
     )
-    def test_analyze_string(self, payload, should_flag):
+    def test_analyze_line(self, payload, should_flag):
         logic = BoxDetector()
 
-        output = logic.analyze_string(payload, 1, 'mock_filename')
+        output = logic.analyze_line(payload, 1, 'mock_filename')
         assert len(output) == int(should_flag)
 
     @patch('detect_secrets.plugins.box.JWTAuth')

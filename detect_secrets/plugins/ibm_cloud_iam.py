@@ -7,7 +7,7 @@ from .base import RegexBasedDetector
 from detect_secrets.core.constants import VerifiedResult
 
 
-class IBMCloudIAMDetector(RegexBasedDetector):
+class IbmCloudIamDetector(RegexBasedDetector):
     """ Scans for IBM Cloud IAM credentials """
 
     secret_type = 'IBM Cloud IAM Key'
@@ -44,7 +44,7 @@ class IBMCloudIAMDetector(RegexBasedDetector):
                 return VerifiedResult.VERIFIED_TRUE
             else:
                 return VerifiedResult.VERIFIED_FALSE
-        except Exception:
+        except requests.exceptions.RequestException:
             return VerifiedResult.UNVERIFIED
 
 

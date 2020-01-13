@@ -1,0 +1,26 @@
+{
+  "exclude": {
+    "files": "",
+    "lines": ""
+  },
+  "generated_at": "2020-01-13T18:02:29Z",
+  "plugins_used": [
+    {
+      "base64_limit": 4.5,
+      "name": "Base64HighEntropyString"
+    },
+    {
+      "hex_limit": 3,
+      "name": "HexHighEntropyString"
+    },
+    {
+      "name": "PrivateKeyDetector"
+    }
+  ],
+  "results": {},
+  "version": "0.13.0-ibm.7-dss",
+  "word_list": {
+    "file": null,
+    "hash": null
+  }
+}

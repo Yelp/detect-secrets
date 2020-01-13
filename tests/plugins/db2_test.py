@@ -3,12 +3,13 @@ from __future__ import absolute_import
 import textwrap
 
 import pytest
+import requests
 from mock import MagicMock
 from mock import patch
 
 from detect_secrets.core.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
-from detect_secrets.plugins.db2 import DB2Detector
+from detect_secrets.plugins.db2 import Db2Detector
 from detect_secrets.plugins.db2 import find_other_factor
 from detect_secrets.plugins.db2 import get_hostname_port_database_from_url
 
@@ -50,10 +51,10 @@ class TestGHDetector(object):
             ('', 'someotherpassword = "doesnt start right"', False),
         ],
     )
-    def test_analyze_string(self, token, payload, should_flag):
-        logic = DB2Detector()
+    def test_analyze_line(self, token, payload, should_flag):
+        logic = Db2Detector()
 
-        output = logic.analyze_string(payload, 1, 'mock_filename')
+        output = logic.analyze_line(payload, 1, 'mock_filename')
         assert len(output) == int(should_flag)
         if len(output) > 0:
             assert list(output.keys())[0].secret == token
@@ -63,7 +64,7 @@ class TestGHDetector(object):
         mock_db2_connect.return_value = None
 
         potential_secret = PotentialSecret('test db2', 'test filename', DB2_PASSWORD)
-        assert DB2Detector().verify(
+        assert Db2Detector().verify(
             DB2_PASSWORD,
             '''user={},
                password={},
@@ -77,10 +78,10 @@ class TestGHDetector(object):
 
     @patch('detect_secrets.plugins.db2.ibm_db.connect')
     def test_verify_invalid_connect_throws_exception(self, mock_db2_connect):
-        mock_db2_connect.side_effect = Exception('oops')
+        mock_db2_connect.side_effect = requests.exceptions.RequestException('oops')
 
         potential_secret = PotentialSecret('test db2', 'test filename', DB2_PASSWORD)
-        assert DB2Detector().verify(
+        assert Db2Detector().verify(
             DB2_PASSWORD,
             '''user={},
                password={},
@@ -97,7 +98,7 @@ class TestGHDetector(object):
         mock_db2_connect.return_value = MagicMock()
 
         potential_secret = PotentialSecret('test db2', 'test filename', DB2_PASSWORD)
-        assert DB2Detector().verify(
+        assert Db2Detector().verify(
             DB2_PASSWORD,
             '''user={},
                password={},
@@ -118,7 +119,7 @@ class TestGHDetector(object):
         mock_db2_connect.return_value = MagicMock()
 
         potential_secret = PotentialSecret('test db2', 'test filename', DB2_PASSWORD)
-        assert DB2Detector().verify(
+        assert Db2Detector().verify(
             DB2_PASSWORD,
             '''user='{}',
                password='{}',
@@ -140,7 +141,7 @@ class TestGHDetector(object):
         mock_db2_connect.return_value = MagicMock()
 
         potential_secret = PotentialSecret('test db2', 'test filename', DB2_PASSWORD)
-        assert DB2Detector().verify(
+        assert Db2Detector().verify(
             DB2_PASSWORD,
             '''user="{}",
                password="{}",
@@ -162,7 +163,7 @@ class TestGHDetector(object):
         mock_db2_connect.return_value = MagicMock()
 
         potential_secret = PotentialSecret('test db2', 'test filename', DB2_PASSWORD)
-        assert DB2Detector().verify(
+        assert Db2Detector().verify(
             DB2_PASSWORD,
             '''user={},
                password={},
@@ -179,10 +180,10 @@ class TestGHDetector(object):
 
     @patch('detect_secrets.plugins.db2.ibm_db.connect')
     def test_verify_times_out(self, mock_db2_connect):
-        mock_db2_connect.side_effect = Exception('Timeout')
+        mock_db2_connect.side_effect = requests.exceptions.RequestException('Timeout')
 
         potential_secret = PotentialSecret('test db2', 'test filename', DB2_PASSWORD)
-        assert DB2Detector().verify(
+        assert Db2Detector().verify(
             DB2_PASSWORD,
             '''user={},
                password={},
@@ -196,7 +197,7 @@ class TestGHDetector(object):
 
     def test_verify_no_other_factors(self):
         potential_secret = PotentialSecret('test db2', 'test filename', DB2_PASSWORD)
-        assert DB2Detector().verify(
+        assert Db2Detector().verify(
             DB2_PASSWORD,
             'password={}'.format(DB2_PASSWORD),
             potential_secret,
@@ -212,8 +213,8 @@ class TestGHDetector(object):
             """)[1:-1].format(
                 DB2_USER,
             ),
-            DB2Detector().username_keyword_regex,
-            DB2Detector().username_regex,
+            Db2Detector().username_keyword_regex,
+            Db2Detector().username_regex,
             [DB2_USER],
         ),
         (
@@ -222,8 +223,8 @@ class TestGHDetector(object):
             """)[1:-1].format(
                 DB2_PORT,
             ),
-            DB2Detector().port_keyword_regex,
-            DB2Detector().port_regex,
+            Db2Detector().port_keyword_regex,
+            Db2Detector().port_regex,
             [DB2_PORT],
         ),
         (
@@ -232,8 +233,8 @@ class TestGHDetector(object):
             """)[1:-1].format(
                 DB2_DATABASE,
             ),
-            DB2Detector().database_keyword_regex,
-            DB2Detector().database_regex,
+            Db2Detector().database_keyword_regex,
+            Db2Detector().database_regex,
             [DB2_DATABASE],
         ),
         (
@@ -242,8 +243,8 @@ class TestGHDetector(object):
             """)[1:-1].format(
                 DB2_HOSTNAME,
             ),
-            DB2Detector().hostname_keyword_regex,
-            DB2Detector().hostname_regex,
+            Db2Detector().hostname_keyword_regex,
+            Db2Detector().hostname_regex,
             [DB2_HOSTNAME],
         ),
     ),
@@ -263,9 +264,9 @@ def test_find_other_factor(content, factor_keyword_regex, factor_regex, expected
                 DB2_PORT,
                 DB2_DATABASE,
             ),
-            DB2Detector().hostname_regex,
-            DB2Detector().port_regex,
-            DB2Detector().database_regex,
+            Db2Detector().hostname_regex,
+            Db2Detector().port_regex,
+            Db2Detector().database_regex,
             [(DB2_HOSTNAME, DB2_PORT, DB2_DATABASE)],
         ),
         (
@@ -275,18 +276,18 @@ def test_find_other_factor(content, factor_keyword_regex, factor_regex, expected
                 DB2_HOSTNAME,
                 DB2_PORT,
             ),
-            DB2Detector().hostname_regex,
-            DB2Detector().port_regex,
-            DB2Detector().database_regex,
+            Db2Detector().hostname_regex,
+            Db2Detector().port_regex,
+            Db2Detector().database_regex,
             [],
         ),
         (
             textwrap.dedent("""
                 nonsense
             """),
-            DB2Detector().hostname_regex,
-            DB2Detector().port_regex,
-            DB2Detector().database_regex,
+            Db2Detector().hostname_regex,
+            Db2Detector().port_regex,
+            Db2Detector().database_regex,
             [],
         ),
     ),

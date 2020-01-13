@@ -72,5 +72,5 @@ class GHDetector(RegexBasedDetector):
                 return VerifiedResult.VERIFIED_FALSE
             else:
                 return VerifiedResult.UNVERIFIED
-        except Exception:
+        except requests.exceptions.RequestException:
             return VerifiedResult.UNVERIFIED

@@ -41,10 +41,10 @@ class TestArtifactoryDetector(object):
             ('', 'artifactory:_password=AKCxxxxxxxx', False),
         ],
     )
-    def test_analyze_string(self, token, payload, should_flag):
+    def test_analyze_line(self, token, payload, should_flag):
         logic = ArtifactoryDetector()
 
-        output = logic.analyze_string(payload, 1, 'mock_filename', output_raw=True)
+        output = logic.analyze_line(payload, 1, 'mock_filename', output_raw=True)
         assert len(output) == int(should_flag)
         if len(output) > 0:
             assert list(output.keys())[0].secret == token

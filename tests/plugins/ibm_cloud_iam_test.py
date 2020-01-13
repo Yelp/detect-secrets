@@ -2,14 +2,14 @@ import pytest
 import responses
 
 from detect_secrets.core.constants import VerifiedResult
-from detect_secrets.plugins.ibm_cloud_iam import IBMCloudIAMDetector
+from detect_secrets.plugins.ibm_cloud_iam import IbmCloudIamDetector
 
 
 CLOUD_IAM_KEY = 'abcd1234abcd1234abcd1234ABCD1234ABCD1234--__'
 CLOUD_IAM_KEY_BYTES = b'abcd1234abcd1234abcd1234ABCD1234ABCD1234--__'
 
 
-class TestIBMCloudIamDetector:
+class TestIbmCloudIamDetector(object):
 
     @pytest.mark.parametrize(
         'payload, should_flag',
@@ -52,10 +52,10 @@ class TestIBMCloudIamDetector:
             ('fake-cloud-iam-key= "not_long_enough"', False),
         ],
     )
-    def test_analyze_string(self, payload, should_flag):
-        logic = IBMCloudIAMDetector()
+    def test_analyze_line(self, payload, should_flag):
+        logic = IbmCloudIamDetector()
 
-        output = logic.analyze_string(payload, 1, 'mock_filename')
+        output = logic.analyze_line(payload, 1, 'mock_filename')
         assert len(output) == (1 if should_flag else 0)
 
     @responses.activate
@@ -65,7 +65,7 @@ class TestIBMCloudIamDetector:
             json={'active': False}, headers={'content-type': 'application/json'},
         )
 
-        assert IBMCloudIAMDetector().verify(CLOUD_IAM_KEY) == VerifiedResult.VERIFIED_FALSE
+        assert IbmCloudIamDetector().verify(CLOUD_IAM_KEY) == VerifiedResult.VERIFIED_FALSE
 
     @responses.activate
     def test_verify_valid_secret(self):
@@ -74,7 +74,7 @@ class TestIBMCloudIamDetector:
             json={'active': True}, headers={'content-type': 'application/json'},
         )
 
-        assert IBMCloudIAMDetector().verify(CLOUD_IAM_KEY) == VerifiedResult.VERIFIED_TRUE
+        assert IbmCloudIamDetector().verify(CLOUD_IAM_KEY) == VerifiedResult.VERIFIED_TRUE
 
     @responses.activate
     def test_verify_invalid_secret_bytes(self):
@@ -83,16 +83,16 @@ class TestIBMCloudIamDetector:
             json={'active': False}, headers={'content-type': 'application/json'},
         )
 
-        assert IBMCloudIAMDetector().verify(CLOUD_IAM_KEY_BYTES) == VerifiedResult.VERIFIED_FALSE
+        assert IbmCloudIamDetector().verify(CLOUD_IAM_KEY_BYTES) == VerifiedResult.VERIFIED_FALSE
 
     @responses.activate
-    def test_verify_valid_secret_byes(self):
+    def test_verify_valid_secret_bytes(self):
         responses.add(
             responses.POST, 'https://iam.cloud.ibm.com/identity/introspect', status=200,
             json={'active': True}, headers={'content-type': 'application/json'},
         )
 
-        assert IBMCloudIAMDetector().verify(CLOUD_IAM_KEY_BYTES) == VerifiedResult.VERIFIED_TRUE
+        assert IbmCloudIamDetector().verify(CLOUD_IAM_KEY_BYTES) == VerifiedResult.VERIFIED_TRUE
 
     @responses.activate
     def test_verify_bad_response(self):
@@ -100,7 +100,7 @@ class TestIBMCloudIamDetector:
             responses.POST, 'https://iam.cloud.ibm.com/identity/introspect', status=404,
         )
 
-        assert IBMCloudIAMDetector().verify(CLOUD_IAM_KEY_BYTES) == VerifiedResult.UNVERIFIED
+        assert IbmCloudIamDetector().verify(CLOUD_IAM_KEY_BYTES) == VerifiedResult.UNVERIFIED
 
     @responses.activate
     def test_verify_invalid_payload(self):
@@ -109,7 +109,7 @@ class TestIBMCloudIamDetector:
             json={'not-the-field': 'we expect'}, headers={'content-type': 'application/json'},
         )
 
-        assert IBMCloudIAMDetector().verify(CLOUD_IAM_KEY) == VerifiedResult.UNVERIFIED
+        assert IbmCloudIamDetector().verify(CLOUD_IAM_KEY) == VerifiedResult.UNVERIFIED
 
     @responses.activate
     def test_verify_payload_not_json(self):
@@ -118,4 +118,5 @@ class TestIBMCloudIamDetector:
             body='not json', headers={'content-type': 'not/json'},
         )
 
-        assert IBMCloudIAMDetector().verify(CLOUD_IAM_KEY) == VerifiedResult.UNVERIFIED
+        with pytest.raises(Exception):
+            IbmCloudIamDetector().verify(CLOUD_IAM_KEY)

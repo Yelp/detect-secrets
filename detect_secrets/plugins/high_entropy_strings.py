@@ -48,10 +48,6 @@ class HighEntropyStringsPlugin(BasePlugin):
             false_positive_heuristics=false_positive_heuristics,
         )
 
-    @classproperty
-    def disable_flag_text(cls):
-        return 'no-entropy-scan'
-
     def analyze(self, file, filename, output_raw=False, output_verified_false=False):
         file_type_analyzers = (
             (self._analyze_ini_file(), configparser.Error),
@@ -100,18 +96,6 @@ class HighEntropyStringsPlugin(BasePlugin):
                 line,
             )
         }
-
-    def analyze_line(self, string, line_num, filename):
-        output = super(HighEntropyStringsPlugin, self).analyze_line(
-            string,
-            line_num,
-            filename,
-        )
-
-        return self._filter_false_positives_with_line_ctx(
-            output,
-            string,
-        )
 
     def analyze_string_content(self, string, line_num, filename, output_raw=False):
         """Searches string for custom pattern, and captures all high entropy strings that
@@ -384,7 +368,7 @@ class HexHighEntropyString(HighEntropyStringsPlugin):
         is ~3.32 (e.g. "0123456789", with every digit different), and we want
         to lower that below the standard limit, 3. However, at the same time,
         we also want to accommodate the fact that longer strings have a higher
-        chance of being a true positive, which means "(0-9 twice)"
+        chance of being a true positive, which means "01234567890123456789"
         should be closer to the maximum entropy than the shorter version.
         """
         entropy = super(HexHighEntropyString, self).calculate_shannon_entropy(data)

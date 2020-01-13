@@ -37,7 +37,9 @@ class SecretsCollection:
         :type word_list_hash: str|None
         :param word_list_hash: optional iterated sha1 hash of the words in the word list.
         :type output_raw: bool|None
-        :param output_raw: whether or not to output the raw, unhashed secret
+        :param output_raw: whether or not to output the raw, unhashed secret.
+        :type output_verified_false: bool
+        :param output_verified_false: whether to output secrets that fail verification.
         """
         self.data = {}
         self.plugins = plugins

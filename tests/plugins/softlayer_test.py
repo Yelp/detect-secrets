@@ -78,10 +78,10 @@ class TestSoftLayerDetector(object):
             ('fake-softlayer-key= "not_long_enough"', False),
         ],
     )
-    def test_analyze_string(self, payload, should_flag):
+    def test_analyze_line(self, payload, should_flag):
         logic = SoftLayerDetector()
 
-        output = logic.analyze_string(payload, 1, 'mock_filename')
+        output = logic.analyze_line(payload, 1, 'mock_filename')
         assert len(output) == (1 if should_flag else 0)
 
     @responses.activate
