@@ -7,7 +7,7 @@
         "/tmp/tmp7iwzjvol"
     ],
     "timings": {
-        "AWSKeyDetector": 1.33812,
+        "AwsKeyDetector": 1.33812,
         "ArtifactoryDetector": 1.95065,
         "Base64HighEntropyString": 22.52337,
         "BasicAuthDetector": 1.3325,

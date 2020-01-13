@@ -8,7 +8,7 @@ from .base import RegexBasedDetector
 from detect_secrets.core.constants import VerifiedResult
 
 
-class GHDetector(RegexBasedDetector):
+class GheDetector(RegexBasedDetector):
     """ Scans for GitHub credentials """
 
     secret_type = 'GitHub Credentials'

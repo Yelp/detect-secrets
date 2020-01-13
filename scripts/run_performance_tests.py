@@ -199,7 +199,7 @@ def generate_content(separator, length):
     :type length: int
     """
     valid_secrets = {
-        'AWSKeyDetector': 'AKIATESTTESTTESTTEST',  # pragma: whitelist secret
+        'AwsKeyDetector': 'AKIATESTTESTTESTTEST',  # pragma: whitelist secret
         'ArtifactoryDetector': ':AKCtestTESTte',  # pragma: whitelist secret
         'Base64HighEntropyString':
         'Y29uZ3JhdHVsYXRpb25zISB0aGlzIGlzIGEgaGlkZGVuIG1lc3NhZ2U=',  # pragma: whitelist secret

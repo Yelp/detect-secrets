@@ -4,14 +4,14 @@ import pytest
 import responses
 
 from detect_secrets.core.constants import VerifiedResult
-from detect_secrets.plugins.gh import GHDetector
+from detect_secrets.plugins.gh import GheDetector
 
 
 GHE_TOKEN = 'abcdef0123456789abcdef0123456789abcdef01'
 GHE_TOKEN_BYTES = b'abcdef0123456789abcdef0123456789abcdef01'
 
 
-class TestGHDetector(object):
+class TestGheDetector(object):
 
     @pytest.mark.parametrize(
         'payload, should_flag',
@@ -55,7 +55,7 @@ class TestGHDetector(object):
         ],
     )
     def test_analyze_line(self, payload, should_flag):
-        logic = GHDetector()
+        logic = GheDetector()
 
         output = logic.analyze_line(payload, 1, 'mock_filename')
         assert len(output) == int(should_flag)
@@ -66,21 +66,21 @@ class TestGHDetector(object):
             responses.GET, 'https://github.ibm.com/api/v3', status=401,
         )
 
-        assert GHDetector().verify(GHE_TOKEN) == VerifiedResult.VERIFIED_FALSE
+        assert GheDetector().verify(GHE_TOKEN) == VerifiedResult.VERIFIED_FALSE
 
     @responses.activate
     def test_verify_valid_secret(self):
         responses.add(
             responses.GET, 'https://github.ibm.com/api/v3', status=200,
         )
-        assert GHDetector().verify(GHE_TOKEN) == VerifiedResult.VERIFIED_TRUE
+        assert GheDetector().verify(GHE_TOKEN) == VerifiedResult.VERIFIED_TRUE
 
     @responses.activate
     def test_verify_status_not_200_or_401(self):
         responses.add(
             responses.GET, 'https://github.ibm.com/api/v3', status=500,
         )
-        assert GHDetector().verify(GHE_TOKEN) == VerifiedResult.UNVERIFIED
+        assert GheDetector().verify(GHE_TOKEN) == VerifiedResult.UNVERIFIED
 
     @responses.activate
     def test_verify_invalid_secret_bytes(self):
@@ -88,22 +88,22 @@ class TestGHDetector(object):
             responses.GET, 'https://github.ibm.com/api/v3', status=401,
         )
 
-        assert GHDetector().verify(GHE_TOKEN_BYTES) == VerifiedResult.VERIFIED_FALSE
+        assert GheDetector().verify(GHE_TOKEN_BYTES) == VerifiedResult.VERIFIED_FALSE
 
     @responses.activate
     def test_verify_valid_secret_bytes(self):
         responses.add(
             responses.GET, 'https://github.ibm.com/api/v3', status=200,
         )
-        assert GHDetector().verify(GHE_TOKEN_BYTES) == VerifiedResult.VERIFIED_TRUE
+        assert GheDetector().verify(GHE_TOKEN_BYTES) == VerifiedResult.VERIFIED_TRUE
 
     @responses.activate
     def test_verify_status_not_200_or_401_bytes(self):
         responses.add(
             responses.GET, 'https://github.ibm.com/api/v3', status=500,
         )
-        assert GHDetector().verify(GHE_TOKEN_BYTES) == VerifiedResult.UNVERIFIED
+        assert GheDetector().verify(GHE_TOKEN_BYTES) == VerifiedResult.UNVERIFIED
 
     @responses.activate
     def test_verify_unverified_secret(self):
-        assert GHDetector().verify(GHE_TOKEN) == VerifiedResult.UNVERIFIED
+        assert GheDetector().verify(GHE_TOKEN) == VerifiedResult.UNVERIFIED

@@ -106,7 +106,7 @@ The current heuristic searches we implement out of the box include:
 
 * **ArtifactoryDetector**: checks to see if Artifactory credentials are present.
 
-* **GHDetector**: checks to see if GitHub credentials are present.
+* **GheDetector**: checks to see if GitHub credentials are present.
 
 ## IBM versioning and rebase guide
 

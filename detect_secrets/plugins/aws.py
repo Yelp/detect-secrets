@@ -14,7 +14,7 @@ from .base import RegexBasedDetector
 from detect_secrets.core.constants import VerifiedResult
 
 
-class AWSKeyDetector(RegexBasedDetector):
+class AwsKeyDetector(RegexBasedDetector):
     """Scans for AWS keys."""
     secret_type = 'AWS Access Key'
 

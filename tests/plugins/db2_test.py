@@ -30,7 +30,7 @@ DB2_CONN_STRING = DB2_CONN_STRING.format(
 )
 
 
-class TestGHDetector(object):
+class TestGheDetector(object):
 
     @pytest.mark.parametrize(
         'token, payload, should_flag',
