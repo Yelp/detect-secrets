@@ -1,8 +1,45 @@
 from __future__ import absolute_import
 
+import os
 import re
+import subprocess
+import sys
 
-import ibm_db
+try:
+    import ibm_db
+except ImportError as ie:  # pragma: no cover
+    # Try to fix the ibm_db dynamic lib import issue
+    if 'darwin' not in sys.platform:
+        raise ie
+
+    if hasattr(ie, 'msg'):
+        message = ie.msg
+    else:
+        # python 2
+        message = ie.message
+
+    if 'Library not loaded: libdb2.dylib' not in message:
+        raise ie
+
+    if hasattr(ie, 'path'):
+        ibm_db_darwin_so = ie.path
+    else:
+        # python 2
+        so_file_search = re.search(r'dlopen\((.*),', message, re.IGNORECASE)
+        if so_file_search:
+            ibm_db_darwin_so = so_file_search.group(1)
+
+    if not ibm_db_darwin_so:
+        raise ie
+
+    site_packages = os.path.dirname(ibm_db_darwin_so)
+    libdb2_dylib = os.path.join(site_packages, 'clidriver/lib/libdb2.dylib')
+    if os.path.exists(libdb2_dylib):
+        subprocess.call(
+            ['install_name_tool', '-change', 'libdb2.dylib', libdb2_dylib, ibm_db_darwin_so],
+        )
+
+    import ibm_db
 
 from .base import classproperty
 from .base import RegexBasedDetector
