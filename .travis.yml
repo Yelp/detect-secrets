@@ -3,21 +3,21 @@ dist: trusty
 env:
     global:
         - TOXENV=py27
-        - DOCKER_USER=travisrw@us.ibm.com
-        - DOCKER_IMAGE_HOST=txo-whitewater-public-docker-local.artifactory.swg-devops.com
-        - DOCKER_IMAGE=txo-whitewater-public-docker-local.artifactory.swg-devops.com/whitewater-detect-secrets
+        - DOCKER_REGISTRY=us.icr.io
+        - DOCKER_USER=iamapikey
+        - DOCKER_IMAGE=us.icr.io/git-defenders/dsl
         - DOCKER_IMAGE_TAG="$TRAVIS_BUILD_NUMBER-id-$TRAVIS_BUILD_ID-time-$(date +%s)"
         - DOCKER_IMAGE_TAG_DSS="$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER-id-$TRAVIS_BUILD_ID-time-$(date +%s)"
 deploy:
 - provider: script
-  script: docker login $DOCKER_IMAGE_HOST --username $DOCKER_USER --password $DOCKER_PASS
+  script: echo ${IBM_CLOUD_API_KEY} | docker login -u $DOCKER_USER --password-stdin $DOCKER_REGISTRY
     && docker push $DOCKER_IMAGE:$DOCKER_IMAGE_TAG
     && docker tag $DOCKER_IMAGE:$DOCKER_IMAGE_TAG $DOCKER_IMAGE:latest
     && docker push $DOCKER_IMAGE:latest
   on:
     branch: master
 - provider: script
-  script: docker login $DOCKER_IMAGE_HOST --username $DOCKER_USER --password $DOCKER_PASS
+  script: echo ${IBM_CLOUD_API_KEY} | docker login -u $DOCKER_USER --password-stdin $DOCKER_REGISTRY
     && docker tag $DOCKER_IMAGE:$DOCKER_IMAGE_TAG $DOCKER_IMAGE:$DOCKER_IMAGE_TAG_DSS
     && docker push $DOCKER_IMAGE:$DOCKER_IMAGE_TAG_DSS
     && docker tag $DOCKER_IMAGE:$DOCKER_IMAGE_TAG_DSS $DOCKER_IMAGE:dss-latest
