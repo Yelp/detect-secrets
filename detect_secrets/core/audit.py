@@ -2,7 +2,6 @@ import codecs
 import io
 import json
 import os
-import subprocess
 import sys
 from builtins import input
 from collections import defaultdict
@@ -465,7 +464,11 @@ def _comparison_generator(old_list, new_list, compare_fn):
 
 
 def _clear_screen():  # pragma: no cover
-    subprocess.call(['clear'])
+    ttyname = os.ttyname(sys.stdout.fileno())
+    with open(ttyname, 'wb') as tty:
+        # Use escape sequence instead of "clear" command to avoid incorrect
+        # starting line calculation in docker env
+        tty.write(b'\033c')
 
 
 def _print_context(  # pragma: no cover
