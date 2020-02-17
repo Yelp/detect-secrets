@@ -2,14 +2,18 @@
 *.py[co]
 *.sw[op]
 
+/.git
 /.coverage
+/.github
 /.pytest_cache
+/.python-version
 /.tox
-/venv*
+/.vscode
 /tmp
+/user-config
+/venv
+/venv*
 
 .*ignore
 !.gitignore
 !.dockerignore
-.python-version
-.vscode
