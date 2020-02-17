@@ -1,5 +1,5 @@
-Versioning and update
----------------------
+# Versioning and update
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
@@ -7,7 +7,6 @@ Versioning and update
 - [How do we keep update to date with upstream](#how-do-we-keep-update-to-date-with-upstream)
 - [How do we version this repo](#how-do-we-version-this-repo)
 - [How do we make release](#how-do-we-make-release)
-
 
 ## How do we keep update to date with upstream
 
@@ -64,7 +63,8 @@ Format: `<upstream-version>-ibm.<minor>.<fix>`, for example `0.12.0-ibm.3`
 
 Release should be made when we bump to a new version.
 
-1. Use [`hub` tool](https://github.com/github/hub) to create new release. You can view the released version at https://github.ibm.com/Whitewater/whitewater-detect-secrets/releases
+1. Use [`hub` tool](https://github.com/github/hub) to create new release. You can view the released version at <https://github.ibm.com/Whitewater/whitewater-detect-secrets/releases>.
+This process also creates a tag, which triggers Traivs tag build to generate a new version of the docker image labeled with the newly created tag.
 
 ```sh
 # <branch-name>: the latest commit from the branch would be used to create tag.

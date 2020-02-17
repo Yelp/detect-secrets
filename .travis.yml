@@ -5,27 +5,34 @@ env:
         - TOXENV=py27
         - DOCKER_REGISTRY=us.icr.io
         - DOCKER_USER=iamapikey
-        - DOCKER_LOCAL_IMAGE=git-defenders/dsl
-        - DOCKER_IMAGE=us.icr.io/git-defenders/dsl
+        - DOCKER_IMAGES="dsl detect-secrets detect-secrets-hook"
+        - DOCKER_LOCAL_DOMAIN=git-defenders
+        - DOCKER_REMOTE_DOMAIN=us.icr.io/git-defenders
         - DOCKER_IMAGE_TAG="$TRAVIS_BUILD_NUMBER-id-$TRAVIS_BUILD_ID-time-$(date +%s)"
         - DOCKER_IMAGE_TAG_DSS="$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER-id-$TRAVIS_BUILD_ID-time-$(date +%s)"
 deploy:
 - provider: script
-  script: echo ${IBM_CLOUD_API_KEY} | docker login -u $DOCKER_USER --password-stdin $DOCKER_REGISTRY
-    && docker tag $DOCKER_LOCAL_IMAGE $DOCKER_IMAGE:$DOCKER_IMAGE_TAG
-    && docker push $DOCKER_IMAGE:$DOCKER_IMAGE_TAG
-    && docker tag $DOCKER_IMAGE:$DOCKER_IMAGE_TAG $DOCKER_IMAGE:latest
-    && docker push $DOCKER_IMAGE:latest
+  script: |
+        echo ${IBM_CLOUD_API_KEY} | docker login -u $DOCKER_USER --password-stdin $DOCKER_REGISTRY
+
+        for image_name in $DOCKER_IMAGES
+        do
+          ./tag-and-publish.sh $DOCKER_LOCAL_DOMAIN/$image_name $DOCKER_REMOTE_DOMAIN/$image_name:$DOCKER_IMAGE_TAG
+          ./tag-and-publish.sh $DOCKER_LOCAL_DOMAIN/$image_name $DOCKER_REMOTE_DOMAIN/$image_name:latest
+        done
   on:
-    branch: master
+      branch: master
 - provider: script
-  script: echo ${IBM_CLOUD_API_KEY} | docker login -u $DOCKER_USER --password-stdin $DOCKER_REGISTRY
-    && docker tag $DOCKER_LOCAL_IMAGE $DOCKER_IMAGE:$DOCKER_IMAGE_TAG_DSS
-    && docker push $DOCKER_IMAGE:$DOCKER_IMAGE_TAG_DSS
-    && docker tag $DOCKER_IMAGE:$DOCKER_IMAGE_TAG_DSS $DOCKER_IMAGE:dss-latest
-    && docker push $DOCKER_IMAGE:dss-latest
+  script: |
+        echo ${IBM_CLOUD_API_KEY} | docker login -u $DOCKER_USER --password-stdin $DOCKER_REGISTRY
+
+        for image_name in $DOCKER_IMAGES
+        do
+          ./tag-and-publish.sh $DOCKER_LOCAL_DOMAIN/$image_name $DOCKER_REMOTE_DOMAIN/$image_name:$DOCKER_IMAGE_TAG_DSS
+          ./tag-and-publish.sh $DOCKER_LOCAL_DOMAIN/$image_name $DOCKER_REMOTE_DOMAIN/$image_name:dss-latest
+        done
   on:
-    branch: dss
+      branch: dss
 matrix:
     include:
         - env: TOXENV=py27
@@ -41,7 +48,18 @@ matrix:
         #   python: pypy
 install:
     - pip install tox
-script: make test && ./build-dockerfiles.sh
+script: |
+      make test
+      ./build-dockerfiles.sh
+
+      # Publish image and labled with tag when a git tag is pushed
+      if [ -n "$TRAVIS_TAG" ]; then
+        echo ${IBM_CLOUD_API_KEY} | docker login -u $DOCKER_USER --password-stdin $DOCKER_REGISTRY
+        for image_name in $DOCKER_IMAGES
+        do
+          ./tag-and-publish.sh $DOCKER_LOCAL_DOMAIN/$image_name $DOCKER_REMOTE_DOMAIN/$image_name:$TRAVIS_TAG
+        done
+      fi
 cache:
     directories:
         - $HOME/.cache/pre-commit
