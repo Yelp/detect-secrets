@@ -3,34 +3,37 @@ dist: trusty
 env:
     global:
         - TOXENV=py27
-        - DOCKER_REGISTRY=us.icr.io
-        - DOCKER_USER=iamapikey
+
+        - DOCKER_REGISTRY_ICR=us.icr.io
+        - DOCKER_USER_ICR=iamapikey
+        - DOCKER_DOMAIN_ICR=$DOCKER_REGISTRY_ICR/git-defenders
+
+        - DOCKER_REGISTRY_ART=txo-toolbox-team-docker-local.artifactory.swg-devops.com
+        - DOCKER_USER_ART=dssadmin@us.ibm.com
+        - DOCKER_DOMAIN_ART=$DOCKER_REGISTRY_ART/git-defenders
+
+        - DOCKER_REMOTE_DOMAINS="$DOCKER_DOMAIN_ICR $DOCKER_DOMAIN_ART"
         - DOCKER_IMAGES="dsl detect-secrets detect-secrets-hook"
-        - DOCKER_LOCAL_DOMAIN=git-defenders
-        - DOCKER_REMOTE_DOMAIN=us.icr.io/git-defenders
+        - DOCKER_DOMAIN_LOCAL=git-defenders
         - DOCKER_IMAGE_TAG="$TRAVIS_BUILD_NUMBER-id-$TRAVIS_BUILD_ID-time-$(date +%s)"
         - DOCKER_IMAGE_TAG_DSS="$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER-id-$TRAVIS_BUILD_ID-time-$(date +%s)"
 deploy:
 - provider: script
-  script: |
-        echo ${IBM_CLOUD_API_KEY} | docker login -u $DOCKER_USER --password-stdin $DOCKER_REGISTRY
-
-        for image_name in $DOCKER_IMAGES
-        do
-          ./tag-and-publish.sh $DOCKER_LOCAL_DOMAIN/$image_name $DOCKER_REMOTE_DOMAIN/$image_name:$DOCKER_IMAGE_TAG
-          ./tag-and-publish.sh $DOCKER_LOCAL_DOMAIN/$image_name $DOCKER_REMOTE_DOMAIN/$image_name:latest
-        done
+  # dpl would concatenate all lines into single string
+  script: >-
+        set -e;
+        echo ${IBM_CLOUD_API_KEY} | docker login -u $DOCKER_USER_ICR --password-stdin $DOCKER_REGISTRY_ICR;
+        echo ${ART_API_KEY} | docker login -u $DOCKER_USER_ART --password-stdin $DOCKER_REGISTRY_ART;
+        ./tag-and-publish.sh "$DOCKER_IMAGES" "$DOCKER_DOMAIN_LOCAL" "$DOCKER_REMOTE_DOMAINS" "$DOCKER_IMAGE_TAG latest";
   on:
       branch: master
 - provider: script
-  script: |
-        echo ${IBM_CLOUD_API_KEY} | docker login -u $DOCKER_USER --password-stdin $DOCKER_REGISTRY
-
-        for image_name in $DOCKER_IMAGES
-        do
-          ./tag-and-publish.sh $DOCKER_LOCAL_DOMAIN/$image_name $DOCKER_REMOTE_DOMAIN/$image_name:$DOCKER_IMAGE_TAG_DSS
-          ./tag-and-publish.sh $DOCKER_LOCAL_DOMAIN/$image_name $DOCKER_REMOTE_DOMAIN/$image_name:dss-latest
-        done
+  # dpl would concatenate all lines into single string
+  script: >-
+        set -e;
+        echo ${IBM_CLOUD_API_KEY} | docker login -u $DOCKER_USER_ICR --password-stdin $DOCKER_REGISTRY_ICR;
+        echo ${ART_API_KEY} | docker login -u $DOCKER_USER_ART --password-stdin $DOCKER_REGISTRY_ART;
+        ./tag-and-publish.sh "$DOCKER_IMAGES" "$DOCKER_DOMAIN_LOCAL" "$DOCKER_REMOTE_DOMAINS" "$DOCKER_IMAGE_TAG_DSS dss-latest";
   on:
       branch: dss
 matrix:
@@ -48,17 +51,17 @@ matrix:
         #   python: pypy
 install:
     - pip install tox
+# normal script supports multiple line syntax
 script: |
       make test
       ./build-dockerfiles.sh
 
       # Publish image and labled with tag when a git tag is pushed
       if [ -n "$TRAVIS_TAG" ]; then
-        echo ${IBM_CLOUD_API_KEY} | docker login -u $DOCKER_USER --password-stdin $DOCKER_REGISTRY
-        for image_name in $DOCKER_IMAGES
-        do
-          ./tag-and-publish.sh $DOCKER_LOCAL_DOMAIN/$image_name $DOCKER_REMOTE_DOMAIN/$image_name:$TRAVIS_TAG
-        done
+        echo ${IBM_CLOUD_API_KEY} | docker login -u $DOCKER_USER_ICR --password-stdin $DOCKER_REGISTRY_ICR
+        echo ${ART_API_KEY} | docker login -u $DOCKER_USER_ART --password-stdin $DOCKER_REGISTRY_ART
+
+        ./tag-and-publish.sh "$DOCKER_IMAGES" "$DOCKER_DOMAIN_LOCAL" "$DOCKER_REMOTE_DOMAINS" "$TRAVIS_TAG"
       fi
 cache:
     directories:
