@@ -193,7 +193,10 @@ class ScanOptions:
             '--update',
             nargs=1,
             metavar='OLD_BASELINE_FILE',
-            help='Update existing baseline by importing settings from it.',
+            help=(
+                'Update existing baseline by importing settings from it.'
+                'New file would be created if old baseline file does not exist.'
+            ),
             dest='import_filename',
         )
 

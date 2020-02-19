@@ -223,6 +223,35 @@ class TestMain:
             Any(dict),
         )
 
+    def test_reads_non_existed_baseline_from_file(
+        self,
+        mock_merge_baseline,
+        mock_baseline_initialize,
+    ):
+        with mock_stdin(), mock.patch(
+            'detect_secrets.main._read_from_file',
+            side_effect=FileNotFoundError,
+        ) as m_read, mock.patch(
+            'detect_secrets.main.write_baseline_to_file',
+        ) as m_write:
+            assert main('scan --update non_existed_baseline_file'.split()) == 0
+            assert m_read.call_args[0][0] == 'non_existed_baseline_file'
+            assert m_write.call_args[1]['filename'] == 'non_existed_baseline_file'
+            assert m_write.call_args[1]['data'] == Any(dict)
+
+        mock_baseline_initialize.assert_called_once_with(
+            plugins=Any(tuple),
+            exclude_files_regex='^non_existed_baseline_file$',
+            exclude_lines_regex=None,
+            path='.',
+            should_scan_all_files=False,
+            output_raw=False,
+            output_verified_false=False,
+            word_list_file=None,
+            word_list_hash=None,
+        )
+        mock_merge_baseline.assert_not_called()
+
     @pytest.mark.parametrize(
         'exclude_files_arg, expected_regex',
         [

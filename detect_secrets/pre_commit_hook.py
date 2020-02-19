@@ -126,7 +126,7 @@ def _get_baseline_string_from_file(filename):  # pragma: no cover
         log.error(
             'Unable to open baseline file: {}\n'
             'Please create it via\n'
-            '   `detect-secrets scan > {}`\n'
+            '   `detect-secrets scan --update {}`\n'
             .format(filename, filename),
         )
         raise
