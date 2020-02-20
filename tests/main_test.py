@@ -17,6 +17,13 @@ from testing.mocks import mock_printer
 from testing.util import uncolor
 
 
+try:
+    FileNotFoundError
+except NameError:  # pragma: no cover
+    # support python 2.x
+    FileNotFoundError = IOError
+
+
 def get_list_of_plugins(include=None, exclude=None):
     """
     :type include: List[Dict[str, Any]]
@@ -228,9 +235,11 @@ class TestMain:
         mock_merge_baseline,
         mock_baseline_initialize,
     ):
+        fnf_error = FileNotFoundError()
+        fnf_error.errno = 2
         with mock_stdin(), mock.patch(
             'detect_secrets.main._read_from_file',
-            side_effect=FileNotFoundError,
+            side_effect=fnf_error,
         ) as m_read, mock.patch(
             'detect_secrets.main.write_baseline_to_file',
         ) as m_write:
@@ -251,6 +260,18 @@ class TestMain:
             word_list_hash=None,
         )
         mock_merge_baseline.assert_not_called()
+
+    def test_reads_baseline_from_file_with_other_ioerror(
+        self,
+    ):
+        io_error = IOError()
+        with mock_stdin(), mock.patch(
+            'detect_secrets.main._read_from_file',
+            side_effect=io_error,
+        ) as m_read:
+            with pytest.raises(IOError):
+                main('scan --update non_existed_baseline_file'.split()) == 0
+            assert m_read.call_args[0][0] == 'non_existed_baseline_file'
 
     @pytest.mark.parametrize(
         'exclude_files_arg, expected_regex',

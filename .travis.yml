@@ -53,6 +53,7 @@ install:
     - pip install tox
 # normal script supports multiple line syntax
 script: |
+      set -e
       make test
       ./build-dockerfiles.sh
 

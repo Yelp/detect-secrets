@@ -11,6 +11,13 @@ from detect_secrets.plugins.common import initialize
 from detect_secrets.util import build_automaton
 
 
+try:
+    FileNotFoundError
+except NameError:  # pragma: no cover
+    # support python 2.x
+    FileNotFoundError = IOError
+
+
 def parse_args(argv):
     return ParserBuilder()\
         .add_console_use_arguments()\
@@ -191,9 +198,15 @@ def _get_existing_baseline(import_filename):
     if import_filename:
         try:
             return _read_from_file(import_filename[0])
-        except FileNotFoundError:
-            # create new baseline if not existed
-            return None
+        except FileNotFoundError as fnf_error:
+            if fnf_error.errno == 2:  # create new baseline if not existed
+                return None
+            else:  # throw exception for other cases
+                print(
+                    'Error reading from existing baseline ' + import_filename[0],
+                    file=sys.stderr,
+                )
+                raise fnf_error
     if not sys.stdin.isatty():
         stdin = sys.stdin.read().strip()
         if stdin:
