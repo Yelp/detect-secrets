@@ -62,7 +62,9 @@ script: |
         echo ${IBM_CLOUD_API_KEY} | docker login -u $DOCKER_USER_ICR --password-stdin $DOCKER_REGISTRY_ICR
         echo ${ART_API_KEY} | docker login -u $DOCKER_USER_ART --password-stdin $DOCKER_REGISTRY_ART
 
-        ./tag-and-publish.sh "$DOCKER_IMAGES" "$DOCKER_DOMAIN_LOCAL" "$DOCKER_REMOTE_DOMAINS" "$TRAVIS_TAG"
+        # replace + with .
+        VERSION_TAG=$(tr '+' '.' <<<"$TRAVIS_TAG")
+        ./tag-and-publish.sh "$DOCKER_IMAGES" "$DOCKER_DOMAIN_LOCAL" "$DOCKER_REMOTE_DOMAINS" "$VERSION_TAG"
 
         if python scripts/version_greater_than_in_cos.py "$TRAVIS_TAG"
         then
