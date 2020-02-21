@@ -20,6 +20,7 @@ setup(
         'requests',
         'ibm_db',
         'boxsdk[jwt]',
+        'packaging',
     ],
     extras_require={
         'word_list': [

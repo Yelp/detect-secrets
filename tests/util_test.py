@@ -1,12 +1,17 @@
 import hashlib
 import subprocess
+from io import StringIO
 
 import mock
 import pytest
+import responses
+from packaging.version import parse
 
 from detect_secrets import util
+from detect_secrets import VERSION
 from detect_secrets.plugins.common import filters
 from testing.mocks import mock_open
+from testing.util import uncolor
 
 GIT_REPO_SHA = b'cbb33d8c545ccf5c55fdcc7d5b0218078598e677'
 GIT_REMOTES_VERBOSE_ONE_URL = (
@@ -19,6 +24,54 @@ GIT_REMOTES_VERBOSE_TWO_URLS = (
     b'origin\tgit://b.com/b/b.git\t(fetch)\n'
     b'origin\tgit://b.com/b/b.git\t(push)\n'
 )
+
+
+@responses.activate
+def test_version_check_out_of_date():
+    responses.add(
+        responses.GET,
+        'https://ibm.biz/detect-secrets-version',
+        status=200,
+        body='1000000.0.0+ibm.0',
+    )
+    with mock.patch('detect_secrets.util.sys.stderr', new=StringIO()) as fakeErr:
+        util.version_check()
+        stderr = fakeErr.getvalue().strip()
+    expected_error_msg = 'WARNING: You are running an outdated version of detect-secrets.\n' + \
+        ' Your version: %s\n' % VERSION + \
+        ' Latest version: 1000000.0.0+ibm.0\n' + \
+        ' See upgrade guide at ' + \
+        'https://ibm.biz/detect-secrets-how-to-upgrade\n'
+    assert expected_error_msg == uncolor(stderr)
+
+
+@responses.activate
+def test_version_check_not_out_of_date():
+    responses.add(
+        responses.GET,
+        'https://ibm.biz/detect-secrets-version',
+        status=200,
+        body=VERSION,
+    )
+    with mock.patch('detect_secrets.util.sys.stderr', new=StringIO()) as fakeErr:
+        util.version_check()
+        stderr = fakeErr.getvalue().strip()
+    expected_error_msg = ''
+    assert expected_error_msg == stderr
+
+
+@responses.activate
+def test_verion_check_latest_version_request_fails():
+    responses.add(
+        responses.GET,
+        'https://ibm.biz/detect-secrets-version',
+        status=404,
+    )
+    with mock.patch('detect_secrets.util.sys.stderr', new=StringIO()) as fakeErr:
+        util.version_check()
+        stderr = fakeErr.getvalue().strip()
+    expected_error_msg = 'Failed to check for newer version of detect-secrets.\n'
+    assert expected_error_msg == uncolor(stderr)
 
 
 def test_build_automaton():
@@ -39,6 +92,28 @@ def test_build_automaton():
             secret='no_words_in_word_list',
             automaton=automaton,
         )
+
+
+@pytest.mark.parametrize(
+    'smaller_version_txt, larger_version_txt',
+    [
+        ('1', '2'),
+        ('1.0.0', '1.0.1'),
+        ('1.0.0', '1.0.0+ibm'),
+        ('1.0.0+ibm', '1.0.0+ibm.5'),
+        ('1.0.0+ibm', '1.0.0+ibm-dss'),
+        ('1.0.0+ibm', '1.0.0+ibm.dss'),
+        ('1.0.0+ibm.5', '1.0.0+ibm.6'),
+        ('1.0.0+ibm.5', '1.0.0+ibm.5.dss'),
+        ('1.0.0+ibm.5.dss', '1.0.0+ibm.6.dss'),
+        ('1.0.0+ibm.5.dss', '1.0.0+ibm.6.dss.1'),
+        ('0.13.0-ibm.6-dss', '0.13.0+ibm.7.dss'),
+    ],
+)
+def test_version_compare(smaller_version_txt, larger_version_txt):
+    smaller_version = parse(smaller_version_txt)
+    larger_version = parse(larger_version_txt)
+    assert smaller_version < larger_version
 
 
 def test_get_git_sha():

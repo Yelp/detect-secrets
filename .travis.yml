@@ -63,6 +63,17 @@ script: |
         echo ${ART_API_KEY} | docker login -u $DOCKER_USER_ART --password-stdin $DOCKER_REGISTRY_ART
 
         ./tag-and-publish.sh "$DOCKER_IMAGES" "$DOCKER_DOMAIN_LOCAL" "$DOCKER_REMOTE_DOMAINS" "$TRAVIS_TAG"
+
+        if python scripts/version_greater_than_in_cos.py "$TRAVIS_TAG"
+        then
+          # install ibmcloud cli
+        	curl -sL https://raw.githubusercontent.com/IBM-Cloud/ibm-cloud-developer-tools/master/linux-installer/idt-installer | bash
+        	# login to ibm cloud
+        	ibmcloud login --apikey ${IBM_CLOUD_API_KEY} -a https://cloud.ibm.com -r us-east
+          # update latest version in ibmcloud object storage
+          echo $TRAVIS_TAG > version.txt
+          ibmcloud cos put-object --bucket detect-secrets-client-version --key version --body version.txt
+        fi
       fi
 cache:
     directories:

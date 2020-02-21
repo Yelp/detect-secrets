@@ -1,6 +1,53 @@
+#!/usr/bin/python
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import hashlib
 import os
 import subprocess
+import sys
+
+import requests
+from packaging.version import parse
+
+from detect_secrets import VERSION
+
+
+def version_check():
+    # check if running latest version, if not print warning
+    # get latest version from GHE
+    yellow = '\033[93m'
+    end_yellow = '\033[0m'
+    try:
+        resp = requests.get(
+            'https://ibm.biz/detect-secrets-version',
+        )
+        resp.raise_for_status()
+        latest_version = parse(resp.text)
+        current_version = parse(VERSION)
+        if current_version < latest_version:
+            print(
+                yellow +
+                'WARNING: You are running an outdated version of detect-secrets.\n',
+                'Your version: %s\n' % current_version,
+                'Latest version: %s\n' % latest_version,
+                'See upgrade guide at',
+                'https://ibm.biz/detect-secrets-how-to-upgrade\n' +
+                end_yellow,
+                file=sys.stderr,
+            )
+    except Exception:
+        print(
+            yellow +
+            'Failed to check for newer version of detect-secrets.\n' +
+            end_yellow,
+            file=sys.stderr,
+        )
+
+
+def is_python_2():
+    return sys.version_info[0] < 3
 
 
 def build_automaton(word_list):

@@ -12,6 +12,7 @@ from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.core.usage import ParserBuilder
 from detect_secrets.plugins.common import initialize
 from detect_secrets.util import build_automaton
+from detect_secrets.util import version_check
 
 
 log = get_logger(format_string='%(message)s')
@@ -24,6 +25,7 @@ def parse_args(argv):
 
 
 def main(argv=None):
+    version_check()
     args = parse_args(argv)
     if args.verbose:  # pragma: no cover
         log.set_debug_level(args.verbose)
