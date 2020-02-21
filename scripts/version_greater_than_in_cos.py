@@ -10,9 +10,10 @@ def version_greater_than_in_cos(new_version):
     latest_version = parse(resp.text)
     new_version = parse(new_version)
     if new_version > latest_version:
-        sys.exit(0)
+        print('yes')
     else:
-        sys.exit(1)
+        print('no')
+    sys.exit(0)
 
 
 if __name__ == '__main__':

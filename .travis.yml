@@ -66,15 +66,18 @@ script: |
         VERSION_TAG=$(tr '+' '.' <<<"$TRAVIS_TAG")
         ./tag-and-publish.sh "$DOCKER_IMAGES" "$DOCKER_DOMAIN_LOCAL" "$DOCKER_REMOTE_DOMAINS" "$VERSION_TAG"
 
-        if python scripts/version_greater_than_in_cos.py "$TRAVIS_TAG"
+        pip install requests packaging
+        should_update=$(python scripts/version_greater_than_in_cos.py "$TRAVIS_TAG")
+        if [ "$should_update" == "yes" ]
         then
           # install ibmcloud cli
         	curl -sL https://raw.githubusercontent.com/IBM-Cloud/ibm-cloud-developer-tools/master/linux-installer/idt-installer | bash
+          ibmcloud plugin install cloud-object-storage
         	# login to ibm cloud
         	ibmcloud login --apikey ${IBM_CLOUD_API_KEY} -a https://cloud.ibm.com -r us-east
           # update latest version in ibmcloud object storage
           echo $TRAVIS_TAG > version.txt
-          ibmcloud cos put-object --bucket detect-secrets-client-version --key version --body version.txt
+          ibmcloud cos put-object --bucket detect-secrets-client-version --key version --body version.txt --region us-south
         fi
       fi
 cache:
