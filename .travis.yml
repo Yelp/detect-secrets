@@ -72,7 +72,6 @@ script: |
         then
           # install ibmcloud cli
         	curl -sL https://raw.githubusercontent.com/IBM-Cloud/ibm-cloud-developer-tools/master/linux-installer/idt-installer | bash
-          ibmcloud plugin install cloud-object-storage
         	# login to ibm cloud
         	ibmcloud login --apikey ${IBM_CLOUD_API_KEY} -a https://cloud.ibm.com -r us-east
           # update latest version in ibmcloud object storage
