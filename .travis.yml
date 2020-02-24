@@ -71,9 +71,9 @@ script: |
         if [ "$should_update" == "yes" ]
         then
           # install ibmcloud cli
-        	curl -sL https://raw.githubusercontent.com/IBM-Cloud/ibm-cloud-developer-tools/master/linux-installer/idt-installer | bash
-        	# login to ibm cloud
-        	ibmcloud login --apikey ${IBM_CLOUD_API_KEY} -a https://cloud.ibm.com -r us-east
+          curl -sL https://raw.githubusercontent.com/IBM-Cloud/ibm-cloud-developer-tools/master/linux-installer/idt-installer | bash
+          # login to ibm cloud
+          ibmcloud login --apikey ${IBM_CLOUD_API_KEY} -a https://cloud.ibm.com -r us-south
           # update latest version in ibmcloud object storage
           echo $TRAVIS_TAG > version.txt
           ibmcloud cos put-object --bucket detect-secrets-client-version --key version --body version.txt --region us-south
