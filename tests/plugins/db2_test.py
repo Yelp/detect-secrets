@@ -178,6 +178,24 @@ class TestGheDetector(object):
         assert potential_secret.other_factors['username'] == DB2_USER
 
     @patch('detect_secrets.plugins.db2.ibm_db.connect')
+    def test_verify_db2_url_key(self, mock_db2_connect):
+        mock_db2_connect.return_value = MagicMock()
+
+        potential_secret = PotentialSecret('test db2', 'test filename', DB2_PASSWORD)
+        assert Db2Detector().verify(
+            DB2_PASSWORD,
+            '''jdbc:db2://{}:{}/{}:user={};password={};
+            '''.format(DB2_HOSTNAME, DB2_PORT, DB2_DATABASE, DB2_USER, DB2_PASSWORD),
+            potential_secret,
+        ) == VerifiedResult.VERIFIED_TRUE
+
+        mock_db2_connect.assert_called_with(DB2_CONN_STRING, '', '')
+        assert potential_secret.other_factors['database'] == DB2_DATABASE
+        assert potential_secret.other_factors['hostname'] == DB2_HOSTNAME
+        assert potential_secret.other_factors['port'] == DB2_PORT
+        assert potential_secret.other_factors['username'] == DB2_USER
+
+    @patch('detect_secrets.plugins.db2.ibm_db.connect')
     def test_verify_times_out(self, mock_db2_connect):
         mock_db2_connect.side_effect = Exception('Timeout')
 
