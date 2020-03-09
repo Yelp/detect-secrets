@@ -207,15 +207,15 @@ def _print_secrets_found(secrets):
 
 def _print_mitigation_suggestions():
     security_team = os.environ.get(
-        "DETECT_SECRETS_SECURITY_TEAM",
-        "in #security"
+        'DETECT_SECRETS_SECURITY_TEAM',
+        'in #security'
     )
     suggestions = [
-        "For information about putting your secrets in a safer place, "
-        "please ask " + security_team,
-        "Mark false positives with an inline"
-        "`pragma: allowlist secret` comment",
-        "Commit with `--no-verify` if this is a one-time false positive",
+        'For information about putting your secrets in a safer place, ' +
+        'please ask ' + security_team,
+        'Mark false positives with an inline ' +
+        '`pragma: allowlist secret` comment',
+        'Commit with `--no-verify` if this is a one-time false positive',
     ]
 
     wrapper = textwrap.TextWrapper(
