@@ -208,7 +208,7 @@ def _print_secrets_found(secrets):
 def _print_mitigation_suggestions():
     security_team = os.environ.get(
         'DETECT_SECRETS_SECURITY_TEAM',
-        'in #security'
+        'in #security',
     )
     suggestions = [
         'For information about putting your secrets in a safer place, ' +
