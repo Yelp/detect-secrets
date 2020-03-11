@@ -46,6 +46,7 @@ class TestGheDetector(object):
             (':anothersyntax!', 'pwd::anothersyntax!', True),
             ('@#!%#', 'DB2_PASSWORD = "@#!%#"', True),
             ('pass', 'dashdb-password = "pass"', True),
+            ('pass', 'dashdb-password = pass\r', True),
             ('', 'dashdb_host = notapassword', False),
             ('', 'someotherpassword = "doesnt start right"', False),
         ],
