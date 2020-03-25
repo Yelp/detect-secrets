@@ -144,7 +144,7 @@ class HighEntropyStringsPlugin(BasePlugin):
     def adhoc_scan(self, string):
         # Since it's an individual string, it's just bad UX to require quotes
         # around the expected secret.
-        with self.non_quoted_string_regex():
+        with self.non_quoted_string_regex(is_exact_match=False):
             results = self.analyze_line(
                 string,
                 line_num=0,
@@ -153,24 +153,51 @@ class HighEntropyStringsPlugin(BasePlugin):
 
             # NOTE: Trailing space allows for nicer formatting
             output = 'False' if not results else 'True '
-            if self.regex.search(string):
+            if results:
+                # We currently assume that there's at most one secret per line.
                 output += ' ({})'.format(
-                    round(self.calculate_shannon_entropy(string), 3),
+                    round(
+                        self.calculate_shannon_entropy(
+                            list(results.keys())[0].secret_value,
+                        ),
+                        3,
+                    ),
                 )
+            elif ' ' not in string:
+                # In the case where the string is a single word, and it
+                # matches the regex, we can show the entropy calculation,
+                # to assist investigation when it's unclear *why* something
+                # is not flagged.
+                #
+                # Conversely, if there are multiple words in the string,
+                # the entropy value would be confusing, since it's not clear
+                # which word the entropy is calculated for.
+                matches = self.regex.search(string)
+                if matches and matches.group(1) == string:
+                    output += ' ({})'.format(
+                        round(self.calculate_shannon_entropy(string), 3),
+                    )
 
             return output
 
     @contextmanager
-    def non_quoted_string_regex(self):
+    def non_quoted_string_regex(self, is_exact_match=True):
         """For certain file formats, strings need not necessarily follow the
         normal convention of being denoted by single or double quotes. In these
         cases, we modify the regex accordingly.
 
         Public, because detect_secrets.core.audit needs to reference it.
+
+        :param is_exact_match: True if you need to scan the string itself.
+            However, if the string is a line of text, and you want to see
+            whether a secret exists in this line, use False.
         """
         old_regex = self.regex
 
-        regex_alternative = r'^([{}]+)$'.format(re.escape(self.charset))
+        regex_alternative = r'([{}]+)'.format(re.escape(self.charset))
+        if is_exact_match:
+            regex_alternative = r'^' + regex_alternative + r'$'
+
         self.regex = re.compile(regex_alternative)
 
         try:

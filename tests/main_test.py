@@ -136,6 +136,11 @@ class TestMain(object):
                 'False (2.252)',
                 'False',
             ),
+            (
+                'key: 012345678ab',
+                'False',
+                'True  (3.459)',
+            ),
         ],
     )
     def test_scan_string_basic(
