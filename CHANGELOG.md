@@ -26,6 +26,10 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 ### Unreleased
 
+
+# v0.13.1
+##### March 26th, 2020
+
 #### :tada: New Features
 
 - Adding plugin for IBM's Cloudant ([#261], thanks [@killuazhu])
@@ -36,9 +40,20 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#263]: https://github.com/Yelp/detect-secrets/pull/263
 [#267]: https://github.com/Yelp/detect-secrets/pull/267
 
+#### :sparkles: Usability
 
+- Support for `DETECT_SECRETS_SECURITY_TEAM` environment variable to customize
+  the pre-commit hook error message ([#283], thanks [@0atman])
 
-# v0.13.0
+[#283]: https://github.com/Yelp/detect-secrets/pull/283
+
+#### :bug: Bugfixes
+
+- Adhoc `HighEntropyString` scanning supports multiple words ([#287])
+
+[#287]: https://github.com/Yelp/detect-secrets/pull/287
+
+### v0.13.0
 ##### October 28th, 2019
 
 #### :newspaper: News
