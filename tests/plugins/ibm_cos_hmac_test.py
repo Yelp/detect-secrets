@@ -22,30 +22,74 @@ class TestIbmCosHmacDetector(object):
     @pytest.mark.parametrize(
         'payload, should_flag',
         [
-            ('"secret_access_key": "1234567890abcdef1234567890abcdef1234567890abcdef"', True),
-            ('secret_access_key=1234567890abcdef1234567890abcdef1234567890abcdef', True),
-            ('secret_access_key="1234567890abcdef1234567890abcdef1234567890abcdef"', True),
-            ('secret_access_key=\'1234567890abcdef1234567890abcdef1234567890abcdef\'', True),
-            ('secret_access_key = "1234567890abcdef1234567890abcdef1234567890abcdef"', True),
             (
-                'COS_HMAC_SECRET_ACCESS_KEY = "1234567890abcdef1234567890abcdef1234567890abcdef"',
+                '"secret_access_key": "{secret}"'.format(secret=SECRET_ACCESS_KEY),
                 True,
             ),
             (
-                'ibm_cos_SECRET_ACCESS_KEY = "1234567890abcdef1234567890abcdef1234567890abcdef"',
+                '"secret_access_key": "{secret}extra"'.format(secret=SECRET_ACCESS_KEY),
+                False,
+            ),
+            (
+                'secret_access_key={secret}'.format(secret=SECRET_ACCESS_KEY),
                 True,
             ),
             (
-                'ibm_cos_secret_access_key = "1234567890abcdef1234567890abcdef1234567890abcdef"',
+                'secret_access_key={secret}extra'.format(secret=SECRET_ACCESS_KEY),
+                False,
+            ),
+            (
+                'secret_access_key="{secret}"'.format(secret=SECRET_ACCESS_KEY),
                 True,
             ),
-            ('ibm_cos_secret_key = "1234567890abcdef1234567890abcdef1234567890abcdef"', True),
-            ('cos_secret_key = "1234567890abcdef1234567890abcdef1234567890abcdef"', True),
-            ('ibm-cos_secret_key = "1234567890abcdef1234567890abcdef1234567890abcdef"', True),
-            ('cos-hmac_secret_key = "1234567890abcdef1234567890abcdef1234567890abcdef"', True),
-            ('coshmac_secret_key = "1234567890abcdef1234567890abcdef1234567890abcdef"', True),
-            ('ibmcoshmac_secret_key = "1234567890abcdef1234567890abcdef1234567890abcdef"', True),
-            ('ibmcos_secret_key = "1234567890abcdef1234567890abcdef1234567890abcdef"', True),
+            (
+                'secret_access_key=\'{secret}\''.format(secret=SECRET_ACCESS_KEY),
+                True,
+            ),
+            (
+                'secret_access_key = "{secret}"'.format(secret=SECRET_ACCESS_KEY),
+                True,
+            ),
+            (
+                'COS_HMAC_SECRET_ACCESS_KEY = "{secret}"'.format(secret=SECRET_ACCESS_KEY),
+                True,
+            ),
+            (
+                'ibm_cos_SECRET_ACCESS_KEY = "{secret}"'.format(secret=SECRET_ACCESS_KEY),
+                True,
+            ),
+            (
+                'ibm_cos_secret_access_key = "{secret}"'.format(secret=SECRET_ACCESS_KEY),
+                True,
+            ),
+            (
+                'ibm_cos_secret_key = "{secret}"'.format(secret=SECRET_ACCESS_KEY),
+                True,
+            ),
+            (
+                'cos_secret_key = "{secret}"'.format(secret=SECRET_ACCESS_KEY),
+                True,
+            ),
+            (
+                'ibm-cos_secret_key = "{secret}"'.format(secret=SECRET_ACCESS_KEY),
+                True,
+            ),
+            (
+                'cos-hmac_secret_key = "{secret}"'.format(secret=SECRET_ACCESS_KEY),
+                True,
+            ),
+            (
+                'coshmac_secret_key = "{secret}"'.format(secret=SECRET_ACCESS_KEY),
+                True,
+            ),
+            (
+                'ibmcoshmac_secret_key = "{secret}"'.format(secret=SECRET_ACCESS_KEY),
+                True,
+            ),
+            (
+                'ibmcos_secret_key = "{secret}"'.format(secret=SECRET_ACCESS_KEY),
+                True,
+            ),
             ('not_secret = notapassword', False),
             ('someotherpassword = "doesnt start right"', False),
         ],
@@ -55,6 +99,8 @@ class TestIbmCosHmacDetector(object):
 
         output = logic.analyze_line(payload, 1, 'mock_filename')
         assert len(output) == int(should_flag)
+        if should_flag:
+            assert list(output.values())[0].secret_value == SECRET_ACCESS_KEY
 
     @patch('detect_secrets.plugins.ibm_cos_hmac.verify_ibm_cos_hmac_credentials')
     def test_verify_invalid_secret(self, mock_hmac_verify):
