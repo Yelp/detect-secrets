@@ -22,7 +22,7 @@ class IbmCosHmacDetector(RegexBasedDetector):
 
     token_prefix = r'(?:(?:ibm)?[-_]?cos[-_]?(?:hmac)?|)'
     password_keyword = r'(?:secret[-_]?(?:access)?[-_]?key)'
-    password = r'([a-f0-9]{48})'
+    password = r'([a-f0-9]{48}(?![a-f0-9]))'
     denylist = (
         RegexBasedDetector.assign_regex_generator(
             prefix_regex=token_prefix,

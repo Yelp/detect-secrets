@@ -44,9 +44,12 @@ class TestIBMCloudIamDetector(object):
             ('ibm-cloud_api_key:={cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             ('"cloud_iam_api_key":="{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             ('ibm_iam_key:= "{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
+            ('ibm_iam_key:= "{cloud_iam_key}extra"'.format(cloud_iam_key=CLOUD_IAM_KEY), False),
             ('ibm_api_key:="{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             ('ibm_password = "{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             ('ibm-cloud-pwd = {cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
+            ('ibm-cloud-pwd = {cloud_iam_key}extra'.format(cloud_iam_key=CLOUD_IAM_KEY), False),
+            ('ibm-cloud-pwd = shorter-version', False),
             ('apikey:{cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             ('iam_api_key="%s" % IBM_IAM_API_KEY_ENV', False),
             ('CLOUD_APIKEY: "insert_key_here"', False),
@@ -59,6 +62,8 @@ class TestIBMCloudIamDetector(object):
 
         output = logic.analyze_string_content(payload, 1, 'mock_filename')
         assert len(output) == (1 if should_flag else 0)
+        if should_flag:
+            assert list(output.values())[0].secret_value == CLOUD_IAM_KEY
 
     @responses.activate
     def test_verify_invalid_secret(self):
