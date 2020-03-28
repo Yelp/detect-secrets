@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 try:
     from backports import configparser
 except ImportError:  # pragma: no cover

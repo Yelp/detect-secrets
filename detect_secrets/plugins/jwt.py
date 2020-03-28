@@ -1,8 +1,6 @@
 """
 This plugin finds JWT tokens
 """
-from __future__ import absolute_import
-
 import base64
 import json
 import re

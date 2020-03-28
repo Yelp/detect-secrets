@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 try:
     from backports import configparser
 except ImportError:  # pragma: no cover

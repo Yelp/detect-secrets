@@ -1,8 +1,6 @@
 """
 This plugin searches for Twilio API keys
 """
-from __future__ import absolute_import
-
 import re
 
 from .base import RegexBasedDetector

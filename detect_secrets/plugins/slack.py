@@ -1,8 +1,6 @@
 """
 This plugin searches for Slack tokens
 """
-from __future__ import absolute_import
-
 import re
 
 import requests
