@@ -210,28 +210,21 @@ class SecretsCollection(object):
                     ),
                 )
 
-    def scan_file(self, filename, filename_key=None):
+    def scan_file(self, filename):
         """Scans a specified file, and adds information to self.data
 
         :type filename: str
         :param filename: full path to file to scan.
 
-        :type filename_key: str
-        :param filename_key: key to store in self.data
-
         :returns: boolean; though this value is only used for testing
         """
-
-        if not filename_key:
-            filename_key = filename
-
         if os.path.islink(filename):
             return False
         if os.path.splitext(filename)[1] in IGNORED_FILE_EXTENSIONS:
             return False
         try:
             with codecs.open(filename, encoding='utf-8') as f:
-                self._extract_secrets_from_file(f, filename_key)
+                self._extract_secrets_from_file(f, filename)
 
             return True
         except IOError:
