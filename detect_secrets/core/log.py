@@ -7,7 +7,7 @@ def get_logger(name=None, format_string=None):
     :type name: str
     :param name: used for declaring log channels.
 
-    :type format_string: str
+    :type format_string: str|None
     :param format_string: for custom formatting
     """
     logging.captureWarnings(True)
@@ -18,14 +18,15 @@ def get_logger(name=None, format_string=None):
     log.set_debug_level = _set_debug_level.__get__(log)
     log.set_debug_level(0)
 
-    if not format_string:
-        format_string = '[%(module)s]\t%(levelname)s\t%(message)s'
-
     # Setting up log formats
     log.handlers = []
     handler = logging.StreamHandler(sys.stderr)
     handler.setFormatter(
-        logging.Formatter(format_string),
+        logging.Formatter(
+            format_string
+            or
+            '[%(module)s]\t%(levelname)s\t%(message)s',
+        ),
     )
     log.addHandler(handler)
 

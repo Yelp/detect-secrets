@@ -281,12 +281,9 @@ class PluginDescriptor(
     ),
 ):
     def __new__(cls, related_args=None, **kwargs):
-        if not related_args:
-            related_args = []
-
         return super(PluginDescriptor, cls).__new__(
             cls,
-            related_args=related_args,
+            related_args=related_args or [],
             **kwargs
         )
 
