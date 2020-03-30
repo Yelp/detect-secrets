@@ -7,11 +7,7 @@ import sys
 from builtins import input
 from collections import defaultdict
 from copy import deepcopy
-
-try:
-    from functools import lru_cache
-except ImportError:  # pragma: no cover
-    from functools32 import lru_cache
+from functools import lru_cache
 
 from ..plugins.common import initialize
 from ..plugins.common.util import get_mapping_from_secret_type_to_class_name

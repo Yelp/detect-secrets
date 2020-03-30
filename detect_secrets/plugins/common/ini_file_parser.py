@@ -1,7 +1,4 @@
-try:
-    from backports import configparser
-except ImportError:  # pragma: no cover
-    import configparser
+import configparser
 import re
 
 

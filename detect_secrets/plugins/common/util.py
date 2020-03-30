@@ -1,10 +1,6 @@
-try:
-    from functools import lru_cache
-except ImportError:  # pragma: no cover
-    from functools32 import lru_cache
-
 import os
 from abc import abstractproperty
+from functools import lru_cache
 from importlib import import_module
 
 from detect_secrets.plugins.base import BasePlugin

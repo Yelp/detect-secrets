@@ -1,8 +1,5 @@
-try:
-    from backports import configparser
-except ImportError:  # pragma: no cover
-    import configparser
 import base64
+import configparser
 import math
 import re
 import string
