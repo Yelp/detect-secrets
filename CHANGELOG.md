@@ -24,7 +24,9 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [@xxxx]: https://github.com/xxxx
 -->
 
+<!--
 ### Unreleased
+-->
 
 
 # v0.13.1
@@ -651,6 +653,7 @@ This includes using `# pragma: allowlist secret` now for inline allowlisting.
 
 # Special thanks to our awesome contributors! :clap:
 
+- [@0atman]
 - [@adrianbn]
 - [@baboateng]
 - [@cclauss]
@@ -674,6 +677,7 @@ This includes using `# pragma: allowlist secret` now for inline allowlisting.
 - [@whathejoe]
 - [@zioalex]
 
+[@0atman]: https://github.com/0atman
 [@adrianbn]: https://github.com/adrianbn
 [@baboateng]: https://github.com/baboateng
 [@cclauss]: https://github.com/cclauss
