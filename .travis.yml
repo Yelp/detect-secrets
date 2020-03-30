@@ -11,8 +11,6 @@ matrix:
         - env: TOXENV=py38
           python: 3.8
           dist: xenial  # Required for Python >= 3.7 (travis-ci/travis-ci#9069)
-        - env: TOXENV=pypy3
-          python: pypy3.5-8.0.0
 install:
     - pip install tox
 script: make test
