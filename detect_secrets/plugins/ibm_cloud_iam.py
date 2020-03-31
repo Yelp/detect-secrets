@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 import requests
 
 from .base import RegexBasedDetector

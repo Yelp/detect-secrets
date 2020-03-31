@@ -1,8 +1,6 @@
 """
 This plugin searches for AWS key IDs
 """
-from __future__ import absolute_import
-
 import hashlib
 import hmac
 import re

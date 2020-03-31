@@ -12,7 +12,7 @@ setup(
     long_description=(
         'Check out detect-secrets on `GitHub <https://github.com/Yelp/detect-secrets>`_!'
     ),
-    license='Copyright Yelp, Inc. 2018',
+    license='Copyright Yelp, Inc. 2020',
     author='Aaron Loo',
     author_email='aaronloo@yelp.com',
     url='https://github.com/Yelp/detect-secrets',
@@ -23,12 +23,6 @@ setup(
         'requests',
     ],
     extras_require={
-        ':python_version=="2.7"': [
-            'configparser',
-            'enum34',
-            'future',
-            'functools32',
-        ],
         'word_list': [
             'pyahocorasick',
         ],
@@ -40,7 +34,6 @@ setup(
         ],
     },
     classifiers=[
-        'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: Apache Software License',
         'Intended Audience :: Developers',

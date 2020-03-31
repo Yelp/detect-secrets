@@ -1,11 +1,6 @@
 import hashlib
 import os
 import subprocess
-import sys
-
-
-def is_python_2():
-    return sys.version_info[0] < 3
 
 
 def build_automaton(word_list):

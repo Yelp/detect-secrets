@@ -1,9 +1,4 @@
-from __future__ import unicode_literals
-
-try:
-    from backports import configparser
-except ImportError:  # pragma: no cover
-    import configparser
+import configparser
 import re
 
 
@@ -37,12 +32,7 @@ class IniFileParser(object):
         :param exclude_lines_regex: optional regex for ignored lines.
         """
         self.parser = configparser.ConfigParser()
-        try:
-            # Python2.7 compatible
-            self.parser.optionxform = unicode
-        except NameError:  # pragma: no cover
-            # Python3 compatible
-            self.parser.optionxform = str
+        self.parser.optionxform = str
 
         self.exclude_lines_regex = exclude_lines_regex
 
@@ -52,12 +42,7 @@ class IniFileParser(object):
             # like config files, without a section header.
             content = '[global]\n' + content
 
-        try:
-            # Python2.7 compatible
-            self.parser.read_string(unicode(content))
-        except NameError:  # pragma: no cover
-            # Python3 compatible
-            self.parser.read_string(content)
+        self.parser.read_string(content)
 
         # Hacky way to keep track of line location
         file.seek(0)
