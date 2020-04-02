@@ -39,11 +39,15 @@ from detect_secrets.core.potential_secret import PotentialSecret
 DENYLIST = (
     'apikey',
     'api_key',
+    'api-key',
     'aws_secret_access_key',
+    'aws-secret-access-key',
     'db_pass',
+    'db-pass',
     'password',
     'passwd',
     'private_key',
+    'private-key',
     'secret',
     'secrete',
 )
