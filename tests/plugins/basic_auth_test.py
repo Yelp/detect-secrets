@@ -5,7 +5,7 @@ import pytest
 from detect_secrets.plugins.basic_auth import BasicAuthDetector
 
 
-class TestBasicAuthDetector(object):
+class TestBasicAuthDetector:
 
     @pytest.mark.parametrize(
         'payload, should_flag',

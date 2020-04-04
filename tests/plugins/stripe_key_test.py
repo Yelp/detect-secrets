@@ -7,7 +7,7 @@ from detect_secrets.plugins.stripe import StripeDetector
 from testing.mocks import mock_file_object
 
 
-class TestStripeKeyDetector(object):
+class TestStripeKeyDetector:
 
     @pytest.mark.parametrize(
         'file_content,should_flag',

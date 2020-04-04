@@ -7,7 +7,7 @@ from detect_secrets.plugins.slack import SlackDetector
 from testing.mocks import mock_file_object
 
 
-class TestSlackDetector(object):
+class TestSlackDetector:
 
     @pytest.mark.parametrize(
         'file_content',

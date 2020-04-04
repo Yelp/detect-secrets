@@ -7,7 +7,7 @@ from detect_secrets.plugins.private_key import PrivateKeyDetector
 from testing.mocks import mock_file_object
 
 
-class TestPrivateKeyDetector(object):
+class TestPrivateKeyDetector:
 
     @pytest.mark.parametrize(
         'file_content',

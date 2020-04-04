@@ -5,7 +5,7 @@ import pytest
 from detect_secrets.plugins.artifactory import ArtifactoryDetector
 
 
-class TestArtifactoryDetector(object):
+class TestArtifactoryDetector:
 
     @pytest.mark.parametrize(
         'payload, should_flag',

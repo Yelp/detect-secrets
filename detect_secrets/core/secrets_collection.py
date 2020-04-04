@@ -13,7 +13,7 @@ from detect_secrets.plugins.common import initialize
 from detect_secrets.util import build_automaton
 
 
-class SecretsCollection(object):
+class SecretsCollection:
 
     def __init__(
         self,

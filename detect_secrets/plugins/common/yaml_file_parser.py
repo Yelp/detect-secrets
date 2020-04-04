@@ -3,7 +3,7 @@ import yaml
 from .constants import ALLOWLIST_REGEX
 
 
-class YamlFileParser(object):
+class YamlFileParser:
     """
     Yaml config files are interesting, because they don't necessarily conform
     to our basic regex for detecting HighEntropyStrings as strings don't

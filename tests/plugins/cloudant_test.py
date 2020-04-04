@@ -17,7 +17,7 @@ CL_PW = 'abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234'
 CL_API_KEY = 'abcdefghijabcdefghijabcd'
 
 
-class TestCloudantDetector(object):
+class TestCloudantDetector:
 
     @pytest.mark.parametrize(
         'payload, should_flag',

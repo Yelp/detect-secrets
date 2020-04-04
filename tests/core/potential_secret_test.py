@@ -6,7 +6,7 @@ import pytest
 from testing.factories import potential_secret_factory
 
 
-class TestPotentialSecret(object):
+class TestPotentialSecret:
 
     @pytest.mark.parametrize(
         'a, b, is_equal',

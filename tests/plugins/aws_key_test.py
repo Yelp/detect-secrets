@@ -15,7 +15,7 @@ from testing.mocks import mock_file_object
 EXAMPLE_SECRET = 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'
 
 
-class TestAWSKeyDetector(object):
+class TestAWSKeyDetector:
 
     def setup(self):
         self.example_key = 'AKIAZZZZZZZZZZZZZZZZ'

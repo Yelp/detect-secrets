@@ -42,7 +42,7 @@ def add_no_verify_flag(parser):
     )
 
 
-class ParserBuilder(object):
+class ParserBuilder:
 
     def __init__(self):
         self.parser = argparse.ArgumentParser()
@@ -133,7 +133,7 @@ class ParserBuilder(object):
         return self
 
 
-class ScanOptions(object):
+class ScanOptions:
 
     def __init__(self, subparser):
         self.parser = subparser.add_parser(
@@ -209,7 +209,7 @@ class ScanOptions(object):
         )
 
 
-class AuditOptions(object):
+class AuditOptions:
 
     def __init__(self, subparser):
         self.parser = subparser.add_parser(
@@ -320,7 +320,7 @@ class PluginDescriptor(
         return 'Disables {}'.format(line)
 
 
-class PluginOptions(object):
+class PluginOptions:
 
     all_plugins = [
         PluginDescriptor.from_plugin_class(plugin, name)

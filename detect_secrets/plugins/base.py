@@ -24,7 +24,7 @@ class classproperty(property):
         return classmethod(self.fget).__get__(None, owner)()
 
 
-class BasePlugin(object):
+class BasePlugin:
     """
     This is an abstract class to define Plugins API.
 

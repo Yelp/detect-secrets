@@ -10,7 +10,7 @@ from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
 from testing.mocks import mock_file_object
 
 
-class HighEntropyStringsTest(object):
+class HighEntropyStringsTest:
     """
     Some explaining should be done regarding the "enforced" format of the parametrized
     abstract pytests.

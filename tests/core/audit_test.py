@@ -21,7 +21,7 @@ def reset_file_cache():
     audit._open_file_with_cache.cache_clear()
 
 
-class TestAuditBaseline(object):
+class TestAuditBaseline:
 
     def test_no_baseline(self, mock_printer):
         with self.mock_env(baseline='') as m:
@@ -310,7 +310,7 @@ class TestAuditBaseline(object):
         }
 
 
-class TestCompareBaselines(object):
+class TestCompareBaselines:
 
     def test_raises_error_if_comparing_same_file(self):
         with pytest.raises(audit.RedundantComparisonError):
@@ -486,7 +486,7 @@ class TestCompareBaselines(object):
         }
 
 
-class TestDetermineAuditResults(object):
+class TestDetermineAuditResults:
 
     @pytest.fixture
     def mock_get_raw_secret_value(self):
@@ -724,7 +724,7 @@ class TestPrintAuditResults():
         assert expected_message in mock_printer.message
 
 
-class TestPrintContext(object):
+class TestPrintContext:
 
     def run_logic(
         self,
@@ -1028,7 +1028,7 @@ class TestPrintContext(object):
         """)[1:-1]
 
 
-class TestGetUserDecision(object):
+class TestGetUserDecision:
 
     @pytest.mark.parametrize(
         'user_input, expected_value',
@@ -1086,7 +1086,7 @@ def mock_user_input(inputs):
     :type inputs: list
     :param inputs: list of user choices
     """
-    class InputShim(object):
+    class InputShim:
         def __init__(self):
             self.message = ''
             self.index = 0

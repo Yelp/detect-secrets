@@ -175,7 +175,7 @@ STANDARD_POSITIVES.extend(
 )
 
 
-class TestKeywordDetector(object):
+class TestKeywordDetector:
 
     @pytest.mark.parametrize(
         'file_content',

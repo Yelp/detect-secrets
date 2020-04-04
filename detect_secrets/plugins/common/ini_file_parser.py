@@ -17,7 +17,7 @@ class EfficientParsingError(configparser.ParsingError):
 configparser.ParsingError = EfficientParsingError
 
 
-class IniFileParser(object):
+class IniFileParser:
 
     _comment_regex = re.compile(r'\s*[;#]')
 

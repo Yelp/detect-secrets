@@ -74,7 +74,7 @@ def get_plugin_report(extra=None):
     ) + '\n'
 
 
-class TestMain(object):
+class TestMain:
     """These are smoke tests for the console usage of detect_secrets.
     Most of the functional test cases should be within their own module tests.
     """

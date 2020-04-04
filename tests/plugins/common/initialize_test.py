@@ -8,7 +8,7 @@ from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
 from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
 
 
-class TestFromPluginClassname(object):
+class TestFromPluginClassname:
 
     def test_success(self):
         plugin = initialize.from_plugin_classname(
@@ -39,7 +39,7 @@ class TestFromPluginClassname(object):
             )
 
 
-class TestFromSecretType(object):
+class TestFromSecretType:
 
     def setup(self):
         self.settings = [
