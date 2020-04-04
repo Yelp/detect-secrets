@@ -32,7 +32,7 @@ def main(argv=None):
         # If baseline is provided, we first want to make sure
         # it's valid, before doing any further computation.
         baseline_collection = get_baseline(args.baseline[0])
-    except (IOError, ValueError):
+    except (IOError, TypeError, ValueError):
         # Error logs handled within logic.
         return 1
 
