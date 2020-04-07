@@ -156,6 +156,8 @@ class SecretsCollection:
         at incremental differences, rather than re-scanning the codebase every time.
         This function supports this, and adds information to self.data.
 
+        Note that this is only called by detect-secrets-server.
+
         :type diff: str
         :param diff: diff string.
                      e.g. The output of `git diff <fileA> <fileB>`
@@ -338,6 +340,7 @@ class SecretsCollection:
         """Extract secrets from a given patch file object.
 
         Note that we only want to capture incoming secrets (so added lines).
+        Note that this is only called by detect-secrets-server.
 
         :type f: unidiff.patch.PatchedFile
         :type plugin: detect_secrets.plugins.base.BasePlugin

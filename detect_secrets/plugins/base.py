@@ -70,17 +70,15 @@ class BasePlugin:
         :param false_positive_heuristics: List of fp-heuristic functions
         applicable to this plugin
         """
-        self.exclude_lines_regex = None
-        if exclude_lines_regex:
-            self.exclude_lines_regex = re.compile(exclude_lines_regex)
+        self.exclude_lines_regex = (
+            re.compile(exclude_lines_regex)
+            if exclude_lines_regex
+            else None
+        )
 
         self.should_verify = should_verify
 
-        self.false_positive_heuristics = (
-            false_positive_heuristics
-            if false_positive_heuristics
-            else []
-        )
+        self.false_positive_heuristics = false_positive_heuristics or []
 
     @classproperty
     def disable_flag_text(cls):
@@ -101,6 +99,19 @@ class BasePlugin:
     def default_options(cls):
         return {}
 
+    def _is_excluded_line(self, line):
+        return (
+            any(
+                allowlist_regex.search(line)
+                for allowlist_regex in ALLOWLIST_REGEXES
+            )
+            or
+            (
+                self.exclude_lines_regex and
+                self.exclude_lines_regex.search(line)
+            )
+        )
+
     def analyze(self, file, filename):
         """
         :param file:     The File object itself.
@@ -114,6 +125,13 @@ class BasePlugin:
         file_lines = tuple(file.readlines())
         for line_num, line in enumerate(file_lines, start=1):
             results = self.analyze_line(line, line_num, filename)
+            if (
+                not results
+                or
+                self._is_excluded_line(line)
+            ):
+                continue
+
             if not self.should_verify:
                 potential_secrets.update(results)
                 continue
@@ -146,18 +164,6 @@ class BasePlugin:
 
         NOTE: line_num and filename are used for PotentialSecret creation only.
         """
-        if (
-            any(
-                allowlist_regex.search(string) for allowlist_regex in ALLOWLIST_REGEXES
-            )
-
-            or (
-                self.exclude_lines_regex and
-                self.exclude_lines_regex.search(string)
-            )
-        ):
-            return {}
-
         return self.analyze_string_content(
             string,
             line_num,

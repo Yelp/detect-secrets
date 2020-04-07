@@ -297,18 +297,29 @@ class TestHexHighEntropyStrings(HighEntropyStringsTest):
         )
 
         # This makes sure discounting works.
-        assert self.logic.calculate_shannon_entropy('0123456789') < \
+        assert (
+            self.logic.calculate_shannon_entropy('0123456789')
+            <
             original_scanner.calculate_shannon_entropy('0123456789')
-
+        )
         # This is the goal.
         assert self.logic.calculate_shannon_entropy('0123456789') < 3
 
         # This makes sure it is length dependent.
-        assert self.logic.calculate_shannon_entropy('0123456789') < \
+        assert (
+            self.logic.calculate_shannon_entropy('0123456789')
+            <
             self.logic.calculate_shannon_entropy('01234567890123456789')
+        )
 
         # This makes sure it only occurs with numbers.
-        assert self.logic.calculate_shannon_entropy('12345a') == \
+        assert (
+            self.logic.calculate_shannon_entropy('12345a')
+            ==
             original_scanner.calculate_shannon_entropy('12345a')
-        assert self.logic.calculate_shannon_entropy('0') == \
+        )
+        assert (
+            self.logic.calculate_shannon_entropy('0')
+            ==
             original_scanner.calculate_shannon_entropy('0')
+        )
