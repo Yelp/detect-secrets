@@ -71,6 +71,9 @@ This project is written in Python. Here are the dependencies needed to run the t
     - `pypy`
 - `tox` installed via pip or your os package manager
 - `make`
+- `precommit`
+    - `pip install pre-commit`
+    - `pre-commit install`
 
 #### Installing via pyenv
 
@@ -90,23 +93,9 @@ docker-compose build test && docker-compose run --rm test
 
 ## Plugins
 
-Each of the checks are developed as plugins in the [detect_secrets/plugins](/tree/master/detect_secrets/plugins) directory. Each plugin represent a single test or a group of tests. The following is a list of the currently developed plugins:
+Each of the secret checks are developed as plugins in the [detect_secrets/plugins](/tree/master/detect_secrets/plugins) directory. Each plugin represents a single test or a group of tests.
 
-The current heuristic searches we implement out of the box include:
-
-* **Base64HighEntropyString**: checks for all strings matching the Base64 character set, and alerts if their Shannon entropy is above a certain limit.
-
-* **HexHighEntropyString**: checks for all strings matching the Hex character set, and alerts if their Shannon entropy is above a certain limit.
-
-* **PrivateKeyDetector**: checks to see if any private keys are committed.
-
-* **BasicAuthDetector**: checks to see if BasicAuth is used e.g. `https://username:password@example.com`
-
-* **KeywordDetector**: checks to see if certain keywords are being used e.g. `password` or `secret`
-
-* **ArtifactoryDetector**: checks to see if Artifactory credentials are present.
-
-* **GheDetector**: checks to see if GitHub credentials are present.
+Refer to the plugin directory above for the list of supported secret detectors.
 
 ## IBM versioning and rebase guide
 
