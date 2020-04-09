@@ -89,7 +89,7 @@ class TestGheDetector(object):
                host={},
                port={}'''.format(DB2_USER, DB2_PASSWORD, DB2_DATABASE, DB2_HOSTNAME, DB2_PORT),
             potential_secret,
-        ) == VerifiedResult.VERIFIED_FALSE
+        ) == VerifiedResult.UNVERIFIED
 
         mock_db2_connect.assert_called_with(DB2_CONN_STRING, '', '')
 

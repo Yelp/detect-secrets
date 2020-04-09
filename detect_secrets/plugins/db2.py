@@ -172,10 +172,11 @@ def verify_db2_credentials(
         else:
             return VerifiedResult.VERIFIED_FALSE
     except Exception as e:
-        if 'Timeout' in str(e):
-            return VerifiedResult.UNVERIFIED
-        else:
+        if 'invalid' in str(e).lower():
+            # Only return for true negative
             return VerifiedResult.VERIFIED_FALSE
+        else:
+            return VerifiedResult.UNVERIFIED
 
 
 def find_other_factor(content, factor_keyword_regex, factor_regex):
