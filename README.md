@@ -71,7 +71,7 @@ This project is written in Python. Here are the dependencies needed to run the t
     - `pypy`
 - `tox` installed via pip or your os package manager
 - `make`
-- `precommit`
+- `pre-commit`
     - `pip install pre-commit`
     - `pre-commit install`
 
