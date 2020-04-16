@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 import json
 from contextlib import contextmanager
 
@@ -28,7 +26,7 @@ def assert_commit_succeeds(command):
     assert pre_commit_hook.main(command.split()) == 0
 
 
-class TestPreCommitHook(object):
+class TestPreCommitHook:
 
     def test_file_with_secrets(self, mock_log):
         assert_commit_blocked('test_data/files/file_with_secrets.py')

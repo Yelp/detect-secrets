@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 import pytest
 import responses
 
@@ -11,7 +9,7 @@ CLOUD_IAM_KEY = 'abcd1234abcd1234abcd1234ABCD1234ABCD1234--__'
 CLOUD_IAM_KEY_BYTES = b'abcd1234abcd1234abcd1234ABCD1234ABCD1234--__'
 
 
-class TestIBMCloudIamDetector(object):
+class TestIBMCloudIamDetector:
 
     @pytest.mark.parametrize(
         'payload, should_flag',

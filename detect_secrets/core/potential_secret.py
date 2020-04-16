@@ -1,7 +1,7 @@
 import hashlib
 
 
-class PotentialSecret(object):
+class PotentialSecret:
     """This custom data type represents a string found, matching the
     plugin rules defined in SecretsCollection, that has the potential
     to be a secret that we actually care about.

@@ -1,12 +1,10 @@
-from __future__ import absolute_import
-
 import pytest
 
 from detect_secrets.core.usage import ParserBuilder
 from detect_secrets.plugins.common.util import import_plugins
 
 
-class TestPluginOptions(object):
+class TestPluginOptions:
 
     @staticmethod
     def parse_args(argument_string=''):

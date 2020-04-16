@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 import json
 import random
 
@@ -21,7 +19,7 @@ from testing.mocks import mock_open
 from testing.mocks import SubprocessMock
 
 
-class TestInitializeBaseline(object):
+class TestInitializeBaseline:
 
     def setup(self):
         self.plugins = (
@@ -186,7 +184,7 @@ class TestInitializeBaseline(object):
         assert len(results.keys()) == 0
 
 
-class TestGetSecretsNotInBaseline(object):
+class TestGetSecretsNotInBaseline:
 
     def test_nothing_new(self):
         # We want a secret, but just a default secret (no overriding parameters)
@@ -292,7 +290,7 @@ class TestGetSecretsNotInBaseline(object):
         assert baseline.data == backup_baseline
 
 
-class TestUpdateBaselineWithRemovedSecrets(object):
+class TestUpdateBaselineWithRemovedSecrets:
 
     def test_deleted_secret(self):
         new_findings = secrets_collection_factory([
@@ -393,7 +391,7 @@ class TestUpdateBaselineWithRemovedSecrets(object):
         )
 
 
-class TestMergeBaseline(object):
+class TestMergeBaseline:
 
     def test_copies_is_secret_label_accurately(self):
         assert merge_baseline(
@@ -496,7 +494,7 @@ class TestMergeBaseline(object):
         pass
 
 
-class TestMergeResults(object):
+class TestMergeResults:
 
     def test_new_results_has_nothing(self):
         old_result = {
@@ -620,7 +618,7 @@ class TestMergeResults(object):
         }
 
 
-class TestFormatBaselineForOutput(object):
+class TestFormatBaselineForOutput:
 
     def test_sorts_by_line_number_then_hash(self):
         output_string = format_baseline_for_output({

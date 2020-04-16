@@ -13,7 +13,7 @@ from detect_secrets.plugins.common import initialize
 from detect_secrets.util import build_automaton
 
 
-class SecretsCollection(object):
+class SecretsCollection:
 
     def __init__(
         self,
@@ -155,6 +155,8 @@ class SecretsCollection(object):
         """For optimization purposes, our scanning strategy focuses on looking
         at incremental differences, rather than re-scanning the codebase every time.
         This function supports this, and adds information to self.data.
+
+        Note that this is only called by detect-secrets-server.
 
         :type diff: str
         :param diff: diff string.
@@ -338,6 +340,7 @@ class SecretsCollection(object):
         """Extract secrets from a given patch file object.
 
         Note that we only want to capture incoming secrets (so added lines).
+        Note that this is only called by detect-secrets-server.
 
         :type f: unidiff.patch.PatchedFile
         :type plugin: detect_secrets.plugins.base.BasePlugin

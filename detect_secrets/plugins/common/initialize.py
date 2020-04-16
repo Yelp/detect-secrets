@@ -165,7 +165,12 @@ def from_plugin_classname(
     try:
         klass = import_plugins()[plugin_classname]
     except KeyError:
-        log.warning('No such plugin to initialize.')
+        log.error('Error: No such `{}` plugin to initialize.'.format(plugin_classname))
+        log.error('Chances are you should run `pre-commit autoupdate`.')
+        log.error(
+            'This error occurs when using a baseline that was made by '
+            'a newer detect-secrets version than the one running.',
+        )
         raise TypeError
 
     try:

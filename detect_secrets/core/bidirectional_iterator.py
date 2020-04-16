@@ -1,4 +1,4 @@
-class BidirectionalIterator(object):
+class BidirectionalIterator:
     def __init__(self, collection):
         self.collection = collection
         self.index = -1  # Starts on -1, as index is increased _before_ getting result

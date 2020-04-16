@@ -1,6 +1,3 @@
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
 import ahocorasick
 import pytest
 
@@ -175,7 +172,7 @@ STANDARD_POSITIVES.extend(
 )
 
 
-class TestKeywordDetector(object):
+class TestKeywordDetector:
 
     @pytest.mark.parametrize(
         'file_content',

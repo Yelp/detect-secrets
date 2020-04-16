@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 import textwrap
 
 import pytest
@@ -17,7 +15,7 @@ ACCESS_KEY_ID = '1234567890abcdef1234567890abcdef'
 SECRET_ACCESS_KEY = '1234567890abcdef1234567890abcdef1234567890abcdef'
 
 
-class TestIbmCosHmacDetector(object):
+class TestIbmCosHmacDetector:
 
     @pytest.mark.parametrize(
         'payload, should_flag',

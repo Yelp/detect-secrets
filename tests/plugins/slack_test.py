@@ -1,13 +1,10 @@
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
 import pytest
 
 from detect_secrets.plugins.slack import SlackDetector
 from testing.mocks import mock_file_object
 
 
-class TestSlackDetector(object):
+class TestSlackDetector:
 
     @pytest.mark.parametrize(
         'file_content',
