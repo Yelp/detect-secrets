@@ -26,6 +26,7 @@ class TestSoftlayerDetector(object):
             ('http://api.softlayer.com/soap/v3/{sl_token}'.format(sl_token=SL_TOKEN), True),
             ('http://api.softlayer.com/soap/v3.1/{sl_token}'.format(sl_token=SL_TOKEN), True),
             ('softlayer_api_key: {sl_token}'.format(sl_token=SL_TOKEN), True),
+            ('api_key: {sl_token}'.format(sl_token=SL_TOKEN), True),
             ('softlayer-key : {sl_token}'.format(sl_token=SL_TOKEN), True),
             ('SOFTLAYER-API-KEY : "{sl_token}"'.format(sl_token=SL_TOKEN), True),
             ('"softlayer_api_key" : "{sl_token}"'.format(sl_token=SL_TOKEN), True),
