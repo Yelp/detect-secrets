@@ -61,7 +61,7 @@ class Db2Detector(RegexBasedDetector):
     # catch any character except newline and quotations, we exclude these
     # because the regex will erronously match them when present at the end of the password
     # db2 password requirements vary by version so we cast a broad net
-    password = r'([^\r\n"\']+)'
+    password = r'([^ ;,\r\n"\']+)'
     denylist = (
         re.compile(
             r'{begin}{opt_quote}{opt_db}{opt_dash_undrscr}{password_keyword}{opt_quote}{opt_space}'

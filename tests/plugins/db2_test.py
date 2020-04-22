@@ -39,6 +39,44 @@ class TestGheDetector(object):
                 'database=test;hostname=host.test.com;'
                 'port=1;protocol=tcpip;uid=testid;pwd=secret', True,
             ),
+            (
+                'secret',
+                'database=test;hostname=host.test.com;'
+                'port=1;protocol=tcpip;uid=testid;pwd=secret;', True,
+            ),
+            (
+                'secret',
+                'database=test;hostname=host.test.com;'
+                'port=1;protocol=tcpip;pwd=secret;uid=testid;', True,
+            ),
+            (
+                'secret',
+                'database=test,hostname=host.test.com,'
+                'port=1,protocol=tcpip,pwd=secret,uid=testid', True,
+            ),
+            (
+                'secret',
+                'database=test,hostname=host.test.com,'
+                'port=1,protocol=tcpip,uid=testid,pwd=secret', True,
+            ),
+            (
+                'secret',
+                'user=testid,\npassword=secret,\ndatabase=test,\n'
+                'hostname=host.test.com,\nport=1', True,
+            ),
+            (
+                'secret',
+                'user=testid\npassword=secret\ndatabase=test\n'
+                'hostname=host.test.com\nport=1', True,
+            ),
+            (
+                'secret',
+                'jdbc:db2://hostname.test.com:1/test:user=testid;password=secret;', True,
+            ),
+            (
+                'secret',
+                'jdbc:db2://hostname.test.com:1/test user=testid password=secret', True,
+            ),
             ('$omespeci@!ch@r$', 'dbpwd=$omespeci@!ch@r$', True),
             ('astring', 'db2_password = "astring"', True),
             ('Iusedb2!', '"password": "Iusedb2!"', True),
