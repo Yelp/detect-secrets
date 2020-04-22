@@ -91,6 +91,7 @@ class TestMain:
             should_scan_all_files=False,
             word_list_file=None,
             word_list_hash=None,
+            from_commit=None,
         )
 
     def test_scan_with_rootdir(self, mock_baseline_initialize):
@@ -105,6 +106,7 @@ class TestMain:
             should_scan_all_files=False,
             word_list_file=None,
             word_list_hash=None,
+            from_commit=None,
         )
 
     def test_scan_with_exclude_args(self, mock_baseline_initialize):
@@ -121,6 +123,7 @@ class TestMain:
             should_scan_all_files=False,
             word_list_file=None,
             word_list_hash=None,
+            from_commit=None,
         )
 
     @pytest.mark.parametrize(
@@ -187,6 +190,22 @@ class TestMain:
             should_scan_all_files=True,
             word_list_file=None,
             word_list_hash=None,
+            from_commit=None,
+        )
+
+    def test_scan_with_from_commit(self, mock_baseline_initialize):
+        with mock_stdin():
+            assert main('scan --from-commit=abc'.split()) == 0
+
+        mock_baseline_initialize.assert_called_once_with(
+            plugins=Any(tuple),
+            exclude_files_regex=None,
+            exclude_lines_regex=None,
+            path='.',
+            should_scan_all_files=False,
+            word_list_file=None,
+            word_list_hash=None,
+            from_commit='abc',
         )
 
     def test_reads_from_stdin(self, mock_merge_baseline):
@@ -196,6 +215,7 @@ class TestMain:
         mock_merge_baseline.assert_called_once_with(
             {'key': 'value'},
             Any(dict),
+            None,
         )
 
     def test_reads_old_baseline_from_file(self, mock_merge_baseline):
@@ -213,6 +233,7 @@ class TestMain:
         mock_merge_baseline.assert_called_once_with(
             {'key': 'value'},
             Any(dict),
+            None,
         )
 
     @pytest.mark.parametrize(

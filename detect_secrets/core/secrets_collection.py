@@ -14,6 +14,7 @@ from detect_secrets.util import build_automaton
 
 
 class SecretsCollection:
+    files_scanned = None
 
     def __init__(
         self,

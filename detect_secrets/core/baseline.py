@@ -12,13 +12,14 @@ log = get_logger(format_string='%(message)s')
 
 
 def initialize(
-    path,
-    plugins,
-    exclude_files_regex=None,
-    exclude_lines_regex=None,
-    word_list_file=None,
-    word_list_hash=None,
-    should_scan_all_files=False,
+        path,
+        plugins,
+        exclude_files_regex=None,
+        exclude_lines_regex=None,
+        word_list_file=None,
+        word_list_hash=None,
+        should_scan_all_files=False,
+        from_commit=None,
 ):
     """Scans the entire codebase for secrets, and returns a
     SecretsCollection object.
@@ -39,6 +40,9 @@ def initialize(
 
     :type should_scan_all_files: bool
 
+    :type from_commit: string|None
+    :param from_commit: optional sha1 reference to the commit to compare against.
+
     :rtype: SecretsCollection
     """
     output = SecretsCollection(
@@ -57,13 +61,22 @@ def initialize(
                     _get_files_recursively(element),
                 )
             else:
-                files_to_scan.extend(
-                    _get_git_tracked_files(element),
-                )
+                if from_commit:
+                    files_to_scan.extend(
+                        _get_git_diff_files(element, from_commit),
+                    )
+                else:
+                    files_to_scan.extend(
+                        _get_git_tracked_files(element),
+                    )
+
         elif os.path.isfile(element):
             files_to_scan.append(element)
         else:
             log.error('detect-secrets: %s: No such file or directory', element)
+
+    if from_commit:
+        output.files_scanned = []
 
     if not files_to_scan:
         return output
@@ -79,6 +92,9 @@ def initialize(
 
     for file in sorted(files_to_scan):
         output.scan_file(file)
+
+        if from_commit:
+            output.files_scanned.append(file)
 
     return output
 
@@ -186,7 +202,7 @@ def trim_baseline_of_removed_secrets(results, baseline, filelist):
     return updated
 
 
-def merge_baseline(old_baseline, new_baseline):
+def merge_baseline(old_baseline, new_baseline, scanned_files=None):
     """Updates baseline to be compatible with the latest version of
     detect-secrets.
 
@@ -202,17 +218,21 @@ def merge_baseline(old_baseline, new_baseline):
     :type new_baseline: dict
     :param new_baseline: most recent scan
 
+    :type scanned_files: list|None
+    :param scanned_files: the list of files we scanned
+
     :rtype: dict
     """
     new_baseline['results'] = merge_results(
         old_baseline['results'],
         new_baseline['results'],
+        checked=scanned_files,
     )
 
     return new_baseline
 
 
-def merge_results(old_results, new_results):
+def merge_results(old_results, new_results, checked=None):
     """Update results in baseline with latest information.
 
     :type old_results: dict
@@ -221,8 +241,18 @@ def merge_results(old_results, new_results):
     :type new_results: dict
     :param new_results: results to replace status quo
 
+    :type checked: list|None
+    :param checked: a list of files changed since the from_commit, or empty if no arg
+
     :rtype: dict
     """
+    # If there was a file with a secret in the old results that wasn't
+    # changed since the last commit, act as if we scanned it with the same outcome.
+    if checked:
+        for filename in old_results:
+            if filename not in checked and filename not in new_results:
+                new_results[filename] = old_results[filename]
+
     for filename, old_secrets in old_results.items():
         if filename not in new_results:
             continue
@@ -292,6 +322,44 @@ def _get_git_tracked_files(rootdir='.'):
             )
         for filename in git_files.decode('utf-8').split():
             relative_path = util.get_relative_path_if_in_cwd(rootdir, filename)
+            if relative_path:
+                output.append(relative_path)
+    except subprocess.CalledProcessError:
+        pass
+    return output
+
+
+def _get_git_diff_files(rootdir='.', from_commit=None):
+    """We may want to only return tracked files which have changed
+    since a certain commit ref.
+
+    :type rootdir: str
+    :param rootdir: root directory of where you want to list files from
+
+    :type from_commit: str
+    :param from_commit: reference of the commit to diff against
+
+    :rtype: set|None
+    :returns: filepaths to files which have changed since from_commit (locally)
+    """
+    output = []
+    try:
+        with open(os.devnull, 'w') as fnull:
+            git_files = subprocess.check_output(
+                [
+                    'git',
+                    '--no-pager',
+                    'diff',
+                    '--name-only',
+                    from_commit,
+                    rootdir,
+                ],
+                stderr=fnull,
+            )
+        for filename in git_files.decode('utf-8').split():
+            # As opposed to ls-files which gives path relative to -C, diff gives
+            # paths from git root directory
+            relative_path = util.get_relative_path_if_in_cwd('.', filename)
             if relative_path:
                 output.append(relative_path)
     except subprocess.CalledProcessError:

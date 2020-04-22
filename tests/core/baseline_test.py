@@ -40,6 +40,21 @@ class TestInitializeBaseline:
             should_scan_all_files=scan_all_files,
         ).json()
 
+    def get_git_diff_scanned_files(
+        self,
+        path=['./test_data/files'],
+        exclude_files_regex=None,
+        scan_all_files=False,
+        from_commit='abc',
+    ):
+        return baseline.initialize(
+            path,
+            self.plugins,
+            exclude_files_regex=exclude_files_regex,
+            should_scan_all_files=scan_all_files,
+            from_commit=from_commit,
+        )
+
     @pytest.mark.parametrize(
         'path',
         [
@@ -80,6 +95,74 @@ class TestInitializeBaseline:
             results = self.get_results(path=['./test_data/files'])
 
         assert not results
+
+    @pytest.mark.parametrize(
+        'path',
+        [
+            [
+                './test_data/files',
+            ],
+        ],
+    )
+    def test_git_diff_from_commit(self, path):
+        with mock_git_calls(
+                'detect_secrets.core.baseline.subprocess.check_output',
+                (
+                    SubprocessMock(
+                        expected_input='git --no-pager diff --name-only abc ./test_data/files',
+                        should_throw_exception=False,
+                        mocked_output=b'test_data/files/file_with_secrets.py\n',
+                    ),
+                ),
+        ):
+            files_scanned = self.get_git_diff_scanned_files()
+
+        assert files_scanned.files_scanned == ['test_data/files/file_with_secrets.py']
+
+    def test_git_diff_from_commit_no_changes(self):
+        with mock_git_calls(
+                'detect_secrets.core.baseline.subprocess.check_output',
+                (
+                    SubprocessMock(
+                        expected_input='git --no-pager diff --name-only abc ./test_data/files',
+                        should_throw_exception=False,
+                        mocked_output=b'',
+                    ),
+                ),
+        ):
+            files_scanned = self.get_git_diff_scanned_files()
+
+        assert files_scanned.files_scanned == []
+
+    def test_git_diff_from_commit_non_existent(self):
+        with mock_git_calls(
+                'detect_secrets.core.baseline.subprocess.check_output',
+                (
+                    SubprocessMock(
+                        expected_input='git --no-pager diff --name-only abc ./test_data/files',
+                        should_throw_exception=False,
+                        mocked_output=b'bad_filename',
+                    ),
+                ),
+        ):
+            files_scanned = self.get_git_diff_scanned_files()
+
+        assert files_scanned.files_scanned == []
+
+    def test_error_git_diff_from_commit(self):
+        with mock_git_calls(
+                'detect_secrets.core.baseline.subprocess.check_output',
+                (
+                    SubprocessMock(
+                        expected_input='git --no-pager diff --name-only abc ./test_data/files',
+                        should_throw_exception=True,
+                        mocked_output='',
+                    ),
+                ),
+        ):
+            files_scanned = self.get_git_diff_scanned_files()
+
+        assert not files_scanned.files_scanned
 
     def test_with_multiple_files(self):
         results = self.get_results(
@@ -602,6 +685,62 @@ class TestMergeResults:
             },
         ) == {
             'filenameA': [secretB],
+        }
+
+    def test_secret_removed_in_commit(self):
+        secret = self.get_secret()
+        old_result = {
+            'filenameA': [
+                secret,
+            ],
+            'filenameB': [
+                secret,
+            ],
+        }
+
+        assert merge_results(old_result, {}, ['filenameA']) == {
+            'filenameB': [
+                secret,
+            ],
+        }
+
+    def test_new_secret_introduced_in_commit(self):
+        secretA = self.get_secret()
+        secretB = self.get_secret()
+        old_result = {
+            'filenameA': [
+                secretA,
+            ],
+            'filenameB': [
+                secretA,
+            ],
+        }
+        new_result = {
+            'filenameB': [
+                secretB,
+            ],
+        }
+        assert merge_results(old_result, new_result, ['filenameB']) == {
+            'filenameA': [
+                secretA,
+            ],
+            'filenameB': [
+                secretB,
+            ],
+        }
+
+    def test_prefer_new_result_file_changes(self):
+        old_secret = self.get_secret()
+        new_secret = self.get_secret()
+
+        assert merge_results(
+            {'filenameA': [old_secret]},
+            {'filenameA': [new_secret]},
+            ['filenameA'],
+        ) == {
+            'filenameA': [
+                new_secret,
+            ],
         }
 
     @staticmethod

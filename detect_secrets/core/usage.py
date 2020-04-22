@@ -195,6 +195,15 @@ class ScanOptions:
 
         add_no_verify_flag(self.parser)
 
+        # Git diff against a passed commit ref and only scan the returned filenames
+        self.parser.add_argument(
+            '--from-commit',
+            type=str,
+            metavar='FROM_COMMIT_REF',
+            help='Scan only files which have changed since a specified commit reference.',
+            dest='from_commit',
+        )
+
         return self
 
     def _add_adhoc_scanning_argument(self):
