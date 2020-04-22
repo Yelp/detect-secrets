@@ -165,6 +165,10 @@ def _perform_scan(args, plugins, automaton, word_list_hash):
     if args.import_filename:
         _add_baseline_to_exclude_files(args)
 
+    from_commit = args.from_commit
+    if from_commit == '':
+        from_commit = old_baseline.get('commit')
+
     new_baseline = baseline.initialize(
         plugins=plugins,
         exclude_files_regex=args.exclude_files,
@@ -173,7 +177,7 @@ def _perform_scan(args, plugins, automaton, word_list_hash):
         word_list_hash=word_list_hash,
         path=args.path,
         should_scan_all_files=args.all_files,
-        from_commit=args.from_commit,
+        from_commit=from_commit,
     )
 
     if old_baseline:

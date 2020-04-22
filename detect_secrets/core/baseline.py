@@ -51,6 +51,7 @@ def initialize(
         exclude_lines=exclude_lines_regex,
         word_list_file=word_list_file,
         word_list_hash=word_list_hash,
+        from_commit=from_commit,
     )
 
     files_to_scan = []
@@ -77,6 +78,11 @@ def initialize(
 
     if from_commit:
         output.files_scanned = []
+
+        # Don't update the baseline commit ref if we failed to retrieve HEAD
+        head_rev = _get_git_head_ref()
+        if head_rev != '':
+            output.from_commit = head_rev
 
     if not files_to_scan:
         return output
@@ -248,7 +254,7 @@ def merge_results(old_results, new_results, checked=None):
     """
     # If there was a file with a secret in the old results that wasn't
     # changed since the last commit, act as if we scanned it with the same outcome.
-    if checked:
+    if checked is not None:
         for filename in old_results:
             if filename not in checked and filename not in new_results:
                 new_results[filename] = old_results[filename]
@@ -365,6 +371,29 @@ def _get_git_diff_files(rootdir='.', from_commit=None):
     except subprocess.CalledProcessError:
         pass
     return output
+
+
+def _get_git_head_ref():
+    """Find the current git HEAD reference
+
+    :rtype: str
+    :returns: current HEAD
+    """
+    ref = b''
+    try:
+        with open(os.devnull, 'w') as fnull:
+            ref = subprocess.check_output(
+                [
+                    'git',
+                    'rev-parse',
+                    'HEAD',
+                ],
+                stderr=fnull,
+            )
+            ref = ref.split()[0]
+    except subprocess.CalledProcessError:
+        pass
+    return ref.decode('utf-8')
 
 
 def _get_files_recursively(rootdir):

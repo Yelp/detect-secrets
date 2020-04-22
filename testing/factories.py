@@ -20,6 +20,7 @@ def secrets_collection_factory(
     exclude_files_regex=None,
     word_list_file=None,
     word_list_hash=None,
+    from_commit=None,
 ):
     """
     :type secrets: list(dict)
@@ -36,6 +37,7 @@ def secrets_collection_factory(
         exclude_files=exclude_files_regex,
         word_list_file=word_list_file,
         word_list_hash=word_list_hash,
+        from_commit=from_commit,
     )
 
     if plugins:

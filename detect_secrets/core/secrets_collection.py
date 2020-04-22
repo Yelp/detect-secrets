@@ -23,6 +23,7 @@ class SecretsCollection:
         exclude_lines=None,
         word_list_file=None,
         word_list_hash=None,
+        from_commit=None,
     ):
         """
         :type plugins: tuple of detect_secrets.plugins.base.BasePlugin
@@ -39,6 +40,9 @@ class SecretsCollection:
 
         :type word_list_hash: str|None
         :param word_list_hash: optional iterated sha1 hash of the words in the word list.
+
+        :type from_commit: str|None
+        :param from_commit: optional sha1 reference to the commit to compare against.
         """
         self.data = {}
         self.plugins = plugins
@@ -46,6 +50,7 @@ class SecretsCollection:
         self.exclude_lines = exclude_lines
         self.word_list_file = word_list_file
         self.word_list_hash = word_list_hash
+        self.from_commit = from_commit
         self.version = VERSION
 
     @classmethod
@@ -109,6 +114,9 @@ class SecretsCollection:
                 # Always ignore the given `data['word_list']['hash']`
                 # The difference will show whenever the word list changes
                 automaton, result.word_list_hash = build_automaton(result.word_list_file)
+
+        if 'commit' in data:
+            result.from_commit = data['commit']
 
         plugins = []
         for plugin in data['plugins_used']:
@@ -296,6 +304,7 @@ class SecretsCollection:
             },
             'plugins_used': plugins_used,
             'results': results,
+            'commit': self.from_commit,
             'version': self.version,
         }
 

@@ -199,8 +199,13 @@ class ScanOptions:
         self.parser.add_argument(
             '--from-commit',
             type=str,
+            nargs='?',
+            const='',
             metavar='FROM_COMMIT_REF',
-            help='Scan only files which have changed since a specified commit reference.',
+            help=(
+                'Scan only files which have changed since a specified commit reference.',
+                'Leave empty to read commit reference from baseline',
+            ),
             dest='from_commit',
         )
 

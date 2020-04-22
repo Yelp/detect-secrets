@@ -288,12 +288,13 @@ class TestBaselineInputOutput:
             exclude_files_regex='foo',
             word_list_file='will_be_mocked.txt',
             word_list_hash='5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8',
+            from_commit='d6a9a18cf6f16ad1bb1751a507b7824266c20924',
         )
 
     def test_output(self, mock_gmtime):
         assert (
             self.logic.format_for_baseline_output()
-            == self.get_point_twelve_point_seven_and_later_baseline_dict(mock_gmtime)
+            == self.get_point_thirteen_point_two_and_later_baseline_dict(mock_gmtime)
         )
 
     def test_load_baseline_from_string_with_pre_point_twelve_string(self, mock_gmtime):
@@ -364,6 +365,35 @@ class TestBaselineInputOutput:
         assert secrets['exclude']['lines'] is None
         assert original['results'] == secrets['results']
 
+    def test_load_baseline_from_string_with_point_thirteen_point_two_and_later_string(
+        self,
+        mock_gmtime,
+    ):
+        """
+        We use load_baseline_from_string as a proxy to testing load_baseline_from_dict,
+        because it's the most entry into the private function.
+        """
+        original = self.get_point_thirteen_point_two_and_later_baseline_dict(mock_gmtime)
+
+        word_list = """
+            roller\n
+        """
+        with mock_open_base(
+            data=word_list,
+            namespace='detect_secrets.util.open',
+        ):
+            secrets = SecretsCollection.load_baseline_from_string(
+                json.dumps(original),
+            ).format_for_baseline_output()
+
+        # v0.13.2+ assertions
+        assert original['commit'] == secrets['commit']
+
+        # Regular assertions
+        assert original['exclude']['files'] == secrets['exclude']['files']
+        assert secrets['exclude']['lines'] is None
+        assert original['results'] == secrets['results']
+
     def test_load_baseline_without_any_valid_fields(self, mock_log):
         with pytest.raises(IOError):
             SecretsCollection.load_baseline_from_string(
@@ -382,6 +412,12 @@ class TestBaselineInputOutput:
                 }),
             )
         assert mock_log.error_messages == 'Incorrectly formatted baseline!\n'
+
+    def get_point_thirteen_point_two_and_later_baseline_dict(self, gmtime):
+        # In v0.13.2 --from-commit got added
+        baseline = self.get_point_twelve_point_seven_and_later_baseline_dict(gmtime)
+        baseline['commit'] = 'd6a9a18cf6f16ad1bb1751a507b7824266c20924'
+        return baseline
 
     def get_point_twelve_point_seven_and_later_baseline_dict(self, gmtime):
         # In v0.12.7 --word-list got added

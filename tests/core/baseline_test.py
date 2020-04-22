@@ -113,6 +113,11 @@ class TestInitializeBaseline:
                         should_throw_exception=False,
                         mocked_output=b'test_data/files/file_with_secrets.py\n',
                     ),
+                    SubprocessMock(
+                        expected_input='git rev-parse HEAD',
+                        should_throw_exception=False,
+                        mocked_output=b'd6a9a18cf6f16ad1bb1751a507b7824266c20924',
+                    ),
                 ),
         ):
             files_scanned = self.get_git_diff_scanned_files()
@@ -127,6 +132,11 @@ class TestInitializeBaseline:
                         expected_input='git --no-pager diff --name-only abc ./test_data/files',
                         should_throw_exception=False,
                         mocked_output=b'',
+                    ),
+                    SubprocessMock(
+                        expected_input='git rev-parse HEAD',
+                        should_throw_exception=False,
+                        mocked_output=b'd6a9a18cf6f16ad1bb1751a507b7824266c20924',
                     ),
                 ),
         ):
@@ -143,6 +153,11 @@ class TestInitializeBaseline:
                         should_throw_exception=False,
                         mocked_output=b'bad_filename',
                     ),
+                    SubprocessMock(
+                        expected_input='git rev-parse HEAD',
+                        should_throw_exception=False,
+                        mocked_output=b'd6a9a18cf6f16ad1bb1751a507b7824266c20924',
+                    ),
                 ),
         ):
             files_scanned = self.get_git_diff_scanned_files()
@@ -157,6 +172,31 @@ class TestInitializeBaseline:
                         expected_input='git --no-pager diff --name-only abc ./test_data/files',
                         should_throw_exception=True,
                         mocked_output='',
+                    ),
+                    SubprocessMock(
+                        expected_input='git rev-parse HEAD',
+                        should_throw_exception=False,
+                        mocked_output=b'd6a9a18cf6f16ad1bb1751a507b7824266c20924',
+                    ),
+                ),
+        ):
+            files_scanned = self.get_git_diff_scanned_files()
+
+        assert not files_scanned.files_scanned
+
+    def test_error_git_rev_parse(self):
+        with mock_git_calls(
+                'detect_secrets.core.baseline.subprocess.check_output',
+                (
+                    SubprocessMock(
+                        expected_input='git --no-pager diff --name-only abc ./test_data/files',
+                        should_throw_exception=True,
+                        mocked_output='',
+                    ),
+                    SubprocessMock(
+                        expected_input='git rev-parse HEAD',
+                        should_throw_exception=True,
+                        mocked_output=b'',
                     ),
                 ),
         ):
