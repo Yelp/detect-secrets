@@ -1,0 +1,2 @@
+queries:
+  - exclude: py/unused-import  # noisy and duplicated with pre-commit

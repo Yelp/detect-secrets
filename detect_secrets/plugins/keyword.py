@@ -220,7 +220,6 @@ FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX = re.compile(
         denylist=DENYLIST_REGEX,
         nonWhitespace=OPTIONAL_NON_WHITESPACE,
         quote=QUOTE,
-        closing=CLOSING,
         whitespace=OPTIONAL_WHITESPACE,
         secret=SECRET,
     ),

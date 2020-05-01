@@ -531,7 +531,7 @@ def _print_context(  # pragma: no cover
             plugin_settings,
             force=force,
         )
-        print(secret_with_context)
+        print(secret_with_context)  # lgtm [py/clear-text-logging-sensitive-data]
     except SecretNotFoundOnSpecifiedLineError as e:
         error_obj = e
         print(e)

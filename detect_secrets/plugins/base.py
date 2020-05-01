@@ -349,7 +349,12 @@ class RegexBasedDetector(BasePlugin):
 
         return output
 
-    def secret_generator(self, string, *args, **kwargs):
+    def secret_generator(  # lgtm [py/inheritance/incorrect-overridden-signature]
+        self,
+        string,
+        *args,
+        **kwargs
+    ):
         for regex in self.denylist:
             for match in regex.findall(string):
                 yield match

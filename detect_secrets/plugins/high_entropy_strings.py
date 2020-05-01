@@ -349,7 +349,7 @@ class HexHighEntropyString(HighEntropyStringsPlugin):
 
     @property
     def __dict__(self):
-        output = super(HighEntropyStringsPlugin, self).__dict__
+        output = super(HexHighEntropyString, self).__dict__
         output.update({
             'hex_limit': self.entropy_limit,
         })
@@ -425,7 +425,7 @@ class Base64HighEntropyString(HighEntropyStringsPlugin):
 
     @property
     def __dict__(self):
-        output = super(HighEntropyStringsPlugin, self).__dict__
+        output = super(Base64HighEntropyString, self).__dict__
         output.update({
             'base64_limit': self.entropy_limit,
         })

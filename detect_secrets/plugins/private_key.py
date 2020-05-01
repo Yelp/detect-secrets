@@ -39,7 +39,7 @@ class PrivateKeyDetector(RegexBasedDetector):
 
     secret_type = 'Private Key'
 
-    denylist = [
+    denylist = [  # lgtm [py/non-iterable-in-for-loop]
         re.compile(regexp)
         for regexp in (
             r'BEGIN DSA PRIVATE KEY',
