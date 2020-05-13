@@ -11,9 +11,9 @@ class TwilioKeyDetector(RegexBasedDetector):
     secret_type = 'Twilio API Key'
 
     denylist = [
-        # Account SID (ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx)
+        # Account SID (ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx)  # pragma: whitelist secret
         re.compile(r'AC[a-z0-9]{32}'),
 
-        # Auth token (SKxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx)
+        # Auth token (SKxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx)  # pragma: whitelist secret
         re.compile(r'SK[a-z0-9]{32}'),
     ]

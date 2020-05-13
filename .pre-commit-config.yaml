@@ -1,6 +1,6 @@
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.3.0
+    rev: v2.5.0
     hooks:
     -   id: check-builtin-literals
         args: ['--no-allow-dict-kwargs']
@@ -18,17 +18,17 @@ repos:
         exclude: ^test_data/|bumpity.py$
     -   id: trailing-whitespace
 -   repo: https://github.com/asottile/reorder_python_imports
-    rev: v1.6.1
+    rev: v1.9.0
     hooks:
     -   id: reorder-python-imports
         language_version: python3
         exclude: bumpity.py$
 -   repo: https://github.com/asottile/add-trailing-comma
-    rev: v1.4.1
+    rev: v1.5.0
     hooks:
     -   id: add-trailing-comma
 -   repo: https://github.com/pre-commit/mirrors-autopep8
-    rev: v1.4.4
+    rev: v1.5.2
     hooks:
     -   id: autopep8
 # This is an example configuration to enable whitewater-detect-secrets in the pre-commit hook.
@@ -39,7 +39,7 @@ repos:
 # This line indicates we will use the hook from Whitewater/whitewater-detect-secrets to run scan during commiting phase.
 - repo: git@github.ibm.com:Whitewater/whitewater-detect-secrets
   # If you desire to use a specific version of whitewater-detect-secrets, you can replace `master` with other git revisions such as branch, tag or commit sha.
-  rev: master
+  rev: 0.13.0+ibm.12.dss
   hooks:
     -   id: detect-secrets # pragma: whitelist secret
         # Add options for detect-secrets-hook binary. You can run `detect-secrets-hook --help` to list out all possible options.
@@ -47,4 +47,4 @@ repos:
         #
         # The `--no-keyword-scan` field can be removed if you are using 0.10.3-ibm.1. It was added prior to 0.10.3-ibm.1 to reduce false positives generated from old keyword scanner.
         # After 0.10.3-ibm.1, keyword scanner is disabled by default.
-        args: [--baseline, .secrets.baseline, --no-keyword-scan ]
+        args: [--baseline, .secrets.baseline, --no-keyword-scan, --use-all-plugins ]

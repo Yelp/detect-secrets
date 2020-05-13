@@ -61,7 +61,7 @@ class Db2Detector(RegexBasedDetector):
     # catch any character except newline and quotations, we exclude these
     # because the regex will erronously match them when present at the end of the password
     # db2 password requirements vary by version so we cast a broad net
-    password = r'([^ ;,\r\n"\']+)'
+    password = r'([^ ;,\r\n"\']+)'  # pragma: whitelist secret
     denylist = (
         re.compile(
             r'{begin}{opt_quote}{opt_db}{opt_dash_undrscr}{password_keyword}{opt_quote}{opt_space}'
@@ -73,7 +73,7 @@ class Db2Detector(RegexBasedDetector):
                 password_keyword=password_keyword,
                 opt_space=opt_space,
                 assignment=assignment,
-                password=password,
+                password=password,  # pragma: whitelist secret
             ), flags=re.IGNORECASE,
         ),
     )
@@ -155,15 +155,16 @@ def verify_db2_credentials(
     database, hostname, port, username, password, timeout=5,
 ):  # pragma: no cover
     try:
-        conn_str = 'database={database};hostname={hostname};port={port};' + \
-                   'protocol=tcpip;uid={username};pwd={password};' + \
-                   'ConnectTimeout={timeout}'
+        conn_str = 'database={database};hostname={hostname};port={port};'
+        conn_str = conn_str + 'protocol=tcpip;uid={username};'
+        conn_str = conn_str + 'pwd={password};'  # pragma: whitelist secret
+        conn_str = conn_str + 'ConnectTimeout={timeout}'
         conn_str = conn_str.format(
             database=database,
             hostname=hostname,
             port=port,
             username=username,
-            password=password,
+            password=password,  # pragma: whitelist secret
             timeout=timeout,
         )
         ibm_db_conn = ibm_db.connect(conn_str, '', '')

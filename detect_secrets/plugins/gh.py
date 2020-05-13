@@ -49,7 +49,6 @@ class GheDetector(RegexBasedDetector):
             'Basic{opt_space}{b64_encoded_token}{opt_quote}'.format(
                 opt_quote=opt_quote,
                 opt_space=opt_space,
-                header_keyword=header_keyword,
                 b64_encoded_token=b64_encoded_token,
             ), flags=re.IGNORECASE,
         ),

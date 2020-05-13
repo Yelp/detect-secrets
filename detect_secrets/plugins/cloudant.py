@@ -89,7 +89,6 @@ def find_account(content):
                 http=CloudantDetector.http,
                 opt_basic_auth=opt_basic_auth,
                 cl_account=account,
-                cl_api_key=CloudantDetector.cl_api_key,
                 dot=CloudantDetector.dot,
                 cloudant_api_url=CloudantDetector.cloudant_api_url,
             ),

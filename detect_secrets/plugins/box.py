@@ -14,7 +14,7 @@ class BoxDetector(RegexBasedDetector):
 
     token_prefix = r'(?:client)'
     password_keyword = r'(?:secret)'
-    password = r'([a-zA-Z0-9]{32})'
+    password = r'([a-zA-Z0-9]{32})'  # pragma: whitelist secret
     denylist = (
         RegexBasedDetector.assign_regex_generator(
             prefix_regex=token_prefix,
