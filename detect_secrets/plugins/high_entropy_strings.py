@@ -27,7 +27,7 @@ class HighEntropyStringsPlugin(BasePlugin):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, charset, limit, exclude_lines_regex, automaton, *args):
+    def __init__(self, charset, limit, exclude_lines_regex, automaton, *args, **kwargs):
         if limit < 0 or limit > 8:
             raise ValueError(
                 'The limit set for HighEntropyStrings must be between 0.0 and 8.0',
@@ -46,6 +46,8 @@ class HighEntropyStringsPlugin(BasePlugin):
         super(HighEntropyStringsPlugin, self).__init__(
             exclude_lines_regex=exclude_lines_regex,
             false_positive_heuristics=false_positive_heuristics,
+            *args,
+            **kwargs
         )
 
     def analyze(self, file, filename, output_raw=False, output_verified_false=False):
@@ -335,6 +337,7 @@ class HexHighEntropyString(HighEntropyStringsPlugin):
             limit=hex_limit,
             exclude_lines_regex=exclude_lines_regex,
             automaton=automaton,
+            **kwargs
         )
 
     @classproperty

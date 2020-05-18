@@ -491,7 +491,6 @@ class TestMergeBaseline:
             },
 
         }
-        pass
 
 
 class TestMergeResults:

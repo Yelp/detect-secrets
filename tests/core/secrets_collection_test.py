@@ -344,9 +344,13 @@ class TestBaselineInputOutput:
             data=word_list,
             namespace='detect_secrets.util.open',
         ):
-            secrets = SecretsCollection.load_baseline_from_string(
+            baseline = SecretsCollection.load_baseline_from_string(
                 json.dumps(original),
-            ).format_for_baseline_output()
+            )
+            for plugin in baseline.plugins:
+                assert plugin.should_verify is True
+
+            secrets = baseline.format_for_baseline_output()
 
         # v0.12.7+ assertions
         assert original['word_list']['file'] == secrets['word_list']['file']
