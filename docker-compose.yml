@@ -1,9 +1,0 @@
-version: '3'
-services:
-  test:
-    image: whitewater-detect-secrets-test
-    build:
-      context: ./scripts
-      dockerfile: ../Dockerfile.development
-    volumes:
-      - ./:/code/

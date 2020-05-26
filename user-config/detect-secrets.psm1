@@ -1,6 +1,7 @@
 # Description:
-#   Windows Powershell wrapper for whitewater detect-secret
+#   Windows Powershell wrapper for detect-secret.
 #   Once installed, allow Windows user to use "detect-secrets" command in Powershell env.
+#   This script relies on detect-secrets docker image.
 #
 # Installation:
 #   1. Create a folder under $HOME\Documents\WindowsPowerShell\Modules\ named "detect-secrets"

@@ -13,7 +13,6 @@ do
 done
 
 # test images
-docker run -it --entrypoint detect-secrets $IMAGE_DOMAIN/dsl --version
 docker run -it $IMAGE_DOMAIN/detect-secrets --version
 docker run -it $IMAGE_DOMAIN/detect-secrets-hook --version
 
