@@ -15,6 +15,7 @@ class TestIbmCloudIamDetector(object):
         'payload, should_flag',
         [
             ('ibm-cloud_api_key: {cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
+            ('apikeyid: {cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             ('ibm_cloud_iam-key : {cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             ('IBM-API-KEY : "{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             ('"iam_api_key" : "{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),

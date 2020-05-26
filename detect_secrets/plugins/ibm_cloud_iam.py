@@ -16,7 +16,7 @@ class IbmCloudIamDetector(RegexBasedDetector):
         r'ibm(?:_|-|)cloud|ibm(?:_|-|)iam|ibm|iam|cloud|)'
     opt_dash_undrscr = r'(?:_|-|)'
     opt_api = r'(?:api|)'
-    key_or_pass = r'(?:key|pwd|password|pass|token)'
+    key_or_pass = r'(?:key|keyid|pwd|password|pass|token)'
     secret = r'([a-zA-Z0-9_\-]{44})'
     denylist = [
         RegexBasedDetector.assign_regex_generator(
@@ -26,7 +26,7 @@ class IbmCloudIamDetector(RegexBasedDetector):
         ),
     ]
 
-    def verify(self, token, **kwargs):
+    def verify(self, token, *args, **kwargs):
         response = verify_cloud_iam_api_key(token)
         try:
             if response.status_code != 200:
