@@ -14,4 +14,4 @@
         #
         # The `--no-keyword-scan` field can be removed if you are using 0.10.3-ibm.1. It was added prior to 0.10.3-ibm.1 to reduce false positives generated from old keyword scanner.
         # After 0.10.3-ibm.1, keyword scanner is disabled by default.
-        args: [--baseline, .secrets.baseline, --no-keyword-scan ]
+        args: [--baseline, .secrets.baseline, --use-all-plugins, --no-keyword-scan ]
