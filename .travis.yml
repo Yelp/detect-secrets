@@ -51,6 +51,9 @@ matrix:
         #   python: pypy
 install:
     - pip install tox
+    # add public DNS name for public.dhe.ibm.com. The 9.x one is not serving traffic now
+    # public.dhe.ibm.com access is required for ibm-db pip package
+    - echo "$(dig @8.8.8.8 public.dhe.ibm.com +short | tail -n1) public.dhe.ibm.com" | sudo tee -a /etc/hosts
 # normal script supports multiple line syntax
 script: |
       set -e

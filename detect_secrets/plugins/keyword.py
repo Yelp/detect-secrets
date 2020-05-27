@@ -269,7 +269,7 @@ class KeywordDetector(BasePlugin):
     @property
     def __dict__(self):
         output = {
-            'keyword_exclude': self.keyword_exclude,
+            'keyword_exclude': self.keyword_exclude and self.keyword_exclude.pattern or None,
         }
         output.update(super(KeywordDetector, self).__dict__)
 

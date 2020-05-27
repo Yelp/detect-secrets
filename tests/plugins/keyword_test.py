@@ -1,3 +1,8 @@
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
+import json
+
 import ahocorasick
 import pytest
 
@@ -398,3 +403,32 @@ class TestKeywordDetector:
             'mock_filename.example',
         )
         assert len(output) == 0
+
+    @pytest.mark.parametrize(
+        'keyword_exclude, dict_content',
+        (
+            (
+                None,
+                {'keyword_exclude': None, 'name': 'KeywordDetector'},
+            ),
+            (
+                'keyword',
+                {'keyword_exclude': 'keyword', 'name': 'KeywordDetector'},
+            ),
+            (
+                'a.*|b.*',
+                {'keyword_exclude': 'a.*|b.*', 'name': 'KeywordDetector'},
+            ),
+        ),
+    )
+    def test_dict_output(self, keyword_exclude, dict_content):
+        detector = KeywordDetector(keyword_exclude)
+        actual = json.dumps(
+            detector.__dict__,
+            sort_keys=True,
+        )
+        expected = json.dumps(
+            dict_content,
+            sort_keys=True,
+        )
+        assert actual == expected
