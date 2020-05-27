@@ -106,7 +106,7 @@ class TestBoxDetector(object):
                "enterpriseID": "{}"
             '''.format(
                 BOX_CLIENT_ID, BOX_CLIENT_SECRET, BOX_PUBLIC_KEY_ID,
-                BOX_PRIVATE_KEY, BOX_PASSPHRASE, BOX_ENTERPRISE_ID
+                BOX_PRIVATE_KEY, BOX_PASSPHRASE, BOX_ENTERPRISE_ID,
             ),
             potential_secret,
         ) == VerifiedResult.VERIFIED_FALSE
@@ -129,7 +129,7 @@ class TestBoxDetector(object):
                "enterpriseID": "{}"
             '''.format(
                 BOX_CLIENT_SECRET, BOX_PUBLIC_KEY_ID,
-                BOX_PRIVATE_KEY, BOX_PASSPHRASE, BOX_ENTERPRISE_ID
+                BOX_PRIVATE_KEY, BOX_PASSPHRASE, BOX_ENTERPRISE_ID,
             ),
             potential_secret,
         ) == VerifiedResult.UNVERIFIED
@@ -150,7 +150,7 @@ class TestBoxDetector(object):
                "enterpriseID": "{}"
             '''.format(
                 BOX_CLIENT_ID, BOX_CLIENT_SECRET,
-                BOX_PRIVATE_KEY, BOX_PASSPHRASE, BOX_ENTERPRISE_ID
+                BOX_PRIVATE_KEY, BOX_PASSPHRASE, BOX_ENTERPRISE_ID,
             ),
             potential_secret,
         ) == VerifiedResult.UNVERIFIED
@@ -171,7 +171,7 @@ class TestBoxDetector(object):
                "enterpriseID": "{}"
             '''.format(
                 BOX_CLIENT_ID, BOX_CLIENT_SECRET, BOX_PUBLIC_KEY_ID,
-                BOX_PRIVATE_KEY, BOX_ENTERPRISE_ID
+                BOX_PRIVATE_KEY, BOX_ENTERPRISE_ID,
             ),
             potential_secret,
         ) == VerifiedResult.UNVERIFIED
@@ -192,7 +192,7 @@ class TestBoxDetector(object):
                "enterpriseID": "{}"
             '''.format(
                 BOX_CLIENT_ID, BOX_CLIENT_SECRET, BOX_PUBLIC_KEY_ID,
-                BOX_PASSPHRASE, BOX_ENTERPRISE_ID
+                BOX_PASSPHRASE, BOX_ENTERPRISE_ID,
             ),
             potential_secret,
         ) == VerifiedResult.UNVERIFIED
@@ -213,7 +213,7 @@ class TestBoxDetector(object):
                "passphrase": "{}",
             '''.format(
                 BOX_CLIENT_ID, BOX_CLIENT_SECRET, BOX_PUBLIC_KEY_ID,
-                BOX_PRIVATE_KEY, BOX_PASSPHRASE
+                BOX_PRIVATE_KEY, BOX_PASSPHRASE,
             ),
             potential_secret,
         ) == VerifiedResult.UNVERIFIED

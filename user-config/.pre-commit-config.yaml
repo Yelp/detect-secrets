@@ -5,7 +5,7 @@
 #
 # This line indicates we will use the hook from ibm/detect-secrets to run scan during commiting phase.
 # Whitewater/whitewater-detect-secrets would sync code to ibm/detect-secrets upon merge.
-- repo: https://github.ibm.com/ibm/detect-secrets
+- repo: https://github.com/ibm/detect-secrets
   # If you desire to use a specific version of detect-secrets, you can replace `master` with other git revisions such as branch, tag or commit sha.
   # You are encouraged to use static refs such as tags, instead of branch name
   #

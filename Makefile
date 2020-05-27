@@ -1,5 +1,7 @@
 PROJECT_DIR := $(shell pwd)
 
+include Makefile.ibm
+
 .PHONY: minimal
 minimal: setup
 

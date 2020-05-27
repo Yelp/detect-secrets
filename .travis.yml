@@ -1,41 +1,16 @@
 language: python
-dist: trusty
-env:
-    global:
-        - TOXENV=py27
 
-        - DOCKER_REGISTRY_ICR=us.icr.io
-        - DOCKER_USER_ICR=iamapikey
-        - DOCKER_DOMAIN_ICR=$DOCKER_REGISTRY_ICR/git-defenders
-
-        - DOCKER_REGISTRY_ART=txo-toolbox-team-docker-local.artifactory.swg-devops.com
-        - DOCKER_USER_ART=dssadmin@us.ibm.com
-        - DOCKER_DOMAIN_ART=$DOCKER_REGISTRY_ART/git-defenders
-
-        - DOCKER_REMOTE_DOMAINS="$DOCKER_DOMAIN_ICR $DOCKER_DOMAIN_ART"
-        - DOCKER_IMAGES="dsl detect-secrets detect-secrets-hook"
-        - DOCKER_DOMAIN_LOCAL=git-defenders
-        - DOCKER_IMAGE_TAG="$TRAVIS_BUILD_NUMBER-id-$TRAVIS_BUILD_ID-time-$(date +%s)"
-        - DOCKER_IMAGE_TAG_DSS="$TRAVIS_BRANCH-$TRAVIS_BUILD_NUMBER-id-$TRAVIS_BUILD_ID-time-$(date +%s)"
+services:
+    - docker
 deploy:
 - provider: script
-  # dpl would concatenate all lines into single string
   script: >-
-        set -e;
-        echo ${IBM_CLOUD_API_KEY} | docker login -u $DOCKER_USER_ICR --password-stdin $DOCKER_REGISTRY_ICR;
-        echo ${ART_API_KEY} | docker login -u $DOCKER_USER_ART --password-stdin $DOCKER_REGISTRY_ART;
-        ./tag-and-publish.sh "$DOCKER_IMAGES" "$DOCKER_DOMAIN_LOCAL" "$DOCKER_REMOTE_DOMAINS" "$DOCKER_IMAGE_TAG latest";
+        set -e; make docker-build-images docker-test-images deploy
   on:
-      branch: master
-- provider: script
-  # dpl would concatenate all lines into single string
-  script: >-
-        set -e;
-        echo ${IBM_CLOUD_API_KEY} | docker login -u $DOCKER_USER_ICR --password-stdin $DOCKER_REGISTRY_ICR;
-        echo ${ART_API_KEY} | docker login -u $DOCKER_USER_ART --password-stdin $DOCKER_REGISTRY_ART;
-        ./tag-and-publish.sh "$DOCKER_IMAGES" "$DOCKER_DOMAIN_LOCAL" "$DOCKER_REMOTE_DOMAINS" "$DOCKER_IMAGE_TAG_DSS dss-latest";
-  on:
-      branch: dss
+    all_branches: true
+    # only build docker image and push once
+    condition: $TOXENV = py38
+
 matrix:
     include:
         - env: TOXENV=py27
@@ -46,44 +21,15 @@ matrix:
           python: 3.6
         - env: TOXENV=py37
           python: 3.7
-          dist: xenial  # required for Python >= 3.7 (travis-ci/travis-ci#9069)
+          dist: xenial  # Required for Python >= 3.7 (travis-ci/travis-ci#9069)
+        - env: TOXENV=py38
+          python: 3.8
+          dist: xenial  # Required for Python >= 3.7 (travis-ci/travis-ci#9069)
         # - env: TOXENV=pypy
         #   python: pypy
 install:
     - pip install tox
-    # add public DNS name for public.dhe.ibm.com. The 9.x one is not serving traffic now
-    # public.dhe.ibm.com access is required for ibm-db pip package
-    - echo "$(dig @8.8.8.8 public.dhe.ibm.com +short | tail -n1) public.dhe.ibm.com" | sudo tee -a /etc/hosts
-# normal script supports multiple line syntax
-script: |
-      set -e
-      make test
-      ./build-dockerfiles.sh
-
-      # Publish image and labled with tag when a git tag is pushed
-      if [ -n "$TRAVIS_TAG" ]; then
-        echo ${IBM_CLOUD_API_KEY} | docker login -u $DOCKER_USER_ICR --password-stdin $DOCKER_REGISTRY_ICR
-        echo ${ART_API_KEY} | docker login -u $DOCKER_USER_ART --password-stdin $DOCKER_REGISTRY_ART
-
-        # replace + with .
-        VERSION_TAG=$(tr '+' '.' <<<"$TRAVIS_TAG")
-        ./tag-and-publish.sh "$DOCKER_IMAGES" "$DOCKER_DOMAIN_LOCAL" "$DOCKER_REMOTE_DOMAINS" "$VERSION_TAG"
-
-        pip install requests packaging
-        should_update=$(python scripts/version_greater_than_in_cos.py "$TRAVIS_TAG")
-        if [ "$should_update" == "yes" ]
-        then
-          # install ibmcloud cli
-          curl -sL https://raw.githubusercontent.com/IBM-Cloud/ibm-cloud-developer-tools/master/linux-installer/idt-installer | bash
-          # login to ibm cloud
-          ibmcloud login --apikey ${IBM_CLOUD_API_KEY} -a https://cloud.ibm.com -r us-south
-          # update latest version in ibmcloud object storage
-          echo $TRAVIS_TAG > version.txt
-          ibmcloud cos put-object --bucket detect-secrets-client-version --key version --body version.txt --region us-south
-        fi
-      fi
+script: make test
 cache:
     directories:
         - $HOME/.cache/pre-commit
-services:
-    - docker

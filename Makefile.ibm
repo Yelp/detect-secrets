@@ -1,0 +1,106 @@
+SHELL := /bin/bash
+MAKEFLAGS += --warn-undefined-variables
+
+# Docker related param
+DEBUG_IMAGE_TAG := $(TRAVIS_BRANCH)-$(TRAVIS_BUILD_NUMBER)-id-$(TRAVIS_BUILD_ID)-time-$(shell date +%s)
+
+DOCKER_DOMAIN := git-defenders
+
+DOCKER_REGISTRY_ICR := us.icr.io
+DOCKER_USER_ICR := iamapikey
+DOCKER_PASS_ICR := $(IBM_CLOUD_API_KEY)
+
+DOCKER_REGISTRY_ART := txo-toolbox-team-docker-local.artifactory.swg-devops.com
+DOCKER_USER_ART := dssadmin@us.ibm.com
+DOCKER_PASS_ART := $(ART_API_KEY)
+
+DOCKER_IMAGES := detect-secrets detect-secrets-hook
+DOCKER_REGISTRIES := $(DOCKER_REGISTRY_ICR) $(DOCKER_REGISTRY_ART)
+
+IMAGE_NAME :=
+IMAGE_TAG :=
+IMAGE_TAGS := latest
+DOCKER_REGISTRY :=
+DOCKER_DOMAIN_LOCAL := $(DOCKER_DOMAIN)
+
+# COS related param
+COS_REGION := us-south
+COS_BUCKET := detect-secrets-client-version
+COS_FILE := version
+
+# sync related param
+# Do not know branch, then figure it out using git
+TRAVIS_BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
+
+docker-test-images:
+	docker run -it $(DOCKER_DOMAIN_LOCAL)/detect-secrets --version
+	docker run -it $(DOCKER_DOMAIN_LOCAL)/detect-secrets-hook --version
+
+docker-build-images:
+	for dockerfile in Dockerfiles/*.Dockerfile; do                                   \
+		image_name=$$(echo -e $$(basename $${dockerfile}) | cut -d\. -f2);           \
+		docker build -f "$${dockerfile}" -t $(DOCKER_DOMAIN_LOCAL)/$${image_name} .; \
+	done
+
+docker-login:
+	@echo $(DOCKER_PASS_ICR) | docker login -u $(DOCKER_USER_ICR) --password-stdin $(DOCKER_REGISTRY_ICR);
+	@echo $(DOCKER_PASS_ART) | docker login -u $(DOCKER_USER_ART) --password-stdin $(DOCKER_REGISTRY_ART);
+
+docker-publish-images: docker-login
+	for image_name in $(DOCKER_IMAGES) ; do                                               \
+		for registry in $(DOCKER_REGISTRIES) ; do                                         \
+			for tag in $(IMAGE_TAGS) ; do                                                 \
+				$(MAKE) docker-publish-image                                              \
+				IMAGE_NAME=$${image_name} DOCKER_REGISTRY=$${registry} IMAGE_TAG=$${tag}; \
+			done                                                                          \
+		done                                                                              \
+	done
+
+docker-publish-image:
+	docker tag $(DOCKER_DOMAIN_LOCAL)/$(IMAGE_NAME) $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME):$(IMAGE_TAG)
+	docker push $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME):$(IMAGE_TAG)
+
+publish-cos:
+	pip install requests packaging;                                                                                 \
+	should_update=$$(python scripts/version_greater_than_in_cos.py "$(TRAVIS_TAG)");                                \
+	if [ "$${should_update}" == "yes" ]; then                                                                       \
+		curl -sL https://ibm.biz/idt-installer | bash;                                                              \
+		ibmcloud login --apikey $(IBM_CLOUD_API_KEY) -a https://cloud.ibm.com -r $(COS_REGION);                     \
+		$(TRAVIS_TAG) > version.txt;                                                                                \
+		ibmcloud cos put-object --bucket $(COS_BUCKET) --key $(COS_FILE) --body version.txt --region $(COS_REGION); \
+	fi
+
+deploy:
+	if [ -n "$(TRAVIS_TAG)" ]; then \
+		$(MAKE) docker-publish-images publish-cos IMAGE_TAGS="$(TRAVIS_TAG)"; \
+	fi
+
+	# TODO update to master branch
+	# TODO update to include latest tag on master
+	if [ "$(TRAVIS_BRANCH)" == "new-master" ]; then \
+		$(MAKE) docker-publish-images sync-branches IMAGE_TAGS="$(DEBUG_IMAGE_TAG)"; \
+	fi
+
+	# TODO update to dss branch
+	# TODO update to include dss-latest tag on dss branch
+	if [ "$(TRAVIS_BRANCH)" == "dss-backup" ]; then \
+		$(MAKE) docker-publish-images IMAGE_TAGS="$(DEBUG_IMAGE_TAG)"; \
+	fi
+
+sync-branches:
+	# sync to dss
+	git fetch origin --unshallow --tag
+	# TODO update to use dss branch
+	git push origin $(TRAVIS_BRANCH):dss-backup -f --tags
+
+	# sync to ibm/detect-secrets
+	git remote add github git@github.com:ibm/detect-secrets.git
+	git fetch github
+	git push github $(TRAVIS_BRANCH):master -f --tags
+
+fix-dns:
+	# add public DNS name for public.dhe.ibm.com. The 9.x one is not serving traffic now
+    # public.dhe.ibm.com access is required for ibm-db pip package
+	echo "$$(dig @8.8.8.8 public.dhe.ibm.com +short | tail -n1) public.dhe.ibm.com" | sudo tee -a /etc/hosts
+
+.PHONY: docker-test-images docker-build-images docker-login docker-publish-images docker-publish-image publish-cos deploy sync-branches fix-dns
