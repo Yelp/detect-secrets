@@ -75,23 +75,18 @@ deploy:
 		$(MAKE) docker-publish-images publish-cos IMAGE_TAGS="$(TRAVIS_TAG)"; \
 	fi
 
-	# TODO update to master branch
-	# TODO update to include latest tag on master
-	if [ "$(TRAVIS_BRANCH)" == "new-master" ]; then \
-		$(MAKE) docker-publish-images sync-branches IMAGE_TAGS="$(DEBUG_IMAGE_TAG)"; \
+	if [ "$(TRAVIS_BRANCH)" == "master" ]; then \
+		$(MAKE) docker-publish-images sync-branches IMAGE_TAGS="latest $(DEBUG_IMAGE_TAG)"; \
 	fi
 
-	# TODO update to dss branch
-	# TODO update to include dss-latest tag on dss branch
-	if [ "$(TRAVIS_BRANCH)" == "dss-backup" ]; then \
-		$(MAKE) docker-publish-images IMAGE_TAGS="$(DEBUG_IMAGE_TAG)"; \
+	if [ "$(TRAVIS_BRANCH)" == "dss" ]; then \
+		$(MAKE) docker-publish-images IMAGE_TAGS="dss-latest $(DEBUG_IMAGE_TAG)"; \
 	fi
 
 sync-branches:
 	# sync to dss
 	git fetch origin --unshallow --tag
-	# TODO update to use dss branch
-	git push origin $(TRAVIS_BRANCH):dss-backup -f --tags
+	git push origin $(TRAVIS_BRANCH):dss -f --tags
 
 	# sync to ibm/detect-secrets
 	git remote add github git@github.com:ibm/detect-secrets.git
