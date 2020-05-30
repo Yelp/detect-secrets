@@ -104,6 +104,12 @@ Hooks available:
 - `detect-secrets`: This hook detects and prevents high entropy strings from
   entering the codebase.
 
+However, you can also run it manually (without the pre-commit framework) as such:
+
+```
+git diff --staged --name-only | xargs detect-secrets-hook
+```
+
 ### Server-side Secret Scanning
 
 Please see the [detect-secrets-server](https://github.com/Yelp/detect-secrets-server)
