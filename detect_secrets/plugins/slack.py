@@ -19,13 +19,13 @@ class SlackDetector(RegexBasedDetector):
         # Slack Webhooks
         re.compile(
             r"""
-            https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8}/[a-zA-Z0-9_]{24}
+            https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8,10}/[a-zA-Z0-9_]{24}
             """,
             flags=re.IGNORECASE | re.VERBOSE,
         ),
     )
 
-    def verify(self, token, **kwargs):  # pragma: no cover
+    def verify(self, token, *args, **kwargs):  # pragma: no cover
         if token.startswith('https://hooks.slack.com/services/T'):
             response = requests.post(
                 token,
@@ -33,7 +33,10 @@ class SlackDetector(RegexBasedDetector):
                     'text': '',
                 },
             )
-            valid = response.text == 'missing_text_or_fallback_or_attachments'
+            valid = (
+                response.text == 'missing_text_or_fallback_or_attachments'
+                or response.text == 'no_text'
+            )
         else:
             response = requests.post(
                 'https://slack.com/api/auth.test',
