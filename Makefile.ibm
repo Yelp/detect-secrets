@@ -71,8 +71,9 @@ publish-cos:
 	fi
 
 deploy:
+	# + sign in TRAVIS_TAG needs to be replaced with . to avoid docker tag warning
 	if [ -n "$(TRAVIS_TAG)" ]; then \
-		$(MAKE) docker-publish-images publish-cos IMAGE_TAGS="$(TRAVIS_TAG)"; \
+		$(MAKE) docker-publish-images publish-cos IMAGE_TAGS="$(subst +,.,$(TRAVIS_TAG))"; \
 	fi
 
 	if [ "$(TRAVIS_BRANCH)" == "master" ]; then \
@@ -95,7 +96,7 @@ sync-branches:
 
 fix-dns:
 	# add public DNS name for public.dhe.ibm.com. The 9.x one is not serving traffic now
-    # public.dhe.ibm.com access is required for ibm-db pip package
+	# public.dhe.ibm.com access is required for ibm-db pip package
 	echo "$$(dig @8.8.8.8 public.dhe.ibm.com +short | tail -n1) public.dhe.ibm.com" | sudo tee -a /etc/hosts
 
 .PHONY: docker-test-images docker-build-images docker-login docker-publish-images docker-publish-image publish-cos deploy sync-branches fix-dns
