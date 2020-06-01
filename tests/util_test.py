@@ -30,7 +30,10 @@ GIT_REMOTES_VERBOSE_TWO_URLS = (
 def test_version_check_out_of_date():
     responses.add(
         responses.GET,
-        'https://ibm.biz/detect-secrets-version',
+        (
+            'https://detect-secrets-client-version.s3.us-south.'
+            'cloud-object-storage.appdomain.cloud/version'
+        ),
         status=200,
         body='1000000.0.0+ibm.0',
     )
@@ -49,7 +52,10 @@ def test_version_check_out_of_date():
 def test_version_check_not_out_of_date():
     responses.add(
         responses.GET,
-        'https://ibm.biz/detect-secrets-version',
+        (
+            'https://detect-secrets-client-version.s3.us-south.'
+            'cloud-object-storage.appdomain.cloud/version'
+        ),
         status=200,
         body=VERSION,
     )
@@ -64,7 +70,10 @@ def test_version_check_not_out_of_date():
 def test_verion_check_latest_version_request_fails():
     responses.add(
         responses.GET,
-        'https://ibm.biz/detect-secrets-version',
+        (
+            'https://detect-secrets-client-version.s3.us-south.'
+            'cloud-object-storage.appdomain.cloud/version'
+        ),
         status=404,
     )
     with mock.patch('detect_secrets.util.sys.stderr', new=StringIO()) as fakeErr:

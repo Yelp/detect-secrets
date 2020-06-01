@@ -21,7 +21,11 @@ def version_check():
     end_yellow = '\033[0m'
     try:
         resp = requests.get(
-            'https://ibm.biz/detect-secrets-version',
+            (
+                'https://detect-secrets-client-version.s3.us-south.'
+                'cloud-object-storage.appdomain.cloud/version'
+            ),
+            timeout=5,  # added for COS timeout
         )
         resp.raise_for_status()
         latest_version = parse(resp.text)
