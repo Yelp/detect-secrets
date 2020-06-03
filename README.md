@@ -93,7 +93,7 @@ docker-compose build test && docker-compose run --rm test
 
 ## Plugins
 
-Each of the secret checks are developed as plugins in the [detect_secrets/plugins](/tree/master/detect_secrets/plugins) directory. Each plugin represents a single test or a group of tests.
+Each of the secret checks are developed as plugins in the [detect_secrets/plugins](/detect_secrets/plugins) directory. Each plugin represents a single test or a group of tests.
 
 Refer to the plugin directory above for the list of supported secret detectors.
 
