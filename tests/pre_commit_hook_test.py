@@ -14,16 +14,20 @@ from testing.mocks import SubprocessMock
 from testing.util import get_regex_based_plugins
 
 
+def assert_commit_result(command, return_code):
+    assert pre_commit_hook.main(command.split()) == return_code
+
+
 def assert_commit_blocked(command):
-    assert pre_commit_hook.main(command.split()) == 1
+    return assert_commit_result(command, 1)
 
 
 def assert_commit_blocked_with_diff_exit_code(command):
-    assert pre_commit_hook.main(command.split()) == 3
+    return assert_commit_result(command, 3)
 
 
 def assert_commit_succeeds(command):
-    assert pre_commit_hook.main(command.split()) == 0
+    return assert_commit_result(command, 0)
 
 
 class TestPreCommitHook:
@@ -41,9 +45,9 @@ class TestPreCommitHook:
         assert message_by_lines[0].startswith(
             'Potential secrets about to be committed to git repo!',
         )
-        assert message_by_lines[2] == \
+        assert message_by_lines[1] == \
             'Secret Type: Base64 High Entropy String'
-        assert message_by_lines[3] == \
+        assert message_by_lines[2] == \
             'Location:    test_data/files/file_with_secrets.py:3'
 
     def test_file_with_secrets_with_word_list(self):
@@ -55,28 +59,59 @@ class TestPreCommitHook:
         assert_commit_succeeds('test_data/files/file_with_no_secrets.py')
 
     @pytest.mark.parametrize(
-        'has_result, use_private_key_scan, hook_command, commit_succeeds',
+        'has_result, use_private_key_scan, audited, verified, hook_command, return_code',
         [
             # Basic case
-            (True, True, '--baseline will_be_mocked test_data/files/file_with_secrets.py', True),
+            (
+                True, True, True, None,
+                '--baseline will_be_mocked test_data/files/file_with_secrets.py', 0,
+            ),
             # test_no_overwrite_pass_when_baseline_did_not_use_scanner
-            (True, False, '--baseline will_be_mocked test_data/files/private_key', True),
+            (
+                True, False, True, None,
+                '--baseline will_be_mocked test_data/files/private_key', 0,
+            ),
             # test_no_overwrite_quit_when_baseline_use_scanner
-            (False, True, '--baseline will_be_mocked test_data/files/file_with_secrets.py', False),
+            (
+                False, True, True, None,
+                '--baseline will_be_mocked test_data/files/file_with_secrets.py', 1,
+            ),
             # test_overwrite_pass_with_baseline
             (
-                False, True, '--baseline will_be_mocked '
-                + '--no-base64-string-scan test_data/files/file_with_secrets.py', True,
+                False, True, True, None, '--baseline will_be_mocked '
+                + '--no-base64-string-scan test_data/files/file_with_secrets.py', 0,
             ),
             # test_all_plugin_overwrite_pass_with_baseline
             (
-                False, True, '--baseline will_be_mocked --use-all-plugins '
-                + '--no-base64-string-scan test_data/files/file_with_secrets.py', True,
+                False, True, True, None, '--baseline will_be_mocked --use-all-plugins '
+                + '--no-base64-string-scan test_data/files/file_with_secrets.py', 0,
             ),
             # test_overwrite_fail_with_baseline
             (
-                True, False, '--baseline will_be_mocked '
-                + '--use-all-plugins test_data/files/private_key', False,
+                True, False, True, None, '--baseline will_be_mocked '
+                + '--use-all-plugins test_data/files/private_key', 1,
+            ),
+            # fail with clean file non audited verified secret
+            (
+                True, False, None, True, '--baseline will_be_mocked '
+                + '--use-all-plugins test_data/files/file_with_no_secrets.py', 2,
+            ),
+            # fail when clean file non audited secret with fail-on-non-audited option
+            (
+                True, False, None, None, '--baseline will_be_mocked '
+                + '--use-all-plugins test_data/files/file_with_no_secrets.py '
+                + '--fail-on-non-audited', 4,
+            ),
+            # pass when clean file no non audited secret with fail-on-non-audited option
+            (
+                True, False, True, None, '--baseline will_be_mocked '
+                + '--use-all-plugins test_data/files/file_with_no_secrets.py '
+                + '--fail-on-non-audited', 0,
+            ),
+            # pass when clean file non audited secret without fail-on-non-audited option
+            (
+                True, False, None, None, '--baseline will_be_mocked '
+                + '--use-all-plugins test_data/files/file_with_no_secrets.py', 0,
             ),
         ],
     )
@@ -84,8 +119,10 @@ class TestPreCommitHook:
         self,
         has_result,
         use_private_key_scan,
+        audited,
+        verified,
         hook_command,
-        commit_succeeds,
+        return_code,
     ):
         """This just checks if the baseline is loaded, and acts appropriately.
         More detailed baseline tests are in their own separate test suite.
@@ -95,12 +132,11 @@ class TestPreCommitHook:
             return_value=_create_baseline(
                 has_result=has_result,
                 use_private_key_scan=use_private_key_scan,
+                audited=audited,
+                verified=verified,
             ),
         ):
-            if commit_succeeds:
-                assert_commit_succeeds(hook_command)
-            else:
-                assert_commit_blocked(hook_command)
+            assert_commit_result(hook_command, return_code)
 
     def test_quit_early_if_bad_baseline(self, mock_get_baseline):
         mock_get_baseline.side_effect = IOError
@@ -307,13 +343,15 @@ def _create_old_baseline(has_result=True, use_private_key_scan=True):
     )
 
 
-def _create_baseline(has_result=True, use_private_key_scan=True):
+def _create_baseline(has_result=True, use_private_key_scan=True, audited=True, verified=None):
     """
     Baselines in v0.12.0 and after have an exclude field with files and lines
     """
     baseline = _create_baseline_template(
         has_result=has_result,
         use_private_key_scan=use_private_key_scan,
+        audited=audited,
+        verified=verified,
     )
     baseline['exclude'] = {
         'files': '',
@@ -326,7 +364,7 @@ def _create_baseline(has_result=True, use_private_key_scan=True):
     )
 
 
-def _create_baseline_template(has_result, use_private_key_scan):
+def _create_baseline_template(has_result, use_private_key_scan, audited=True, verified=None):
     base64_secret = 'c3VwZXIgbG9uZyBzdHJpbmcgc2hvdWxkIGNhdXNlIGVub3VnaCBlbnRyb3B5'
     baseline = {
         'generated_at': 'does_not_matter',
@@ -347,9 +385,9 @@ def _create_baseline_template(has_result, use_private_key_scan):
             'test_data/files/file_with_secrets.py': [
                 {
                     'type': 'Base64 High Entropy String',
-                    'is_secret': True,
-                    'is_verified': False,
-                    'verified_result': None,
+                    'is_secret': audited,
+                    'is_verified': True,
+                    'verified_result': verified,
                     'line_number': 3,
                     'hashed_secret': PotentialSecret.hash_secret(base64_secret),
                 },

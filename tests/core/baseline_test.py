@@ -6,6 +6,7 @@ import pytest
 
 from detect_secrets.core import baseline
 from detect_secrets.core.baseline import format_baseline_for_output
+from detect_secrets.core.baseline import get_secrets_from_baseline
 from detect_secrets.core.baseline import get_secrets_not_in_baseline
 from detect_secrets.core.baseline import merge_baseline
 from detect_secrets.core.baseline import merge_results
@@ -214,6 +215,30 @@ class TestGetSecretsNotInBaseline:
 
         backup_baseline = baseline.data.copy()
         results = get_secrets_not_in_baseline(new_findings, baseline)
+
+        assert len(results.data) == 1
+        assert 'filename1' in results.data
+        assert baseline.data == backup_baseline
+
+    @pytest.mark.parametrize(
+        'use_default_filter_func',
+        [
+            True,
+            False,
+        ],
+    )
+    def test_get_secrets_from_baseline(self, use_default_filter_func):
+        baseline = secrets_collection_factory([
+            {
+                'filename': 'filename1',
+            },
+        ])
+
+        backup_baseline = baseline.data.copy()
+        if use_default_filter_func:
+            results = get_secrets_from_baseline(baseline)
+        else:
+            results = get_secrets_from_baseline(baseline, filter_func=None)
 
         assert len(results.data) == 1
         assert 'filename1' in results.data

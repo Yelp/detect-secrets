@@ -22,6 +22,8 @@ class PotentialSecret:
         lineno=0,
         is_secret=None,
         output_raw=False,
+        is_verified=False,
+        verified_result=None,
     ):
         """
         :type typ: str
@@ -54,8 +56,8 @@ class PotentialSecret:
         self.secret_hash = self.hash_secret(secret)
         self.secret = secret
         self.is_secret = is_secret
-        self.is_verified = False
-        self.verified_result = None
+        self.is_verified = is_verified
+        self.verified_result = verified_result
         self.other_factors = {}
 
         # NOTE: Originally, we never wanted to keep the secret value in memory,

@@ -138,6 +138,8 @@ class SecretsCollection:
                     lineno=item['line_number'],
                     is_secret=item.get('is_secret'),
                     output_raw=result.output_raw,
+                    is_verified=item['is_verified'],
+                    verified_result=item.get('verified_result'),
                 )
                 secret.secret_hash = item['hashed_secret']
                 result.data[filename][secret] = secret

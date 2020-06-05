@@ -32,6 +32,10 @@ COS_FILE := version
 # Do not know branch, then figure it out using git
 TRAVIS_BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
 
+# Test related param
+# Extra pytest options such as "-k keyword" to restrict the number of test cases to run
+EXTRA_PYTEST_OPTIONS :=
+
 docker-test-images:
 	docker run -it $(DOCKER_DOMAIN_LOCAL)/detect-secrets --version
 	docker run -it $(DOCKER_DOMAIN_LOCAL)/detect-secrets-hook --version
@@ -99,4 +103,10 @@ fix-dns:
 	# public.dhe.ibm.com access is required for ibm-db pip package
 	echo "$$(dig @8.8.8.8 public.dhe.ibm.com +short | tail -n1) public.dhe.ibm.com" | sudo tee -a /etc/hosts
 
-.PHONY: docker-test-images docker-build-images docker-login docker-publish-images docker-publish-image publish-cos deploy sync-branches fix-dns
+test-local:
+	coverage run -m pytest tests $(EXTRA_PYTEST_OPTIONS)
+	coverage report --show-missing --include=tests/* --fail-under 100
+	coverage report --show-missing --include=detect_secrets/* --fail-under 98
+
+
+.PHONY: docker-test-images docker-build-images docker-login docker-publish-images docker-publish-image publish-cos deploy sync-branches fix-dns test-local

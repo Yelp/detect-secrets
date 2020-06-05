@@ -2,6 +2,7 @@ import json
 import os
 import re
 import subprocess
+import types
 
 from detect_secrets import util
 from detect_secrets.core.log import get_logger
@@ -86,6 +87,67 @@ def initialize(
         output.scan_file(file)
 
     return output
+
+
+def get_secrets_from_baseline(baseline, filter_func=lambda secret: True):
+    """
+    :type baseline: SecretsCollection
+    :param baseline: SecretsCollection of baseline results.
+                     This will be updated accordingly (by reference)
+
+    :type filter_func: function
+    :param filter_func: the function to filter on secret. If not supplied
+                        return all secrets
+
+    :rtype: SecretsCollection
+    :returns: SecretsCollection of non-audited results
+    """
+    if not isinstance(filter_func, types.FunctionType):
+        return baseline
+
+    new_secrets = SecretsCollection()
+    for filename in baseline.data:
+        # The __hash__ method of PotentialSecret makes this work
+        filtered_results = {
+            secret: secret
+            for secret in baseline.data[filename]
+            if filter_func(secret)
+        }
+
+        if filtered_results:
+            new_secrets.data[filename] = filtered_results
+
+    return new_secrets
+
+
+def get_verified_non_audited_secrets_from_baseline(baseline):
+    """
+    :type baseline: SecretsCollection
+    :param baseline: SecretsCollection of baseline results.
+                     This will be updated accordingly (by reference)
+
+    :rtype: SecretsCollection
+    :returns: SecretsCollection of non-audited and verified results
+    """
+    return get_secrets_from_baseline(
+        baseline, lambda secret:
+        secret.is_secret is None and secret.verified_result,
+    )
+
+
+def get_non_audited_secrets_from_baseline(baseline):
+    """
+    :type baseline: SecretsCollection
+    :param baseline: SecretsCollection of baseline results.
+                     This will be updated accordingly (by reference)
+
+    :rtype: SecretsCollection
+    :returns: SecretsCollection of non-audited results
+    """
+    return get_secrets_from_baseline(
+        baseline, lambda secret:
+        secret.is_secret is None,
+    )
 
 
 def get_secrets_not_in_baseline(results, baseline):
@@ -218,13 +280,18 @@ def merge_baseline(old_baseline, new_baseline):
 
 
 def merge_results(old_results, new_results):
-    """Update results in baseline with latest information.
+    """Update results in new baseline with audit information from old baseline.
+
+    Secrets only appear in old baseline are ignored.
+
+    If secret exists in both old and new baselines, old baseline has audit (is_secret)
+    info but new baseline does not, then audit info will be copied to new baseline.
 
     :type old_results: dict
     :param old_results: results of status quo
 
     :type new_results: dict
-    :param new_results: results to replace status quo
+    :param new_results: results to replaced status quo
 
     :rtype: dict
     """

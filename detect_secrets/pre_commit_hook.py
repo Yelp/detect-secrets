@@ -4,7 +4,9 @@ import sys
 import textwrap
 
 from detect_secrets import VERSION
+from detect_secrets.core.baseline import get_non_audited_secrets_from_baseline
 from detect_secrets.core.baseline import get_secrets_not_in_baseline
+from detect_secrets.core.baseline import get_verified_non_audited_secrets_from_baseline
 from detect_secrets.core.baseline import trim_baseline_of_removed_secrets
 from detect_secrets.core.common import write_baseline_to_file
 from detect_secrets.core.log import get_logger
@@ -59,24 +61,25 @@ def main(argv=None):
         )
         baseline_collection.plugins = plugins
 
-    results = find_secrets_in_files(args, plugins)
+    results_collection = find_secrets_in_files(args, plugins)
     if baseline_collection:
-        original_results = results
-        results = get_secrets_not_in_baseline(
-            results,
+        original_results_collection = results_collection
+        results_collection = get_secrets_not_in_baseline(
+            results_collection,
             baseline_collection,
         )
 
-    if len(results.data) > 0:
-        pretty_print_diagnostics(results)
+    if len(results_collection.data) > 0:
+        pretty_print_diagnostics_for_new_secrets(results_collection)
         return 1
 
+    # if no baseline been supplied
     if not baseline_collection:
         return 0
 
     # Only attempt baseline modifications if we don't find any new secrets
     baseline_modified = trim_baseline_of_removed_secrets(
-        original_results,
+        original_results_collection,
         baseline_collection,
         args.filenames,
     )
@@ -97,6 +100,25 @@ def main(argv=None):
             'Please `git add {}`, thank you.\n\n'.format(args.baseline[0]),
         )
         return 3
+
+    # check if there are verified but haven't been audited secrets
+    verified_non_audited = get_verified_non_audited_secrets_from_baseline(
+        baseline_collection,
+    )
+
+    if len(verified_non_audited.data) > 0:
+        pretty_print_diagnostics_for_verified_non_audited(verified_non_audited)
+        return 2
+
+    # check if there are non-audited secrets
+    if args.fail_on_non_audited:
+        non_audited = get_non_audited_secrets_from_baseline(
+            baseline_collection,
+        )
+
+        if len(non_audited.data) > 0:
+            pretty_print_diagnostics_for_non_audited(non_audited)
+            return 4
 
     return 0
 
@@ -178,22 +200,69 @@ def find_secrets_in_files(args, plugins):
     return collection
 
 
-def pretty_print_diagnostics(secrets):
-    """Prints a helpful error message, for better usability.
+def pretty_print_diagnostics_for_verified_non_audited(secrets):
+    """Prints a helpful error message for existed verified and non audited secrets
 
     :type secrets: SecretsCollection
     """
-    _print_warning_header()
-    _print_secrets_found(secrets)
-    _print_mitigation_suggestions()
-
-
-def _print_warning_header():
     message = (
-        'Potential secrets about to be committed to git repo! Please rectify '
-        'or explicitly ignore with an inline `pragma: allowlist secret` comment.'
+        'You have secrets in baseline which have not been audited but have successfully been '
+        'use to authenticate against target service.'
     )
 
+    suggestions = [
+        'Audit baseline file to make sure you have reviewed the risk',
+        'Mark false positives with an inline `pragma: allowlist secret` comment',
+        'Commit with `--no-verify` if this is a one-time false positive',
+    ]
+
+    _print_warning_header(message)
+    _print_secrets_found(secrets)
+    _print_mitigation_suggestions(suggestions)
+    _print_warning_footer()
+
+
+def pretty_print_diagnostics_for_non_audited(secrets):
+    """Prints a helpful error message for existed non audited secrets
+
+    :type secrets: SecretsCollection
+    """
+    message = (
+        'You have secrets in baseline file which have not been audited yet.'
+    )
+
+    suggestions = [
+        'Audit baseline file to make sure you have reviewed the risk',
+        'Remove the --fail-on-non-audited option from pre-commit hook',
+    ]
+
+    _print_warning_header(message)
+    _print_secrets_found(secrets)
+    _print_mitigation_suggestions(suggestions)
+    _print_warning_footer()
+
+
+def pretty_print_diagnostics_for_new_secrets(secrets):
+    """Prints a helpful error message for newly found secrets
+
+    :type secrets: SecretsCollection
+    """
+    message = (
+        'Potential secrets about to be committed to git repo! Please rectify.'
+    )
+
+    suggestions = [
+        'Mark false positives with an inline `pragma: allowlist secret` comment',
+        'Commit with `--no-verify` if this is a one-time false positive',
+    ]
+
+    _print_warning_header(message)
+    _print_secrets_found(secrets)
+    _print_mitigation_suggestions(suggestions)
+    _print_warning_footer()
+
+
+def _print_warning_header(message):
     log.error(textwrap.fill(message))
     log.error('')
 
@@ -207,7 +276,7 @@ def _print_secrets_found(secrets):
 def _print_mitigation_suggestions():
     security_team = os.environ.get(
         'DETECT_SECRETS_SECURITY_TEAM',
-        'in #security',
+        'your BISO',
     )
     suggestions = [
         'For information about putting your secrets in a safer place, ' +
@@ -229,6 +298,8 @@ def _print_mitigation_suggestions():
 
     log.error('')
 
+
+def _print_warning_footer():
     log.error(
         textwrap.fill(
             'If a secret has already been committed, visit '
