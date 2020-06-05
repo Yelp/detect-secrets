@@ -66,7 +66,7 @@ publish-cos:
 	if [ "$${should_update}" == "yes" ]; then                                                                       \
 		curl -sL https://ibm.biz/idt-installer | bash;                                                              \
 		ibmcloud login --apikey $(IBM_CLOUD_API_KEY) -a https://cloud.ibm.com -r $(COS_REGION);                     \
-		$(TRAVIS_TAG) > version.txt;                                                                                \
+		echo $(TRAVIS_TAG) > version.txt;                                                                                \
 		ibmcloud cos put-object --bucket $(COS_BUCKET) --key $(COS_FILE) --body version.txt --region $(COS_REGION); \
 	fi
 
