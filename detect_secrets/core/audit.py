@@ -78,6 +78,11 @@ def audit_baseline(baseline_filename):
     total_choices = len(secrets_with_choices)
     secret_iterator = BidirectionalIterator(secrets_with_choices)
 
+    if sys.platform.lower() == 'win32':
+        # required on Windows to enable ANSI escape codes to print correctly!
+        # noqa: E501 See: https://stackoverflow.com/questions/287871/how-to-print-colored-text-in-terminal-in-python
+        os.system('')
+
     current_secret_index = 0
     for filename, secret in secret_iterator:
         _clear_screen()
@@ -464,11 +469,7 @@ def _comparison_generator(old_list, new_list, compare_fn):
 
 
 def _clear_screen():  # pragma: no cover
-    ttyname = os.ttyname(sys.stdout.fileno())
-    with open(ttyname, 'wb') as tty:
-        # Use escape sequence instead of "clear" command to avoid incorrect
-        # starting line calculation in docker env
-        tty.write(b'\033c')
+    print('\033[2J\033[H', end='')  # ANSI escapes for: clear screen, move cursor to home
 
 
 def _print_context(  # pragma: no cover
