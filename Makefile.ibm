@@ -36,6 +36,22 @@ TRAVIS_BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
 # Extra pytest options such as "-k keyword" to restrict the number of test cases to run
 EXTRA_PYTEST_OPTIONS :=
 
+# Trivy related
+TRIVY ?= /tmp/trivy
+TRIVY_VERSION := $(shell curl -s "https://api.github.com/repos/aquasecurity/trivy/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
+TRIVY_OS := $(shell uname | sed 's/Darwin/macOS/' )
+TRIVY_ARCH := $(shell uname -m | cut -d_ -f2 )
+
+setup-trivy:
+	curl -sSfL https://github.com/aquasecurity/trivy/releases/download/v$(TRIVY_VERSION)/trivy_$(TRIVY_VERSION)_$(TRIVY_OS)-$(TRIVY_ARCH)bit.tar.gz -o /tmp/trivy.tar.gz
+	tar zxvf /tmp/trivy.tar.gz -C $(dir $(TRIVY)) trivy
+
+docker-quality-image-%:
+	docker tag $(DOCKER_DOMAIN_LOCAL)/$* $(DOCKER_DOMAIN_LOCAL)/$*:trivy
+	$(TRIVY) image --exit-code 1 --ignore-unfixed $(DOCKER_DOMAIN_LOCAL)/$*:trivy
+
+docker-quality-images: $(patsubst %,docker-quality-image-%,$(DOCKER_IMAGES))
+
 docker-test-images:
 	docker run -it $(DOCKER_DOMAIN_LOCAL)/detect-secrets --version
 	docker run -it $(DOCKER_DOMAIN_LOCAL)/detect-secrets-hook --version
@@ -109,4 +125,4 @@ test-local:
 	coverage report --show-missing --include=detect_secrets/* --fail-under 98
 
 
-.PHONY: docker-test-images docker-build-images docker-login docker-publish-images docker-publish-image publish-cos deploy sync-branches fix-dns test-local
+.PHONY: docker-test-images docker-build-images docker-login docker-publish-images docker-publish-image publish-cos deploy sync-branches fix-dns test-local setup-trivy docker-quality-images

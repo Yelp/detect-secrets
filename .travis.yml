@@ -5,7 +5,7 @@ services:
 deploy:
 - provider: script
   script: >-
-        set -e; make docker-build-images docker-test-images deploy
+        set -e; make docker-build-images docker-test-images setup-trivy docker-quality-images deploy
   on:
     all_branches: true
     # only build docker image and push once
@@ -35,3 +35,4 @@ script: make test
 cache:
     directories:
         - $HOME/.cache/pre-commit
+        - $HOME/.cache/trivy
