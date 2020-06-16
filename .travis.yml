@@ -1,5 +1,7 @@
 language: python
 
+git:
+  depth: false
 services:
     - docker
 deploy:

@@ -90,6 +90,17 @@ publish-cos:
 		ibmcloud cos put-object --bucket $(COS_BUCKET) --key $(COS_FILE) --body version.txt --region $(COS_REGION); \
 	fi
 
+release:
+	git fetch origin --tag
+
+	# Once a new tag is generated, it will trigger Travis to publish new image
+	TAG_VERSION=$$(git describe --tags --abbrev=0); \
+	NEW_VERSION=$$(grep VERSION detect_secrets/__init__.py | cut -d\' -f2 ); \
+	if [ $$TAG_VERSION != $$NEW_VERSION ]; then \
+		git tag $$NEW_VERSION head; \
+		git push origin --tags; \
+	fi
+
 deploy:
 	# + sign in TRAVIS_TAG needs to be replaced with . to avoid docker tag warning
 	if [ -n "$(TRAVIS_TAG)" ]; then \
@@ -98,6 +109,7 @@ deploy:
 
 	if [ "$(TRAVIS_BRANCH)" == "master" ]; then \
 		$(MAKE) docker-publish-images sync-branches IMAGE_TAGS="latest $(DEBUG_IMAGE_TAG)"; \
+		$(MAKE) release; \
 	fi
 
 	if [ "$(TRAVIS_BRANCH)" == "dss" ]; then \
@@ -106,7 +118,7 @@ deploy:
 
 sync-branches:
 	# sync to dss
-	git fetch origin --unshallow --tag
+	git fetch origin --tag
 	git push origin $(TRAVIS_BRANCH):dss -f --tags
 
 	# sync to ibm/detect-secrets
@@ -125,4 +137,4 @@ test-local:
 	coverage report --show-missing --include=detect_secrets/* --fail-under 98
 
 
-.PHONY: docker-test-images docker-build-images docker-login docker-publish-images docker-publish-image publish-cos deploy sync-branches fix-dns test-local setup-trivy docker-quality-images
+.PHONY: docker-test-images docker-build-images docker-login docker-publish-images docker-publish-image publish-cos deploy sync-branches fix-dns test-local setup-trivy docker-quality-images release
