@@ -42,6 +42,8 @@ TRIVY_VERSION := $(shell curl -s "https://api.github.com/repos/aquasecurity/triv
 TRIVY_OS := $(shell uname | sed 's/Darwin/macOS/' )
 TRIVY_ARCH := $(shell uname -m | cut -d_ -f2 )
 
+TRAVIS_COMMIT ?= head
+
 setup-trivy:
 	curl -sSfL https://github.com/aquasecurity/trivy/releases/download/v$(TRIVY_VERSION)/trivy_$(TRIVY_VERSION)_$(TRIVY_OS)-$(TRIVY_ARCH)bit.tar.gz -o /tmp/trivy.tar.gz
 	tar zxvf /tmp/trivy.tar.gz -C $(dir $(TRIVY)) trivy
@@ -97,7 +99,7 @@ release:
 	TAG_VERSION=$$(git describe --tags --abbrev=0); \
 	NEW_VERSION=$$(grep VERSION detect_secrets/__init__.py | cut -d\' -f2 ); \
 	if [ $$TAG_VERSION != $$NEW_VERSION ]; then \
-		git tag $$NEW_VERSION head; \
+		git tag $$NEW_VERSION $(TRAVIS_COMMIT); \
 		git push origin --tags; \
 	fi
 
