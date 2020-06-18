@@ -104,9 +104,9 @@ release:
 	fi
 
 deploy:
-	# + sign in TRAVIS_TAG needs to be replaced with . to avoid docker tag warning
+	# TRAVIS_TAG needs to be replaced with . to avoid docker tag warning
 	if [ -n "$(TRAVIS_TAG)" ]; then \
-		$(MAKE) docker-publish-images publish-cos IMAGE_TAGS="$(subst +,.,$(TRAVIS_TAG))"; \
+		$(MAKE) docker-publish-images push-tag publish-cos IMAGE_TAGS="$(subst +,.,$(TRAVIS_TAG))"; \
 	fi
 
 	if [ "$(TRAVIS_BRANCH)" == "master" ]; then \
@@ -117,6 +117,11 @@ deploy:
 	if [ "$(TRAVIS_BRANCH)" == "dss" ]; then \
 		$(MAKE) docker-publish-images IMAGE_TAGS="dss-latest $(DEBUG_IMAGE_TAG)"; \
 	fi
+
+push-tag:
+	git remote add github git@github.com:ibm/detect-secrets.git
+	git fetch github
+	git push github $(TRAVIS_TAG)
 
 sync-branches:
 	# sync to dss
@@ -139,4 +144,4 @@ test-local:
 	coverage report --show-missing --include=detect_secrets/* --fail-under 98
 
 
-.PHONY: docker-test-images docker-build-images docker-login docker-publish-images docker-publish-image publish-cos deploy sync-branches fix-dns test-local setup-trivy docker-quality-images release
+.PHONY: docker-test-images docker-build-images docker-login docker-publish-images docker-publish-image publish-cos deploy push-tag sync-branches fix-dns test-local setup-trivy docker-quality-images release
