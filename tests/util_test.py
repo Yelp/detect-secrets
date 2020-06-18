@@ -66,6 +66,31 @@ def test_version_check_not_out_of_date():
     assert expected_error_msg == stderr
 
 
+@mock.patch('detect_secrets.util.is_python_2')
+def test_python_2_warning(mock_is_py2):
+    mock_is_py2.return_value = True
+    with mock.patch('detect_secrets.util.sys.stderr', new=StringIO()) as fakeErr:
+        util.python_2_warning()
+        stderr = fakeErr.getvalue().strip()
+    expected_error_msg = 'WARNING: You are using detect-secrets on Python 2. ' + \
+        'We will be dropping Python 2 support in a new release on July 1st, 2020, ' + \
+        'as Python 2 offically reached end of life on January 1, 2020. ' + \
+        'Please upgrade to Python 3 immediately. For more information, see: ' + \
+        'https://github.ibm.com/Whitewater/whitewater-detect-secrets/wiki/' + \
+        'Developer-Tool-FAQs#which-python-versions-does-detect-secrets-support\n'
+    assert expected_error_msg == uncolor(stderr)
+
+
+@mock.patch('detect_secrets.util.is_python_2')
+def test_python_2_warning_no_warning(mock_is_py2):
+    mock_is_py2.return_value = False
+    with mock.patch('detect_secrets.util.sys.stderr', new=StringIO()) as fakeErr:
+        util.python_2_warning()
+        stderr = fakeErr.getvalue().strip()
+    expected_error_msg = ''
+    assert expected_error_msg == stderr
+
+
 @responses.activate
 def test_verion_check_latest_version_request_fails():
     responses.add(

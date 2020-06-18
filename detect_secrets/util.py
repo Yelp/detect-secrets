@@ -54,6 +54,23 @@ def is_python_2():
     return sys.version_info[0] < 3
 
 
+def python_2_warning():
+    yellow = '\033[93m'
+    end_yellow = '\033[0m'
+    if is_python_2():
+        print(
+            yellow +
+            'WARNING: You are using detect-secrets on Python 2. ' +
+            'We will be dropping Python 2 support in a new release on July 1st, 2020, ' +
+            'as Python 2 offically reached end of life on January 1, 2020. ' +
+            'Please upgrade to Python 3 immediately. For more information, see: ' +
+            'https://github.ibm.com/Whitewater/whitewater-detect-secrets/wiki/' +
+            'Developer-Tool-FAQs#which-python-versions-does-detect-secrets-support\n' +
+            end_yellow,
+            file=sys.stderr,
+        )
+
+
 def build_automaton(word_list):
     """
     :type word_list: str
