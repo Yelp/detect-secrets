@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 import os
 import re
 import subprocess
@@ -14,20 +12,12 @@ except ImportError as ie:  # pragma: no cover
 
     if hasattr(ie, 'msg'):
         message = ie.msg
-    else:
-        # python 2
-        message = ie.message
 
     if 'Library not loaded: libdb2.dylib' not in message:
         raise ie
 
     if hasattr(ie, 'path'):
         ibm_db_darwin_so = ie.path
-    else:
-        # python 2
-        so_file_search = re.search(r'dlopen\((.*),', message, re.IGNORECASE)
-        if so_file_search:
-            ibm_db_darwin_so = so_file_search.group(1)
 
     if not ibm_db_darwin_so:
         raise ie

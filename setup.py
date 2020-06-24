@@ -1,3 +1,10 @@
+import sys
+if sys.version_info.major == 2:
+    sys.exit(
+        'Sorry, Python 2 is no longer supported by detect-secrets. Refer to',
+        ' http://ibm.biz/upgrade-to-py3 for instructions on upgraing to Python 3.',
+    )
+
 from setuptools import find_packages
 from setuptools import setup
 
@@ -23,14 +30,6 @@ setup(
         'packaging',
         'pyahocorasick',
     ],
-    extras_require={
-        ':python_version=="2.7"': [
-            'configparser',
-            'enum34',
-            'future',
-            'functools32',
-        ],
-    },
     entry_points={
         'console_scripts': [
             'detect-secrets = detect_secrets.main:main',

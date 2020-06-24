@@ -103,6 +103,19 @@ class BasePlugin:
     def default_options(cls):
         return {}
 
+    def _is_excluded_line(self, line):
+        return (
+            any(
+                allowlist_regex.search(line)
+                for allowlist_regex in ALLOWLIST_REGEXES
+            )
+            or
+            (
+                self.exclude_lines_regex and
+                self.exclude_lines_regex.search(line)
+            )
+        )
+
     def analyze(self, file, filename, output_raw=False, output_verified_false=False):
         """
         :param file:     The File object itself.
@@ -117,6 +130,12 @@ class BasePlugin:
         file_lines = tuple(file.readlines())
         for line_num, line in enumerate(file_lines, start=1):
             results = self.analyze_line(line, line_num, filename, output_raw)
+            if (
+                not results
+                or
+                self._is_excluded_line(line)
+            ):
+                continue
             if not self.should_verify:
                 potential_secrets.update(results)
                 continue

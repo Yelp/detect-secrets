@@ -1,3 +1,5 @@
+- [![Build Status](https://travis.ibm.com/Whitewater/whitewater-detect-secrets.svg?token=tSTYkwXezbKBusqJ3V4L&branch=master)](https://travis.ibm.com/Whitewater/whitewater-detect-secrets)
+
 # Whitewater Detect Secrets
 
 ## About
@@ -31,65 +33,107 @@ need to scan the entire repository every time.
 For a look at recent changes, please see the
 [changelog](/CHANGELOG.md).
 
-## User Guide
+## Example Usage
 
-If you are looking for information on how to use this project as an end user please refer to the [user guide](https://w3.ibm.com/w3publisher/detect-secrets).
+### Setting Up a Baseline
+
+```
+$ detect-secrets scan > .secrets.baseline
+```
+
+### pre-commit Hook
+
+```
+$ cat .pre-commit-config.yaml
+-   repo: git@github.com:Yelp/detect-secrets
+    rev: v0.13.1
+    hooks:
+    -   id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: .*/tests/.*
+```
+
+### Auditing a Baseline
+
+```
+$ detect-secrets audit .secrets.baseline
+```
+
+### Upgrading Baselines
+
+This is only applicable for upgrading baselines that have been created after version 0.9.
+For upgrading baselines lower than that version, just recreate it.
+
+```
+$ detect-secrets scan --update .secrets.baseline
+```
+
+### Command Line
+
+`detect-secrets` is designed to be used as a git pre-commit hook, but you can also invoke `detect-secrets scan [path]` directly being `path` the file(s) and/or directory(ies) to scan (`path` defaults to `.` if not specified).
+
+It should be noted that by default, `detect-secrets scan` only operates on files that are tracked by git. So if you intend to scan files outside of a git repository, you will need to pass the `--all-files` flag.
+
+#### Inline Allowlisting
+
+To tell `detect-secrets` to ignore a particular line of code, simply append an
+inline `pragma: allowlist secret` comment. For example:
+
+```python
+API_KEY = "blah-blah-but-actually-not-secret"  # pragma: allowlist secret
+print('hello world')
+```
+
+Inline commenting syntax for a multitude of languages is supported:
+
+| Comment Style | Language Support |
+| :---:     | :---:       |
+| `#` | e.g. Python, Dockerfile, YAML |
+| `//` | e.g. Go, C++, Java |
+| `/* */` | e.g. C, Java|
+| `'` | e.g. Visual Basic .NET|
+| `--` | e.g. SQL, Haskell|
+| `<!-- --!>` | e.g. XML |
+
+This may be a convenient way for you to allowlist secrets, without having to
+regenerate the entire baseline again. Furthermore, this makes the allowlisted
+secrets easily searchable, auditable, and maintainable.
+
+### User Guide
+
+If you are looking for more information on how to use this project as an end user please refer to the [user guide](https://w3.ibm.com/w3publisher/detect-secrets).
+
+## Caveats
+
+This is not meant to be a sure-fire solution to prevent secrets from entering
+the codebase. Only proper developer education can truly do that. This pre-commit
+hook merely implements several heuristics to try and prevent obvious cases of
+committing secrets.
+
+### Things that won't be prevented
+
+* Multi-line secrets
+* Default passwords that don't trigger the `KeywordDetector` (e.g. `login = "hunter2"`)
+
+### Plugin Configuration
+
+One method that this package uses to find secrets is by searching for high
+entropy strings in the codebase. This is calculated through the [Shannon entropy
+formula](http://blog.dkbza.org/2007/05/scanning-data-for-entropy-anomalies.html).
+If the entropy of a given string exceeds the preset amount, the string will be
+rejected as a potential secret.
+
+This preset amount can be adjusted in several ways:
+
+* Specifying it within the config file, for server scanning.
+* Specifying it with command line flags (e.g. `--base64-limit`)
+
+Lowering these limits will identify more potential secrets, but also create
+more false positives. Adjust these limits to suit your needs.
 
 ## Contribution
 
 Please read the [CONTRIBUTING.md](/CONTRIBUTING.md). Bellow is information on how setup the testing environment, and run the tests.
-
-## Testing
-
-To run the tests you need install the dependencies described bellow.
-
-You need to run the setup once or after you do a `make clean`. To run the setup run the following command:
-
-```
-make setup
-```
-
-To run the tests run:
-
-```
-make test
-```
-
-If you want to clean you environment, if you have a bad setup or tests, just run:
-
-```
-make clean
-```
-
-## Testing Dependencies
-
-This project is written in Python. Here are the dependencies needed to run the tests:
-- `python` The version can be installed using an utility like pyenv ( instructions bellow ) or your os package manager
-    - `2.7`
-    - `3.5`
-    - `3.6`
-    - `pypy`
-- `tox` installed via pip or your os package manager
-- `make`
-- `pre-commit`
-    - `pip install pre-commit`
-    - `pre-commit install`
-
-#### Installing via pyenv
-
-1. Install [pyenv](https://github.com/pyenv/pyenv) in your environment. **Note:** you need to add the environment to you `.bashrc`. You will most likely run into the common build problems listed [here](https://github.com/pyenv/pyenv/wiki/Common-build-problems).
-1. Install the environment listed above
-1. Set the environment as global using the `pyenv global $VERSION` command
-1. Install tox `pip install tox`
-
-
-#### Running test in a docker image
-
-If you don't want to figure out how to install it locally or don't want to spend the time you can use the development docker image. Install `docker` and `docker-compose`. Then run:
-
-```
-docker-compose build test && docker-compose run --rm test
-```
 
 ## Plugins
 

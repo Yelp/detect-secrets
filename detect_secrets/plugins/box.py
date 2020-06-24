@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 from boxsdk import Client
 from boxsdk import JWTAuth
 

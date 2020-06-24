@@ -17,13 +17,6 @@ from testing.mocks import mock_printer
 from testing.util import uncolor
 
 
-try:
-    FileNotFoundError
-except NameError:  # pragma: no cover
-    # support python 2.x
-    FileNotFoundError = IOError
-
-
 def get_list_of_plugins(include=None, exclude=None):
     """
     :type include: List[Dict[str, Any]]

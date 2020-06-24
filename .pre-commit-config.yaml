@@ -1,12 +1,10 @@
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.5.0
+    rev: v2.3.0
     hooks:
     -   id: check-builtin-literals
         args: ['--no-allow-dict-kwargs']
-    -   id: trailing-whitespace
-        exclude: \.(md)
-    -   id: end-of-file-fixer
+        exclude: bumpity.py$
     -   id: check-docstring-first
     -   id: debug-statements
         exclude: bumpity.py$
@@ -18,17 +16,17 @@ repos:
         exclude: ^test_data/|bumpity.py$
     -   id: trailing-whitespace
 -   repo: https://github.com/asottile/reorder_python_imports
-    rev: v1.9.0
+    rev: v1.6.1
     hooks:
     -   id: reorder-python-imports
         language_version: python3
         exclude: bumpity.py$
 -   repo: https://github.com/asottile/add-trailing-comma
-    rev: v1.5.0
+    rev: v1.4.1
     hooks:
     -   id: add-trailing-comma
 -   repo: https://github.com/pre-commit/mirrors-autopep8
-    rev: v1.5.2
+    rev: v1.4.4
     hooks:
     -   id: autopep8
 - repo: https://github.com/ibm/detect-secrets
@@ -36,7 +34,7 @@ repos:
   # You are encouraged to use static refs such as tags, instead of branch name
   #
   # Running "pre-commit autoupdate" would automatically updates rev to latest tag
-  rev: 0.13.0+ibm.13.dss
+  rev: 0.13.0+ibm.15.dss
   hooks:
     -   id: detect-secrets # pragma: whitelist secret
         # Add options for detect-secrets-hook binary. You can run `detect-secrets-hook --help` to list out all possible options.
