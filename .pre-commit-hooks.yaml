@@ -3,6 +3,6 @@
     description: Detects high entropy strings that are likely to be passwords.
     entry: detect-secrets-hook
     args: ['--baseline', '.secrets.baseline']
-    language: python3
+    language: python
     # for backward compatibility
     files: .*
