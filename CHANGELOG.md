@@ -33,7 +33,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 #### :mega: Release Highlights
 
-- Remove support for Python 3 ([#292], big thanks to [@KevinHock]!)
+- Remove support for Python 2 ([#292], big thanks to [@KevinHock]!)
 
 #### :tada: New Features
 
