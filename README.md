@@ -36,6 +36,7 @@ For a look at recent changes, please see [CHANGELOG.md](https://github.com/Yelp/
 
 If you are looking to contribute, please see [CONTRIBUTING.md](https://github.com/Yelp/detect-secrets/blob/master/CONTRIBUTING.md).
 
+
 ## Example Usage
 
 ### Setting Up a Baseline
@@ -43,6 +44,7 @@ If you are looking to contribute, please see [CONTRIBUTING.md](https://github.co
 ```
 $ detect-secrets scan > .secrets.baseline
 ```
+
 
 ### pre-commit Hook
 
@@ -56,11 +58,13 @@ $ cat .pre-commit-config.yaml
         exclude: .*/tests/.*
 ```
 
+
 ### Auditing a Baseline
 
 ```
 $ detect-secrets audit .secrets.baseline
 ```
+
 
 ### Upgrading Baselines
 
@@ -70,6 +74,7 @@ For upgrading baselines lower than that version, just recreate it.
 ```
 $ detect-secrets scan --update .secrets.baseline
 ```
+
 
 ### Command Line
 
@@ -93,6 +98,7 @@ either the client-side pre-commit hook, or the server-side secret scanner.
 3. **Secrets Baseline**, to allowlist pre-existing secrets in the repository,
    so that they won't be continuously caught through scan iterations.
 
+
 ### Client-side `pre-commit` Hook
 
 See [pre-commit](https://github.com/pre-commit/pre-commit) for instructions
@@ -114,6 +120,7 @@ git diff --staged --name-only | xargs detect-secrets-hook
 
 Please see the [detect-secrets-server](https://github.com/Yelp/detect-secrets-server)
 repository for installation instructions.
+
 
 ### Secrets Baseline
 
@@ -150,6 +157,7 @@ This may be a convenient way for you to allowlist secrets, without having to
 regenerate the entire baseline again. Furthermore, this makes the allowlisted
 secrets easily searchable, auditable, and maintainable.
 
+
 ## Currently Supported Plugins
 
 The current heuristic searches we implement out of the box include:
@@ -181,6 +189,9 @@ See [detect_secrets/
 plugins](https://github.com/Yelp/detect-secrets/tree/master/detect_secrets/plugins)
 for more details.
 
+There is also a `--custom-plugins` option in which you can bring your own plugins, e.g. `detect-secrets scan --custom-plugins testing/custom_plugins_dir/ --custom-plugins testing/hippo_plugin.py`.
+
+
 ## Caveats
 
 This is not meant to be a sure-fire solution to prevent secrets from entering
@@ -188,10 +199,12 @@ the codebase. Only proper developer education can truly do that. This pre-commit
 hook merely implements several heuristics to try and prevent obvious cases of
 committing secrets.
 
+
 ### Things that won't be prevented
 
 * Multi-line secrets
 * Default passwords that don't trigger the `KeywordDetector` (e.g. `login = "hunter2"`)
+
 
 ### Plugin Configuration
 

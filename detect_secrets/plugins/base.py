@@ -3,13 +3,13 @@ from abc import ABCMeta
 from abc import abstractmethod
 from abc import abstractproperty
 
-from .common.constants import ALLOWLIST_REGEXES
 from detect_secrets.core.code_snippet import CodeSnippetHighlighter
 from detect_secrets.core.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
+from detect_secrets.plugins.common.constants import ALLOWLIST_REGEXES
 
 
-# NOTE: In this whitepaper (Section V-D), it suggests that there's an
+# Note: In this whitepaper (Section V-D), it suggests that there's an
 #       80% chance of finding a multi-factor secret (e.g. username +
 #       password) within five lines of context, before and after a secret.
 #
@@ -86,7 +86,7 @@ class BasePlugin:
         if name.endswith('Detector'):
             name = name[:-len('Detector')]
 
-        # turn camel case into hyphenated strings
+        # Turn camel case into hyphenated strings
         name_hyphen = ''
         for letter in name:
             if letter.upper() == letter and name_hyphen:
@@ -162,7 +162,7 @@ class BasePlugin:
         :param filename:  string; name of file being analyzed
         :returns:         dictionary
 
-        NOTE: line_num and filename are used for PotentialSecret creation only.
+        Note: line_num and filename are used for PotentialSecret creation only.
         """
         return self.analyze_string_content(
             string,
@@ -178,7 +178,7 @@ class BasePlugin:
         :param filename:  string; name of file being analyzed
         :returns:         dictionary
 
-        NOTE: line_num and filename are used for PotentialSecret creation only.
+        Note: line_num and filename are used for PotentialSecret creation only.
         """
         raise NotImplementedError
 

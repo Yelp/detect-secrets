@@ -1,4 +1,3 @@
-import json
 import random
 
 import mock
@@ -36,6 +35,7 @@ class TestInitializeBaseline:
         return baseline.initialize(
             path,
             self.plugins,
+            custom_plugin_paths=(),
             exclude_files_regex=exclude_files_regex,
             should_scan_all_files=scan_all_files,
         ).json()
@@ -620,31 +620,61 @@ class TestMergeResults:
 
 class TestFormatBaselineForOutput:
 
-    def test_sorts_by_line_number_then_hash(self):
+    def test_sorts_by_line_number_then_hash_then_type(self):
         output_string = format_baseline_for_output({
             'results': {
                 'filename': [
+                    # Output order is reverse of this
+                    {
+                        'hashed_secret': 'f',
+                        'line_number': 3,
+                        'type': 'LetterDetector',
+                    },
                     {
                         'hashed_secret': 'a',
                         'line_number': 3,
+                        'type': 'LetterDetector',
+                    },
+                    {
+                        'hashed_secret': 'a',
+                        'line_number': 3,
+                        'type': 'DifferentDetector',
                     },
                     {
                         'hashed_secret': 'z',
                         'line_number': 2,
-                    },
-                    {
-                        'hashed_secret': 'f',
-                        'line_number': 3,
+                        'type': 'LetterDetector',
                     },
                 ],
             },
         })
-
-        ordered_hashes = list(
-            map(
-                lambda x: x['hashed_secret'],
-                json.loads(output_string)['results']['filename'],
-            ),
+        assert ''.join(output_string.split()) == ''.join(
+            """
+                {
+                  "results": {
+                    "filename": [
+                      {
+                        "hashed_secret": "z",
+                        "line_number": 2,
+                        "type": "LetterDetector"
+                      },
+                      {
+                        "hashed_secret": "a",
+                        "line_number": 3,
+                        "type": "DifferentDetector"
+                      },
+                      {
+                        "hashed_secret": "a",
+                        "line_number": 3,
+                        "type": "LetterDetector"
+                      },
+                      {
+                        "hashed_secret": "f",
+                        "line_number": 3,
+                        "type": "LetterDetector"
+                      }
+                    ]
+                  }
+                }
+            """.split(),
         )
-
-        assert ordered_hashes == ['z', 'a', 'f']

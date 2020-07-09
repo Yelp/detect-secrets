@@ -1,12 +1,13 @@
 """Intelligent initialization of plugins."""
-from .util import get_mapping_from_secret_type_to_class_name
-from .util import import_plugins
 from detect_secrets.core.log import log
 from detect_secrets.core.usage import PluginOptions
+from detect_secrets.plugins.common.util import get_mapping_from_secret_type_to_class_name
+from detect_secrets.plugins.common.util import import_plugins
 
 
 def from_parser_builder(
     plugins_dict,
+    custom_plugin_paths,
     exclude_lines_regex=None,
     automaton=None,
     should_verify_secrets=False,
@@ -14,6 +15,9 @@ def from_parser_builder(
     """
     :param plugins_dict: plugins dictionary received from ParserBuilder.
         See example in tests.core.usage_test.
+
+    :type custom_plugin_paths: Tuple[str]
+    :param custom_plugin_paths: possibly empty tuple of paths that have custom plugins.
 
     :type exclude_lines_regex: str|None
     :param exclude_lines_regex: optional regex for ignored lines.
@@ -27,14 +31,15 @@ def from_parser_builder(
     """
     output = []
 
-    for plugin_name in plugins_dict:
+    for plugin_classname in plugins_dict:
         output.append(
             from_plugin_classname(
-                plugin_name,
+                plugin_classname,
+                custom_plugin_paths=custom_plugin_paths,
                 exclude_lines_regex=exclude_lines_regex,
                 automaton=automaton,
                 should_verify_secrets=should_verify_secrets,
-                **plugins_dict[plugin_name]
+                **plugins_dict[plugin_classname]
             ),
         )
 
@@ -106,6 +111,7 @@ def merge_plugins_from_baseline(baseline_plugins, args, automaton):
 
         return from_parser_builder(
             plugins_dict,
+            custom_plugin_paths=args.custom_plugin_paths,
             exclude_lines_regex=args.exclude_lines,
             automaton=automaton,
             should_verify_secrets=not args.no_verify,
@@ -137,13 +143,16 @@ def merge_plugins_from_baseline(baseline_plugins, args, automaton):
 
     return from_parser_builder(
         plugins_dict,
+        custom_plugin_paths=args.custom_plugin_paths,
         exclude_lines_regex=args.exclude_lines,
         automaton=automaton,
+        should_verify_secrets=not args.no_verify,
     )
 
 
 def from_plugin_classname(
     plugin_classname,
+    custom_plugin_paths,
     exclude_lines_regex=None,
     automaton=None,
     should_verify_secrets=False,
@@ -154,6 +163,9 @@ def from_plugin_classname(
     :type plugin_classname: str
     :param plugin_classname: subclass of BasePlugin.
 
+    :type custom_plugin_paths: Tuple[str]
+    :param custom_plugin_paths: possibly empty tuple of paths that have custom plugins.
+
     :type exclude_lines_regex: str|None
     :param exclude_lines_regex: optional regex for ignored lines.
 
@@ -163,13 +175,17 @@ def from_plugin_classname(
     :type should_verify_secrets: bool
     """
     try:
-        klass = import_plugins()[plugin_classname]
+        klass = import_plugins(custom_plugin_paths)[plugin_classname]
     except KeyError:
         log.error('Error: No such `{}` plugin to initialize.'.format(plugin_classname))
         log.error('Chances are you should run `pre-commit autoupdate`.')
         log.error(
-            'This error occurs when using a baseline that was made by '
+            'This error can occur when using a baseline that was made by '
             'a newer detect-secrets version than the one running.',
+        )
+        log.error(
+            'It can also occur if the baseline has custom plugin paths, '
+            'but the `--custom-plugins` option was not passed.',
         )
         raise TypeError
 
@@ -181,41 +197,45 @@ def from_plugin_classname(
             **kwargs
         )
     except TypeError:
-        log.warning('Unable to initialize plugin!')
+        log.error('Unable to initialize plugin!')
         raise
 
     return instance
 
 
-def from_secret_type(secret_type, settings):
+def from_secret_type(secret_type, plugins_used, custom_plugin_paths):
     """
     Note: Only called from audit.py
 
     :type secret_type: str
     :param secret_type: unique identifier for plugin type
 
-    :type settings: list
-    :param settings: output of "plugins_used" in baseline. e.g.
+    :type plugins_used: list
+    :param plugins_used: output of "plugins_used" in baseline. e.g.
         >>> [
         ...     {
         ...         'name': 'Base64HighEntropyString',
         ...         'base64_limit': 4.5,
         ...     },
         ... ]
+
+    :type custom_plugin_paths: Tuple[str]
+    :param custom_plugin_paths: possibly empty tuple of paths that have custom plugins.
     """
-    mapping = get_mapping_from_secret_type_to_class_name()
+    mapping = get_mapping_from_secret_type_to_class_name(custom_plugin_paths)
     try:
         classname = mapping[secret_type]
     except KeyError:
         return None
 
-    for plugin in settings:
+    for plugin in plugins_used:
         if plugin['name'] == classname:
             plugin_init_vars = plugin.copy()
             plugin_init_vars.pop('name')
 
             return from_plugin_classname(
                 classname,
+                custom_plugin_paths=custom_plugin_paths,
 
                 # `audit` does not need to
                 # perform exclusion, filtering or verification

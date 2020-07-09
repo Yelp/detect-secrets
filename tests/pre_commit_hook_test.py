@@ -12,18 +12,27 @@ from testing.mocks import mock_git_calls
 from testing.mocks import mock_log as mock_log_base
 from testing.mocks import SubprocessMock
 from testing.util import get_regex_based_plugins
+from testing.util import parse_pre_commit_args_with_correct_prog
+
+
+def call_pre_commit_hook(command):
+    with mock.patch(
+        'detect_secrets.pre_commit_hook.parse_args',
+        return_value=parse_pre_commit_args_with_correct_prog(command),
+    ):
+        return pre_commit_hook.main(command.split())
 
 
 def assert_commit_blocked(command):
-    assert pre_commit_hook.main(command.split()) == 1
+    assert call_pre_commit_hook(command) == 1
 
 
 def assert_commit_blocked_with_diff_exit_code(command):
-    assert pre_commit_hook.main(command.split()) == 3
+    assert call_pre_commit_hook(command) == 3
 
 
 def assert_commit_succeeds(command):
-    assert pre_commit_hook.main(command.split()) == 0
+    assert call_pre_commit_hook(command) == 0
 
 
 class TestPreCommitHook:
@@ -41,18 +50,57 @@ class TestPreCommitHook:
         assert message_by_lines[0].startswith(
             'Potential secrets about to be committed to git repo!',
         )
-        assert message_by_lines[2] == \
+        assert (
+            message_by_lines[2]
+            ==
             'Secret Type: Base64 High Entropy String'
-        assert message_by_lines[3] == \
+        )
+        assert (
+            message_by_lines[3]
+            ==
             'Location:    test_data/files/file_with_secrets.py:3'
+        )
 
     def test_file_with_secrets_with_word_list(self):
         assert_commit_succeeds(
             'test_data/files/file_with_secrets.py --word-list test_data/word_list.txt',
         )
 
-    def test_file_no_secrets(self):
+    def test_file_with_no_secrets(self):
         assert_commit_succeeds('test_data/files/file_with_no_secrets.py')
+
+    def test_file_with_custom_secrets_without_custom_plugins(self):
+        assert_commit_succeeds('test_data/files/file_with_custom_secrets.py')
+
+    def test_file_with_custom_secrets_with_custom_plugins(self, mock_log):
+        assert_commit_blocked(
+            'test_data/files/file_with_custom_secrets.py '
+            '--custom-plugins testing/custom_plugins_dir '
+            '--custom-plugins testing/hippo_plugin.py',
+        )
+
+        message_by_lines = list(
+            filter(
+                lambda x: x != '',
+                mock_log.error_messages.splitlines(),
+            ),
+        )
+        assert message_by_lines[0].startswith(
+            'Potential secrets about to be committed to git repo!',
+        )
+        assert 'Secret Type: Hippo' in message_by_lines
+        assert (
+            'Location:    test_data/files/file_with_custom_secrets.py:4'
+            in message_by_lines
+        )
+        assert (
+            'Secret Type: Tasty Dessert'
+            in message_by_lines
+        )
+        assert (
+            'Location:    test_data/files/file_with_custom_secrets.py:3'
+            in message_by_lines
+        )
 
     @pytest.mark.parametrize(
         'has_result, use_private_key_scan, hook_command, commit_succeeds',

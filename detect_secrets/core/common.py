@@ -1,4 +1,4 @@
-from .baseline import format_baseline_for_output
+from detect_secrets.core.baseline import format_baseline_for_output
 
 
 def write_baseline_to_file(filename, data):

@@ -26,13 +26,13 @@ THE SOFTWARE.
 """
 import re
 
-from .base import BasePlugin
-from .base import classproperty
-from .common.filetype import determine_file_type
-from .common.filetype import FileType
-from .common.filters import get_aho_corasick_helper
-from .common.filters import is_sequential_string
 from detect_secrets.core.potential_secret import PotentialSecret
+from detect_secrets.plugins.base import BasePlugin
+from detect_secrets.plugins.base import classproperty
+from detect_secrets.plugins.common.filetype import determine_file_type
+from detect_secrets.plugins.common.filetype import FileType
+from detect_secrets.plugins.common.filters import get_aho_corasick_helper
+from detect_secrets.plugins.common.filters import is_sequential_string
 
 
 # Note: All values here should be lowercase
@@ -216,7 +216,6 @@ FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX = re.compile(
         denylist=DENYLIST_REGEX,
         nonWhitespace=OPTIONAL_NON_WHITESPACE,
         quote=QUOTE,
-        closing=CLOSING,
         whitespace=OPTIONAL_WHITESPACE,
         secret=SECRET,
     ),

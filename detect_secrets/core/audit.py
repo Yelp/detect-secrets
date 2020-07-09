@@ -9,16 +9,16 @@ from collections import defaultdict
 from copy import deepcopy
 from functools import lru_cache
 
-from ..plugins.common import initialize
-from ..plugins.common.util import get_mapping_from_secret_type_to_class_name
-from ..util import get_git_remotes
-from ..util import get_git_sha
-from .baseline import merge_results
-from .bidirectional_iterator import BidirectionalIterator
-from .code_snippet import CodeSnippetHighlighter
-from .color import AnsiColor
-from .color import colorize
-from .common import write_baseline_to_file
+from detect_secrets.core.baseline import merge_results
+from detect_secrets.core.bidirectional_iterator import BidirectionalIterator
+from detect_secrets.core.code_snippet import CodeSnippetHighlighter
+from detect_secrets.core.color import AnsiColor
+from detect_secrets.core.color import colorize
+from detect_secrets.core.common import write_baseline_to_file
+from detect_secrets.plugins.common import initialize
+from detect_secrets.plugins.common.util import get_mapping_from_secret_type_to_class_name
+from detect_secrets.util import get_git_remotes
+from detect_secrets.util import get_git_sha
 
 
 class SecretNotFoundOnSpecifiedLineError(Exception):
@@ -48,7 +48,7 @@ EMPTY_PLUGIN_AUDIT_RESULT = {
     'config': {},
 }
 EMPTY_STATS_RESULT = {
-    'signal': 0,
+    'signal': '0.00%',
     'true-positives': {
         'count': 0,
         'files': defaultdict(int),
@@ -87,11 +87,12 @@ def audit_baseline(baseline_filename):
 
         try:
             _print_context(
-                filename,
-                secret,
-                current_secret_index,
-                total_choices,
-                original_baseline['plugins_used'],
+                filename=filename,
+                secret=secret,
+                count=current_secret_index,
+                total=total_choices,
+                plugins_used=original_baseline['plugins_used'],
+                custom_plugin_paths=original_baseline['custom_plugin_paths'],
             )
             decision = _get_user_decision(can_step_back=secret_iterator.can_step_back())
         except SecretNotFoundOnSpecifiedLineError:
@@ -144,7 +145,7 @@ def compare_baselines(old_baseline_filename, new_baseline_filename):
            This means that we won't have cases where secrets are moved around;
            only added or removed.
 
-    NOTE: We don't want to do a version check, because we want to be able to
+    Note: We don't want to do a version check, because we want to be able to
     use this functionality across versions (to see how the new version fares
     compared to the old one).
     """
@@ -170,6 +171,7 @@ def compare_baselines(old_baseline_filename, new_baseline_filename):
         header = '{}      {}'
         if is_removed:
             plugins_used = old_baseline['plugins_used']
+            custom_plugin_paths = old_baseline['custom_plugin_paths']
             header = header.format(
                 colorize('Status:', AnsiColor.BOLD),
                 '>> {} <<'.format(
@@ -178,6 +180,7 @@ def compare_baselines(old_baseline_filename, new_baseline_filename):
             )
         else:
             plugins_used = new_baseline['plugins_used']
+            custom_plugin_paths = new_baseline['custom_plugin_paths']
             header = header.format(
                 colorize('Status:', AnsiColor.BOLD),
                 '>> {} <<'.format(
@@ -187,13 +190,14 @@ def compare_baselines(old_baseline_filename, new_baseline_filename):
 
         try:
             _print_context(
-                filename,
-                secret,
-                current_index,
-                total_reviews,
-                plugins_used,
+                filename=filename,
+                secret=secret,
+                count=current_index,
+                total=total_reviews,
+                plugins_used=plugins_used,
+                custom_plugin_paths=custom_plugin_paths,
                 additional_header_lines=header,
-                force=is_removed,
+                force_line_printing=is_removed,
             )
             decision = _get_user_decision(
                 can_step_back=secret_iterator.can_step_back(),
@@ -258,7 +262,9 @@ def determine_audit_results(baseline, baseline_path):
         'stats': deepcopy(EMPTY_STATS_RESULT),
     }
 
-    secret_type_to_plugin_name = get_mapping_from_secret_type_to_class_name()
+    secret_type_to_plugin_name = get_mapping_from_secret_type_to_class_name(
+        custom_plugin_paths=baseline['custom_plugin_paths'],
+    )
 
     total = 0
     for filename, secret in all_secrets:
@@ -269,7 +275,8 @@ def determine_audit_results(baseline, baseline_path):
         try:
             secret_info['plaintext'] = get_raw_secret_value(
                 secret=secret,
-                plugin_settings=baseline['plugins_used'],
+                plugins_used=baseline['plugins_used'],
+                custom_plugin_paths=baseline['custom_plugin_paths'],
                 file_handle=io.StringIO(file_contents),
                 filename=filename,
             )
@@ -283,13 +290,13 @@ def determine_audit_results(baseline, baseline_path):
         audit_results['stats'][audit_result]['count'] += 1
         audit_results['stats'][audit_result]['files'][filename] += 1
         total += 1
-    audit_results['stats']['signal'] = str(
+    audit_results['stats']['signal'] = '{:.2f}%'.format(
         (
             float(audit_results['stats']['true-positives']['count'])
             /
             total
         ) * 100,
-    )[:4] + '%'
+    )
 
     for plugin_config in baseline['plugins_used']:
         plugin_name = plugin_config['name']
@@ -332,7 +339,12 @@ def print_audit_results(baseline_filename):
 def _get_baseline_from_file(filename):  # pragma: no cover
     try:
         with open(filename) as f:
-            return json.loads(f.read())
+            baseline = json.loads(f.read())
+            if 'custom_plugin_paths' in baseline:
+                # We turn custom_plugins_paths into a tuple so that we can
+                # @lru_cache all the functions that take it as an argument.
+                baseline['custom_plugin_paths'] = tuple(baseline['custom_plugin_paths'])
+            return baseline
     except (IOError, json.decoder.JSONDecodeError):
         print('Not a valid baseline file!', file=sys.stderr)
         return
@@ -473,9 +485,10 @@ def _print_context(  # pragma: no cover
     secret,
     count,
     total,
-    plugin_settings,
+    plugins_used,
+    custom_plugin_paths,
     additional_header_lines=None,
-    force=False,
+    force_line_printing=False,
 ):
     """
     :type filename: str
@@ -490,15 +503,24 @@ def _print_context(  # pragma: no cover
     :type total: int
     :param total: total number of secrets in baseline
 
-    :type plugin_settings: list
-    :param plugin_settings: plugins used to create baseline.
+    :type plugins_used: list
+    :param plugins_used: output of "plugins_used" in baseline. e.g.
+        >>> [
+        ...     {
+        ...         'name': 'Base64HighEntropyString',
+        ...         'base64_limit': 4.5,
+        ...     },
+        ... ]
+
+    :type custom_plugin_paths: Tuple[str]
+    :param custom_plugin_paths: possibly empty tuple of paths that have custom plugins.
 
     :type additional_header_lines: str
     :param additional_header_lines: any additional lines to add to the
         header of the interactive audit display.
 
-    :type force: bool
-    :param force: if True, will print the lines of code even if it doesn't
+    :type force_line_printing: bool
+    :param force_line_printing: if True, will print the lines of code even if it doesn't
         find the secret expected
 
     :raises: SecretNotFoundOnSpecifiedLineError
@@ -523,10 +545,11 @@ def _print_context(  # pragma: no cover
     error_obj = None
     try:
         secret_with_context = _get_secret_with_context(
-            filename,
-            secret,
-            plugin_settings,
-            force=force,
+            filename=filename,
+            secret=secret,
+            plugins_used=plugins_used,
+            custom_plugin_paths=custom_plugin_paths,
+            force_line_printing=force_line_printing,
         )
         print(secret_with_context)
     except SecretNotFoundOnSpecifiedLineError as e:
@@ -608,9 +631,10 @@ def _get_file_line(filename, line_number):
 def _get_secret_with_context(
     filename,
     secret,
-    plugin_settings,
+    plugins_used,
+    custom_plugin_paths,
     lines_of_context=5,
-    force=False,
+    force_line_printing=False,
 ):
     """
     Displays the secret, with surrounding lines of code for better context.
@@ -621,15 +645,24 @@ def _get_secret_with_context(
     :type secret: dict, PotentialSecret.json() format
     :param secret: the secret listed in baseline
 
-    :type plugin_settings: list
-    :param plugin_settings: plugins used to create baseline.
+    :type plugins_used: list
+    :param plugins_used: output of "plugins_used" in baseline. e.g.
+        >>> [
+        ...     {
+        ...         'name': 'Base64HighEntropyString',
+        ...         'base64_limit': 4.5,
+        ...     },
+        ... ]
+
+    :type custom_plugin_paths: Tuple[str]
+    :param custom_plugin_paths: possibly empty tuple of paths that have custom plugins.
 
     :type lines_of_context: int
     :param lines_of_context: number of lines displayed before and after
         secret.
 
-    :type force: bool
-    :param force: if True, will print the lines of code even if it doesn't
+    :type force_line_printing: bool
+    :param force_line_printing: if True, will print the lines of code even if it doesn't
         find the secret expected
 
     :raises: SecretNotFoundOnSpecifiedLineError
@@ -649,10 +682,11 @@ def _get_secret_with_context(
         )
 
         raw_secret_value = get_raw_secret_value(
-            secret,
-            plugin_settings,
-            io.StringIO(file_content),
-            filename,
+            secret=secret,
+            plugins_used=plugins_used,
+            custom_plugin_paths=custom_plugin_paths,
+            file_handle=io.StringIO(file_content),
+            filename=filename,
         )
 
         try:
@@ -660,7 +694,7 @@ def _get_secret_with_context(
         except ValueError:
             raise SecretNotFoundOnSpecifiedLineError(secret['line_number'])
     except SecretNotFoundOnSpecifiedLineError:
-        if not force:
+        if not force_line_printing:
             raise
 
         snippet.target_line = colorize(
@@ -673,7 +707,8 @@ def _get_secret_with_context(
 
 def get_raw_secret_value(
     secret,
-    plugin_settings,
+    plugins_used,
+    custom_plugin_paths,
     file_handle,
     filename,
 ):
@@ -681,8 +716,17 @@ def get_raw_secret_value(
     :type secret: dict
     :param secret: see caller's docstring
 
-    :type plugin_settings: list
-    :param plugin_settings: see caller's docstring
+    :type plugins_used: list
+    :param plugins_used: output of "plugins_used" in baseline. e.g.
+        >>> [
+        ...     {
+        ...         'name': 'Base64HighEntropyString',
+        ...         'base64_limit': 4.5,
+        ...     },
+        ... ]
+
+    :type custom_plugin_paths: Tuple[str]
+    :param custom_plugin_paths: possibly empty tuple of paths that have custom plugins.
 
     :type file_handle: file object
     :param file_handle: Open handle to file where the secret is
@@ -692,8 +736,9 @@ def get_raw_secret_value(
         as a means of comparing whether two secrets are equal.
     """
     plugin = initialize.from_secret_type(
-        secret['type'],
-        plugin_settings,
+        secret_type=secret['type'],
+        plugins_used=plugins_used,
+        custom_plugin_paths=custom_plugin_paths,
     )
 
     plugin_secrets = plugin.analyze(file_handle, filename)

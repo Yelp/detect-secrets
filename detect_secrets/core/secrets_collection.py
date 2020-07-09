@@ -18,6 +18,7 @@ class SecretsCollection:
     def __init__(
         self,
         plugins=(),
+        custom_plugin_paths=None,
         exclude_files=None,
         exclude_lines=None,
         word_list_file=None,
@@ -26,6 +27,9 @@ class SecretsCollection:
         """
         :type plugins: tuple of detect_secrets.plugins.base.BasePlugin
         :param plugins: rules to determine whether a string is a secret
+
+        :type custom_plugin_paths: Tuple[str]|None
+        :param custom_plugin_paths: possibly empty tuple of paths that have custom plugins.
 
         :type exclude_files: str|None
         :param exclude_files: optional regex for ignored paths.
@@ -40,12 +44,14 @@ class SecretsCollection:
         :param word_list_hash: optional iterated sha1 hash of the words in the word list.
         """
         self.data = {}
+        self.version = VERSION
+
         self.plugins = plugins
+        self.custom_plugin_paths = custom_plugin_paths or ()
         self.exclude_files = exclude_files
         self.exclude_lines = exclude_lines
         self.word_list_file = word_list_file
         self.word_list_hash = word_list_hash
-        self.version = VERSION
 
     @classmethod
     def load_baseline_from_string(cls, string):
@@ -105,9 +111,12 @@ class SecretsCollection:
             result.word_list_hash = data['word_list']['hash']
 
             if result.word_list_file:
-                # Always ignore the given `data['word_list']['hash']`
+                # Always ignore the existing `data['word_list']['hash']`
                 # The difference will show whenever the word list changes
                 automaton, result.word_list_hash = build_automaton(result.word_list_file)
+
+        # In v0.13.2 the `--custom-plugins` option got added
+        result.custom_plugin_paths = data.get('custom_plugin_paths', ())
 
         plugins = []
         for plugin in data['plugins_used']:
@@ -115,6 +124,7 @@ class SecretsCollection:
             plugins.append(
                 initialize.from_plugin_classname(
                     plugin_classname,
+                    custom_plugin_paths=result.custom_plugin_paths,
                     exclude_lines_regex=result.exclude_lines,
                     automaton=automaton,
                     should_verify_secrets=False,
@@ -259,7 +269,7 @@ class SecretsCollection:
 
             return None
 
-        # NOTE: We can only optimize this, if we knew the type of secret.
+        # Note: We can only optimize this, if we knew the type of secret.
         # Otherwise, we need to iterate through the set and find out.
         for obj in self.data[filename]:
             if obj.secret_hash == secret:
@@ -293,6 +303,7 @@ class SecretsCollection:
                 'file': self.word_list_file,
                 'hash': self.word_list_hash,
             },
+            'custom_plugin_paths': self.custom_plugin_paths,
             'plugins_used': plugins_used,
             'results': results,
             'version': self.version,

@@ -10,9 +10,9 @@ from datetime import datetime
 
 import requests
 
-from .base import classproperty
-from .base import RegexBasedDetector
 from detect_secrets.core.constants import VerifiedResult
+from detect_secrets.plugins.base import classproperty
+from detect_secrets.plugins.base import RegexBasedDetector
 
 
 class AWSKeyDetector(RegexBasedDetector):
@@ -41,14 +41,16 @@ class AWSKeyDetector(RegexBasedDetector):
 
 def get_secret_access_keys(content):
     # AWS secret access keys are 40 characters long.
+    # e.g. some_function('AKIA...', '[secret key]')
+    # e.g. secret_access_key = '[secret key]'
     regex = re.compile(
-        r'= *([\'"]?)([%s]{40})(\1)$' % (
-            string.ascii_letters + string.digits + '+/='
+        r'(=|,|\() *([\'"]?)([%s]{40})(\2)(\))?' % (
+            re.escape(string.ascii_letters + string.digits + '+/=')
         ),
     )
 
     return [
-        match[1]
+        match[2]
         for line in content.splitlines()
         for match in regex.findall(line)
     ]

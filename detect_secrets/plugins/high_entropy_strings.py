@@ -9,17 +9,17 @@ from contextlib import contextmanager
 
 import yaml
 
-from .base import BasePlugin
-from .base import classproperty
-from .common.filetype import determine_file_type
-from .common.filetype import FileType
-from .common.filters import get_aho_corasick_helper
-from .common.filters import is_false_positive_with_line_context
-from .common.filters import is_potential_uuid
-from .common.filters import is_sequential_string
-from .common.ini_file_parser import IniFileParser
-from .common.yaml_file_parser import YamlFileParser
 from detect_secrets.core.potential_secret import PotentialSecret
+from detect_secrets.plugins.base import BasePlugin
+from detect_secrets.plugins.base import classproperty
+from detect_secrets.plugins.common.filetype import determine_file_type
+from detect_secrets.plugins.common.filetype import FileType
+from detect_secrets.plugins.common.filters import get_aho_corasick_helper
+from detect_secrets.plugins.common.filters import is_false_positive_with_line_context
+from detect_secrets.plugins.common.filters import is_potential_uuid
+from detect_secrets.plugins.common.filters import is_sequential_string
+from detect_secrets.plugins.common.ini_file_parser import IniFileParser
+from detect_secrets.plugins.common.yaml_file_parser import YamlFileParser
 
 
 class HighEntropyStringsPlugin(BasePlugin):
@@ -146,7 +146,7 @@ class HighEntropyStringsPlugin(BasePlugin):
                 filename='does_not_matter',
             )
 
-            # NOTE: Trailing space allows for nicer formatting
+            # Note: Trailing space allows for nicer formatting
             output = 'False' if not results else 'True '
             if results:
                 # We currently assume that there's at most one secret per line.
@@ -382,6 +382,7 @@ class HexHighEntropyString(HighEntropyStringsPlugin):
             return entropy
 
         try:
+            # Check if str is that of a number
             int(data)
 
             # This multiplier was determined through trial and error, with the
