@@ -28,6 +28,40 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 ### Unreleased
 -->
 
+# v0.14.0
+##### July 9th, 2020
+
+#### :mega: Release Highlights
+
+- Remove support for Python 3 ([#292], big thanks to [@KevinHock]!)
+
+#### :tada: New Features
+
+- Add support for custom plugins ([#308], big thanks to [@KevinHock]!)
+
+#### :performing_arts: Performance
+
+- Check the allowlist after a secret is found, instead of before ([#293], [#244])
+
+#### :telescope: Accuracy
+
+- Make IBM plugins less noisy ([#289], thanks to [@killuazhu])
+
+#### :bug: Bugfixes
+
+- Display helpful eror message when scanning a baseline from a newer `detect-secrets` version ([#293], [#269])
+
+#### :snake: Miscellaneous
+
+- Pin coverage version used in testing ([#290])
+
+[#244]: https://github.com/Yelp/detect-secrets/issues/244
+[#269]: https://github.com/Yelp/detect-secrets/issues/269
+[#289]: https://github.com/Yelp/detect-secrets/pull/289
+[#290]: https://github.com/Yelp/detect-secrets/pull/290
+[#292]: https://github.com/Yelp/detect-secrets/pull/292
+[#293]: https://github.com/Yelp/detect-secrets/pull/293
+[#308]: https://github.com/Yelp/detect-secrets/pull/308
 
 # v0.13.1
 ##### March 26th, 2020
@@ -690,6 +724,7 @@ This includes using `# pragma: allowlist secret` now for inline allowlisting.
 [@jkozera]: https://github.com/jkozera
 [@JoshuaRLi]: https://github.com/JoshuaRLi
 [@justineyster]: https://github.com/justineyster
+[@KevinHock]: https://github.com/KevinHock
 [@killuazhu]: https://github.com/killuazhu
 [@lirantal]: https://github.com/lirantal
 [@Namburgesas]: https://github.com/Namburgesas
