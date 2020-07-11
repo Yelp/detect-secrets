@@ -28,6 +28,15 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 ### Unreleased
 -->
 
+### Unreleased
+
+#### :bug: Bugfixes
+
+- Add missing `tuple()` conversion that raised a `TypeError` when using `scan --update` ([#317], thanks [@shaikmanu797])
+
+[#317]: https://github.com/Yelp/detect-secrets/pull/317
+[@shaikmanu797]: https://github.com/shaikmanu797
+
 # v0.14.0
 ##### July 9th, 2020
 
