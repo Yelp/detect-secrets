@@ -293,7 +293,7 @@ class TestBaselineInputOutput:
     def test_output(self, mock_gmtime):
         assert (
             self.logic.format_for_baseline_output()
-            == self.get_point_thirteen_point_two_and_later_baseline_dict(mock_gmtime)
+            == self.get_point_fourteen_point_zero_and_later_baseline_dict(mock_gmtime)
         )
 
     def test_load_baseline_from_string_with_pre_point_twelve_string(self, mock_gmtime):
@@ -348,7 +348,7 @@ class TestBaselineInputOutput:
                 json.dumps(original),
             ).format_for_baseline_output()
 
-        # v0.13.2+ assertions
+        # v0.14.0+ assertions
         assert 'custom_plugin_paths' not in original
         assert secrets['custom_plugin_paths'] == ()
 
@@ -387,8 +387,8 @@ class TestBaselineInputOutput:
             )
         assert mock_log.error_messages == 'Incorrectly formatted baseline!\n'
 
-    def get_point_thirteen_point_two_and_later_baseline_dict(self, gmtime):
-        # In v0.13.2 --custom-plugins got added
+    def get_point_fourteen_point_zero_and_later_baseline_dict(self, gmtime):
+        # In v0.14.0 --custom-plugins got added
         baseline = self.get_point_twelve_point_seven_and_later_baseline_dict(gmtime)
         baseline['custom_plugin_paths'] = ()
         return baseline
