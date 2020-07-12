@@ -118,20 +118,16 @@ class SecretsCollection:
         # In v0.14.0 the `--custom-plugins` option got added
         result.custom_plugin_paths = tuple(data.get('custom_plugin_paths', ()))
 
-        plugins = []
-        for plugin in data['plugins_used']:
-            plugin_classname = plugin.pop('name')
-            plugins.append(
-                initialize.from_plugin_classname(
-                    plugin_classname,
-                    custom_plugin_paths=result.custom_plugin_paths,
-                    exclude_lines_regex=result.exclude_lines,
-                    automaton=automaton,
-                    should_verify_secrets=False,
-                    **plugin
-                ),
-            )
-        result.plugins = tuple(plugins)
+        result.plugins = tuple(
+            initialize.from_plugin_classname(
+                plugin_classname=plugin.pop('name'),
+                custom_plugin_paths=result.custom_plugin_paths,
+                exclude_lines_regex=result.exclude_lines,
+                automaton=automaton,
+                should_verify_secrets=False,
+                **plugin
+            ) for plugin in data['plugins_used']
+        )
 
         for filename in data['results']:
             result.data[filename] = {}
