@@ -28,7 +28,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 ### Unreleased
 -->
 
-### Unreleased
+### v0.14.1
 
 #### :bug: Bugfixes
 
