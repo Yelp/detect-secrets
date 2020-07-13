@@ -29,6 +29,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 -->
 
 ### v0.14.1
+##### July 9th, 2020
 
 #### :bug: Bugfixes
 
