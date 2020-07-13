@@ -38,7 +38,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#317]: https://github.com/Yelp/detect-secrets/pull/317
 [@shaikmanu797]: https://github.com/shaikmanu797
 
-# v0.14.0
+### v0.14.0
 ##### July 9th, 2020
 
 #### :mega: Release Highlights
@@ -73,7 +73,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#293]: https://github.com/Yelp/detect-secrets/pull/293
 [#308]: https://github.com/Yelp/detect-secrets/pull/308
 
-# v0.13.1
+### v0.13.1
 ##### March 26th, 2020
 
 #### :tada: New Features
