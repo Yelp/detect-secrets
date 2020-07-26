@@ -28,8 +28,18 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 ### Unreleased
 -->
 
+### v0.14.2
+##### July 25th, 2020
+
+#### :bug: Bugfixes
+
+- Fixed an `AttributeError` exception in the pre-commit hook, when on Windows ([#321], thanks [@JohnNeville])
+
+[#321]: https://github.com/Yelp/detect-secrets/pull/321
+[@JohnNeville]: https://github.com/JohnNeville
+
 ### v0.14.1
-##### July 9th, 2020
+##### July 13th, 2020
 
 #### :bug: Bugfixes
 
