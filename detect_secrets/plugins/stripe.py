@@ -1,12 +1,10 @@
-from __future__ import absolute_import
-
 import re
 from base64 import b64encode
 
 import requests
 
-from .base import RegexBasedDetector
 from detect_secrets.core.constants import VerifiedResult
+from detect_secrets.plugins.base import RegexBasedDetector
 
 
 class StripeDetector(RegexBasedDetector):

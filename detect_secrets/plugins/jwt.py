@@ -1,21 +1,12 @@
 """
 This plugin finds JWT tokens
 """
-from __future__ import absolute_import
-
 import base64
 import json
 import re
 
-from .base import classproperty
-from .base import RegexBasedDetector
-
-try:
-    # Python 2
-    from future_builtins import filter
-except ImportError:  # pragma: no cover
-    # Python 3
-    pass
+from detect_secrets.plugins.base import classproperty
+from detect_secrets.plugins.base import RegexBasedDetector
 
 
 class JwtTokenDetector(RegexBasedDetector):

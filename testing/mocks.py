@@ -133,16 +133,12 @@ def mock_printer(obj):
     """
     :type obj: module
     """
-    class PrinterShim(object):
+    class PrinterShim:
         def __init__(self):
             self.clear()
 
         def add(self, message, *args, **kwargs):
-            try:
-                # For python 2.x compatible
-                self.message += unicode(message) + '\n'
-            except NameError:
-                self.message += str(message) + '\n'
+            self.message += str(message) + '\n'
 
         def clear(self):
             self.message = ''
@@ -154,7 +150,7 @@ def mock_printer(obj):
 
 @contextmanager
 def mock_log(namespace):
-    class MockLogWrapper(object):
+    class MockLogWrapper:
         """This is used to check what is being logged."""
 
         def __init__(self):

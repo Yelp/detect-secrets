@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 import codecs
 import json
 import os
@@ -15,11 +13,12 @@ from detect_secrets.plugins.common import initialize
 from detect_secrets.util import build_automaton
 
 
-class SecretsCollection(object):
+class SecretsCollection:
 
     def __init__(
         self,
         plugins=(),
+        custom_plugin_paths=None,
         exclude_files=None,
         exclude_lines=None,
         word_list_file=None,
@@ -28,6 +27,9 @@ class SecretsCollection(object):
         """
         :type plugins: tuple of detect_secrets.plugins.base.BasePlugin
         :param plugins: rules to determine whether a string is a secret
+
+        :type custom_plugin_paths: Tuple[str]|None
+        :param custom_plugin_paths: possibly empty tuple of paths that have custom plugins.
 
         :type exclude_files: str|None
         :param exclude_files: optional regex for ignored paths.
@@ -42,12 +44,14 @@ class SecretsCollection(object):
         :param word_list_hash: optional iterated sha1 hash of the words in the word list.
         """
         self.data = {}
+        self.version = VERSION
+
         self.plugins = plugins
+        self.custom_plugin_paths = custom_plugin_paths or ()
         self.exclude_files = exclude_files
         self.exclude_lines = exclude_lines
         self.word_list_file = word_list_file
         self.word_list_hash = word_list_hash
-        self.version = VERSION
 
     @classmethod
     def load_baseline_from_string(cls, string):
@@ -107,23 +111,23 @@ class SecretsCollection(object):
             result.word_list_hash = data['word_list']['hash']
 
             if result.word_list_file:
-                # Always ignore the given `data['word_list']['hash']`
+                # Always ignore the existing `data['word_list']['hash']`
                 # The difference will show whenever the word list changes
                 automaton, result.word_list_hash = build_automaton(result.word_list_file)
 
-        plugins = []
-        for plugin in data['plugins_used']:
-            plugin_classname = plugin.pop('name')
-            plugins.append(
-                initialize.from_plugin_classname(
-                    plugin_classname,
-                    exclude_lines_regex=result.exclude_lines,
-                    automaton=automaton,
-                    should_verify_secrets=False,
-                    **plugin
-                ),
-            )
-        result.plugins = tuple(plugins)
+        # In v0.14.0 the `--custom-plugins` option got added
+        result.custom_plugin_paths = tuple(data.get('custom_plugin_paths', ()))
+
+        result.plugins = tuple(
+            initialize.from_plugin_classname(
+                plugin_classname=plugin.pop('name'),
+                custom_plugin_paths=result.custom_plugin_paths,
+                exclude_lines_regex=result.exclude_lines,
+                automaton=automaton,
+                should_verify_secrets=False,
+                **plugin
+            ) for plugin in data['plugins_used']
+        )
 
         for filename in data['results']:
             result.data[filename] = {}
@@ -157,6 +161,8 @@ class SecretsCollection(object):
         """For optimization purposes, our scanning strategy focuses on looking
         at incremental differences, rather than re-scanning the codebase every time.
         This function supports this, and adds information to self.data.
+
+        Note that this is only called by detect-secrets-server.
 
         :type diff: str
         :param diff: diff string.
@@ -210,28 +216,21 @@ class SecretsCollection(object):
                     ),
                 )
 
-    def scan_file(self, filename, filename_key=None):
+    def scan_file(self, filename):
         """Scans a specified file, and adds information to self.data
 
         :type filename: str
         :param filename: full path to file to scan.
 
-        :type filename_key: str
-        :param filename_key: key to store in self.data
-
         :returns: boolean; though this value is only used for testing
         """
-
-        if not filename_key:
-            filename_key = filename
-
         if os.path.islink(filename):
             return False
         if os.path.splitext(filename)[1] in IGNORED_FILE_EXTENSIONS:
             return False
         try:
             with codecs.open(filename, encoding='utf-8') as f:
-                self._extract_secrets_from_file(f, filename_key)
+                self._extract_secrets_from_file(f, filename)
 
             return True
         except IOError:
@@ -266,7 +265,7 @@ class SecretsCollection(object):
 
             return None
 
-        # NOTE: We can only optimize this, if we knew the type of secret.
+        # Note: We can only optimize this, if we knew the type of secret.
         # Otherwise, we need to iterate through the set and find out.
         for obj in self.data[filename]:
             if obj.secret_hash == secret:
@@ -300,6 +299,7 @@ class SecretsCollection(object):
                 'file': self.word_list_file,
                 'hash': self.word_list_hash,
             },
+            'custom_plugin_paths': self.custom_plugin_paths,
             'plugins_used': plugins_used,
             'results': results,
             'version': self.version,
@@ -347,6 +347,7 @@ class SecretsCollection(object):
         """Extract secrets from a given patch file object.
 
         Note that we only want to capture incoming secrets (so added lines).
+        Note that this is only called by detect-secrets-server.
 
         :type f: unidiff.patch.PatchedFile
         :type plugin: detect_secrets.plugins.base.BasePlugin

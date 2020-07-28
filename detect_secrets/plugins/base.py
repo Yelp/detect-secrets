@@ -3,13 +3,13 @@ from abc import ABCMeta
 from abc import abstractmethod
 from abc import abstractproperty
 
-from .common.constants import ALLOWLIST_REGEXES
 from detect_secrets.core.code_snippet import CodeSnippetHighlighter
 from detect_secrets.core.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
+from detect_secrets.plugins.common.constants import ALLOWLIST_REGEXES
 
 
-# NOTE: In this whitepaper (Section V-D), it suggests that there's an
+# Note: In this whitepaper (Section V-D), it suggests that there's an
 #       80% chance of finding a multi-factor secret (e.g. username +
 #       password) within five lines of context, before and after a secret.
 #
@@ -24,7 +24,7 @@ class classproperty(property):
         return classmethod(self.fget).__get__(None, owner)()
 
 
-class BasePlugin(object):
+class BasePlugin:
     """
     This is an abstract class to define Plugins API.
 
@@ -70,17 +70,15 @@ class BasePlugin(object):
         :param false_positive_heuristics: List of fp-heuristic functions
         applicable to this plugin
         """
-        self.exclude_lines_regex = None
-        if exclude_lines_regex:
-            self.exclude_lines_regex = re.compile(exclude_lines_regex)
+        self.exclude_lines_regex = (
+            re.compile(exclude_lines_regex)
+            if exclude_lines_regex
+            else None
+        )
 
         self.should_verify = should_verify
 
-        self.false_positive_heuristics = (
-            false_positive_heuristics
-            if false_positive_heuristics
-            else []
-        )
+        self.false_positive_heuristics = false_positive_heuristics or []
 
     @classproperty
     def disable_flag_text(cls):
@@ -88,7 +86,7 @@ class BasePlugin(object):
         if name.endswith('Detector'):
             name = name[:-len('Detector')]
 
-        # turn camel case into hyphenated strings
+        # Turn camel case into hyphenated strings
         name_hyphen = ''
         for letter in name:
             if letter.upper() == letter and name_hyphen:
@@ -100,6 +98,19 @@ class BasePlugin(object):
     @classproperty
     def default_options(cls):
         return {}
+
+    def _is_excluded_line(self, line):
+        return (
+            any(
+                allowlist_regex.search(line)
+                for allowlist_regex in ALLOWLIST_REGEXES
+            )
+            or
+            (
+                self.exclude_lines_regex and
+                self.exclude_lines_regex.search(line)
+            )
+        )
 
     def analyze(self, file, filename):
         """
@@ -114,6 +125,13 @@ class BasePlugin(object):
         file_lines = tuple(file.readlines())
         for line_num, line in enumerate(file_lines, start=1):
             results = self.analyze_line(line, line_num, filename)
+            if (
+                not results
+                or
+                self._is_excluded_line(line)
+            ):
+                continue
+
             if not self.should_verify:
                 potential_secrets.update(results)
                 continue
@@ -144,20 +162,8 @@ class BasePlugin(object):
         :param filename:  string; name of file being analyzed
         :returns:         dictionary
 
-        NOTE: line_num and filename are used for PotentialSecret creation only.
+        Note: line_num and filename are used for PotentialSecret creation only.
         """
-        if (
-            any(
-                allowlist_regex.search(string) for allowlist_regex in ALLOWLIST_REGEXES
-            )
-
-            or (
-                self.exclude_lines_regex and
-                self.exclude_lines_regex.search(string)
-            )
-        ):
-            return {}
-
         return self.analyze_string_content(
             string,
             line_num,
@@ -172,7 +178,7 @@ class BasePlugin(object):
         :param filename:  string; name of file being analyzed
         :returns:         dictionary
 
-        NOTE: line_num and filename are used for PotentialSecret creation only.
+        Note: line_num and filename are used for PotentialSecret creation only.
         """
         raise NotImplementedError
 

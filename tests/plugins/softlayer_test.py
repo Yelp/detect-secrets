@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 import textwrap
 
 import pytest
@@ -13,7 +11,7 @@ SL_USERNAME = 'test@testy.test'
 SL_TOKEN = 'abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234'
 
 
-class TestSoftlayerDetector(object):
+class TestSoftlayerDetector:
 
     @pytest.mark.parametrize(
         'payload, should_flag',

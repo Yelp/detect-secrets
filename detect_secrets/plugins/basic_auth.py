@@ -1,8 +1,6 @@
-from __future__ import absolute_import
-
 import re
 
-from .base import RegexBasedDetector
+from detect_secrets.plugins.base import RegexBasedDetector
 
 
 # This list is derived from RFC 3986 Section 2.2.

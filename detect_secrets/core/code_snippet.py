@@ -1,9 +1,7 @@
-from __future__ import unicode_literals
-
 import itertools
 
-from .color import AnsiColor
-from .color import colorize
+from detect_secrets.core.color import AnsiColor
+from detect_secrets.core.color import colorize
 
 
 class CodeSnippetHighlighter:
@@ -45,7 +43,7 @@ class CodeSnippetHighlighter:
         )
 
 
-class CodeSnippet(object):
+class CodeSnippet:
 
     def __init__(self, snippet, start_line, target_index):
         """

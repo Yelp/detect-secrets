@@ -24,7 +24,67 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [@xxxx]: https://github.com/xxxx
 -->
 
+<!--
 ### Unreleased
+-->
+
+### v0.14.2
+##### July 25th, 2020
+
+#### :bug: Bugfixes
+
+- Fixed an `AttributeError` exception in the pre-commit hook, when on Windows ([#321], thanks [@JohnNeville])
+
+[#321]: https://github.com/Yelp/detect-secrets/pull/321
+[@JohnNeville]: https://github.com/JohnNeville
+
+### v0.14.1
+##### July 13th, 2020
+
+#### :bug: Bugfixes
+
+- Add missing `tuple()` conversion that raised a `TypeError` when using `scan --update` ([#317], thanks [@shaikmanu797])
+
+[#317]: https://github.com/Yelp/detect-secrets/pull/317
+[@shaikmanu797]: https://github.com/shaikmanu797
+
+### v0.14.0
+##### July 9th, 2020
+
+#### :mega: Release Highlights
+
+- Remove support for Python 2 ([#292], big thanks to [@KevinHock]!)
+
+#### :tada: New Features
+
+- Add support for custom plugins ([#308], big thanks to [@KevinHock]!)
+
+#### :performing_arts: Performance
+
+- Check the allowlist after a secret is found, instead of before ([#293], [#244])
+
+#### :telescope: Accuracy
+
+- Make IBM plugins less noisy ([#289], thanks to [@killuazhu])
+
+#### :bug: Bugfixes
+
+- Display helpful eror message when scanning a baseline from a newer `detect-secrets` version ([#293], [#269])
+
+#### :snake: Miscellaneous
+
+- Pin coverage version used in testing ([#290])
+
+[#244]: https://github.com/Yelp/detect-secrets/issues/244
+[#269]: https://github.com/Yelp/detect-secrets/issues/269
+[#289]: https://github.com/Yelp/detect-secrets/pull/289
+[#290]: https://github.com/Yelp/detect-secrets/pull/290
+[#292]: https://github.com/Yelp/detect-secrets/pull/292
+[#293]: https://github.com/Yelp/detect-secrets/pull/293
+[#308]: https://github.com/Yelp/detect-secrets/pull/308
+
+### v0.13.1
+##### March 26th, 2020
 
 #### :tada: New Features
 
@@ -36,9 +96,20 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#263]: https://github.com/Yelp/detect-secrets/pull/263
 [#267]: https://github.com/Yelp/detect-secrets/pull/267
 
+#### :sparkles: Usability
 
+- Support for `DETECT_SECRETS_SECURITY_TEAM` environment variable to customize
+  the pre-commit hook error message ([#283], thanks [@0atman])
 
-# v0.13.0
+[#283]: https://github.com/Yelp/detect-secrets/pull/283
+
+#### :bug: Bugfixes
+
+- Adhoc `HighEntropyString` scanning supports multiple words ([#287])
+
+[#287]: https://github.com/Yelp/detect-secrets/pull/287
+
+### v0.13.0
 ##### October 28th, 2019
 
 #### :newspaper: News
@@ -636,6 +707,7 @@ This includes using `# pragma: allowlist secret` now for inline allowlisting.
 
 # Special thanks to our awesome contributors! :clap:
 
+- [@0atman]
 - [@adrianbn]
 - [@baboateng]
 - [@cclauss]
@@ -659,6 +731,7 @@ This includes using `# pragma: allowlist secret` now for inline allowlisting.
 - [@whathejoe]
 - [@zioalex]
 
+[@0atman]: https://github.com/0atman
 [@adrianbn]: https://github.com/adrianbn
 [@baboateng]: https://github.com/baboateng
 [@cclauss]: https://github.com/cclauss
@@ -671,6 +744,7 @@ This includes using `# pragma: allowlist secret` now for inline allowlisting.
 [@jkozera]: https://github.com/jkozera
 [@JoshuaRLi]: https://github.com/JoshuaRLi
 [@justineyster]: https://github.com/justineyster
+[@KevinHock]: https://github.com/KevinHock
 [@killuazhu]: https://github.com/killuazhu
 [@lirantal]: https://github.com/lirantal
 [@Namburgesas]: https://github.com/Namburgesas

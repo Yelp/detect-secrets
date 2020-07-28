@@ -6,8 +6,6 @@ heuristical determinations (e.g. word filter, entropy comparator).
 import re
 import string
 
-from detect_secrets.util import is_python_2
-
 
 def is_found_with_aho_corasick(secret, automaton):
     """
@@ -21,10 +19,6 @@ def is_found_with_aho_corasick(secret, automaton):
     """
     if not automaton:
         return False
-
-    if is_python_2():  # pragma: no cover
-        # Due to pyahocorasick
-        secret = secret.encode('utf-8')
 
     try:
         # .lower() to make everything case-insensitive

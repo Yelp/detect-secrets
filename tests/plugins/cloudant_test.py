@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 import textwrap
 
 import pytest
@@ -17,7 +15,7 @@ CL_PW = 'abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234'
 CL_API_KEY = 'abcdefghijabcdefghijabcd'
 
 
-class TestCloudantDetector(object):
+class TestCloudantDetector:
 
     @pytest.mark.parametrize(
         'payload, should_flag',

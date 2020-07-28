@@ -1,11 +1,9 @@
 """
 This plugin searches for Twilio API keys
 """
-from __future__ import absolute_import
-
 import re
 
-from .base import RegexBasedDetector
+from detect_secrets.plugins.base import RegexBasedDetector
 
 
 class TwilioKeyDetector(RegexBasedDetector):

@@ -1,11 +1,9 @@
-from __future__ import absolute_import
-
 import pytest
 
 from detect_secrets.plugins.common import filters
 
 
-class TestIsSequentialString(object):
+class TestIsSequentialString:
     @pytest.mark.parametrize(
         'secret',
         (
@@ -43,7 +41,7 @@ class TestIsSequentialString(object):
         assert not filters.is_sequential_string(secret)
 
 
-class TestIsLikelyIdString(object):
+class TestIsLikelyIdString:
     @pytest.mark.parametrize(
         'secret, line',
         [
@@ -75,7 +73,7 @@ class TestIsLikelyIdString(object):
         assert not filters.is_likely_id_string(secret, line)
 
 
-class TestIsPotentialUuid(object):
+class TestIsPotentialUuid:
     @pytest.mark.parametrize(
         'secret',
         [

@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 import hashlib
 import json
 from contextlib import contextmanager
@@ -41,7 +39,7 @@ def mock_gmtime():
         yield current_time
 
 
-class TestScanFile(object):
+class TestScanFile:
     """Testing file scanning, and interactions with different plugins."""
 
     def test_file_is_symbolic_link(self):
@@ -141,7 +139,7 @@ class TestScanFile(object):
         assert len(logic.data) == 0
 
 
-class TestScanDiff(object):
+class TestScanDiff:
 
     def test_success(self):
         secrets = self.load_from_diff().format_for_baseline_output()['results']
@@ -200,7 +198,7 @@ class TestScanDiff(object):
         return collection
 
 
-class TestGetSecret(object):
+class TestGetSecret:
     """Testing retrieval of PotentialSecret from SecretsCollection"""
 
     @pytest.mark.parametrize(
@@ -258,7 +256,7 @@ class TestGetSecret(object):
             yield
 
 
-class TestBaselineInputOutput(object):
+class TestBaselineInputOutput:
     """A critical part of the SecretsCollection is the ability to write a baseline, then
     read from that same baseline to recreate state. This test suite checks the functions
     related to that ability.
@@ -295,7 +293,7 @@ class TestBaselineInputOutput(object):
     def test_output(self, mock_gmtime):
         assert (
             self.logic.format_for_baseline_output()
-            == self.get_point_twelve_point_seven_and_later_baseline_dict(mock_gmtime)
+            == self.get_point_fourteen_point_zero_and_later_baseline_dict(mock_gmtime)
         )
 
     def test_load_baseline_from_string_with_pre_point_twelve_string(self, mock_gmtime):
@@ -319,7 +317,7 @@ class TestBaselineInputOutput(object):
         We use load_baseline_from_string as a proxy to testing load_baseline_from_dict,
         because it's the most entry into the private function.
         """
-        original = self.get_point_twelve_to_twelve_six_later_baseline_dict(mock_gmtime)
+        original = self.get_point_twelve_and_later_baseline_dict(mock_gmtime)
 
         secrets = SecretsCollection.load_baseline_from_string(
             json.dumps(original),
@@ -349,6 +347,10 @@ class TestBaselineInputOutput(object):
             secrets = SecretsCollection.load_baseline_from_string(
                 json.dumps(original),
             ).format_for_baseline_output()
+
+        # v0.14.0+ assertions
+        assert 'custom_plugin_paths' not in original
+        assert secrets['custom_plugin_paths'] == ()
 
         # v0.12.7+ assertions
         assert original['word_list']['file'] == secrets['word_list']['file']
@@ -385,15 +387,21 @@ class TestBaselineInputOutput(object):
             )
         assert mock_log.error_messages == 'Incorrectly formatted baseline!\n'
 
+    def get_point_fourteen_point_zero_and_later_baseline_dict(self, gmtime):
+        # In v0.14.0 --custom-plugins got added
+        baseline = self.get_point_twelve_point_seven_and_later_baseline_dict(gmtime)
+        baseline['custom_plugin_paths'] = ()
+        return baseline
+
     def get_point_twelve_point_seven_and_later_baseline_dict(self, gmtime):
         # In v0.12.7 --word-list got added
-        baseline = self.get_point_twelve_to_twelve_six_later_baseline_dict(gmtime)
+        baseline = self.get_point_twelve_and_later_baseline_dict(gmtime)
         baseline['word_list'] = {}
         baseline['word_list']['file'] = 'will_be_mocked.txt'
         baseline['word_list']['hash'] = '5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8'
         return baseline
 
-    def get_point_twelve_to_twelve_six_later_baseline_dict(self, gmtime):
+    def get_point_twelve_and_later_baseline_dict(self, gmtime):
         # In v0.12.0 `exclude_regex` got replaced by `exclude`
         baseline = self._get_baseline_dict(gmtime)
         baseline['exclude'] = {}

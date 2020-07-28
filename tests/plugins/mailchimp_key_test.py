@@ -1,13 +1,10 @@
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
 import pytest
 
 from detect_secrets.plugins.mailchimp import MailchimpDetector
 from testing.mocks import mock_file_object
 
 
-class TestMailchimpKeyDetector(object):
+class TestMailchimpKeyDetector:
 
     @pytest.mark.parametrize(
         'file_content,should_flag',

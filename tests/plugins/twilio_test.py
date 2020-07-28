@@ -1,11 +1,9 @@
-from __future__ import absolute_import
-
 import pytest
 
 from detect_secrets.plugins.twilio import TwilioKeyDetector
 
 
-class TestTwilioKeyDetector(object):
+class TestTwilioKeyDetector:
 
     @pytest.mark.parametrize(
         'payload, should_flag',
