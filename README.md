@@ -4,14 +4,14 @@
 
 ## About
 
-The purpose of the project is to **detecting secrets** within a code base. This is a fork of [detect-secrets](https://github.com/Yelp/detect-secrets) from yelp. This include more detection, some of which are unique for IBM. Additional features to help integrate with services IBM uses.
+The purpose of the project is to **detect secrets** within a code base. This is a fork of [detect-secrets](https://github.com/Yelp/detect-secrets) from yelp. This includes additional detection, some of which is unique to IBM, as well as additional features to help integrate with IBM services.
 
-`detect-secrets` is an aptly named module for (surprise, surprise) **detecting
+`detect-secrets` is an aptly-named module for (surprise, surprise) **detecting
 secrets** within a code base.
 
 However, unlike other similar packages that solely focus on finding secrets,
 this package is designed with the enterprise client in mind: providing a
-**backwards compatible**, systematic means of:
+**backwards-compatible**, systematic means of:
 
 1. Preventing new secrets from entering the code base,
 2. Detecting if such preventions are explicitly bypassed, and
@@ -25,7 +25,7 @@ accepting that there may *currently* be secrets hiding in your large repository
 but preventing this issue from getting any larger, without dealing with the
 potentially gargantuous effort of moving existing secrets away.
 
-It does this by running periodic diff outputs against heuristically crafted
+It does this by running periodic diff outputs against heuristically-crafted
 regex statements, to identify whether any *new* secret has been committed. This
 way, it avoids the overhead of digging through all git history, as well as the
 need to scan the entire repository every time.

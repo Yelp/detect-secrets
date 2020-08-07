@@ -79,7 +79,7 @@ The processes for each of these two steps are outlined below.
 - Create test cases to ensure that example secrets matching the (primary factor's) secret signature will be caught. Use the test files under `tests/plugins` as examples.
 
 ### Secret Verification
-- Identify a service endpoint (API or SDK) to which the potentially multiple factors of the secret can be presented for verification.
+- Identify a service endpoint (API call or SDK) which can be used to check the validity of a secret.
   - In complex cases (where the service is hosted internally), it's often helpful to identify an IBM SME who can help navigate the API / SDK spec of the service for verification purposes. [w3 ProductPages](https://productpages.w3ibm.mybluemix.net/ProductPages/index.html) is a good resource to help identify an SME.
   - Note: if there are _many_ signature hits, it may create a stressful load on the verification endpoint, so a key design point is to minimize false positive cases.
 - Using the existing plugins in `detect_secrets/plugins` as examples, add the `verify()` function to your detector. The `verify` function should validate a found secret with the service endpoint and determine whether it is active or not, returning either `VerifiedResult.VERIFIED_TRUE` or `VerifiedResult.VERIFIED_FALSE`. `verify()` may also return `VerifiedResult.UNVERIFIED` if verification cannot be completed due to issues like endpoint availability, lack of expected data elements, etc.
