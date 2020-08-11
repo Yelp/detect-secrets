@@ -84,6 +84,16 @@ def initialize(
 
     for file in sorted(files_to_scan):
         output.scan_file(file)
+        with open(file) as temp_file:
+            file_lines = temp_file.readlines()
+            
+        if file in output.data:
+            for secret in output.data[file]:
+                line_number = secret.lineno
+                if len(file_lines) >= line_number:
+                    line = file_lines[line_number - 1]
+                    if secret.secret_value.lower() in line.lower():
+                        secret.position = line.lower().index(secret.secret_value.lower())
 
     return output
 
