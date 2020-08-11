@@ -19,8 +19,12 @@ class AWSKeyDetector(RegexBasedDetector):
     """Scans for AWS keys."""
     secret_type = 'AWS Access Key'
 
+    # This regex checks for the AWS access-key-id, not the secret-access-key.
+    # Removing as the secret-access-key is real culprit we care about.
+    # Ideally we could use both to determine confidence.
+    # re.compile(r'AKIA[0-9A-Z]{16}'),
     denylist = (
-        re.compile(r'AKIA[0-9A-Z]{16}'),
+        re.compile(r'(?<![A-Za-z0-9/+=])[A-Za-z0-9/+=]{40}(?![A-Za-z0-9/+=])'), # regex for secret-access-key
     )
 
     @classproperty
