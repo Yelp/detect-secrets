@@ -50,6 +50,8 @@ class PotentialSecret:
         self.set_secret(secret)
         self.is_secret = is_secret
         self.is_verified = False
+        self.secret_length = len(secret)
+        self.position = -1
 
         # If two PotentialSecrets have the same values for these fields,
         # they are considered equal. Note that line numbers aren't included
@@ -87,6 +89,8 @@ class PotentialSecret:
             'line_number': self.lineno,
             'hashed_secret': self.secret_hash,
             'is_verified': self.is_verified,
+            'secret_length': self.secret_length,
+            'position': self.position
         }
 
         if self.is_secret is not None:
