@@ -5,6 +5,7 @@ class AWSSSecretAccessKeyDetector(RegexBasedDetector):
     """Scans for AWS secret-access-key."""
 
     secret_type = 'AWS Secret Access Key'
+    disable_flag_text = 'no-aws-secret-access-key-scan'
 
     prefix = r'*'
     aws_secret_keywords = r'.*(?:aws|secret|access|key).*'
