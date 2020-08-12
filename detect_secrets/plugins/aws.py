@@ -16,7 +16,7 @@ from detect_secrets.plugins.base import RegexBasedDetector
 
 
 class AWSKeyDetector(RegexBasedDetector):
-    """Scans for AWS keys."""
+    """Scans for AWS access key IDs."""
     secret_type = 'AWS Access Key ID'
 
     denylist = (
@@ -25,7 +25,7 @@ class AWSKeyDetector(RegexBasedDetector):
 
     @classproperty
     def disable_flag_text(cls):
-        return 'no-aws-key-scan'
+        return 'no-aws-access-key-id-scan'
 
     def verify(self, token, content):
         secret_access_key_candidates = get_secret_access_keys(content)
