@@ -17,7 +17,7 @@ from detect_secrets.plugins.base import RegexBasedDetector
 
 class AWSKeyDetector(RegexBasedDetector):
     """Scans for AWS keys."""
-    secret_type = 'AWS Access Key'
+    secret_type = 'AWS Access Key ID'
 
     denylist = (
         re.compile(r'AKIA[0-9A-Z]{16}'),
