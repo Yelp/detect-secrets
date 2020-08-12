@@ -184,6 +184,10 @@ The current heuristic searches we implement out of the box include:
 
 * **CloudantDetector**: checks for Cloudant credentials.
 
+* **AWSDetector**: checks to find instances of [AWS **Access Key IDs**](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys).
+
+* **AWSSecretAccessKeyDetector**: checks to find instances of [AWS **Secret Access Keys**](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys).
+
 
 See [detect_secrets/
 plugins](https://github.com/Yelp/detect-secrets/tree/master/detect_secrets/plugins)
