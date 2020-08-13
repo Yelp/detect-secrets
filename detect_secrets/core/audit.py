@@ -579,7 +579,7 @@ def _get_user_decision(prompt_secret_decision=True, can_step_back=False):
             print('Invalid input.')
 
         if 'y' in allowable_user_input:
-            user_input_string = 'Is this a valid secret? i.e. not a false-positive (y)es, (n)o, '
+            user_input_string = 'Prevent this secret from being committed? (y)es, (n)o, '
         else:
             user_input_string = 'What would you like to do? '
         if 'b' in allowable_user_input:
