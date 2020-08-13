@@ -84,8 +84,8 @@ def initialize(
 
     for file in sorted(files_to_scan):
         output.scan_file(file)
-        with open(file) as temp_file:
-            file_lines = temp_file.readlines()
+        with open(file) as f:
+            file_lines = f.readlines()
             
         if file in output.data:
             for secret in output.data[file]:
