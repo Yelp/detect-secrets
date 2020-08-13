@@ -13,14 +13,15 @@ class AWSSSecretAccessKeyDetector(RegexBasedDetector):
     def analyze_string_content(self, string, line_num, filename):
         output = {}
 
-        if not('aws' in string or 'secret' in string or 'access' in string or 'key' in string):
+        if 'aws' not in string and 'secret' not in string and 'access' not in string:
             return output
 
-        if re.search(r'(?<![A-Za-z0-9/+])[A-Za-z0-9/+=]{40}(?![A-Za-z0-9/+=])', string):
+        match = re.search(r'(?<![A-Za-z0-9/+])[A-Za-z0-9/+=]{40}(?![A-Za-z0-9/+=])', string)
+        if match:
             secret = PotentialSecret(
                 self.secret_type,
                 filename,
-                'aws',
+                string,
                 line_num,
             )
             output[secret] = secret
