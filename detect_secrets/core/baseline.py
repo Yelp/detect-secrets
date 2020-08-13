@@ -3,6 +3,8 @@ import os
 import re
 import subprocess
 
+import junit_xml
+
 from detect_secrets import util
 from detect_secrets.core.log import get_logger
 from detect_secrets.core.secrets_collection import SecretsCollection
@@ -272,6 +274,45 @@ def format_baseline_for_output(baseline):
         sort_keys=True,
         separators=(',', ': '),
     )
+
+
+def format_baseline_for_junit_xml(baseline):
+    """
+    :type baseline: dict
+    :rtype: str
+    """
+    all_secrets = {}
+
+    for filename, secret_list in baseline['results'].items():
+        for secret in secret_list:
+            test_case = junit_xml.TestCase(
+                name="{}:{}".format(
+                    filename,
+                    secret["line_number"]
+                )
+            )
+            test_case.add_failure_info(
+                message="Found secret of type {} on line {} in file {}".format(
+                    secret["type"],
+                    secret["line_number"],
+                    filename
+                ),
+                failure_type=secret["type"]
+            )
+            if secret["type"] in all_secrets:
+                all_secrets[secret["type"]].append(test_case)
+            else:
+                all_secrets[secret["type"]] = [test_case]
+
+    test_suits = map(
+        lambda secret: junit_xml.TestSuite(
+            name=secret[0],
+            test_cases=secret[1]
+        ),
+        all_secrets.items()
+    )
+
+    return junit_xml.to_xml_report_string(test_suits)
 
 
 def _get_git_tracked_files(rootdir='.'):

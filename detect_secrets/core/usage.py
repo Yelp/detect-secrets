@@ -269,6 +269,13 @@ class ScanOptions:
             help='Scan all files recursively (as compared to only scanning git tracked files).',
         )
 
+        self.parser.add_argument(
+            '--junit-xml',
+            action='store_true',
+            dest='junit_xml',
+            help='Returns output in JUnit XML format.',
+        )
+
         return self
 
     def _add_adhoc_scanning_argument(self):

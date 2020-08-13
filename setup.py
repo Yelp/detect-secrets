@@ -21,6 +21,7 @@ setup(
     install_requires=[
         'pyyaml',
         'requests',
+        'junit-xml'
     ],
     extras_require={
         'word_list': [

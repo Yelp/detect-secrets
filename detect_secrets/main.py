@@ -61,6 +61,12 @@ def main(argv=sys.argv[1:]):
                     filename=args.import_filename[0],
                     data=baseline_dict,
                 )
+            elif args.junit_xml:
+                print(
+                    baseline.format_baseline_for_junit_xml(
+                        baseline_dict,
+                    ),
+                )
             else:
                 print(
                     baseline.format_baseline_for_output(
