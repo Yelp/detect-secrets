@@ -21,8 +21,7 @@ class PotentialSecret:
         secret,
         lineno=0,
         is_secret=None,
-        position=-1,
-        secret_length=0
+        position=-1
     ):
         """
         :type typ: str

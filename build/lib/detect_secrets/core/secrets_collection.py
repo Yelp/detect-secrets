@@ -22,7 +22,7 @@ class SecretsCollection:
         exclude_files=None,
         exclude_lines=None,
         word_list_file=None,
-        word_list_hash=None,
+        word_list_hash=None
     ):
         """
         :type plugins: tuple of detect_secrets.plugins.base.BasePlugin

@@ -365,6 +365,8 @@ def _create_baseline_template(has_result, use_private_key_scan):
                     'is_secret': True,
                     'is_verified': False,
                     'line_number': 3,
+                    'position': 23,
+                    'secret_length': 60,
                     'hashed_secret': PotentialSecret.hash_secret(base64_secret),
                 },
             ],
