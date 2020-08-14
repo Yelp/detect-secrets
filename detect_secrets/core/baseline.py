@@ -2,7 +2,6 @@ import json
 import os
 import re
 import subprocess
-import codecs
 
 from detect_secrets import util
 from detect_secrets.core.log import get_logger

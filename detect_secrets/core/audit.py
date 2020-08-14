@@ -16,7 +16,6 @@ from detect_secrets.core.code_snippet import CodeSnippetHighlighter
 from detect_secrets.core.color import AnsiColor
 from detect_secrets.core.color import colorize
 from detect_secrets.core.common import write_baseline_to_file
-from detect_secrets.plugins.common import initialize
 from detect_secrets.plugins.common.util import get_mapping_from_secret_type_to_class_name
 from detect_secrets.util import get_git_remotes
 from detect_secrets.util import get_git_sha

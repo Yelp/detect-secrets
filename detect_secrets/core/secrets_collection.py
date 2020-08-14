@@ -338,7 +338,7 @@ class SecretsCollection:
         try:
             log.info('Checking file: %s', filename)
 
-            results={}
+            results = {}
             for results, plugin in self._results_accumulator(filename):
                 results.update(plugin.analyze(f, filename))
                 f.seek(0)

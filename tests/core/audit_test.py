@@ -252,14 +252,14 @@ class TestAuditBaseline:
                     {
                         'hashed_secret': 'a',
                         'line_number': 122,
-                        'line_position':0,
+                        'line_position': 0,
                         'secret_length': 1,
                         'type': 'Test Type',
                     },
                     {
                         'hashed_secret': 'b',
                         'line_number': 123,
-                        'line_position':0,
+                        'line_position': 0,
                         'secret_length': 1,
                         'type': 'Test Type',
                     },
@@ -268,7 +268,7 @@ class TestAuditBaseline:
                     {
                         'hashed_secret': 'c',
                         'line_number': 123,
-                        'line_position':0,
+                        'line_position': 0,
                         'secret_length': 1,
                         'type': 'Test Type',
                     },
@@ -291,7 +291,7 @@ class TestAuditBaseline:
                     {
                         'hashed_secret': 'a',
                         'line_number': 122,
-                        'line_position':0,
+                        'line_position': 0,
                         'secret_length': 1,
                         'type': 'Test Type',
                         'is_secret': True,
@@ -299,14 +299,14 @@ class TestAuditBaseline:
                     {
                         'hashed_secret': 'b',
                         'line_number': 123,
-                        'line_position':0,
+                        'line_position': 0,
                         'secret_length': 1,
                         'type': 'Test Type',
                     },
                     {
                         'hashed_secret': 'c',
                         'line_number': 124,
-                        'line_position':0,
+                        'line_position': 0,
                         'secret_length': 1,
                         'type': 'Test Type',
                         'is_secret': False,
@@ -314,7 +314,7 @@ class TestAuditBaseline:
                     {
                         'hashed_secret': 'd',
                         'line_number': 125,
-                        'line_position':0,
+                        'line_position': 0,
                         'secret_length': 1,
                         'type': 'Test Type',
                     },

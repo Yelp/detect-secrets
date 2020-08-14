@@ -2,7 +2,6 @@ import mock
 import pytest
 
 from detect_secrets.plugins.common import initialize
-from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
 from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
 
 
