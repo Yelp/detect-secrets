@@ -4,7 +4,7 @@
     "files": null,
     "lines": null
   },
-  "generated_at": "2020-08-14T19:31:30Z",
+  "generated_at": "2020-08-14T20:39:59Z",
   "plugins_used": [
     {
       "name": "AWSKeyDetector"

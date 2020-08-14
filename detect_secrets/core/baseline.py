@@ -85,24 +85,6 @@ def initialize(
 
     for file in sorted(files_to_scan):
         output.scan_file(file)
-        
-        file_lines = []
-        if not os.path.islink(file):            
-            try:
-                with codecs.open(file, encoding='utf-8') as f:
-                    file_lines = f.readlines()
-            except IOError:
-                log.warning('Unable to open file: %s', file)
-
-        if file in output.data:
-            for secret in output.data[file]:
-                secret.secret_len = len(secret.secret_value)
-                line_number = secret.lineno
-                if len(file_lines) >= line_number:
-                    line = file_lines[line_number - 1]
-                    if secret.secret_value.lower() in line.lower():
-                        secret.line_pos = line.lower().index(secret.secret_value.lower())
-
 
     return output
 

@@ -59,14 +59,6 @@ class HighEntropyStringsPlugin(BasePlugin):
         for analyze_function, exception_class in file_type_analyzers:
             try:
                 output = analyze_function(file, filename)
-                for secret in output:
-                    file.seek(0)
-                    file_lines = file.readlines()
-                    line_number = secret.lineno
-                    if len(file_lines) >= line_number:
-                        line = file_lines[line_number - 1]
-                        if secret.secret_value.lower() in line.lower():
-                            secret.position = line.lower().index(secret.secret_value.lower())
                 if output:
                     return output
             except exception_class:
