@@ -22,7 +22,7 @@ class PotentialSecret:
         lineno=0,
         is_secret=None,
         line_pos=-1,
-        secret_len=0
+        secret_len=0,
     ):
         """
         :type typ: str
@@ -92,7 +92,7 @@ class PotentialSecret:
             'hashed_secret': self.secret_hash,
             'is_verified': self.is_verified,
             'secret_length': self.secret_len,
-            'line_position': self.line_pos
+            'line_position': self.line_pos,
         }
 
         if self.is_secret is not None:

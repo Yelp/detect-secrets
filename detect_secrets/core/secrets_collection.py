@@ -140,7 +140,7 @@ class SecretsCollection:
                     lineno=item['line_number'],
                     is_secret=item.get('is_secret'),
                     line_pos=item.get('line_position'),
-                    secret_len=item.get('secret_length')
+                    secret_len=item.get('secret_length'),
                 )
                 secret.secret_hash = item['hashed_secret']
                 result.data[filename][secret] = secret

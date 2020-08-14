@@ -9,13 +9,13 @@ from collections import defaultdict
 from copy import deepcopy
 from functools import lru_cache
 
-from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.core.baseline import merge_results
 from detect_secrets.core.bidirectional_iterator import BidirectionalIterator
 from detect_secrets.core.code_snippet import CodeSnippetHighlighter
 from detect_secrets.core.color import AnsiColor
 from detect_secrets.core.color import colorize
 from detect_secrets.core.common import write_baseline_to_file
+from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.common.util import get_mapping_from_secret_type_to_class_name
 from detect_secrets.util import get_git_remotes
 from detect_secrets.util import get_git_sha
@@ -275,7 +275,7 @@ def determine_audit_results(baseline, baseline_path):
         try:
             secret_info['plaintext'] = get_raw_secret_value(
                 secret=secret,
-                file_handle=io.StringIO(file_contents)
+                file_handle=io.StringIO(file_contents),
             )
         except SecretNotFoundOnSpecifiedLineError:
             secret_info['plaintext'] = None
@@ -680,7 +680,7 @@ def _get_secret_with_context(
 
         raw_secret_value = get_raw_secret_value(
             secret=secret,
-            file_handle=io.StringIO(file_content)
+            file_handle=io.StringIO(file_content),
         )
 
         try:
@@ -701,7 +701,7 @@ def _get_secret_with_context(
 
 def get_raw_secret_value(
     secret,
-    file_handle
+    file_handle,
 ):
     """
     :type secret: dict
