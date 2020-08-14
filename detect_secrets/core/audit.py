@@ -723,7 +723,7 @@ def get_raw_secret_value(
 
         possible_secret_hash = PotentialSecret.hash_secret(possible_secret)
         lowered_possible_secret_hash = PotentialSecret.hash_secret(possible_secret.lower())
-        #return str(vars(secret))
+
         if secret['hashed_secret'] in [possible_secret_hash, lowered_possible_secret_hash]:
             return possible_secret.lower()
 
