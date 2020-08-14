@@ -2,6 +2,7 @@ import json
 import os
 import re
 import subprocess
+import codecs
 
 from detect_secrets import util
 from detect_secrets.core.log import get_logger
@@ -84,16 +85,24 @@ def initialize(
 
     for file in sorted(files_to_scan):
         output.scan_file(file)
-        with open(file) as f:
-            file_lines = f.readlines()
-            
+        
+        file_lines = []
+        if not os.path.islink(file):            
+            try:
+                with codecs.open(file, encoding='utf-8') as f:
+                    file_lines = f.readlines()
+            except IOError:
+                log.warning('Unable to open file: %s', file)
+
         if file in output.data:
             for secret in output.data[file]:
+                secret.secret_len = len(secret.secret_value)
                 line_number = secret.lineno
                 if len(file_lines) >= line_number:
                     line = file_lines[line_number - 1]
                     if secret.secret_value.lower() in line.lower():
-                        secret.position = line.lower().index(secret.secret_value.lower())
+                        secret.line_pos = line.lower().index(secret.secret_value.lower())
+
 
     return output
 
@@ -196,6 +205,8 @@ def trim_baseline_of_removed_secrets(results, baseline, filelist):
                     baseline_secret.type,
                 )
                 old_secret_to_update.lineno = new_secret_found.lineno
+                old_secret_to_update.secret_len = new_secret_found.secret_len
+                old_secret_to_update.line_pos = new_secret_found.line_pos
                 updated = True
 
     return updated

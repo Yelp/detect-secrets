@@ -252,14 +252,14 @@ class TestAuditBaseline:
                     {
                         'hashed_secret': 'a',
                         'line_number': 122,
-                        'position':0,
+                        'line_position':0,
                         'secret_length': 1,
                         'type': 'Test Type',
                     },
                     {
                         'hashed_secret': 'b',
                         'line_number': 123,
-                        'position':0,
+                        'line_position':0,
                         'secret_length': 1,
                         'type': 'Test Type',
                     },
@@ -268,7 +268,7 @@ class TestAuditBaseline:
                     {
                         'hashed_secret': 'c',
                         'line_number': 123,
-                        'position':0,
+                        'line_position':0,
                         'secret_length': 1,
                         'type': 'Test Type',
                     },
@@ -291,7 +291,7 @@ class TestAuditBaseline:
                     {
                         'hashed_secret': 'a',
                         'line_number': 122,
-                        'position':0,
+                        'line_position':0,
                         'secret_length': 1,
                         'type': 'Test Type',
                         'is_secret': True,
@@ -299,14 +299,14 @@ class TestAuditBaseline:
                     {
                         'hashed_secret': 'b',
                         'line_number': 123,
-                        'position':0,
+                        'line_position':0,
                         'secret_length': 1,
                         'type': 'Test Type',
                     },
                     {
                         'hashed_secret': 'c',
                         'line_number': 124,
-                        'position':0,
+                        'line_position':0,
                         'secret_length': 1,
                         'type': 'Test Type',
                         'is_secret': False,
@@ -314,7 +314,7 @@ class TestAuditBaseline:
                     {
                         'hashed_secret': 'd',
                         'line_number': 125,
-                        'position':0,
+                        'line_position':0,
                         'secret_length': 1,
                         'type': 'Test Type',
                     },
@@ -433,7 +433,7 @@ class TestCompareBaselines:
                     {
                         'hashed_secret': '1ca6beea06a87d5f77fa8e4523d0dc1f0965e2ce',
                         'line_number': 3,
-                        'position': 17,
+                        'line_position': 17,
                         'secret_length': 64,
                         'type': 'Base64 High Entropy String',
                     },
@@ -442,7 +442,7 @@ class TestCompareBaselines:
                     {
                         'hashed_secret': '871deb5e9ff5ce5f777c8d3327511d05f581e755',
                         'line_number': 4,
-                        'position': 14,
+                        'line_position': 14,
                         'secret_length': 40,
                         'type': 'Hex High Entropy String',
                     },
@@ -453,7 +453,7 @@ class TestCompareBaselines:
                     {
                         'hashed_secret': '0de9a11b3f37872868ca49ecd726c955e25b6e21',
                         'line_number': 1,
-                        'position': 4,
+                        'line_position': 4,
                         'secret_length': 15,
                         'type': 'Hex High Entropy String',
                     },
@@ -484,7 +484,7 @@ class TestCompareBaselines:
                     {
                         'hashed_secret': 'a837eb90d815a852f68f56f70b1b3fab24c46c84',
                         'line_number': 1,
-                        'position': 15,
+                        'line_position': 15,
                         'secret_length': 8,
                         'type': 'Hex High Entropy String',
                     },
@@ -493,7 +493,7 @@ class TestCompareBaselines:
                     {
                         'hashed_secret': '871deb5e9ff5ce5f777c8d3327511d05f581e755',
                         'line_number': 4,
-                        'position': 14,
+                        'line_position': 14,
                         'secret_length': 40,
                         'type': 'Hex High Entropy String',
                     },
@@ -504,7 +504,7 @@ class TestCompareBaselines:
                     {
                         'hashed_secret': '0de9a11b3f37872868ca49ecd726c955e25b6e21',
                         'line_number': 5,
-                        'position': 4,
+                        'line_position': 4,
                         'secret_length': 15,
                         'type': 'Hex High Entropy String',
                     },
@@ -561,7 +561,7 @@ class TestDetermineAuditResults:
                     {
                         'hashed_secret': 'a837eb90d815a852f68f56f70b1b3fab24c46c84',
                         'line_number': 1,
-                        'position': 15,
+                        'line_position': 15,
                         'secret_length': 8,
                         'type': 'Hex High Entropy String',
                     },

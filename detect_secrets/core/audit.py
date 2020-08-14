@@ -713,16 +713,17 @@ def get_raw_secret_value(
 
     """
     secret_length = secret['secret_length']
-    secret_position = secret['position']
+    line_position = secret['line_position']
     line_number = secret['line_number']
 
     file_lines = file_handle.readlines()
     if len(file_lines) >= line_number:
         line = file_lines[line_number - 1]
-        possible_secret = line[secret_position:secret_position + secret_length]
+        possible_secret = line[line_position:line_position + secret_length]
+
         possible_secret_hash = PotentialSecret.hash_secret(possible_secret)
         lowered_possible_secret_hash = PotentialSecret.hash_secret(possible_secret.lower())
-
+        #return str(vars(secret))
         if secret['hashed_secret'] in [possible_secret_hash, lowered_possible_secret_hash]:
             return possible_secret.lower()
 
