@@ -55,13 +55,7 @@ def main(argv=sys.argv[1:]):
                 automaton,
                 word_list_hash,
             )
-
-            if args.import_filename:
-                write_baseline_to_file(
-                    filename=args.import_filename[0],
-                    data=baseline_dict,
-                )
-            elif args.junit_xml:
+            if args.junit_xml:
                 print(
                     baseline.format_baseline_for_junit_xml(
                         baseline_dict,
@@ -141,7 +135,7 @@ def _perform_scan(args, plugins, automaton, word_list_hash):
 
     :rtype: dict
     """
-    old_baseline = _get_existing_baseline(args.import_filename)
+    old_baseline = _get_existing_baseline(args.old_baseline)
     if old_baseline:
         plugins = initialize.merge_plugins_from_baseline(
             _get_plugins_from_baseline(old_baseline),
@@ -174,7 +168,7 @@ def _perform_scan(args, plugins, automaton, word_list_hash):
 
     # If we have knowledge of an existing baseline file, we should use
     # that knowledge and add it to our exclude_files regex.
-    if args.import_filename:
+    if args.old_baseline:
         _add_baseline_to_exclude_files(args)
 
     new_baseline = baseline.initialize(
@@ -186,21 +180,21 @@ def _perform_scan(args, plugins, automaton, word_list_hash):
         word_list_file=args.word_list_file,
         word_list_hash=word_list_hash,
         should_scan_all_files=args.all_files,
-    ).format_for_baseline_output()
+    )
 
     if old_baseline:
-        new_baseline = baseline.merge_baseline(
-            old_baseline,
+        new_baseline = baseline.get_secrets_not_in_baseline(
             new_baseline,
+            get_baseline(args.old_baseline[0])
         )
 
-    return new_baseline
+    return new_baseline.format_for_baseline_output()
 
 
-def _get_existing_baseline(import_filename):
+def _get_existing_baseline(old_baseline):
     # Favors --update argument over stdin.
-    if import_filename:
-        return _read_from_file(import_filename[0])
+    if old_baseline:
+        return _read_from_file(old_baseline[0])
     if not sys.stdin.isatty():
         stdin = sys.stdin.read().strip()
         if stdin:
@@ -230,12 +224,43 @@ def _add_baseline_to_exclude_files(args):
     """
     Modifies args.exclude_files in-place.
     """
-    baseline_name_regex = r'^{}$'.format(args.import_filename[0])
+    baseline_name_regex = r'^{}$'.format(args.old_baseline[0])
 
     if not args.exclude_files:
         args.exclude_files = baseline_name_regex
     elif baseline_name_regex not in args.exclude_files:
         args.exclude_files += r'|{}'.format(baseline_name_regex)
+
+
+def get_baseline(baseline_filename):
+    """
+    :raises: IOError
+    :raises: ValueError
+    """
+    if not baseline_filename:
+        return
+
+    return SecretsCollection.load_baseline_from_string(
+        _get_baseline_string_from_file(
+            baseline_filename,
+        ),
+    )
+
+
+def _get_baseline_string_from_file(filename):  # pragma: no cover
+    """Breaking this function up for mockability."""
+    try:
+        with open(filename) as f:
+            return f.read()
+
+    except IOError:
+        log.error(
+            'Unable to open baseline file: {}\n'
+            'Please create it via\n'
+            '   `detect-secrets scan > {}`\n'
+            .format(filename, filename),
+        )
+        raise
 
 
 if __name__ == '__main__':
