@@ -1,4 +1,5 @@
 import random
+from functools import partial
 
 import mock
 import pytest
@@ -57,6 +58,16 @@ class TestInitializeBaseline:
         assert len(results.keys()) == 2
         assert len(results['test_data/files/file_with_secrets.py']) == 1
         assert len(results['test_data/files/tmp/file_with_secrets.py']) == 2
+
+    def test_with_extra_fields_to_compare(self):
+        self.plugins = (
+            HexHighEntropyString(3, extra_fields_to_compare=('lineno',)),
+        )
+        results = self.get_results(
+            path=['./test_data/duplicate_secrets.py'],
+        )
+
+        assert len(results['./test_data/duplicate_secrets.py']) == 3
 
     @pytest.mark.parametrize(
         'path',
@@ -263,6 +274,47 @@ class TestGetSecretsNotInBaseline:
         assert len(results.data['filename']) == 1
         secretA = PotentialSecret('type', 'filename', 'secret1', 1)
         assert results.data['filename'][secretA].secret_hash == \
+            PotentialSecret.hash_secret('secret1')
+        assert baseline.data == backup_baseline
+
+    def test_new_secret_line_old_file_extra_compare_field(self):
+        """Same file, new line with potential secret due to extra field to compare"""
+        extra_compare_fields = ('lineno',)
+        new_findings = secrets_collection_factory(
+            [
+                {
+                    'secret': 'secret1',
+                    'lineno': 1,
+                },
+                {
+                    'secret': 'secret1',
+                    'lineno': 3,
+                },
+            ], extra_fields_to_compare=extra_compare_fields,
+        )
+        baseline = secrets_collection_factory([
+            {
+                'secret': 'secret2',
+                'lineno': 2,
+            },
+        ])
+
+        backup_baseline = baseline.data.copy()
+        results = get_secrets_not_in_baseline(new_findings, baseline)
+
+        assert len(results.data['filename']) == 2
+        potential_secret_func = partial(
+            PotentialSecret,
+            typ='type',
+            filename='filename',
+            secret='secret1',
+            extra_fields_to_compare=extra_compare_fields,
+        )
+        secretA = potential_secret_func(lineno=1)
+        assert results.data['filename'][secretA].secret_hash == \
+            PotentialSecret.hash_secret('secret1')
+        secretB = potential_secret_func(lineno=3)
+        assert results.data['filename'][secretB].secret_hash == \
             PotentialSecret.hash_secret('secret1')
         assert baseline.data == backup_baseline
 

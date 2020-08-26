@@ -39,6 +39,7 @@ def main(argv=sys.argv[1:]):
             exclude_lines_regex=args.exclude_lines,
             automaton=automaton,
             should_verify_secrets=not args.no_verify,
+            extra_fields_to_compare=args.extra_fields_to_compare,
         )
         if args.string:
             line = args.string
@@ -166,6 +167,12 @@ def _perform_scan(args, plugins, automaton, word_list_hash):
         ):
             args.custom_plugin_paths = old_baseline['custom_plugin_paths']
 
+        if (
+            not args.extra_fields_to_compare
+            and old_baseline.get('extra_fields_to_compare')
+        ):
+            args.extra_fields_to_compare = old_baseline['extra_fields_to_compare']
+
     # If we have knowledge of an existing baseline file, we should use
     # that knowledge and add it to our exclude_files regex.
     if args.import_filename:
@@ -180,6 +187,7 @@ def _perform_scan(args, plugins, automaton, word_list_hash):
         word_list_file=args.word_list_file,
         word_list_hash=word_list_hash,
         should_scan_all_files=args.all_files,
+        extra_fields_to_compare=args.extra_fields_to_compare,
     ).format_for_baseline_output()
 
     if old_baseline:

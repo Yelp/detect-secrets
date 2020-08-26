@@ -66,6 +66,11 @@ class TestPreCommitHook:
             'test_data/files/file_with_secrets.py --word-list test_data/word_list.txt',
         )
 
+    def test_file_with_secrets_with_extra_field_to_compare(self):
+        assert_commit_succeeds(
+            'test_data/files/file_with_duplicate_secrets.py --extra-field-to-compare lineno',
+        )
+
     def test_file_with_no_secrets(self):
         assert_commit_succeeds('test_data/files/file_with_no_secrets.py')
 

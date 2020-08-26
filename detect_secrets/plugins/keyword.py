@@ -271,7 +271,14 @@ class KeywordDetector(BasePlugin):
 
         return output
 
-    def __init__(self, keyword_exclude=None, exclude_lines_regex=None, automaton=None, **kwargs):
+    def __init__(
+        self,
+        keyword_exclude=None,
+        exclude_lines_regex=None,
+        automaton=None,
+        extra_fields_to_compare=None,
+        **kwargs
+    ):
         false_positive_heuristics = [
             get_aho_corasick_helper(automaton),
             is_sequential_string,
@@ -280,6 +287,7 @@ class KeywordDetector(BasePlugin):
         super(KeywordDetector, self).__init__(
             exclude_lines_regex=exclude_lines_regex,
             false_positive_heuristics=false_positive_heuristics,
+            extra_fields_to_compare=extra_fields_to_compare,
             **kwargs
         )
 
@@ -310,6 +318,7 @@ class KeywordDetector(BasePlugin):
                 filename,
                 identifier,
                 line_num,
+                extra_fields_to_compare=self.extra_fields_to_compare,
             )
             output[secret] = secret
 

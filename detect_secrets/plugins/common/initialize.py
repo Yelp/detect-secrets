@@ -11,6 +11,7 @@ def from_parser_builder(
     exclude_lines_regex=None,
     automaton=None,
     should_verify_secrets=False,
+    extra_fields_to_compare=None,
 ):
     """
     :param plugins_dict: plugins dictionary received from ParserBuilder.
@@ -27,6 +28,9 @@ def from_parser_builder(
 
     :type should_verify_secrets: bool
 
+    :type extra_fields_to_compare: Tuple[str]|None
+    :param extra_fields_to_compare: Extra fields to be used during secrets comparison.
+
     :returns: tuple of initialized plugins
     """
     output = []
@@ -39,6 +43,7 @@ def from_parser_builder(
                 exclude_lines_regex=exclude_lines_regex,
                 automaton=automaton,
                 should_verify_secrets=should_verify_secrets,
+                extra_fields_to_compare=extra_fields_to_compare,
                 **plugins_dict[plugin_classname]
             ),
         )
@@ -156,6 +161,7 @@ def from_plugin_classname(
     exclude_lines_regex=None,
     automaton=None,
     should_verify_secrets=False,
+    extra_fields_to_compare=None,
     **kwargs
 ):
     """Initializes a plugin class, given a classname and kwargs.
@@ -171,6 +177,9 @@ def from_plugin_classname(
 
     :type automaton: ahocorasick.Automaton|None
     :param automaton: optional automaton for ignoring English-words.
+
+    :type extra_fields_to_compare: Tuple[str]|None
+    :param extra_fields_to_compare: Extra fields to be used during secrets comparison.
 
     :type should_verify_secrets: bool
     """
@@ -194,6 +203,7 @@ def from_plugin_classname(
             exclude_lines_regex=exclude_lines_regex,
             automaton=automaton,
             should_verify=should_verify_secrets,
+            extra_fields_to_compare=extra_fields_to_compare,
             **kwargs
         )
     except TypeError:

@@ -84,3 +84,22 @@ class TestPluginOptions:
         else:
             with pytest.raises(SystemExit):
                 parse_pre_commit_args_with_correct_prog(argument_string)
+
+    @pytest.mark.parametrize(
+        'argument_string,expected_value',
+        [
+            ('--extra-field-to-compare lineno', ('lineno',)),
+            ('--extra-field-to-compare abc', None),
+        ],
+    )
+    def test_extra_field_to_compare(self, argument_string, expected_value):
+        if expected_value is not None:
+            args = parse_pre_commit_args_with_correct_prog(argument_string)
+
+            assert (
+                args.extra_fields_to_compare
+                == expected_value
+            )
+        else:
+            with pytest.raises(SystemExit):
+                parse_pre_commit_args_with_correct_prog(argument_string)

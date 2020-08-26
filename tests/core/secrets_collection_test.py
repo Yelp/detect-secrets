@@ -280,6 +280,11 @@ class TestBaselineInputOutput:
                     'lineno': 1,
                     'filename': 'fileB',
                 },
+                {
+                    'type_': 'C',
+                    'lineno': 2,
+                    'filename': 'fileB',
+                },
             ],
             plugins=(
                 HexHighEntropyString(3),
@@ -288,6 +293,7 @@ class TestBaselineInputOutput:
             exclude_files_regex='foo',
             word_list_file='will_be_mocked.txt',
             word_list_hash='5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8',
+            extra_fields_to_compare=('lineno',),
         )
 
     def test_output(self, mock_gmtime):
@@ -391,6 +397,13 @@ class TestBaselineInputOutput:
         # In v0.14.0 --custom-plugins got added
         baseline = self.get_point_twelve_point_seven_and_later_baseline_dict(gmtime)
         baseline['custom_plugin_paths'] = ()
+        baseline['extra_fields_to_compare'] = ('lineno',)
+        baseline['results']['fileB'].extend([{
+            'type': 'C',
+            'is_verified': False,
+            'line_number': 2,
+            'hashed_secret': 'e5e9fa1ba31ecd1ae84f75caaa474f3a663f05f4',
+        }])
         return baseline
 
     def get_point_twelve_point_seven_and_later_baseline_dict(self, gmtime):
