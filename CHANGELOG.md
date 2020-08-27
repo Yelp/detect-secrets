@@ -28,6 +28,27 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 ### Unreleased
 -->
 
+### v0.14.3
+##### August 27th, 2020
+
+#### :telescope: Accuracy
+
+- Verify Slack secrets more accurately ([#325], thanks [@dryoni])
+
+#### :bug: Bugfixes
+
+- Fix a `TypeError` exception in adhoc string scanning ([#336])
+
+#### :snake: Miscellaneous
+
+- Fix an XML comment in documentation ([#322], thanks [@cilefen])
+
+[#322]: https://github.com/Yelp/detect-secrets/pull/322
+[#325]: https://github.com/Yelp/detect-secrets/pull/325
+[#336]: https://github.com/Yelp/detect-secrets/pull/336
+[@dryoni]: https://github.com/dryoni
+[@cilefen]: https://github.com/cilefen
+
 ### v0.14.2
 ##### July 25th, 2020
 
