@@ -29,8 +29,8 @@ class IbmCosHmacDetector(RegexBasedDetector):
         ),
     )
 
-    def verify(self, token, content):
-        key_id_matches = find_access_key_id(content)
+    def verify(self, token, context):
+        key_id_matches = find_access_key_id(context)
 
         if not key_id_matches:
             return VerifiedResult.UNVERIFIED
@@ -48,7 +48,7 @@ class IbmCosHmacDetector(RegexBasedDetector):
         return VerifiedResult.VERIFIED_FALSE
 
 
-def find_access_key_id(content):
+def find_access_key_id(context):
     key_id_keyword_regex = r'(?:access[-_]?(?:key)?[-_]?(?:id)?|key[-_]?id)'
     key_id_regex = r'([a-f0-9]{32})'
 
@@ -60,7 +60,7 @@ def find_access_key_id(content):
 
     return [
         match
-        for line in content.splitlines()
+        for line in context.splitlines()
         for match in regex.findall(line)
     ]
 
