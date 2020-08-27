@@ -27,8 +27,8 @@ class AWSKeyDetector(RegexBasedDetector):
     def disable_flag_text(cls):
         return 'no-aws-key-scan'
 
-    def verify(self, token, content):
-        secret_access_key_candidates = get_secret_access_keys(content)
+    def verify(self, token, context):
+        secret_access_key_candidates = get_secret_access_keys(context)
         if not secret_access_key_candidates:
             return VerifiedResult.UNVERIFIED
 

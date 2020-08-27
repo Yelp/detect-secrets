@@ -28,8 +28,8 @@ class SoftlayerDetector(RegexBasedDetector):
         ),
     ]
 
-    def verify(self, token, content):
-        usernames = find_username(content)
+    def verify(self, token, context):
+        usernames = find_username(context)
         if not usernames:
             return VerifiedResult.UNVERIFIED
 
@@ -39,7 +39,7 @@ class SoftlayerDetector(RegexBasedDetector):
         return VerifiedResult.VERIFIED_FALSE
 
 
-def find_username(content):
+def find_username(context):
     # opt means optional
     username_keyword = (
         r'(?:'
@@ -58,7 +58,7 @@ def find_username(content):
 
     return [
         match
-        for line in content.splitlines()
+        for line in context.splitlines()
         for match in regex.findall(line)
     ]
 

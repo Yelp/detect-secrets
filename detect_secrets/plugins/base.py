@@ -144,7 +144,7 @@ class BasePlugin:
                     lines_of_context=LINES_OF_CONTEXT,
                 )
 
-                is_verified = self.verify(result.secret_value, content=str(snippet))
+                is_verified = self.verify(result.secret_value, context=str(snippet))
                 if is_verified == VerifiedResult.VERIFIED_TRUE:
                     result.is_verified = True
 
@@ -226,7 +226,7 @@ class BasePlugin:
 
         verified_result = VerifiedResult.UNVERIFIED
         for result in results:
-            is_verified = self.verify(result.secret_value)
+            is_verified = self.verify(result.secret_value, string)
             if is_verified != VerifiedResult.UNVERIFIED:
                 verified_result = is_verified
                 break
@@ -239,7 +239,7 @@ class BasePlugin:
 
         return output[verified_result]
 
-    def verify(self, token, content=''):
+    def verify(self, token, context=''):
         """
         To increase accuracy and reduce false positives, plugins can also
         optionally declare a method to verify their status.

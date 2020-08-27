@@ -60,9 +60,9 @@ class CloudantDetector(RegexBasedDetector):
         ),
     ]
 
-    def verify(self, token, content):
+    def verify(self, token, context):
 
-        hosts = find_account(content)
+        hosts = find_account(context)
         if not hosts:
             return VerifiedResult.UNVERIFIED
 
@@ -72,7 +72,7 @@ class CloudantDetector(RegexBasedDetector):
         return VerifiedResult.VERIFIED_FALSE
 
 
-def find_account(content):
+def find_account(context):
     opt_hostname_keyword = r'(?:hostname|host|username|id|user|userid|user-id|user-name|' \
         'name|user_id|user_name|uname|account)'
     account = r'(\w[\w\-]*)'
@@ -98,7 +98,7 @@ def find_account(content):
 
     return [
         match
-        for line in content.splitlines()
+        for line in context.splitlines()
         for regex in regexes
         for match in regex.findall(line)
     ]
