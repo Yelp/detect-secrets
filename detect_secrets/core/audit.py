@@ -15,7 +15,7 @@ from detect_secrets.core.code_snippet import CodeSnippetHighlighter
 from detect_secrets.core.color import AnsiColor
 from detect_secrets.core.color import colorize
 from detect_secrets.core.common import write_baseline_to_file
-from detect_secrets.plugins.common import initialize
+from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.common.util import get_mapping_from_secret_type_to_class_name
 from detect_secrets.util import get_git_remotes
 from detect_secrets.util import get_git_sha
@@ -275,10 +275,7 @@ def determine_audit_results(baseline, baseline_path):
         try:
             secret_info['plaintext'] = get_raw_secret_value(
                 secret=secret,
-                plugins_used=baseline['plugins_used'],
-                custom_plugin_paths=baseline['custom_plugin_paths'],
                 file_handle=io.StringIO(file_contents),
-                filename=filename,
             )
         except SecretNotFoundOnSpecifiedLineError:
             secret_info['plaintext'] = None
@@ -683,10 +680,7 @@ def _get_secret_with_context(
 
         raw_secret_value = get_raw_secret_value(
             secret=secret,
-            plugins_used=plugins_used,
-            custom_plugin_paths=custom_plugin_paths,
             file_handle=io.StringIO(file_content),
-            filename=filename,
         )
 
         try:
@@ -707,45 +701,29 @@ def _get_secret_with_context(
 
 def get_raw_secret_value(
     secret,
-    plugins_used,
-    custom_plugin_paths,
     file_handle,
-    filename,
 ):
     """
     :type secret: dict
     :param secret: see caller's docstring
 
-    :type plugins_used: list
-    :param plugins_used: output of "plugins_used" in baseline. e.g.
-        >>> [
-        ...     {
-        ...         'name': 'Base64HighEntropyString',
-        ...         'base64_limit': 4.5,
-        ...     },
-        ... ]
-
-    :type custom_plugin_paths: Tuple[str]
-    :param custom_plugin_paths: possibly empty tuple of paths that have custom plugins.
-
     :type file_handle: file object
     :param file_handle: Open handle to file where the secret is
 
-    :type filename: str
-    :param filename: this is needed, because PotentialSecret uses this
-        as a means of comparing whether two secrets are equal.
     """
-    plugin = initialize.from_secret_type(
-        secret_type=secret['type'],
-        plugins_used=plugins_used,
-        custom_plugin_paths=custom_plugin_paths,
-    )
+    secret_length = secret['secret_length']
+    line_position = secret['line_position']
+    line_number = secret['line_number']
 
-    plugin_secrets = plugin.analyze(file_handle, filename)
+    file_lines = file_handle.readlines()
+    if len(file_lines) >= line_number:
+        line = file_lines[line_number - 1]
+        possible_secret = line[line_position:line_position + secret_length]
 
-    # Return value of matching secret
-    for plugin_secret in plugin_secrets:
-        if plugin_secret.secret_hash == secret['hashed_secret']:
-            return plugin_secret.secret_value
+        possible_secret_hash = PotentialSecret.hash_secret(possible_secret)
+        lowered_possible_secret_hash = PotentialSecret.hash_secret(possible_secret.lower())
 
-    raise SecretNotFoundOnSpecifiedLineError(secret['line_number'])
+        if secret['hashed_secret'] in [possible_secret_hash, lowered_possible_secret_hash]:
+            return possible_secret.lower()
+
+    raise SecretNotFoundOnSpecifiedLineError(line_number)

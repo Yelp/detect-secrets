@@ -125,6 +125,11 @@ class BasePlugin:
         file_lines = tuple(file.readlines())
         for line_num, line in enumerate(file_lines, start=1):
             results = self.analyze_line(line, line_num, filename)
+            for secret in results:
+                secret.secret_len = len(secret.secret_value)
+                if secret.secret_value.lower() in line.lower():
+                    secret.line_pos = line.lower().index(secret.secret_value.lower())
+
             if (
                 not results
                 or

@@ -403,6 +403,8 @@ class TestMergeBaseline:
                             'hashed_secret': 'a',
                             'is_secret': False,
                             'line_number': 1,
+                            'line_position': 0,
+                            'secret_length': 1,
                             'type': 'Test Type',
                         },
                         # Both old and new have label
@@ -410,6 +412,8 @@ class TestMergeBaseline:
                             'hashed_secret': 'b',
                             'is_secret': True,
                             'line_number': 2,
+                            'line_position': 0,
+                            'secret_length': 1,
                             'type': 'Test Type',
                         },
                     ],
@@ -418,12 +422,16 @@ class TestMergeBaseline:
                         {
                             'hashed_secret': 'c',
                             'line_number': 3,
+                            'line_position': 0,
+                            'secret_length': 1,
                             'type': 'Test Type',
                         },
                         # Both don't have labels
                         {
                             'hashed_secret': 'd',
                             'line_number': 4,
+                            'line_position': 0,
+                            'secret_length': 1,
                             'type': 'Test Type',
                         },
                     ],
@@ -435,12 +443,16 @@ class TestMergeBaseline:
                         {
                             'hashed_secret': 'a',
                             'line_number': 1,
+                            'line_position': 0,
+                            'secret_length': 1,
                             'type': 'Test Type',
                         },
                         {
                             'hashed_secret': 'b',
                             'is_secret': False,
                             'line_number': 2,
+                            'line_position': 0,
+                            'secret_length': 1,
                             'type': 'Test Type',
                         },
                     ],
@@ -449,11 +461,15 @@ class TestMergeBaseline:
                             'hashed_secret': 'c',
                             'is_secret': False,
                             'line_number': 3,
+                            'line_position': 0,
+                            'secret_length': 1,
                             'type': 'Test Type',
                         },
                         {
                             'hashed_secret': 'd',
                             'line_number': 4,
+                            'line_position': 0,
+                            'secret_length': 1,
                             'type': 'Test Type',
                         },
                     ],
@@ -466,12 +482,16 @@ class TestMergeBaseline:
                         'hashed_secret': 'a',
                         'is_secret': False,
                         'line_number': 1,
+                        'line_position': 0,
+                        'secret_length': 1,
                         'type': 'Test Type',
                     },
                     {
                         'hashed_secret': 'b',
                         'is_secret': False,
                         'line_number': 2,
+                        'line_position': 0,
+                        'secret_length': 1,
                         'type': 'Test Type',
                     },
                 ],
@@ -480,11 +500,15 @@ class TestMergeBaseline:
                         'hashed_secret': 'c',
                         'is_secret': False,
                         'line_number': 3,
+                        'line_position': 0,
+                        'secret_length': 1,
                         'type': 'Test Type',
                     },
                     {
                         'hashed_secret': 'd',
                         'line_number': 4,
+                        'line_position': 0,
+                        'secret_length': 1,
                         'type': 'Test Type',
                     },
                 ],
@@ -614,6 +638,8 @@ class TestMergeResults:
         return {
             'hashed_secret': PotentialSecret.hash_secret(str(random_number)),
             'line_number': random_number,
+            'line_position': 0,
+            'secret_length': len(str(random_number)),
             'type': 'Test Type',
         }
 
@@ -628,21 +654,30 @@ class TestFormatBaselineForOutput:
                     {
                         'hashed_secret': 'f',
                         'line_number': 3,
+                        'line_position': 0,
+                        'secret_length': 1,
+                        'type': 'LetterDetector',
+
+                    },
+                    {
+                        'hashed_secret': 'a',
+                        'line_number': 3,
+                        'line_position': 0,
+                        'secret_length': 1,
                         'type': 'LetterDetector',
                     },
                     {
                         'hashed_secret': 'a',
                         'line_number': 3,
-                        'type': 'LetterDetector',
-                    },
-                    {
-                        'hashed_secret': 'a',
-                        'line_number': 3,
+                        'line_position': 0,
+                        'secret_length': 1,
                         'type': 'DifferentDetector',
                     },
                     {
                         'hashed_secret': 'z',
                         'line_number': 2,
+                        'line_position': 0,
+                        'secret_length': 1,
                         'type': 'LetterDetector',
                     },
                 ],
@@ -656,21 +691,29 @@ class TestFormatBaselineForOutput:
                       {
                         "hashed_secret": "z",
                         "line_number": 2,
+                        "line_position": 0,
+                        "secret_length": 1,
                         "type": "LetterDetector"
                       },
                       {
                         "hashed_secret": "a",
                         "line_number": 3,
+                        "line_position": 0,
+                        "secret_length": 1,
                         "type": "DifferentDetector"
                       },
                       {
                         "hashed_secret": "a",
                         "line_number": 3,
+                        "line_position": 0,
+                        "secret_length": 1,
                         "type": "LetterDetector"
                       },
                       {
                         "hashed_secret": "f",
                         "line_number": 3,
+                        "line_position": 0,
+                        "secret_length": 1,
                         "type": "LetterDetector"
                       }
                     ]

@@ -186,6 +186,8 @@ def trim_baseline_of_removed_secrets(results, baseline, filelist):
                     baseline_secret.type,
                 )
                 old_secret_to_update.lineno = new_secret_found.lineno
+                old_secret_to_update.secret_len = new_secret_found.secret_len
+                old_secret_to_update.line_pos = new_secret_found.line_pos
                 updated = True
 
     return updated

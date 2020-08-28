@@ -139,6 +139,8 @@ class SecretsCollection:
                     secret='will be replaced',
                     lineno=item['line_number'],
                     is_secret=item.get('is_secret'),
+                    line_pos=item.get('line_position'),
+                    secret_len=item.get('secret_length'),
                 )
                 secret.secret_hash = item['hashed_secret']
                 result.data[filename][secret] = secret
@@ -336,9 +338,21 @@ class SecretsCollection:
         try:
             log.info('Checking file: %s', filename)
 
+            results = {}
             for results, plugin in self._results_accumulator(filename):
                 results.update(plugin.analyze(f, filename))
                 f.seek(0)
+
+            file_lines = f.readlines()
+            if results and file_lines:
+                for secret in results:
+                    secret.secret_len = len(secret.secret_value)
+                    line_number = secret.lineno
+                    if len(file_lines) >= line_number:
+                        line = file_lines[line_number - 1]
+                        if secret.secret_value.lower() in line.lower():
+                            secret.line_pos = line.lower().index(secret.secret_value.lower())
+            f.seek(0)
 
         except UnicodeDecodeError:
             log.warning('%s failed to load.', filename)

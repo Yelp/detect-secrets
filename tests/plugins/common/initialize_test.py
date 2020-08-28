@@ -2,7 +2,6 @@ import mock
 import pytest
 
 from detect_secrets.plugins.common import initialize
-from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
 from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
 
 
@@ -43,45 +42,3 @@ class TestFromPluginClassname:
                 custom_plugin_paths=(),
                 hex_limit=4,
             )
-
-
-class TestFromSecretType:
-
-    def setup(self):
-        self.plugins_used = [
-            {
-                'name': 'Base64HighEntropyString',
-                'base64_limit': 3,
-            },
-            {
-                'name': 'PrivateKeyDetector',
-            },
-        ]
-
-    def test_success(self):
-        plugin = initialize.from_secret_type(
-            'Base64 High Entropy String',
-            plugins_used=self.plugins_used,
-            custom_plugin_paths=(),
-        )
-        # Dynamically imported classes have different
-        # addresses for the same functions as statically
-        # imported classes do, so isinstance does not work.
-        assert str(plugin.__class__) == str(Base64HighEntropyString)
-        assert dir(plugin.__class__) == dir(Base64HighEntropyString)
-
-        assert plugin.entropy_limit == 3
-
-    def test_failure(self):
-        assert not initialize.from_secret_type(
-            'some random secret_type',
-            plugins_used=self.plugins_used,
-            custom_plugin_paths=(),
-        )
-
-    def test_secret_type_not_in_settings(self):
-        assert not initialize.from_secret_type(
-            'Base64 High Entropy String',
-            plugins_used=[],
-            custom_plugin_paths=(),
-        )
