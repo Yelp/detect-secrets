@@ -26,7 +26,7 @@ def main(argv=sys.argv[1:]):
 
     if args.config:
         config_file = args.config.read()
-        config_values = yaml.safe_load(config_file)
+        config_values = yaml.safe_load(config_file) or {}
         if config_values.get('exclude_lines') is not None:
             args.exclude_lines = config_values.get('exclude_lines')
         if config_values.get('exclude_files') is not None:
