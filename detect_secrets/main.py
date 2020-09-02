@@ -1,4 +1,5 @@
 import json
+import yaml
 import sys
 
 from detect_secrets.core import audit
@@ -22,6 +23,15 @@ def main(argv=sys.argv[1:]):
         sys.argv.append('--help')
 
     args = parse_args(argv)
+
+    if args.config:
+        config_file = args.config.read()
+        config_values = yaml.safe_load(config_file)
+        if config_values.get('exclude_lines') is not None:
+            args.exclude_lines = config_values.get('exclude_lines')
+        if config_values.get('exclude_files') is not None:
+            args.exclude_files = config_values.get('exclude_files')
+
     if args.verbose:  # pragma: no cover
         log.set_debug_level(args.verbose)
 

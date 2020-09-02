@@ -1,5 +1,6 @@
 import argparse
 import os
+import io
 from collections import namedtuple
 from functools import lru_cache
 
@@ -123,7 +124,8 @@ class ParserBuilder:
 
     def add_default_arguments(self):
         self._add_verbosity_argument()\
-            ._add_version_argument()
+            ._add_version_argument()\
+            ._add_config_file_argument()
 
     def add_pre_commit_arguments(self):
         self._add_filenames_argument()\
@@ -203,6 +205,21 @@ class ParserBuilder:
             'filenames',
             nargs='*',
             help='Filenames to check.',
+        )
+        return self
+
+    def _add_config_file_argument(self):
+        def _open(filename):
+            if os.path.exists(filename):
+                return open(filename, 'rb')
+            else:
+                return io.StringIO('{}')
+        self.parser.add_argument(
+            '-c',
+            '--config',
+            type=_open,
+            default=".secrets.yaml",
+            help='Config file',
         )
         return self
 
