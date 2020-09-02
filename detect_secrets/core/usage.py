@@ -266,8 +266,9 @@ class ScanOptions:
         # be used instead.
         self.parser.add_argument(
             '--exclude-files',
-            type=str,
-            help='Pass in regex to specify ignored paths during initialization scan.',
+            type=list,
+            default=[],
+            help='Pass in regex list to specify ignored paths during initialization scan.',
         )
 
         # Pairing `--update` with `--scan` because it's only used for

@@ -34,7 +34,7 @@ class SecretsCollection:
         :type exclude_files: str|None
         :param exclude_files: optional regex for ignored paths.
 
-        :type exclude_lines: str|None
+        :type exclude_lines: Tuple[str]|None
         :param exclude_lines: optional regex for ignored lines.
 
         :type word_list_file: str|None
@@ -195,13 +195,15 @@ class SecretsCollection:
             log.error(alert)
             raise
 
+        regexes = []
         if self.exclude_files:
-            regex = re.compile(self.exclude_files, re.IGNORECASE)
+            for f in self.exclude_files:
+                regexes.append(re.compile(self.exclude_files, re.IGNORECASE))
 
         for patch_file in patch_set:
             filename = patch_file.path
             # If the file matches the exclude_files, we skip it
-            if self.exclude_files and regex.search(filename):
+            if any(regex.search(filename) for regex in regexes):
                 continue
 
             if filename == baseline_filename:

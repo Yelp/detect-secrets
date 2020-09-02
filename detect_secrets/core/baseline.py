@@ -32,7 +32,7 @@ def initialize(
     :type custom_plugin_paths: Tuple[str]
     :param custom_plugin_paths: possibly empty tuple of paths that have custom plugins.
 
-    :type exclude_files_regex: str|None
+    :type exclude_files_regex: Tuple[str]|None
     :type exclude_lines_regex: str|None
 
     :type word_list_file: str|None
@@ -74,10 +74,10 @@ def initialize(
         return output
 
     if exclude_files_regex:
-        exclude_files_regex = re.compile(exclude_files_regex, re.IGNORECASE)
+        exclude_files_regex = [re.compile(r, re.IGNORECASE) for r in exclude_files_regex]
         files_to_scan = filter(
             lambda file: (
-                not exclude_files_regex.search(file)
+                not any(e.search(file) for e in exclude_files_regex)
             ),
             files_to_scan,
         )
@@ -100,13 +100,14 @@ def get_secrets_not_in_baseline(results, baseline):
     :rtype: SecretsCollection
     :returns: SecretsCollection of new results (filtering out baseline)
     """
-    exclude_files_regex = None
+    exclude_files_regex = []
     if baseline.exclude_files:
-        exclude_files_regex = re.compile(baseline.exclude_files, re.IGNORECASE)
+        for f in baseline.exclude_files:
+            exclude_files_regex.append(re.compile(baseline.exclude_files, re.IGNORECASE))
 
     new_secrets = SecretsCollection()
     for filename in results.data:
-        if exclude_files_regex and exclude_files_regex.search(filename):
+        if any(regex.search(filename) for regex in exclude_files_regex):
             continue
 
         if filename not in baseline.data:
