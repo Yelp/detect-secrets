@@ -55,7 +55,7 @@ $ cat .pre-commit-config.yaml
     hooks:
     -   id: detect-secrets
         args: ['--baseline', '.secrets.baseline']
-        exclude: .*/tests/.*
+        exclude: package.lock.json
 ```
 
 
