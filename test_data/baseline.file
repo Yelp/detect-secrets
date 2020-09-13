@@ -1,42 +1,268 @@
 {
-  "generated_at": "2018-03-17T03:14:59Z",
-  "exclude_regex": null,
+  "custom_plugin_paths": [],
+  "exclude": {
+    "files": null,
+    "lines": null
+  },
+  "generated_at": "2020-09-13T20:49:20Z",
+  "plugins_used": [
+    {
+      "name": "AWSKeyDetector"
+    },
+    {
+      "name": "ArtifactoryDetector"
+    },
+    {
+      "base64_limit": 4.5,
+      "name": "Base64HighEntropyString"
+    },
+    {
+      "name": "BasicAuthDetector"
+    },
+    {
+      "name": "CloudantDetector"
+    },
+    {
+      "hex_limit": 3,
+      "name": "HexHighEntropyString"
+    },
+    {
+      "name": "IbmCloudIamDetector"
+    },
+    {
+      "name": "IbmCosHmacDetector"
+    },
+    {
+      "name": "JwtTokenDetector"
+    },
+    {
+      "keyword_exclude": null,
+      "name": "KeywordDetector"
+    },
+    {
+      "name": "MailchimpDetector"
+    },
+    {
+      "name": "PrivateKeyDetector"
+    },
+    {
+      "name": "SlackDetector"
+    },
+    {
+      "name": "SoftlayerDetector"
+    },
+    {
+      "name": "StripeDetector"
+    },
+    {
+      "name": "TwilioKeyDetector"
+    }
+  ],
   "results": {
-    "file_with_secrets.py": [
+    "config.env": [
       {
-        "type": "High Entropy String",
+        "hashed_secret": "513e0a36963ae1e8431c041b744679ee578b7c44",
+        "is_verified": false,
+        "line_number": 1,
+        "type": "Base64 High Entropy String"
+      }
+    ],
+    "config.ini": [
+      {
+        "hashed_secret": "b5198bd9fe6726cf064a5b80b6dfe25ab793147f",
+        "is_verified": false,
+        "line_number": 2,
+        "type": "Hex High Entropy String"
+      },
+      {
+        "hashed_secret": "b5198bd9fe6726cf064a5b80b6dfe25ab793147f",
+        "is_verified": false,
+        "line_number": 2,
+        "type": "Secret Keyword"
+      },
+      {
+        "hashed_secret": "b1c6a9a65d292f95c2bb3bc1918eed10f4dabb16",
+        "is_verified": false,
+        "line_number": 10,
+        "type": "Hex High Entropy String"
+      }
+    ],
+    "config.md": [
+      {
+        "hashed_secret": "5343820d9546b186452efc24a0776244057f4b19",
+        "is_verified": false,
+        "line_number": 10,
+        "type": "Base64 High Entropy String"
+      }
+    ],
+    "config.yaml": [
+      {
+        "hashed_secret": "5cbabd43e49a1fedbbc3b86311aa6c8fe446abf9",
+        "is_verified": false,
         "line_number": 3,
-        "hashed_secret": "262547656a76a8a5d24ad428e7010e0fbb8d0413"
+        "type": "Hex High Entropy String"
+      },
+      {
+        "hashed_secret": "9080e79e67d92bd09c8a498a380190cdb4595072",
+        "is_verified": false,
+        "line_number": 4,
+        "type": "Hex High Entropy String"
+      },
+      {
+        "hashed_secret": "10ab7ab9856ae2aa93fcfeba71e99511dd55f70c",
+        "is_verified": false,
+        "line_number": 14,
+        "type": "Base64 High Entropy String"
+      },
+      {
+        "hashed_secret": "9e882e61ddaf94553323e1933403d6058ba26a6d",
+        "is_verified": false,
+        "line_number": 14,
+        "type": "Secret Keyword"
+      }
+    ],
+    "config2.yaml": [
+      {
+        "hashed_secret": "9e882e61ddaf94553323e1933403d6058ba26a6d",
+        "is_verified": false,
+        "line_number": 2,
+        "type": "Secret Keyword"
+      },
+      {
+        "hashed_secret": "e278763134b893ff03b8c776d7f20d8be1a5612c",
+        "is_verified": false,
+        "line_number": 2,
+        "type": "Hex High Entropy String"
+      }
+    ],
+    "each_secret.py": [
+      {
+        "hashed_secret": "1bc97f6cb10c85b8c7d78c0cd21c39e3500f42d1",
+        "is_verified": false,
+        "line_number": 3,
+        "type": "Secret Keyword"
+      },
+      {
+        "hashed_secret": "1ca6beea06a87d5f77fa8e4523d0dc1f0965e2ce",
+        "is_verified": false,
+        "line_number": 3,
+        "type": "Base64 High Entropy String"
+      },
+      {
+        "hashed_secret": "871deb5e9ff5ce5f777c8d3327511d05f581e755",
+        "is_verified": false,
+        "line_number": 4,
+        "type": "Hex High Entropy String"
+      },
+      {
+        "hashed_secret": "871deb5e9ff5ce5f777c8d3327511d05f581e755",
+        "is_verified": false,
+        "line_number": 4,
+        "type": "Secret Keyword"
+      },
+      {
+        "hashed_secret": "99b5e14eaf6b7cd863796dab48ae736be2ac6b53",
+        "is_verified": false,
+        "line_number": 5,
+        "type": "Basic Auth Credentials"
+      },
+      {
+        "hashed_secret": "abc87b1a41afc12fccfb148d8a632f76d2251767",
+        "is_verified": false,
+        "line_number": 8,
+        "type": "Secret Keyword"
+      },
+      {
+        "hashed_secret": "d70eab08607a4d05faa2d0d6647206599e9abc65",
+        "is_verified": false,
+        "line_number": 8,
+        "type": "Base64 High Entropy String"
+      }
+    ],
+    "files/file_with_secrets.py": [
+      {
+        "hashed_secret": "262547656a76a8a5d24ad428e7010e0fbb8d0413",
+        "is_verified": false,
+        "line_number": 3,
+        "type": "Base64 High Entropy String"
+      }
+    ],
+    "files/private_key": [
+      {
+        "hashed_secret": "27c6929aef41ae2bcadac15ca6abcaff72cda9cd",
+        "is_verified": false,
+        "line_number": 1,
+        "type": "Private Key"
+      }
+    ],
+    "files/tmp/file_with_secrets.py": [
+      {
+        "hashed_secret": "88aa1a600b44f0b5cacad4d6300f64afe6d6e9df",
+        "is_verified": false,
+        "line_number": 3,
+        "type": "Hex High Entropy String"
+      },
+      {
+        "hashed_secret": "eb33f663e25e69fad07fe0338935b4954b5027d2",
+        "is_verified": false,
+        "line_number": 3,
+        "type": "Hex High Entropy String"
       }
     ],
     "sample.diff": [
       {
-        "type": "High Entropy String",
+        "hashed_secret": "e2a1cb4d8da934cee6027f5fe14993b9c81158a4",
+        "is_verified": false,
         "line_number": 10,
-        "hashed_secret": "87acec17cd9dcd20a716cc2cf67417b71c8a7016"
+        "type": "Hex High Entropy String"
       },
       {
-        "type": "High Entropy String",
+        "hashed_secret": "a539bed96675daafa460631f5a076d9afd70ea9c",
+        "is_verified": false,
         "line_number": 34,
-        "hashed_secret": "a539bed96675daafa460631f5a076d9afd70ea9c"
+        "type": "Hex High Entropy String"
       },
       {
-        "type": "High Entropy String",
-        "line_number": 69,
-        "hashed_secret": "b5ce0843584425c0b608d91cb07a50d634282d5d"
+        "hashed_secret": "b5ce0843584425c0b608d91cb07a50d634282d5d",
+        "is_verified": false,
+        "line_number": 72,
+        "type": "Hex High Entropy String"
+      },
+      {
+        "hashed_secret": "b5ce0843584425c0b608d91cb07a50d634282d5d",
+        "is_verified": false,
+        "line_number": 72,
+        "type": "Secret Keyword"
       }
     ],
-    "tmp/file_with_secrets.py": [
+    "short_files/first_line.php": [
       {
-        "type": "High Entropy String",
-        "line_number": 3,
-        "hashed_secret": "eb33f663e25e69fad07fe0338935b4954b5027d2"
-      },
+        "hashed_secret": "27537b9a43d6490772281a06c014ec283325f2f3",
+        "is_verified": false,
+        "line_number": 1,
+        "type": "Secret Keyword"
+      }
+    ],
+    "short_files/last_line.ini": [
       {
-        "type": "High Entropy String",
-        "line_number": 3,
-        "hashed_secret": "88aa1a600b44f0b5cacad4d6300f64afe6d6e9df"
+        "hashed_secret": "0de9a11b3f37872868ca49ecd726c955e25b6e21",
+        "is_verified": false,
+        "line_number": 5,
+        "type": "Hex High Entropy String"
+      }
+    ],
+    "short_files/middle_line.yml": [
+      {
+        "hashed_secret": "66e02bb499b2a3f5f2894ce1b7959962c1a5a245",
+        "is_verified": false,
+        "line_number": 4,
+        "type": "Base64 High Entropy String"
       }
     ]
+  },
+  "version": "0.14.2",
+  "word_list": {
+    "file": null,
+    "hash": null
   }
 }
