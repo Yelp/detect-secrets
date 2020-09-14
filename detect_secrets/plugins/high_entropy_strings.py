@@ -307,9 +307,9 @@ class HighEntropyStringsPlugin(BasePlugin):
             secret_in_yaml_format = yaml.dump(
                 self.encode_to_binary(potential_secret.secret_value),
             ).replace(
-                '!!binary ',
+                '!!binary |\n  ',
                 '',
-            )
+            ).rstrip()
 
             potential_secret.set_secret(secret_in_yaml_format)
 
