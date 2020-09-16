@@ -197,6 +197,34 @@ class TestScanDiff:
 
         return collection
 
+    def test_extract_pragmas(self):
+        secrets = self.load_from_pragam_diff(
+            exclude_files_regex='tests/*',
+        ).pragmas
+
+        assert len(secrets) == 1
+
+    def load_from_pragam_diff(
+        self, existing_secrets=None, baseline_filename='',
+        exclude_files_regex='', extract_pragmas=True,
+    ):
+        collection = secrets_collection_factory(
+            secrets=existing_secrets,
+            plugins=(
+                HexHighEntropyString(hex_limit=3),
+            ),
+            exclude_files_regex=exclude_files_regex,
+        )
+
+        with open('test_data/pragma_sample.diff') as f:
+            collection.scan_diff(
+                f.read(),
+                baseline_filename=baseline_filename,
+                extract_pragmas=extract_pragmas,
+            )
+
+        return collection
+
 
 class TestGetSecret:
     """Testing retrieval of PotentialSecret from SecretsCollection"""

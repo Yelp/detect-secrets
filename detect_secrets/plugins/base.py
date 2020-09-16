@@ -170,6 +170,28 @@ class BasePlugin:
             filename,
         )
 
+    def analyze_pragma_line(self, string, line_num):
+        """
+        :param string:    string; the line to analyze
+        :param line_num:  integer; line number that is currently being analyzed
+        :param filename:  string; name of file being analyzed
+        :returns:         dictionary
+
+        NOTE: line_num and filename are used for PotentialSecret creation only.
+        """
+        if (
+            any(
+                allowlist_regex.search(string)
+                for allowlist_regex in ALLOWLIST_REGEXES
+            )
+        ):
+            return {
+                'line_number': line_num,
+                'string': string.strip(),
+            }
+
+        return {}
+
     @abstractmethod
     def analyze_string_content(self, string, line_num, filename):
         """

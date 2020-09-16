@@ -9,6 +9,7 @@ from detect_secrets import VERSION
 from detect_secrets.core.constants import IGNORED_FILE_EXTENSIONS
 from detect_secrets.core.log import log
 from detect_secrets.core.potential_secret import PotentialSecret
+from detect_secrets.plugins.base import BasePlugin
 from detect_secrets.plugins.common import initialize
 from detect_secrets.util import build_automaton
 
@@ -44,6 +45,7 @@ class SecretsCollection:
         :param word_list_hash: optional iterated sha1 hash of the words in the word list.
         """
         self.data = {}
+        self.pragmas = {}
         self.version = VERSION
 
         self.plugins = plugins
@@ -157,6 +159,7 @@ class SecretsCollection:
         baseline_filename='',
         last_commit_hash='',
         repo_name='',
+        extract_pragmas=False,
     ):
         """For optimization purposes, our scanning strategy focuses on looking
         at incremental differences, rather than re-scanning the codebase every time.
@@ -178,6 +181,9 @@ class SecretsCollection:
 
         :type repo_name: str
         :param repo_name: used for logging only -- the name of the repo
+
+        :type extract_pragmas: bool
+        :param extract_pragmas: used for enable extract pragmas feature.
         """
         # Local imports, so that we don't need to require unidiff for versions of
         # detect-secrets that don't use it.
@@ -215,6 +221,10 @@ class SecretsCollection:
                         filename,
                     ),
                 )
+
+            # Extract Pragmas feature
+            if extract_pragmas:
+                self._extract_pragmas_from_patch(patch_file, filename, self.pragmas)
 
     def scan_file(self, filename):
         """Scans a specified file, and adds information to self.data
@@ -367,6 +377,32 @@ class SecretsCollection:
                     )
 
         return output
+
+    def _extract_pragmas_from_patch(self, f, filename, pragmas):
+        """Extract secrets from a given patch file object.
+
+        Note that we only want to capture incoming secrets (so added lines).
+
+        :type f: unidiff.patch.PatchedFile
+        :type filename: str
+        :type pragmas: dict
+        """
+        pragmas_values = []
+        for chunk in f:
+            # target_lines refers to incoming (new) changes
+            for line in chunk.target_lines():
+                if line.is_added:
+                    pragma = BasePlugin().analyze_pragma_line(
+                        line.value,
+                        line.target_line_no,
+                    )
+                    if pragma:
+                        pragmas_values.append(
+                            pragma,
+                        )
+
+        if pragmas_values:
+            pragmas[filename] = pragmas_values
 
     def json(self):
         """Custom JSON encoder"""

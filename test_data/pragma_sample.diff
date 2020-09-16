@@ -1,0 +1,15 @@
+diff --git a/detect_secrets/core/baseline.py b/detect_secrets/core/baseline.py
+index d74b7db..e17ead2 100644
+--- a/detect_secrets/core/baseline.py
++++ b/detect_secrets/core/baseline.py
+@@ -45,6 +45,10 @@ def initialize(
+
+     :rtype: SecretsCollection
+     """
++
++    def pass_test = "mypassPragma123456" # pragma: allowlist secrets
++    def another_test = param.secret # pragma: allowlist secrets
++
+     output = SecretsCollection(
+         plugins,
+         custom_plugin_paths=custom_plugin_paths,

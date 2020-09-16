@@ -29,6 +29,12 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 -->
 
 ### v0.14.3
+##### September 16th, 2020
+
+#### :tada: New Features
+
+- Add support to extract pragmas in `scan_diff` which is called by [`detect-secrets-server`](https://github.com/Yelp/detect-secrets-server) (by [@francisluz])
+
 ##### August 27th, 2020
 
 #### :telescope: Accuracy
