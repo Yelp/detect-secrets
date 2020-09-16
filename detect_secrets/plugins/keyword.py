@@ -153,7 +153,6 @@ SQUARE_BRACKETS = r'(\[\])'
 
 FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
     # e.g. my_password := "bar" or my_password := bar
-    # (Bug fix) Strings with pattern: password_foo/api_key_xyz not detected, hence added a regex pattern to detect such strings
     r'({denylist})[^.]*({closing})?{whitespace}:=?{whitespace}({quote}?)({secret})(\3)'.format(
         denylist=DENYLIST_REGEX,
         closing=CLOSING,
@@ -164,7 +163,6 @@ FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
 )
 FOLLOWED_BY_COLON_REGEX = re.compile(
     # e.g. api_key: foo
-    # (Bug fix) Strings with pattern: password_foo/api_key_xyz not detected, hence added a regex pattern to detect such strings
     r'({denylist})[^.]*({closing})?:{whitespace}({quote}?)({secret})(\3)'.format(
         denylist=DENYLIST_REGEX,
         closing=CLOSING,
@@ -175,7 +173,6 @@ FOLLOWED_BY_COLON_REGEX = re.compile(
 )
 FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX = re.compile(
     # e.g. api_key: "foo"
-    # (Bug fix) Strings with pattern: password_foo/api_key_xyz not detected, hence added a regex pattern to detect such strings
     r'({denylist})[^.]*({closing})?:({whitespace})({quote})({secret})(\4)'.format(
         denylist=DENYLIST_REGEX,
         closing=CLOSING,
@@ -188,7 +185,6 @@ FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX
     # e.g. my_password = "bar"
     # e.g. my_password = @"bar"
     # e.g. my_password[] = "bar";
-    # (Bug fix) Strings with pattern: password_foo/api_key_xyz not detected, hence added a regex pattern to detect such strings
     r'({denylist})[^.]*({square_brackets})?{optional_whitespace}={optional_whitespace}(@)?(")({secret})(\5)'.format(  # noqa: E501
         denylist=DENYLIST_REGEX,
         square_brackets=SQUARE_BRACKETS,
@@ -198,7 +194,6 @@ FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX
 )
 FOLLOWED_BY_EQUAL_SIGNS_REGEX = re.compile(
     # e.g. my_password = bar
-    # (Bug fix) Strings with pattern: password_foo/api_key_xyz not detected, hence added a regex pattern to detect such strings
     r'({denylist})[^.]*({closing})?{whitespace}={whitespace}({quote}?)({secret})(\3)'.format(
         denylist=DENYLIST_REGEX,
         closing=CLOSING,
@@ -209,7 +204,6 @@ FOLLOWED_BY_EQUAL_SIGNS_REGEX = re.compile(
 )
 FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
     # e.g. my_password = "bar"
-    # (Bug fix) Strings with pattern: password_foo/api_key_xyz not detected, hence added a regex pattern to detect such strings
     r'({denylist})[^.]*({closing})?{whitespace}={whitespace}({quote})({secret})(\3)'.format(
         denylist=DENYLIST_REGEX,
         closing=CLOSING,

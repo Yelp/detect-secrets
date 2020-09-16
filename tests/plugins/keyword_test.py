@@ -28,28 +28,15 @@ FOLLOWED_BY_COLON_EQUAL_SIGNS_RE = {
             "apikey:= 'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
             "apikey:='m{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
             "apikey:=  'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
-            #Digja - regex changes
             'api_keyforfoo := "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
             'apikey_foo :="m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            'apikey_foo  :=   "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            "apikeyforfoo := 'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
-            "apikeyfor_foo :='m{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
-            'apikeyfoo:= "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            'apikeyfoo:="m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            "apikeyfoo:= 'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
-            "apikey_for_foo:='m{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
-            "apikeyforfoo:=  'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
         ],
         'quotes_not_required': [
             'apikey := m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
             'apikey :=m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
             'apikey:= m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
             'apikey:=m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            #Digja - regex changes
             'apikeyforfoo := m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            'apikeyforfoo :=m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            'apikeyforfoo:= m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            'apikeyforfoo:=m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
         ],
     },
 }
@@ -70,10 +57,7 @@ FOLLOWED_BY_COLON_RE = {
             '"theapikey": "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
             'apikey: "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
             "apikey:  'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
-            #Digja - regex changes
             'apikeyforxyz: "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            "apikeyforxyz:  'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
-            "'theapikeyforzyx': 'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
             '"theapikeyforxyz": "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
 
         ],
@@ -81,9 +65,7 @@ FOLLOWED_BY_COLON_RE = {
             'apikey: m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
             'apikey:m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
             'theapikey:m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            #Digja - regex changes
             'apikeyforxyz: m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            'apikeyforxyz:m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
             'theapikeyforxyz:m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
         ],
     },
@@ -105,7 +87,6 @@ FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX
             'apikey  =   @"m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
             'apikey[]= "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
             'apikey[]="m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            #Digja - regex changes
             'apikeyforfoo[]= "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
             'apikeyforfoo="m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
             'apikeyforfoo  =   @"m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
@@ -135,7 +116,6 @@ FOLLOWED_BY_EQUAL_SIGNS_RE = {
             'some_dict["secret"] = "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
             'the_password= "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"\n',
             'the_password=\'m{{h}o)p${e]nob(ody[finds>-_$#thisone}}\'\n',
-            #Digja - regex changes
             'the_password_foo= "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"\n',
             'the_passwordfoo=\'m{{h}o)p${e]nob(ody[finds>-_$#thisone}}\'\n',
         ],
@@ -147,12 +127,7 @@ FOLLOWED_BY_EQUAL_SIGNS_RE = {
             'my_password = m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
             'my_password =m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
             'the_password=m{{h}o)p${e]nob(ody[finds>-_$#thisone}}\n',
-            #Digja - regex changes
             'the_password_foo=m{{h}o)p${e]nob(ody[finds>-_$#thisone}}\n',
-            'my_passwordfoo= m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            'my_passwordfoo =m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            'my_password_foo = m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            'my_password_foo =m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
         ],
     },
 }
