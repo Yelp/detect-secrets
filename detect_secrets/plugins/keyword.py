@@ -107,16 +107,12 @@ FALSE_POSITIVES = {
     'null;',
     'pass',
     'pass)',
-    # Secrets with this value not detected (Could be and actual password)
-    #'password',
     'password)',
     'password))',
     'password,',
     'password},',
     'prompt',
     'redacted',
-    # Secrets with this value not detected (Could be and actual password)
-    #'secret',
     'some_key',
     'str',
     'str_to_sign',
