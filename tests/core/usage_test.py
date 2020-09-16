@@ -1,8 +1,7 @@
 import pytest
 
-from detect_secrets.plugins.common.util import import_plugins
 from detect_secrets.core.usage import PluginOptions
-
+from detect_secrets.plugins.common.util import import_plugins
 from testing.util import parse_pre_commit_args_with_correct_prog
 
 
@@ -95,4 +94,4 @@ class TestPluginOptions:
         delattr(args, 'custom_plugin_paths')
         PluginOptions.consolidate_args(args)
 
-        assert( hasattr(args, 'custom_plugin_paths')  == False)
+        assert not hasattr(args, 'custom_plugin_paths')
