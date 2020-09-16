@@ -1,6 +1,8 @@
 import pytest
 
 from detect_secrets.plugins.common.util import import_plugins
+from detect_secrets.core.usage import PluginOptions
+
 from testing.util import parse_pre_commit_args_with_correct_prog
 
 
@@ -84,3 +86,13 @@ class TestPluginOptions:
         else:
             with pytest.raises(SystemExit):
                 parse_pre_commit_args_with_correct_prog(argument_string)
+
+    def test_consolidate_args_without_custom_plugins(self):
+        args = parse_pre_commit_args_with_correct_prog()
+        setattr(args, 'hex_limit', None)
+        setattr(args, 'keyword_exclude', None)
+        setattr(args, 'base64_limit', None)
+        delattr(args, 'custom_plugin_paths')
+        PluginOptions.consolidate_args(args)
+
+        assert( hasattr(args, 'custom_plugin_paths')  == False)
