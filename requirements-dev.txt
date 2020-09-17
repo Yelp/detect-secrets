@@ -1,5 +1,6 @@
 # coveragepy==5.0 fails with `Safety level may not be changed inside a transaction
 # on python 3.6.0 (xenial)
+pip>=19.2
 coverage<5
 flake8==3.5.0
 mock
