@@ -1,7 +1,7 @@
 import sys
 if sys.version_info.major == 2:
     sys.exit(
-        'Sorry, Python 2 is no longer supported by detect-secrets. Refer to',
+        'Sorry, Python 2 is no longer supported by detect-secrets. Refer to' +
         ' http://ibm.biz/upgrade-to-py3 for instructions on upgraing to Python 3.',
     )
 
