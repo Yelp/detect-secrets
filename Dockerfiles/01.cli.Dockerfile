@@ -14,6 +14,6 @@ RUN pip install /code
 
 # Generate pipenv lock file under /, it will be picked up by trivy
 COPY scripts/gen-pipfile.sh /
-RUN /gen-pipfile.sh > /Pipfile && pip install pipenv && pipenv lock
+RUN /gen-pipfile.sh > /Pipfile && pip install pipenv && pipenv --python `which python3` && pipenv lock
 
 WORKDIR /code
