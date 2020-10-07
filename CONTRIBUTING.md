@@ -118,6 +118,13 @@ executing:
 PYTHONPATH=`pwd` python detect_secrets/main.py --version
 ```
 
+Note that without `PYTHONPATH` set, Python will not be able to resolve imports
+within this repo. Particularly if you have the `detect-secrets` package
+installed in your environment, Python may resolve module imports from the
+installed `detect-secrets` package instead of from within the repo where you're
+developing. To avoid this, ensure `PYTHONPATH` is set in your developer
+environment and includes the path to the whitewater-detect-secrets repo.
+
 
 ## Running Tests
 
