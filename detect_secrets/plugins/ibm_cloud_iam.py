@@ -11,7 +11,7 @@ class IbmCloudIamDetector(RegexBasedDetector):
 
     # opt means optional
     opt_ibm_cloud_iam = r'(?:ibm(?:_|-|)cloud(?:_|-|)iam|cloud(?:_|-|)iam|' + \
-        r'ibm(?:_|-|)cloud|ibm(?:_|-|)iam|ibm|iam|cloud|)'
+        r'ibm(?:_|-|)cloud|ibm(?:_|-|)iam|ibm|iam|cloud|test|)'
     opt_dash_undrscr = r'(?:_|-|)'
     opt_api = r'(?:api|)'
     key_or_pass = r'(?:key|keyid|pwd|password|pass|token)'
