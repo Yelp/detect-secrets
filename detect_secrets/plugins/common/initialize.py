@@ -147,6 +147,7 @@ def merge_plugins_from_baseline(baseline_plugins, args, automaton):
         exclude_lines_regex=args.exclude_lines,
         automaton=automaton,
         should_verify_secrets=not args.no_verify,
+        plugin_filenames=args.plugin_filenames,
     )
 
 
