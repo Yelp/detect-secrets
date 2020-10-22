@@ -1,4 +1,6 @@
 """Intelligent initialization of plugins."""
+import sys
+
 from .util import get_mapping_from_secret_type_to_class_name
 from .util import import_plugins
 from detect_secrets.core.log import log
@@ -10,6 +12,7 @@ def from_parser_builder(
     exclude_lines_regex=None,
     automaton=None,
     should_verify_secrets=False,
+    plugin_filenames=None,
 ):
     """
     :param plugins_dict: plugins dictionary received from ParserBuilder.
@@ -23,6 +26,9 @@ def from_parser_builder(
 
     :type should_verify_secrets: bool
 
+    :type plugin_filenames: tuple
+    :param plugin_filenames: the plugin filenames.
+
     :returns: tuple of initialized plugins
     """
     output = []
@@ -34,6 +40,7 @@ def from_parser_builder(
                 exclude_lines_regex=exclude_lines_regex,
                 automaton=automaton,
                 should_verify_secrets=should_verify_secrets,
+                plugin_filenames=plugin_filenames,
                 **plugins_dict[plugin_name]
             ),
         )
@@ -100,8 +107,8 @@ def merge_plugins_from_baseline(baseline_plugins, args, automaton):
                 plugins_dict[plugin_name][param_name] = param_value
             except KeyError:  # pragma: no cover
                 log.warning(
-                    'Baseline contains plugin {} which is not in all plugins! Ignoring...',
-                    plugin_name,
+                    'Baseline contains plugin {} which is not in all plugins! Ignoring...'
+                    .format(plugin_name),
                 )
 
         return from_parser_builder(
@@ -109,6 +116,7 @@ def merge_plugins_from_baseline(baseline_plugins, args, automaton):
             exclude_lines_regex=args.exclude_lines,
             automaton=automaton,
             should_verify_secrets=not args.no_verify,
+            plugin_filenames=args.plugin_filenames,
         )
 
     # Use baseline plugin as starting point
@@ -130,9 +138,8 @@ def merge_plugins_from_baseline(baseline_plugins, args, automaton):
             plugins_dict[plugin_name][param_name] = param_value
         except KeyError:
             log.warning(
-                '{} specified, but {} not configured! Ignoring...',
-                ''.join(['--', param_name.replace('_', '-')]),
-                plugin_name,
+                '{} specified, but {} not configured! Ignoring...'
+                .format(''.join(['--', param_name.replace('_', '-')]), plugin_name),
             )
 
     return from_parser_builder(
@@ -148,7 +155,8 @@ def from_plugin_classname(
     exclude_lines_regex=None,
     automaton=None,
     should_verify_secrets=False,
-    **kwargs
+    plugin_filenames=None,
+    **kwargs,
 ):
     """Initializes a plugin class, given a classname and kwargs.
 
@@ -162,17 +170,29 @@ def from_plugin_classname(
     :param automaton: optional automaton for ignoring English-words.
 
     :type should_verify_secrets: bool
+
+    :type plugin_filenames: tuple
+    :param plugin_filenames: the plugin filenames.
+
+    :type plugin_filenames: tuple
     """
     try:
-        klass = import_plugins()[plugin_classname]
+        klass = import_plugins(plugin_filenames)[plugin_classname]
     except KeyError:
-        log.error('Error: No such `{}` plugin to initialize.'.format(plugin_classname))
-        log.error('Chances are you should run `pre-commit autoupdate`.')
-        log.error(
-            'This error occurs when using a baseline that was made by '
-            'a newer detect-secrets version than the one running.',
+        yellow = '\033[93m'
+        end_yellow = '\033[0m'
+        print(
+            yellow,
+            'Warning: No such %s plugin to initialize.\n' % plugin_classname,
+            'Chances are you\'ve disabled it with command line options,',
+            'or need to run `pre-commit autoupdate`.\n',
+            'This error occurs when using a baseline file that',
+            'references a plugin which is disabled or not installed.',
+            end_yellow,
+            file=sys.stderr,
+            flush=True,
         )
-        raise TypeError
+        return None
 
     try:
         instance = klass(
@@ -188,7 +208,7 @@ def from_plugin_classname(
     return instance
 
 
-def from_secret_type(secret_type, settings):
+def from_secret_type(secret_type, settings, plugin_filenames=None):
     """
     Note: Only called from audit.py
 
@@ -203,8 +223,11 @@ def from_secret_type(secret_type, settings):
         ...         'base64_limit': 4.5,
         ...     },
         ... ]
+
+    :type plugin_filenames: tuple
+    :param plugin_filenames: the plugin filenames.
     """
-    mapping = get_mapping_from_secret_type_to_class_name()
+    mapping = get_mapping_from_secret_type_to_class_name(plugin_filenames=plugin_filenames)
     try:
         classname = mapping[secret_type]
     except KeyError:

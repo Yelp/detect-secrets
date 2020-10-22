@@ -42,6 +42,7 @@ def main(argv=None):
             exclude_lines_regex=args.exclude_lines,
             automaton=automaton,
             should_verify_secrets=not args.no_verify,
+            plugin_filenames=args.plugin_filenames,
         )
         if args.string:
             line = args.string
@@ -98,10 +99,18 @@ def main(argv=None):
     return 0
 
 
-def _get_plugins_from_baseline(old_baseline):
+def _get_plugins_from_baseline(old_baseline, plugin_filenames=None):
+    """
+    :type plugin_filenames: tuple
+    :param plugin_filenames: the plugin filenames.
+    """
     plugins = []
+
     if old_baseline and 'plugins_used' in old_baseline:
-        secrets_collection = SecretsCollection.load_baseline_from_dict(old_baseline)
+        secrets_collection = SecretsCollection.load_baseline_from_dict(
+            old_baseline,
+            plugin_filenames,
+        )
         plugins = secrets_collection.plugins
     return plugins
 
@@ -141,7 +150,7 @@ def _perform_scan(args, plugins, automaton, word_list_hash):
     old_baseline = _get_existing_baseline(args.import_filename)
     if old_baseline:
         plugins = initialize.merge_plugins_from_baseline(
-            _get_plugins_from_baseline(old_baseline),
+            _get_plugins_from_baseline(old_baseline, tuple(args.plugin_filenames)),
             args,
             automaton=automaton,
         )

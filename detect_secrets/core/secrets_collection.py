@@ -68,11 +68,14 @@ class SecretsCollection:
             raise
 
     @classmethod
-    def load_baseline_from_dict(cls, data):
+    def load_baseline_from_dict(cls, data, plugin_filenames=None):
         """Initializes a SecretsCollection object from dictionary.
 
         :type data: dict
         :param data: properly formatted dictionary to load SecretsCollection from.
+
+        :type plugin_filenames: tuple
+        :param plugin_filenames: the plugin filenames.
 
         :rtype: SecretsCollection
         :raises: IOError
@@ -116,15 +119,16 @@ class SecretsCollection:
         plugins = []
         for plugin in data['plugins_used']:
             plugin_classname = plugin.pop('name')
-            plugins.append(
-                initialize.from_plugin_classname(
-                    plugin_classname,
-                    exclude_lines_regex=result.exclude_lines,
-                    automaton=automaton,
-                    should_verify_secrets=True,
-                    **plugin
-                ),
+            initialized_plugin_classname = initialize.from_plugin_classname(
+                plugin_classname,
+                exclude_lines_regex=result.exclude_lines,
+                automaton=automaton,
+                should_verify_secrets=True,
+                plugin_filenames=plugin_filenames,
+                **plugin,
             )
+            if initialized_plugin_classname is not None:
+                plugins.append(initialized_plugin_classname)
         result.plugins = tuple(plugins)
 
         for filename in data['results']:

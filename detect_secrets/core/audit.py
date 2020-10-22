@@ -680,6 +680,7 @@ def get_raw_secret_value(
     plugin_settings,
     file_handle,
     filename,
+    plugin_filenames=None,
 ):
     """
     :type secret: dict
@@ -694,10 +695,14 @@ def get_raw_secret_value(
     :type filename: str
     :param filename: this is needed, because PotentialSecret uses this
         as a means of comparing whether two secrets are equal.
+
+    :type plugin_filenames: tuple
+    :param plugin_filenames: the plugin filenames.
     """
     plugin = initialize.from_secret_type(
         secret['type'],
         plugin_settings,
+        plugin_filenames=plugin_filenames,
     )
 
     plugin_secrets = plugin.analyze(file_handle, filename)

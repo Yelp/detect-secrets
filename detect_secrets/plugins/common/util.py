@@ -8,17 +8,20 @@ from detect_secrets.util import get_root_directory
 
 
 @lru_cache(maxsize=1)
-def get_mapping_from_secret_type_to_class_name():
+def get_mapping_from_secret_type_to_class_name(plugin_filenames=None):
     """Returns secret_type => plugin classname"""
     return {
         plugin.secret_type: name
-        for name, plugin in import_plugins().items()
+        for name, plugin in import_plugins(plugin_filenames=plugin_filenames).items()
     }
 
 
 @lru_cache(maxsize=1)
-def import_plugins():
+def import_plugins(plugin_filenames=None):
     """
+    :type plugin_filenames: tuple
+    :param plugin_filenames: the plugin filenames.
+
     :rtype: Dict[str, Type[TypeVar('Plugin', bound=BasePlugin)]]
     """
     modules = []
@@ -34,20 +37,24 @@ def import_plugins():
 
     plugins = {}
     for module_name in modules:
-        module = import_module('detect_secrets.plugins.{}'.format(module_name))
-        for name in filter(lambda x: not x.startswith('_'), dir(module)):
-            plugin = getattr(module, name)
-            try:
-                if not issubclass(plugin, BasePlugin):
+        # If plugin_filenames is None, all of the plugins will get imported.
+        # Normal runs of this will have plugin_filenames set.
+        # plugin_filenames will be None if we are testing a method and don't pass it in.
+        if plugin_filenames is None or module_name in plugin_filenames:
+            module = import_module('detect_secrets.plugins.{}'.format(module_name))
+            for name in filter(lambda x: not x.startswith('_'), dir(module)):
+                plugin = getattr(module, name)
+                try:
+                    if not issubclass(plugin, BasePlugin):
+                        continue
+                except TypeError:
+                    # Occurs when plugin is not a class type.
                     continue
-            except TypeError:
-                # Occurs when plugin is not a class type.
-                continue
 
-            # Use this as a heuristic to determine abstract classes
-            if isinstance(plugin.secret_type, abstractproperty):
-                continue
+                # Use this as a heuristic to determine abstract classes
+                if isinstance(plugin.secret_type, abstractproperty):
+                    continue
 
-            plugins[name] = plugin
+                plugins[name] = plugin
 
     return plugins

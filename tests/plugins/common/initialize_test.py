@@ -17,11 +17,12 @@ class TestFromPluginClassname:
         assert isinstance(plugin, HexHighEntropyString)
         assert plugin.entropy_limit == 4
 
-    def test_fails_if_not_base_plugin(self):
-        with pytest.raises(TypeError):
-            initialize.from_plugin_classname(
-                'log',
-            )
+    def test_return_none_if_not_base_plugin(self):
+        plugin = initialize.from_plugin_classname(
+            'log',
+        )
+
+        assert not plugin
 
     def test_fails_on_bad_initialization(self):
         with mock.patch.object(

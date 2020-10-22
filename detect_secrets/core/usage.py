@@ -2,7 +2,6 @@ import argparse
 from collections import namedtuple
 
 from detect_secrets import VERSION
-from detect_secrets.plugins.common.util import import_plugins
 
 
 def add_exclude_lines_argument(parser):
@@ -315,6 +314,9 @@ class PluginDescriptor(
             # Therefore, only populate the default value upon consolidation
             # (rather than relying on argparse default).
             'related_args',
+
+            # The name of the plugin file
+            'filename',
         ],
     ),
 ):
@@ -364,8 +366,129 @@ class PluginDescriptor(
 class PluginOptions:
 
     all_plugins = [
-        PluginDescriptor.from_plugin_class(plugin, name)
-        for name, plugin in import_plugins().items()
+        PluginDescriptor(
+            classname='HexHighEntropyString',
+            disable_flag_text='--no-hex-string-scan',
+            disable_help_text='Disables scanning for hex high entropy strings',
+            related_args=[
+                ('--hex-limit', 3),
+            ],
+            filename='high_entropy_strings',
+        ),
+        PluginDescriptor(
+            classname='Base64HighEntropyString',
+            disable_flag_text='--no-base64-string-scan',
+            disable_help_text='Disables scanning for base64 high entropy strings',
+            related_args=[
+                ('--base64-limit', 4.5),
+            ],
+            filename='high_entropy_strings',
+        ),
+        PluginDescriptor(
+            classname='PrivateKeyDetector',
+            disable_flag_text='--no-private-key-scan',
+            disable_help_text='Disables scanning for private keys.',
+            filename='private_key',
+        ),
+        PluginDescriptor(
+            classname='BasicAuthDetector',
+            disable_flag_text='--no-basic-auth-scan',
+            disable_help_text='Disables scanning for Basic Auth formatted URIs.',
+            filename='basic_auth',
+        ),
+        PluginDescriptor(
+            classname='KeywordDetector',
+            disable_flag_text='--no-keyword-scan',
+            disable_help_text='Disables scanning for secret keywords.',
+            related_args=[
+                ('--keyword-exclude', None),
+            ],
+            filename='keyword',
+        ),
+        PluginDescriptor(
+            classname='AWSKeyDetector',
+            disable_flag_text='--no-aws-key-scan',
+            disable_help_text='Disables scanning for AWS keys.',
+            filename='aws',
+        ),
+        PluginDescriptor(
+            classname='SlackDetector',
+            disable_flag_text='--no-slack-scan',
+            disable_help_text='Disables scanning for Slack tokens.',
+            filename='slack',
+        ),
+        PluginDescriptor(
+            classname='ArtifactoryDetector',
+            disable_flag_text='--no-artifactory-scan',
+            disable_help_text='Disable scanning for Artifactory credentials',
+            filename='artifactory',
+        ),
+        PluginDescriptor(
+            classname='StripeDetector',
+            disable_flag_text='--no-stripe-scan',
+            disable_help_text='Disable scanning for Stripe keys',
+            filename='stripe',
+        ),
+        PluginDescriptor(
+            classname='MailchimpDetector',
+            disable_flag_text='--no-mailchimp-scan',
+            disable_help_text='Disable scanning for Mailchimp keys',
+            filename='mailchimp',
+        ),
+        PluginDescriptor(
+            classname='JwtTokenDetector',
+            disable_flag_text='--no-jwt-scan',
+            disable_help_text='Disable scanning for JWTs',
+            filename='jwt',
+        ),
+        PluginDescriptor(
+            classname='Db2Detector',
+            disable_flag_text='--no-db2-scan',
+            disable_help_text='Disable scanning for DB2 Tokens',
+            filename='db2',
+        ),
+        PluginDescriptor(
+            classname='BoxDetector',
+            disable_flag_text='--no-box-scan',
+            disable_help_text='Disables scans for Box credentials',
+            filename='box',
+        ),
+        PluginDescriptor(
+            classname='CloudantDetector',
+            disable_flag_text='--no-cloudant-scan',
+            disable_help_text='Disables scans for Cloudant credentials',
+            filename='cloudant',
+        ),
+        PluginDescriptor(
+            classname='GheDetector',
+            disable_flag_text='--no-ghe-scan',
+            disable_help_text='Disables scans for GitHub credentials',
+            filename='gh',
+        ),
+        PluginDescriptor(
+            classname='SoftlayerDetector',
+            disable_flag_text='--no-softlayer-scan',
+            disable_help_text='Disables scans for SoftLayer credentials',
+            filename='softlayer',
+        ),
+        PluginDescriptor(
+            classname='IbmCloudIamDetector',
+            disable_flag_text='--no-ibm-cloud-iam-scan',
+            disable_help_text='Disables scans for IBM Cloud IAM credentials',
+            filename='ibm_cloud_iam',
+        ),
+        PluginDescriptor(
+            classname='IbmCosHmacDetector',
+            disable_flag_text='--no-ibm-cos-hmac-scan',
+            disable_help_text='Disables scans for IBM Cloud Object Storage HMAC keys',
+            filename='ibm_cos_hmac',
+        ),
+        PluginDescriptor(
+            classname='TwilioKeyDetector',
+            disable_flag_text='--no-twilio-key-scan',
+            disable_help_text='Disables scans for Twilio API keys.',
+            filename='twilio',
+        ),
     ]
 
     def __init__(self, parser):
@@ -411,6 +534,7 @@ class PluginOptions:
             return
 
         active_plugins = {}
+        active_plugins_filenames = []
         is_using_default_value = {}
 
         for plugin in PluginOptions.all_plugins:
@@ -444,7 +568,12 @@ class PluginOptions:
                 plugin.classname: related_args,
             })
 
+        for plugin in PluginOptions.all_plugins:
+            if getattr(plugin, 'classname') in list(active_plugins):
+                active_plugins_filenames.append(getattr(plugin, 'filename'))
+
         args.plugins = active_plugins
+        args.plugin_filenames = tuple(active_plugins_filenames)
         args.is_using_default_value = is_using_default_value
 
     def _add_custom_limits(self):
