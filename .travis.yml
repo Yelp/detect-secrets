@@ -1,5 +1,7 @@
 language: python
-matrix:
+os: linux
+dist: xenial
+jobs:
     include:
         - env: TOXENV=py35
           python: 3.5
@@ -10,7 +12,10 @@ matrix:
           dist: xenial  # Required for Python >= 3.7 (travis-ci/travis-ci#9069)
         - env: TOXENV=py38
           python: 3.8
-          dist: xenial  # Required for Python >= 3.7 (travis-ci/travis-ci#9069)
+          dist: xenial
+        - env: TOXENV=py39
+          python: 3.9-dev
+          dist: focal
 install:
     - pip install tox
 script: make test
