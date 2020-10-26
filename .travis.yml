@@ -13,7 +13,7 @@ jobs:
           python: 3.8
           dist: xenial
         - env: TOXENV=py39
-          python: 3.9-dev
+          python: 3.9
           dist: focal
 install:
     - pip install tox
