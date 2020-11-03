@@ -3,7 +3,7 @@ from abc import ABCMeta
 from abc import abstractmethod
 from abc import abstractproperty
 
-from detect_secrets.core.code_snippet import CodeSnippetHighlighter
+from detect_secrets.audit.code_snippet import CodeSnippetHighlighter
 from detect_secrets.core.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.common.constants import ALLOWLIST_REGEXES

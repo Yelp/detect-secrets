@@ -12,8 +12,8 @@ from functools import lru_cache
 from ..util.color import AnsiColor
 from ..util.color import colorize
 from detect_secrets.audit.bidirectional_iterator import BidirectionalIterator
+from detect_secrets.audit.code_snippet import CodeSnippetHighlighter
 from detect_secrets.core.baseline import merge_results
-from detect_secrets.core.code_snippet import CodeSnippetHighlighter
 from detect_secrets.core.common import write_baseline_to_file
 from detect_secrets.plugins.common import initialize
 from detect_secrets.plugins.common.util import get_mapping_from_secret_type_to_class_name
