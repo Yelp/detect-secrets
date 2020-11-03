@@ -140,7 +140,7 @@ class BasePlugin:
             for result in results:
                 snippet = CodeSnippetHighlighter().get_code_snippet(
                     file_lines,
-                    result.lineno,
+                    result.line_number,
                     lines_of_context=LINES_OF_CONTEXT,
                 )
 

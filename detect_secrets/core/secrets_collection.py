@@ -137,7 +137,7 @@ class SecretsCollection:
                     item['type'],
                     filename,
                     secret='will be replaced',
-                    lineno=item['line_number'],
+                    line_number=item['line_number'],
                     is_secret=item.get('is_secret'),
                 )
                 secret.secret_hash = item['hashed_secret']

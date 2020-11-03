@@ -1,4 +1,8 @@
 import hashlib
+from typing import Any
+from typing import Dict
+from typing import Optional
+from typing import Union
 
 
 class PotentialSecret:
@@ -16,48 +20,37 @@ class PotentialSecret:
 
     def __init__(
         self,
-        typ,
-        filename,
-        secret,
-        lineno=0,
-        is_secret=None,
-    ):
+        type: str,
+        filename: str,
+        secret: str,
+        line_number: int = 0,
+        is_secret: Optional[bool] = None,
+        is_verified: bool = False,
+    ) -> None:
         """
-        :type typ: str
-        :param typ: human-readable secret type, defined by the plugin
-                    that generated this PotentialSecret.
-                    e.g. "High Entropy String"
-
-        :type filename: str
+        :param type: human-readable secret type, defined by the plugin
+            that generated this PotentialSecret. e.g. "High Entropy String"
         :param filename: name of file that this secret was found
-
-        :type secret: str
         :param secret: the actual secret identified
-
-        :type lineno: int
-        :param lineno: location of secret, within filename.
-                       Merely used as a reference for easy triage.
-
-        :type is_secret: bool|None
+        :param line_number: location of secret, within filename.
+            Merely used as a reference for easy triage.
         :param is_secret: whether or not the secret is a true- or false- positive
-
-        :type is_verified: bool
         :param is_verified: whether the secret has been externally verified
         """
-        self.type = typ
+        self.type = type
         self.filename = filename
-        self.lineno = lineno
+        self.line_number = line_number
         self.set_secret(secret)
         self.is_secret = is_secret
-        self.is_verified = False
+        self.is_verified = is_verified
 
         # If two PotentialSecrets have the same values for these fields,
         # they are considered equal. Note that line numbers aren't included
         # in this, because line numbers are subject to change.
         self.fields_to_compare = ['filename', 'secret_hash', 'type']
 
-    def set_secret(self, secret):
-        self.secret_hash = self.hash_secret(secret)
+    def set_secret(self, secret: str) -> None:
+        self.secret_hash: str = self.hash_secret(secret)
 
         # Note: Originally, we never wanted to keep the secret value in memory,
         #       after finding it in the codebase. However, to support verifiable
@@ -67,43 +60,67 @@ class PotentialSecret:
         #       This value should never appear in the baseline though, seeing that
         #       we don't want to create a file that contains all plaintext secrets
         #       in the repository.
-        self.secret_value = secret
+        self.secret_value: Optional[str] = secret
 
     @staticmethod
-    def hash_secret(secret):
-        """This offers a way to coherently test this class,
-        without mocking self.secret_hash.
-
-        :type secret: string
-        :rtype: string
-        """
+    def hash_secret(secret: str) -> str:
+        """This offers a way to coherently test this class, without mocking self.secret_hash."""
         return hashlib.sha1(secret.encode('utf-8')).hexdigest()
 
-    def json(self):
+    @classmethod
+    def load_secret_from_dict(cls, data: Dict[str, Union[str, int, bool]]) -> 'PotentialSecret':
+        """Custom JSON decoder"""
+        kwargs: Dict[str, Any] = {
+            'type': str(data['type']),
+            'filename': str(data['filename']),
+            'secret': 'will be replaced',
+        }
+
+        # Optional parameters
+        for parameter in {
+            'line_number',
+            'is_secret',
+            'is_verified',
+        }:
+            if data.get(parameter):
+                kwargs[parameter] = data[parameter]
+
+        output = cls(**kwargs)
+        output.secret_value = None
+        output.secret_hash = str(data['hashed_secret'])
+
+        return output
+
+    def json(self) -> Dict[str, Union[str, int, bool]]:
         """Custom JSON encoder"""
-        attributes = {
+        attributes: Dict[str, Union[str, int, bool]] = {
             'type': self.type,
             'filename': self.filename,
-            'line_number': self.lineno,
             'hashed_secret': self.secret_hash,
             'is_verified': self.is_verified,
         }
+
+        if self.line_number:
+            attributes['line_number'] = self.line_number
 
         if self.is_secret is not None:
             attributes['is_secret'] = self.is_secret
 
         return attributes
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, PotentialSecret):
+            return NotImplemented
+
         return all(
             getattr(self, field) == getattr(other, field)
             for field in self.fields_to_compare
         )
 
-    def __ne__(self, other):
+    def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(
             tuple(
                 getattr(self, x)
@@ -111,11 +128,8 @@ class PotentialSecret:
             ),
         )
 
-    def __str__(self):  # pragma: no cover
+    def __str__(self) -> str:
         return (
-            'Secret Type: %s\n'
-            'Location:    %s:%d\n'
-        ) % (
-            self.type,
-            self.filename, self.lineno,
+            f'Secret Type: {self.type}\n'
+            f'Location:    {self.filename}:{self.line_number}\n'
         )
