@@ -21,7 +21,7 @@ def get_mapping_from_secret_type_to_class() -> Dict[str, Type[Plugin]]:
     modules = [
         module
         for _, module, is_package in pkgutil.walk_packages(
-            plugins.__path__, prefix=f'{plugins.__name__}.',
+            plugins.__path__, prefix=f'{plugins.__name__}.',    # type: ignore  # mypy issue #1422
         )
         if not is_package
     ]

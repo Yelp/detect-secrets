@@ -1,3 +1,4 @@
+import json
 from functools import lru_cache
 from typing import Any
 from typing import Dict
@@ -11,6 +12,18 @@ def get_settings() -> 'Settings':
     to common variables.
     """
     return Settings()
+
+
+def configure_settings_from_baseline(filename: str) -> 'Settings':
+    """
+    :raises: FileNotFoundError
+    :raises: json.decoder.JSONDecodeError
+    :raises: KeyError
+    """
+    with open(filename) as f:
+        baseline = json.loads(f.read())
+
+    get_settings().configure_plugins(baseline['plugins_used'])
 
 
 class Settings:
@@ -30,5 +43,14 @@ class Settings:
             plugin = {**plugin}
             name = plugin.pop('name')
             self.plugins[name] = plugin
+
+        return self
+
+    def disable_plugins(self, *plugin_names: str) -> 'Settings':
+        for name in plugin_names:
+            try:
+                self.plugins.pop(name)
+            except KeyError:
+                pass
 
         return self
