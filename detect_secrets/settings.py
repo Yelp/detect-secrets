@@ -23,17 +23,37 @@ def configure_settings_from_baseline(filename: str) -> 'Settings':
     with open(filename) as f:
         baseline = json.loads(f.read())
 
-    get_settings().configure_plugins(baseline['plugins_used'])
-    return get_settings()
+    settings = get_settings()
+    settings.configure_plugins(baseline['plugins_used'])
+    settings.configure_filters(baseline['filters_used'])
+    settings.filters['detect_secrets.filters.common.is_baseline_file'] = {
+        'filename': filename,
+    }
+
+    return settings
 
 
 class Settings:
+    DEFAULT_FILTERS = {
+        'detect_secrets.filters.allowlist.is_line_allowlisted',
+        'detect_secrets.filters.common.is_invalid_file',
+        'detect_secrets.filters.heuristic.is_non_text_file',
+    }
+
     def __init__(self) -> None:
         # mapping of class names to initialization variables
         self.plugins: Dict[str, Dict[str, Any]] = {}
 
         # mapping of python import paths to configuration variables
-        self.filters: Dict[str, Dict[str, Any]] = {}
+        self.filters: Dict[str, Dict[str, Any]] = {
+            path: {}
+            for path in {
+                *self.DEFAULT_FILTERS,
+                'detect_secrets.filters.heuristic.is_sequential_string',
+                'detect_secrets.filters.heuristic.is_potential_uuid',
+                'detect_secrets.filters.heuristic.is_likely_id_string',
+            }
+        }
 
     def configure_plugins(self, config: List[Dict[str, Any]]) -> 'Settings':
         """
@@ -71,6 +91,11 @@ class Settings:
                 }
             ]
         """
+        self.filters = {
+            path: {}
+            for path in self.DEFAULT_FILTERS
+        }
+
         for filter_config in config:
             path = filter_config.pop('path')
             self.filters[path] = filter_config
@@ -92,5 +117,6 @@ class Settings:
                     **config,
                 }
                 for path, config in self.filters.items()
+                if path not in self.DEFAULT_FILTERS
             ],
         }

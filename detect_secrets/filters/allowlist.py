@@ -7,11 +7,11 @@ from typing import Pattern
 
 
 def is_line_allowlisted(filename: str, line: str) -> bool:
-    regexes = get_allowlist_regexes()
+    regexes = _get_allowlist_regexes()
 
     _, ext = os.path.splitext(filename)
-    if ext[1:] in get_file_based_allowlist_regexes():
-        regexes = get_file_based_allowlist_regexes()[ext[1:]]
+    if ext[1:] in _get_file_based_allowlist_regexes():
+        regexes = _get_file_based_allowlist_regexes()[ext[1:]]
 
     for regex in regexes:
         if regex.search(line):
@@ -21,17 +21,17 @@ def is_line_allowlisted(filename: str, line: str) -> bool:
 
 
 @lru_cache(maxsize=1)
-def get_file_based_allowlist_regexes() -> Dict[str, List[Pattern]]:
+def _get_file_based_allowlist_regexes() -> Dict[str, List[Pattern]]:
     # Add to this mapping (and ALLOWLIST_REGEXES if applicable) lazily,
     # as more language specific file parsers are implemented.
     # Discussion: https://github.com/Yelp/detect-secrets/pull/105
     return {
-        'yaml': [get_allowlist_regexes()[0]],
+        'yaml': [_get_allowlist_regexes()[0]],
     }
 
 
 @lru_cache(maxsize=1)
-def get_allowlist_regexes() -> List[Pattern]:
+def _get_allowlist_regexes() -> List[Pattern]:
     return [
         re.compile(r)
         for r in [
