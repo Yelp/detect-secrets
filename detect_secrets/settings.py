@@ -24,11 +24,16 @@ def configure_settings_from_baseline(filename: str) -> 'Settings':
         baseline = json.loads(f.read())
 
     get_settings().configure_plugins(baseline['plugins_used'])
+    return get_settings()
 
 
 class Settings:
     def __init__(self) -> None:
-        self.plugins: Dict[str, Any] = {}
+        # mapping of class names to initialization variables
+        self.plugins: Dict[str, Dict[str, Any]] = {}
+
+        # mapping of python import paths to configuration variables
+        self.filters: Dict[str, Dict[str, Any]] = {}
 
     def configure_plugins(self, config: List[Dict[str, Any]]) -> 'Settings':
         """
@@ -54,3 +59,38 @@ class Settings:
                 pass
 
         return self
+
+    def configure_filters(self, config: List[Dict[str, Any]]) -> 'Settings':
+        """
+        :param config: e.g.
+            [
+                {'path': 'detect_secrets.filters.heuristic.is_sequential_string'},
+                {
+                    'path': 'detect_secrets.filters.regex.should_exclude_files',
+                    'pattern': '^test.*',
+                }
+            ]
+        """
+        for filter_config in config:
+            path = filter_config.pop('path')
+            self.filters[path] = filter_config
+
+        return self
+
+    def json(self) -> Dict[str, Any]:
+        return {
+            'plugins_used': [
+                {
+                    'name': name,
+                    **config,
+                }
+                for name, config in self.plugins.items()
+            ],
+            'filters_used': [
+                {
+                    'path': path,
+                    **config,
+                }
+                for path, config in self.filters.items()
+            ],
+        }

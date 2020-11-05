@@ -6,7 +6,7 @@ from ..plugins.util import get_mapping_from_secret_type_to_class
 
 
 def valid_path(path: str) -> str:
-    if not os.path.exists(path):
+    if not os.path.isfile(path):
         raise argparse.ArgumentTypeError(
             f'Invalid path: {path}',
         )
