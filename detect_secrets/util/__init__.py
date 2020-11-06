@@ -48,20 +48,6 @@ def get_root_directory():  # pragma: no cover
     )
 
 
-def get_relative_path_if_in_cwd(root, filepath):
-    """Returns relative path, after following symlinks,
-    if in current working directory.
-
-    :rtype: str|None
-    """
-    filepath = os.path.realpath(
-        os.path.join(root, filepath),
-    )[len(os.getcwd() + '/'):]
-    if os.path.isfile(filepath):
-        return filepath
-    return None
-
-
 def get_git_sha(path):
     """Returns the sha of the git checkout at the input path.
 

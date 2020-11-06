@@ -5,16 +5,12 @@ from unittest import mock
 import pytest
 
 import detect_secrets
-from detect_secrets.core.secrets_collection import get_filters
-from detect_secrets.core.secrets_collection import get_plugins
-from detect_secrets.settings import get_settings
+from detect_secrets import settings
 
 
 @pytest.fixture(autouse=True)
 def clear_cache():
-    get_settings.cache_clear()
-    get_filters.cache_clear()
-    get_plugins.cache_clear()
+    settings.cache_bust()
 
 
 @pytest.fixture(autouse=True)

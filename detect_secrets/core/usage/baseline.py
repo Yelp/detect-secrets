@@ -1,7 +1,7 @@
 import argparse
 import json
 
-from ...settings import configure_settings_from_baseline
+from .. import baseline
 from .common import initialize_plugin_settings
 from .common import valid_path
 
@@ -20,11 +20,13 @@ def parse_args(args: argparse.Namespace) -> None:
     if not hasattr(args, 'baseline') or not args.baseline:
         return initialize_plugin_settings(args)
 
-    args.baseline = args.baseline[0]
-
     try:
-        configure_settings_from_baseline(args.baseline)
+        with open(args.baseline[0]) as f:
+            loaded_baseline = json.loads(f.read())
     except (FileNotFoundError, json.decoder.JSONDecodeError):
         raise argparse.ArgumentTypeError('Unable to read baseline.')
+
+    try:
+        args.baseline = baseline.load(loaded_baseline)
     except KeyError:
         raise argparse.ArgumentTypeError('Invalid baseline.')

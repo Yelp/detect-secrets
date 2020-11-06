@@ -10,7 +10,7 @@ from . import filters
 from . import plugins
 from . import scan
 from .common import initialize_plugin_settings
-from detect_secrets import VERSION
+from detect_secrets.__version__ import VERSION
 
 
 class ParserBuilder:

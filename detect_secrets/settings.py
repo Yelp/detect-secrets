@@ -1,7 +1,8 @@
-import json
+from contextlib import contextmanager
 from functools import lru_cache
 from typing import Any
 from typing import Dict
+from typing import Generator
 from typing import List
 
 
@@ -14,23 +15,46 @@ def get_settings() -> 'Settings':
     return Settings()
 
 
-def configure_settings_from_baseline(filename: str) -> 'Settings':
+def configure_settings_from_baseline(baseline: Dict[str, Any], filename: str = '') -> 'Settings':
     """
-    :raises: FileNotFoundError
-    :raises: json.decoder.JSONDecodeError
     :raises: KeyError
     """
-    with open(filename) as f:
-        baseline = json.loads(f.read())
-
     settings = get_settings()
-    settings.configure_plugins(baseline['plugins_used'])
-    settings.configure_filters(baseline['filters_used'])
-    settings.filters['detect_secrets.filters.common.is_baseline_file'] = {
-        'filename': filename,
-    }
+
+    if 'plugins_used' in baseline:
+        settings.configure_plugins(baseline['plugins_used'])
+
+    if 'filters_used' in baseline:
+        settings.configure_filters(baseline['filters_used'])
+
+    if filename:
+        settings.filters['detect_secrets.filters.common.is_baseline_file'] = {
+            'filename': filename,
+        }
 
     return settings
+
+
+@contextmanager
+def transient_settings(config: Dict[str, Any]) -> Generator['Settings', None, None]:
+    """Allows the customizability of non-global settings per invocation."""
+    original_settings = get_settings().json()
+
+    cache_bust()
+    try:
+        yield configure_settings_from_baseline(config)
+    finally:
+        cache_bust()
+        configure_settings_from_baseline(original_settings)
+
+
+def cache_bust() -> None:
+    from detect_secrets.core.secrets_collection import get_filters
+    from detect_secrets.core.secrets_collection import get_plugins
+
+    get_settings.cache_clear()
+    get_filters.cache_clear()
+    get_plugins.cache_clear()
 
 
 class Settings:

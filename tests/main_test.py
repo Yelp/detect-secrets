@@ -6,7 +6,7 @@ import mock
 import pytest
 
 from detect_secrets import main as main_module
-from detect_secrets import VERSION
+from detect_secrets.__version__ import VERSION
 from detect_secrets.core import audit as audit_module
 from detect_secrets.plugins.common.util import import_plugins
 from testing.factories import secrets_collection_factory
