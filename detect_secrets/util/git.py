@@ -29,3 +29,13 @@ def get_tracked_files(root: str) -> Set[str]:
         pass
 
     return output
+
+
+def get_changed_but_unstaged_files() -> Set[str]:
+    try:
+        files = subprocess.check_output('git diff --name-only'.split()).decode().split()
+    except subprocess.CalledProcessError:   # pragma: no cover
+        # Since we don't pipe stderr, we get free logging through git.
+        raise ValueError
+
+    return set(files)

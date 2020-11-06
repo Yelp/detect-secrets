@@ -191,6 +191,9 @@ def test_bool():
     secrets.scan_file('test_data/each_secret.py')
     assert secrets
 
+    secrets['test_data/each_secret.py'].clear()
+    assert not secrets
+
 
 class TestEqual:
     @staticmethod

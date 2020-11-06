@@ -27,6 +27,8 @@ def parse_args(args: argparse.Namespace) -> None:
         raise argparse.ArgumentTypeError('Unable to read baseline.')
 
     try:
-        args.baseline = baseline.load(loaded_baseline)
+        args.baseline_filename = args.baseline[0]
+        args.baseline_version = loaded_baseline['version']
+        args.baseline = baseline.load(loaded_baseline, filename=args.baseline_filename)
     except KeyError:
         raise argparse.ArgumentTypeError('Invalid baseline.')

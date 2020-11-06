@@ -1,3 +1,4 @@
+import json
 import os
 import time
 from typing import Any
@@ -70,3 +71,8 @@ def format_for_output(secrets: SecretsCollection) -> Dict[str, Any]:
         # This will populate settings of filters and plugins,
         **get_settings().json(),
     }
+
+
+def save_to_file(secrets: SecretsCollection, filename: str) -> None:    # pragma: no cover
+    with open(filename, 'w') as f:
+        f.write(json.dumps(format_for_output(secrets), indent=2) + '\n')

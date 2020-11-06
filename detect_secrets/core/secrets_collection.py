@@ -181,7 +181,9 @@ class SecretsCollection:
                 yield filename, secret
 
     def __bool__(self) -> bool:
-        return bool(self.data)
+        # This checks whether there are secrets, rather than just empty files.
+        # Empty files can occur with SecretsCollection subtraction.
+        return bool(list(self))
 
     def __eq__(self, other: Any, strict: bool = False) -> bool:
         """

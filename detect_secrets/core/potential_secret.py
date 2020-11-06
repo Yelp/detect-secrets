@@ -4,6 +4,9 @@ from typing import Dict
 from typing import Optional
 from typing import Union
 
+from ..util.color import AnsiColor
+from ..util.color import colorize
+
 
 class PotentialSecret:
     """This custom data type represents a string found, matching the
@@ -130,6 +133,6 @@ class PotentialSecret:
 
     def __str__(self) -> str:
         return (
-            f'Secret Type: {self.type}\n'
+            f'Secret Type: {colorize(self.type, AnsiColor.BOLD)}\n'
             f'Location:    {self.filename}:{self.line_number}\n'
         )
