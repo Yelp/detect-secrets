@@ -49,8 +49,8 @@ def transient_settings(config: Dict[str, Any]) -> Generator['Settings', None, No
 
 
 def cache_bust() -> None:
-    from detect_secrets.core.secrets_collection import get_filters
-    from detect_secrets.core.secrets_collection import get_plugins
+    from detect_secrets.core.scan import get_filters
+    from detect_secrets.core.scan import get_plugins
 
     get_settings.cache_clear()
     get_filters.cache_clear()

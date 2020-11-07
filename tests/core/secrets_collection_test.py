@@ -37,7 +37,7 @@ class TestScanFile:
     @staticmethod
     def test_error_reading_file(mock_log):
         with mock.patch(
-            'detect_secrets.core.secrets_collection.open',
+            'detect_secrets.core.scan.open',
             side_effect=IOError,
         ):
             SecretsCollection().scan_file('test_data/config.env')
@@ -68,9 +68,11 @@ class TestScanFile:
         assert len(secrets['test_data/each_secret.py']) == 1
 
     @staticmethod
-    @pytest.mark.skip(reason='TODO')
     def test_file_based_success():
-        pass
+        secrets = SecretsCollection()
+        secrets.scan_file('test_data/config.env')
+
+        assert bool(secrets)
 
 
 class TestScanDiff:

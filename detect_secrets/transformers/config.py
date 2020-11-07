@@ -1,9 +1,64 @@
+"""
+This handles `.ini` files, or more generally known as `config` files.
+"""
 import configparser
 import re
 from typing import Generator
 from typing import IO
 from typing import List
 from typing import Tuple
+
+from ..util.filetype import determine_file_type
+from ..util.filetype import FileType
+from .base import BaseTransformer
+from .exceptions import ParsingError
+
+
+class ConfigFileTransformer(BaseTransformer):
+    def should_parse_file(self, filename: str) -> bool:
+        return True
+
+    def parse_file(self, file: IO) -> List[str]:
+        try:
+            return _parse_file(file)
+        except configparser.Error:
+            raise ParsingError
+
+
+class EagerConfigFileTransformer(BaseTransformer):
+    # NOTE: Currently eager, since `determine_file_type` is minimalistic right now.
+    is_eager = True
+
+    def should_parse_file(self, filename: str) -> bool:
+        return determine_file_type(filename) == FileType.OTHER
+
+    def parse_file(self, file: IO) -> List[str]:
+        try:
+            return _parse_file(file, add_header=True)
+        except configparser.Error:
+            raise ParsingError
+
+
+def _parse_file(file: IO, add_header: bool = False) -> List[str]:
+    """
+    :raises: configparser.Error
+    """
+    lines: List[str] = []
+    for key, value, line_number in IniFileParser(file, add_header=add_header):
+        while len(lines) < line_number - 1:
+            lines.append('')
+
+        # We artificially add quotes here because we know they are strings
+        # (because it's a config file), HighEntropyString will benefit from this,
+        # and all other plugins don't care.
+        if value[0] in {"'", '"'} and value[-1] == value[0]:
+            # Strip out quotes, because we'll add our own.
+            value = value[1:-1]
+
+        value = value.replace('"', '\\"')
+        lines.append(f'{key} = "{value}"')
+
+    return lines
 
 
 class EfficientParsingError(configparser.ParsingError):
@@ -18,7 +73,7 @@ class EfficientParsingError(configparser.ParsingError):
         return
 
 
-configparser.ParsingError = EfficientParsingError
+configparser.ParsingError = EfficientParsingError       # type: ignore
 
 
 class IniFileParser:
@@ -30,7 +85,7 @@ class IniFileParser:
         :param add_header: whether or not to add a top-level [global] header.
         """
         self.parser = configparser.ConfigParser()
-        self.parser.optionxform = str
+        self.parser.optionxform = str  # type: ignore
 
         content = file.read()
         if add_header:

@@ -1,21 +1,13 @@
 from collections import defaultdict
-from functools import lru_cache
-from importlib import import_module
 from typing import Any
-from typing import Callable
 from typing import Dict
 from typing import Generator
-from typing import IO
 from typing import List
 from typing import Optional
 from typing import Set
 from typing import Tuple
 
-from . import plugins
-from ..settings import get_settings
-from ..types import SelfAwareCallable
-from .log import log
-from .plugins.util import Plugin
+from . import scan
 from .potential_secret import PotentialSecret
 
 
@@ -46,54 +38,21 @@ class SecretsCollection:
         return set(self.data.keys())
 
     def scan_file(self, filename: str) -> None:
-        if not get_plugins():       # pragma: no cover
-            log.warning('No plugins to scan with!')
-            return
-
-        # First, we filter on filename, so that we can skip whole files if we've filtered
-        # them out.
-        for filter_fn in get_filters():
-            if _inject_variables(filter_fn, filename=filename):
-                log.info(f'Skipping "{filename}" due to "{filter_fn.path}"')
-                return
-
-        try:
-            with open(filename) as f:
-                for secret in _iterate_through_secrets_in_file(f):
-                    self[filename].add(secret)
-        except IOError:
-            log.warning(f'Unable to open file: {filename}')
+        for secret in scan.scan_file(filename):
+            self[secret.filename].add(secret)
 
     def scan_diff(self, diff: str) -> None:
         """
         :raises: UnidiffParseError
         """
-        if not get_plugins():       # pragma: no cover
-            log.warning('No plugins to scan with!')
-            return
-
-        # Local imports, so that we don't need to require unidiff for versions of
-        # detect-secrets that don't use it.
         try:
-            from unidiff import PatchSet
+            for secret in scan.scan_diff(diff):
+                self[secret.filename].add(secret)
         except ImportError:     # pragma: no cover
             raise NotImplementedError(
                 'SecretsCollection.scan_diff requires `unidiff` to work. Try pip '
                 'installing that package, and try again.',
             )
-
-        filters = get_filters()
-        patch_set = PatchSet.from_string(diff)
-        for patch_file in patch_set:
-            filename = patch_file.path
-
-            for filter_fn in filters:
-                if _inject_variables(filter_fn, filename=filename):
-                    log.info(f'Skipping "{filename}" due to "{filter_fn.path}"')
-                    break
-            else:
-                for secret in _iterate_through_secrets_in_patch_file(patch_file):
-                    self[filename].add(secret)
 
     def trim(
         self,
@@ -238,134 +197,3 @@ class SecretsCollection:
             output[filename] = self[filename] - other[filename]
 
         return output
-
-
-@lru_cache(maxsize=1)
-def get_plugins() -> List[Plugin]:
-    return [
-        plugins.initialize.from_plugin_classname(classname)
-        for classname in get_settings().plugins
-    ]
-
-
-@lru_cache(maxsize=1)
-def get_filters() -> List[SelfAwareCallable]:
-    output = []
-    for path, config in get_settings().filters.items():
-        module_path, function_name = path.rsplit('.', 1)
-        try:
-            function = getattr(import_module(module_path), function_name)
-        except (ModuleNotFoundError, AttributeError):
-            log.warn(f'Invalid filter: {path}')
-            continue
-
-        # We attach this metadata to the function itself, so that we don't need to
-        # compute it everytime. This will allow for dependency injection for filters.
-        function.injectable_variables = set(_get_injectable_variables(function))
-        output.append(function)
-
-        # This is for better logging.
-        function.path = path
-
-    return output
-
-
-def _get_injectable_variables(func: Callable) -> Tuple[str, ...]:
-    """
-    The easiest way to understand this is to see it as an example:
-        >>> def func(a, b=1, *args, c, d=2, **kwargs):
-        ...     e = 5
-        >>>
-        >>> print(func.__code__.co_varnames)
-        ('a', 'b', 'c', 'd', 'args', 'kwargs', 'e')
-        >>> print(func.__code__.co_argcount)    # `a` and `b`
-        2
-        >>> print(func.__code__.co_kwonlyargcount)  # `c` and `d`
-        2
-    """
-    variable_names = func.__code__.co_varnames
-    arg_count = func.__code__.co_argcount + func.__code__.co_kwonlyargcount
-
-    return variable_names[:arg_count]
-
-
-def _inject_variables(func: SelfAwareCallable, **kwargs: Any) -> Any:
-    variables_to_inject = set(kwargs.keys())
-    values = {
-        key: kwargs[key]
-        for key in (variables_to_inject & func.injectable_variables)
-    }
-
-    if set(values.keys()) != func.injectable_variables:
-        return
-
-    return func(**values)
-
-
-def _iterate_through_secrets_in_file(file: IO) -> Generator[PotentialSecret, None, None]:
-    log.info(f'Checking file: {file.name}')
-
-    for secret in _process_line_based_plugins(file.readlines(), filename=file.name):
-        yield secret
-
-    file.seek(0)
-
-    for secret in _process_file_based_plugins(file):
-        yield secret
-
-
-def _iterate_through_secrets_in_patch_file(
-    patch_file: PatchedFile,
-) -> Generator[PotentialSecret, None, None]:
-    for secret in _process_line_based_plugins(
-        [
-            line.value
-            for chunk in patch_file
-            # target_lines refers to incoming (new) changes
-            for line in chunk.target_lines()
-            if line.is_added
-        ],
-        filename=patch_file.path,
-    ):
-        yield secret
-
-
-def _process_line_based_plugins(
-    lines: List[str],
-    filename: str,
-) -> Generator[PotentialSecret, None, None]:
-    for index, line in enumerate(lines):
-        line = line.rstrip()
-
-        # Next, we apply line-specific filters, and see whether that allows us to quit early.
-        if any([
-            _inject_variables(filter_fn, filename=filename, line=line)
-            for filter_fn in get_filters()
-        ]):
-            continue
-
-        for plugin in get_plugins():
-            secrets = plugin.analyze_line(line, line_num=index + 1, filename=filename)
-            if not secrets:
-                continue
-
-            for secret in secrets:
-                # Lastly, we apply (filename, line, secret) filters, and see if we should consider
-                # the result an actual secret.
-                if any([
-                    _inject_variables(
-                        filter_fn,
-                        filename=filename,
-                        line=line,
-                        secret=secret.secret_value,
-                    )
-                    for filter_fn in get_filters()
-                ]):
-                    continue
-
-                yield secret
-
-
-def _process_file_based_plugins(file: IO) -> Generator[PotentialSecret, None, None]:
-    # TODO
-    return []
