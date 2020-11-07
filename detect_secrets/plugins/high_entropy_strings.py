@@ -85,6 +85,12 @@ class HighEntropyStringsPlugin(BasePlugin, metaclass=ABCMeta):
         entropy = round(self.calculate_shannon_entropy(secret.secret_value), 3)
         return f'True  ({entropy})'
 
+    def json(self) -> Dict[str, Any]:
+        return {
+            **super().json(),
+            'limit': self.entropy_limit,
+        }
+
     @contextmanager
     def non_quoted_string_regex(self, is_exact_match: bool = True) -> ContextManager:
         """
@@ -114,7 +120,7 @@ class Base64HighEntropyString(HighEntropyStringsPlugin):
     """Scans for random-looking base64 encoded strings."""
     secret_type = 'Base64 High Entropy String'
 
-    def __init__(self, base64_limit: float = 4.5) -> None:
+    def __init__(self, limit: float = 4.5) -> None:
         super().__init__(
             charset=(
                 string.ascii_letters
@@ -123,14 +129,8 @@ class Base64HighEntropyString(HighEntropyStringsPlugin):
                 + '\\-_'  # Url-safe base64
                 + '='  # Padding
             ),
-            limit=base64_limit,
+            limit=limit,
         )
-
-    def json(self) -> Dict[str, Any]:
-        return {
-            **super().json(),
-            'base64_limit': self.entropy_limit,
-        }
 
 
 class HexHighEntropyString(HighEntropyStringsPlugin):
@@ -138,10 +138,10 @@ class HexHighEntropyString(HighEntropyStringsPlugin):
 
     secret_type = 'Hex High Entropy String'
 
-    def __init__(self, hex_limit: float = 3) -> None:
+    def __init__(self, limit: float = 3.0) -> None:
         super().__init__(
             charset=string.hexdigits,
-            limit=hex_limit,
+            limit=limit,
         )
 
     def calculate_shannon_entropy(self, data: str) -> float:
@@ -174,9 +174,3 @@ class HexHighEntropyString(HighEntropyStringsPlugin):
             pass
 
         return entropy
-
-    def json(self) -> Dict[str, Any]:
-        return {
-            **super().json(),
-            'hex_limit': self.entropy_limit,
-        }

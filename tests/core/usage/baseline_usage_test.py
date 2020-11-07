@@ -37,15 +37,17 @@ def test_invalid_baseline(parser):
 
 def test_success(parser):
     baseline = {
+        'version': '0.0.1',
         'plugins_used': [
             {
                 'name': 'AWSKeyDetector',
             },
             {
-                'base64_limit': 3,
+                'limit': 3,
                 'name': 'Base64HighEntropyString',
             },
         ],
+        'results': [],
     }
 
     with _mock_file(json.dumps(baseline)) as filename:
@@ -53,7 +55,7 @@ def test_success(parser):
 
     assert len(get_settings().plugins) == 2
     assert 'AWSKeyDetector' in get_settings().plugins
-    assert get_settings().plugins['Base64HighEntropyString'] == {'base64_limit': 3}
+    assert get_settings().plugins['Base64HighEntropyString'] == {'limit': 3}
 
 
 @contextmanager

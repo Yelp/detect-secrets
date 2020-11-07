@@ -21,7 +21,7 @@ class TestAddCustomLimits:
     def test_success(parser):
         parser.parse_args(['--base64-limit', '5'])
 
-        assert get_settings().plugins['Base64HighEntropyString']['base64_limit'] == 5.0
+        assert get_settings().plugins['Base64HighEntropyString']['limit'] == 5.0
 
     @staticmethod
     @pytest.mark.parametrize(
@@ -47,38 +47,42 @@ class TestAddCustomLimits:
         with tempfile.NamedTemporaryFile() as f:
             f.write(
                 json.dumps({
+                    'version': '0.0.1',
                     'plugins_used': [
                         {
                             'name': 'Base64HighEntropyString',
-                            'base64_limit': 3,
+                            'limit': 3,
                         },
                     ],
+                    'results': [],
                 }).encode(),
             )
             f.seek(0)
 
             parser.parse_args(['--baseline', f.name])
 
-        assert get_settings().plugins['Base64HighEntropyString'] == {'base64_limit': 3}
+        assert get_settings().plugins['Base64HighEntropyString'] == {'limit': 3}
 
     @staticmethod
     def test_precedence_with_baseline_and_explicit_value(parser):
         with tempfile.NamedTemporaryFile() as f:
             f.write(
                 json.dumps({
+                    'version': '0.0.1',
                     'plugins_used': [
                         {
                             'name': 'Base64HighEntropyString',
-                            'base64_limit': 3,
+                            'limit': 3,
                         },
                     ],
+                    'results': [],
                 }).encode(),
             )
             f.seek(0)
 
             parser.parse_args(['--baseline', f.name, '--base64-limit', '5'])
 
-        assert get_settings().plugins['Base64HighEntropyString'] == {'base64_limit': 5}
+        assert get_settings().plugins['Base64HighEntropyString'] == {'limit': 5}
 
 
 class TestAddDisableFlag:
@@ -107,15 +111,17 @@ class TestAddDisableFlag:
         with tempfile.NamedTemporaryFile() as f:
             f.write(
                 json.dumps({
+                    'version': '0.0.1',
                     'plugins_used': [
                         {
                             'name': 'Base64HighEntropyString',
-                            'base64_limit': 3,
+                            'limit': 3,
                         },
                         {
                             'name': 'AWSKeyDetector',
                         },
                     ],
+                    'results': [],
                 }).encode(),
             )
             f.seek(0)

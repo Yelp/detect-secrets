@@ -2,7 +2,6 @@ import pytest
 
 from detect_secrets.core.plugins import initialize
 from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
-from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
 from detect_secrets.plugins.private_key import PrivateKeyDetector
 from detect_secrets.settings import get_settings
 
@@ -12,7 +11,7 @@ def setup_settings():
     get_settings().configure_plugins([
         {
             'name': 'Base64HighEntropyString',
-            'base64_limit': 3,
+            'limit': 3,
         },
         {
             'name': 'PrivateKeyDetector',
@@ -44,7 +43,7 @@ class TestFromSecretType:
     @staticmethod
     def test_secret_type_not_in_settings():
         with pytest.raises(TypeError):
-            initialize.from_secret_type(HexHighEntropyString.secret_type)
+            initialize.from_secret_type('does not exist')
 
 
 class TestFromPluginClassName:

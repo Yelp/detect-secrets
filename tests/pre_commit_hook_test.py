@@ -13,7 +13,7 @@ from detect_secrets.settings import transient_settings
 @pytest.fixture(autouse=True)
 def configure_settings():
     with transient_settings({
-        'plugins_used': [{'name': 'Base64HighEntropyString', 'base64_limit': 4.5}],
+        'plugins_used': [{'name': 'Base64HighEntropyString', 'limit': 4.5}],
     }):
         yield
 

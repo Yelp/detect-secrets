@@ -15,11 +15,11 @@ def configure_plugins():
     get_settings().configure_plugins([
         {
             'name': 'Base64HighEntropyString',
-            'base64_limit': 4.5,
+            'limit': 4.5,
         },
         {
             'name': 'HexHighEntropyString',
-            'hex_limit': 3,
+            'limit': 3,
         },
     ])
 

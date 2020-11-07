@@ -89,7 +89,7 @@ def parse_args(args: argparse.Namespace) -> None:
     #
     # Default values will be applied at the plugin level.
     if args.base64_limit:
-        get_settings().plugins['Base64HighEntropyString']['base64_limit'] = args.base64_limit
+        get_settings().plugins['Base64HighEntropyString']['limit'] = args.base64_limit
 
     if args.hex_limit:
-        get_settings().plugins['HexHighEntropyString']['hex_limit'] = args.hex_limit
+        get_settings().plugins['HexHighEntropyString']['limit'] = args.hex_limit

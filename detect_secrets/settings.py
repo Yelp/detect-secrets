@@ -84,7 +84,7 @@ class Settings:
         :param config: e.g.
             [
                 {'name': 'AWSKeyDetector'},
-                {'base64_limit': 4.5, 'name': 'Base64HighEntropyString'}
+                {'limit': 4.5, 'name': 'Base64HighEntropyString'}
             ]
         """
         for plugin in config:

@@ -15,7 +15,7 @@ def configure_plugins():
             {'name': 'AWSKeyDetector'},
             {
                 'name': 'Base64HighEntropyString',
-                'base64_limit': 4.5,
+                'limit': 4.5,
             },
         ],
     }
@@ -72,7 +72,7 @@ class TestScanFile:
         get_settings().configure_plugins([
             {
                 'name': 'Base64HighEntropyString',
-                'base64_limit': 3.0,
+                'limit': 3.0,
             },
         ])
         secrets = SecretsCollection()
@@ -93,7 +93,7 @@ class TestScanFile:
         get_settings().configure_plugins([
             {
                 'name': 'HexHighEntropyString',
-                'hex_limit': 3.0,
+                'limit': 3.0,
             },
         ])
         secrets = SecretsCollection()
@@ -152,7 +152,7 @@ class TestScanDiff:
             'plugins_used': [
                 {
                     'name': 'HexHighEntropyString',
-                    'hex_limit': 3,
+                    'limit': 3,
                 },
             ],
             'filters_used': [],
