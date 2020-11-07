@@ -50,7 +50,15 @@ class YAMLTransformer(BaseTransformer):
             if matches:
                 comment = matches.group(0)
 
-            lines.append(f'{item.key}: {value}{comment}')
+            # YAML does the parsing for us, and the value we'll receive is a string proper
+            # (rather than the raw value, like `ConfigFileTransformer`). We want to artifically
+            # add quotes here since we know they are strings, HighEntropyString will benefit
+            # from this, and all other plugins don't care.
+            #
+            # However, if there is a quote inside, we need to escape it.
+            value = value.replace('"', '\\"')
+
+            lines.append(f'{item.key}: "{value}"{comment}')
 
         return lines
 

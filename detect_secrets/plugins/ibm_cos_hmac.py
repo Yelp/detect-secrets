@@ -4,8 +4,8 @@ import hmac
 
 import requests
 
-from detect_secrets.core.constants import VerifiedResult
-from detect_secrets.plugins.base import RegexBasedDetector
+from ..constants import VerifiedResult
+from .base import RegexBasedDetector
 
 
 class IbmCosHmacDetector(RegexBasedDetector):
@@ -22,7 +22,7 @@ class IbmCosHmacDetector(RegexBasedDetector):
     password_keyword = r'(?:secret[-_]?(?:access)?[-_]?key)'
     password = r'([a-f0-9]{48}(?![a-f0-9]))'
     denylist = (
-        RegexBasedDetector.assign_regex_generator(
+        RegexBasedDetector.build_assignment_regex(
             prefix_regex=token_prefix,
             secret_keyword_regex=password_keyword,
             secret_regex=password,
@@ -52,7 +52,7 @@ def find_access_key_id(context):
     key_id_keyword_regex = r'(?:access[-_]?(?:key)?[-_]?(?:id)?|key[-_]?id)'
     key_id_regex = r'([a-f0-9]{32})'
 
-    regex = RegexBasedDetector.assign_regex_generator(
+    regex = RegexBasedDetector.build_assignment_regex(
         prefix_regex=IbmCosHmacDetector.token_prefix,
         secret_keyword_regex=key_id_keyword_regex,
         secret_regex=key_id_regex,

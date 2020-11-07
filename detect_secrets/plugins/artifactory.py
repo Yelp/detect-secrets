@@ -1,6 +1,6 @@
 import re
 
-from detect_secrets.plugins.base import RegexBasedDetector
+from .base import RegexBasedDetector
 
 
 class ArtifactoryDetector(RegexBasedDetector):

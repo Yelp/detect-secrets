@@ -1,13 +1,12 @@
 import pytest
 
 from detect_secrets.plugins.mailchimp import MailchimpDetector
-from testing.mocks import mock_file_object
 
 
 class TestMailchimpKeyDetector:
 
     @pytest.mark.parametrize(
-        'file_content,should_flag',
+        'line,should_flag',
         [
             (
                 '343ea45721923ed956e2b38c31db76aa-us30',
@@ -35,11 +34,8 @@ class TestMailchimpKeyDetector:
             ),
         ],
     )
-    def test_analyze(self, file_content, should_flag):
+    def test_analyze(self, line, should_flag):
         logic = MailchimpDetector()
 
-        f = mock_file_object(file_content)
-        output = logic.analyze(f, 'mock_filename')
+        output = logic.analyze_line(filename='mock_filename', line=line)
         assert len(output) == (1 if should_flag else 0)
-        for potential_secret in output:
-            assert 'mock_filename' == potential_secret.filename

@@ -115,15 +115,11 @@ class SecretsCollection:
 
     def json(self) -> Dict[str, Any]:
         """Custom JSON encoder"""
-        output = {}
-        for filename, secrets in self.data.items():
-            output[filename] = sorted(
-                [secret.json() for secret in secrets],
-                # TODO: Handle cases when line numbers are not supplied
-                key=lambda x: x['line_number'],
-            )
+        output = defaultdict(list)
+        for filename, secret in self:
+            output[filename].append(secret.json())
 
-        return output
+        return dict(output)
 
     def exactly_equals(self, other: Any) -> bool:
         return self.__eq__(other, strict=True)      # type: ignore
@@ -136,7 +132,8 @@ class SecretsCollection:
 
     def __iter__(self) -> Generator[Tuple[str, PotentialSecret], None, None]:
         for filename, secrets in self.data.items():
-            for secret in secrets:
+            # TODO: Handle cases when line numbers are not supplied
+            for secret in sorted(secrets, key=lambda x: x.line_number):
                 yield filename, secret
 
     def __bool__(self) -> bool:

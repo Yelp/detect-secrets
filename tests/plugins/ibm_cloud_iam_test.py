@@ -1,7 +1,7 @@
 import pytest
 import responses
 
-from detect_secrets.core.constants import VerifiedResult
+from detect_secrets.constants import VerifiedResult
 from detect_secrets.plugins.ibm_cloud_iam import IbmCloudIamDetector
 
 
@@ -58,10 +58,10 @@ class TestIBMCloudIamDetector:
     def test_analyze_string_content(self, payload, should_flag):
         logic = IbmCloudIamDetector()
 
-        output = logic.analyze_string_content(payload, 1, 'mock_filename')
+        output = logic.analyze_line(filename='mock_filename', line=payload)
         assert len(output) == (1 if should_flag else 0)
         if should_flag:
-            assert list(output.values())[0].secret_value == CLOUD_IAM_KEY
+            assert list(output)[0].secret_value == CLOUD_IAM_KEY
 
     @responses.activate
     def test_verify_invalid_secret(self):

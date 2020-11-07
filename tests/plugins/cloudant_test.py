@@ -3,7 +3,7 @@ import textwrap
 import pytest
 import responses
 
-from detect_secrets.core.constants import VerifiedResult
+from detect_secrets.constants import VerifiedResult
 from detect_secrets.plugins.cloudant import CloudantDetector
 from detect_secrets.plugins.cloudant import find_account
 
@@ -61,7 +61,7 @@ class TestCloudantDetector:
     )
     def test_analyze_string(self, payload, should_flag):
         logic = CloudantDetector()
-        output = logic.analyze_line(payload, 1, 'mock_filename')
+        output = logic.analyze_line(filename='mock_filename', line=payload)
 
         assert len(output) == (1 if should_flag else 0)
 

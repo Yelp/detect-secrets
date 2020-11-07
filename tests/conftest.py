@@ -1,5 +1,6 @@
 import contextlib
 import pkgutil
+import warnings
 from unittest import mock
 
 import pytest
@@ -16,6 +17,8 @@ def clear_cache():
 @pytest.fixture(autouse=True)
 def mock_log():
     log = mock.Mock()
+    log.warning = warnings.warn     # keep warnings around for easier debugging
+
     with contextlib.ExitStack() as ctx_stack:
         for ctx in [
             mock.patch(f'{module}.log', log, create=True)
@@ -27,3 +30,9 @@ def mock_log():
             ctx_stack.enter_context(ctx)
 
         yield log
+
+
+@pytest.fixture
+def mock_log_warning(mock_log):
+    mock_log.warning = mock.Mock()
+    yield mock_log.warning

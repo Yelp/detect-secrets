@@ -40,5 +40,5 @@ class TestJwtTokenDetector:
     def test_analyze_line(self, payload, should_flag):
         logic = JwtTokenDetector()
 
-        output = logic.analyze_line(payload, 1, 'mock_filename')
+        output = logic.analyze_line(filename='mock_filename', line=payload)
         assert len(output) == int(should_flag)

@@ -4,9 +4,9 @@ This plugin finds JWT tokens
 import base64
 import json
 import re
+from typing import Generator
 
-from detect_secrets.plugins.base import classproperty
-from detect_secrets.plugins.base import RegexBasedDetector
+from .base import RegexBasedDetector
 
 
 class JwtTokenDetector(RegexBasedDetector):
@@ -16,14 +16,10 @@ class JwtTokenDetector(RegexBasedDetector):
         re.compile(r'eyJ[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*?'),
     ]
 
-    @classproperty
-    def disable_flag_text(cls):
-        return 'no-jwt-scan'
-
-    def secret_generator(self, string, *args, **kwargs):
+    def analyze_string(self, string: str) -> Generator[str, None, None]:
         return filter(
             self.is_formally_valid,
-            super(JwtTokenDetector, self).secret_generator(string, *args, **kwargs),
+            super().analyze_string(string),
         )
 
     @staticmethod

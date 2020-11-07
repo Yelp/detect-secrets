@@ -1,285 +1,110 @@
+"""
+Defines the interfaces for extending plugins.
+
+In most cases, you probably can just use the RegexBasedPlugin. In more advanced cases,
+you can also use the LineBasedPlugin, and FileBasedPlugin. If you're extending the BasePlugin,
+things may not work as you expect (see the scan logic in SecretsCollection).
+"""
 import re
 from abc import ABCMeta
 from abc import abstractmethod
 from abc import abstractproperty
+from typing import Any
+from typing import Dict
+from typing import Generator
+from typing import Iterable
+from typing import Optional
+from typing import Pattern
+from typing import Set
 
-from detect_secrets.audit.code_snippet import CodeSnippetHighlighter
-from detect_secrets.core.constants import VerifiedResult
-from detect_secrets.core.potential_secret import PotentialSecret
-from detect_secrets.plugins.common.constants import ALLOWLIST_REGEXES
-
-
-# Note: In this whitepaper (Section V-D), it suggests that there's an
-#       80% chance of finding a multi-factor secret (e.g. username +
-#       password) within five lines of context, before and after a secret.
-#
-#       This number can be tweaked if desired, at the cost of performance.
-#
-#       https://www.ndss-symposium.org/wp-content/uploads/2019/02/ndss2019_04B-3_Meli_paper.pdf
-LINES_OF_CONTEXT = 5
+from ..constants import VerifiedResult
+from ..core.potential_secret import PotentialSecret
 
 
-class classproperty(property):
-    def __get__(self, cls, owner):
-        return classmethod(self.fget).__get__(None, owner)()
-
-
-class BasePlugin:
-    """
-    This is an abstract class to define Plugins API.
-
-    :type secret_type: str
-    :param secret_type: uniquely identifies the type of secret found in the baseline.
-        e.g. {
-            "hashed_secret": <hash>,
-            "line_number": 123,
-            "type": <secret_type>,
-        }
-
-        Be warned of modifying the `secret_type` once rolled out to clients since
-        the hashed_secret uses this value to calculate a unique hash (and the baselines
-        will no longer match).
-
-    :type disable_flag_text: str
-    :param disable_flag_text: text used as an command line argument flag to disable
-        this specific plugin scan. does not include the `--` prefix.
-
-    :type default_options: Dict[str, Any]
-    :param default_options: configurable options to modify plugin behavior
-    """
-    __metaclass__ = ABCMeta
-
+class BasePlugin(metaclass=ABCMeta):
     @abstractproperty
-    def secret_type(self):
+    def secret_type(self) -> str:
+        """
+        Unique, user-facing description to identify this type of secret.
+
+        NOTE: Choose carefully! If this value is changed, it will require old baselines to be
+        updated to use the new secret type.
+        """
         raise NotImplementedError
 
-    def __init__(
+    @abstractmethod
+    def analyze_string(self, string: str) -> Generator[str, None, None]:
+        """Yields all the raw secret values within a supplied string."""
+        raise NotImplementedError
+
+    def analyze_line(
         self,
-        exclude_lines_regex=None,
-        should_verify=False,
-        false_positive_heuristics=None,
-        **kwargs
-    ):
-        """
-        :type exclude_lines_regex: str|None
-        :param exclude_lines_regex: optional regex for ignored lines.
-
-        :type should_verify: bool
-
-        :type false_positive_heuristics: List[Callable]|None
-        :param false_positive_heuristics: List of fp-heuristic functions
-        applicable to this plugin
-        """
-        self.exclude_lines_regex = (
-            re.compile(exclude_lines_regex)
-            if exclude_lines_regex
-            else None
-        )
-
-        self.should_verify = should_verify
-
-        self.false_positive_heuristics = false_positive_heuristics or []
-
-    @classproperty
-    def disable_flag_text(cls):
-        name = cls.__name__
-        if name.endswith('Detector'):
-            name = name[:-len('Detector')]
-
-        # Turn camel case into hyphenated strings
-        name_hyphen = ''
-        for letter in name:
-            if letter.upper() == letter and name_hyphen:
-                name_hyphen += '-'
-            name_hyphen += letter.lower()
-
-        return 'no-{}-scan'.format(name_hyphen)
-
-    @classproperty
-    def default_options(cls):
-        return {}
-
-    def _is_excluded_line(self, line):
-        return (
-            any(
-                allowlist_regex.search(line)
-                for allowlist_regex in ALLOWLIST_REGEXES
+        filename: str,
+        line: str,
+        line_number: int = 0,
+        **kwargs: Any
+    ) -> Set[PotentialSecret]:
+        """This examines a line and finds all possible secret values in it."""
+        output = set([])
+        for match in self.analyze_string(line, **kwargs):
+            output.add(
+                PotentialSecret(
+                    type=self.secret_type,
+                    filename=filename,
+                    secret=match,
+                    line_number=line_number,
+                ),
             )
-            or
-            (
-                self.exclude_lines_regex and
-                self.exclude_lines_regex.search(line)
-            )
-        )
 
-    def analyze(self, file, filename):
-        """
-        :param file:     The File object itself.
-        :param filename: string; filename of File object, used for creating
-                         PotentialSecret objects
-        :returns         dictionary representation of set (for random access by hash)
-                         { detect_secrets.core.potential_secret.__hash__:
-                               detect_secrets.core.potential_secret         }
-        """
-        potential_secrets = {}
-        file_lines = tuple(file.readlines())
-        for line_num, line in enumerate(file_lines, start=1):
-            results = self.analyze_line(line, line_num, filename)
-            if (
-                not results
-                or
-                self._is_excluded_line(line)
-            ):
-                continue
+        return output
 
-            if not self.should_verify:
-                potential_secrets.update(results)
-                continue
-
-            filtered_results = {}
-            for result in results:
-                snippet = CodeSnippetHighlighter().get_code_snippet(
-                    file_lines,
-                    result.line_number,
-                    lines_of_context=LINES_OF_CONTEXT,
-                )
-
-                is_verified = self.verify(result.secret_value, context=str(snippet))
-                if is_verified == VerifiedResult.VERIFIED_TRUE:
-                    result.is_verified = True
-
-                if is_verified != VerifiedResult.VERIFIED_FALSE:
-                    filtered_results[result] = result
-
-            potential_secrets.update(filtered_results)
-
-        return potential_secrets
-
-    def analyze_line(self, string, line_num, filename):
-        """
-        :param string:    string; the line to analyze
-        :param line_num:  integer; line number that is currently being analyzed
-        :param filename:  string; name of file being analyzed
-        :returns:         dictionary
-
-        Note: line_num and filename are used for PotentialSecret creation only.
-        """
-        return self.analyze_string_content(
-            string,
-            line_num,
-            filename,
-        )
-
-    @abstractmethod
-    def analyze_string_content(self, string, line_num, filename):
-        """
-        :param string:    string; the line to analyze
-        :param line_num:  integer; line number that is currently being analyzed
-        :param filename:  string; name of file being analyzed
-        :returns:         dictionary
-
-        Note: line_num and filename are used for PotentialSecret creation only.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def secret_generator(self, string, *args, **kwargs):
-        """Flags secrets in a given string, and yields the raw secret value.
-        Used in self.analyze_line for PotentialSecret creation.
-
-        :type string: str
-        :param string: the secret to scan
-
-        :rtype: iter
-        :returns: Of all the identifiers found
-        """
-        raise NotImplementedError
-
-    def adhoc_scan(self, string):
-        """To support faster discovery, we want the ability to conveniently
-        check what different plugins say regarding a single line/secret. This
-        supports that.
-
-        This is very similar to self.analyze_line, but allows the flexibility
-        for subclasses to add any other notable info (rather than just a
-        PotentialSecret type). e.g. HighEntropyStrings adds their Shannon
-        entropy in which they made their decision.
-
-        :type string: str
-        :param string: the string to analyze
-
-        :rtype: str
-        :returns: descriptive string that fits the format
-            <classname>: <returned-value>
-        """
-        # TODO: Handle multiple secrets on single line.
-        results = self.analyze_line(
-            string,
-            line_num=0,
-            filename='does_not_matter',
-        )
-        if not results:
-            return 'False'
-
-        if not self.should_verify:
-            return 'True'
-
-        verified_result = VerifiedResult.UNVERIFIED
-        for result in results:
-            is_verified = self.verify(result.secret_value, string)
-            if is_verified != VerifiedResult.UNVERIFIED:
-                verified_result = is_verified
-                break
-
-        output = {
-            VerifiedResult.VERIFIED_FALSE: 'False (verified)',
-            VerifiedResult.VERIFIED_TRUE: 'True  (verified)',
-            VerifiedResult.UNVERIFIED: 'True  (unverified)',
-        }
-
-        return output[verified_result]
-
-    def verify(self, token, context=''):
-        """
-        To increase accuracy and reduce false positives, plugins can also
-        optionally declare a method to verify their status.
-
-        :type token: str
-        :param token: secret found by current plugin
-
-        :type context: str
-        :param context: lines of context around identified secret
-
-        :rtype: VerifiedResult
-        """
+    def verify(self, secret: str) -> VerifiedResult:
         return VerifiedResult.UNVERIFIED
 
-    def is_secret_false_positive(self, token):
-        """
-        Checks if the input secret is a false-positive according to
-        this plugin's heuristics.
-
-        :type token: str
-        :param token: secret found by current plugin
-        """
-        return any(
-            func(token)
-            for func in self.false_positive_heuristics
-        ) if self.false_positive_heuristics else False
-
-    @property
-    def __dict__(self):
+    def json(self) -> Dict[str, Any]:
         return {
             'name': self.__class__.__name__,
         }
 
+    def format_scan_result(self, secret: Optional[PotentialSecret]) -> str:
+        if not secret:
+            return 'False'
 
-class RegexBasedDetector(BasePlugin):
+        # TODO: check settings for verification
+        # if not should_verify:
+        #     # This is a secret, but we can't verify it. So this is the best we can do.
+        #     return 'True'
+
+        if not secret.secret_value and not secret.is_verified:
+            # If the secret isn't verified, but we don't know the true secret value, this
+            # is also the best we can do.
+            return 'True  (unverified)'
+
+        if not secret.is_verified:
+            verified_result = self.verify(secret.secret_value)
+        else:
+            # It's not going to be VERIFIED_FALSE, otherwise, we won't have the secret object
+            # to format.
+            verified_result = VerifiedResult.VERIFIED_TRUE
+
+        return {
+            # This will only occur if the verification process happens in this formatting step.
+            VerifiedResult.VERIFIED_FALSE: 'False (verified)',
+
+            # This occurs either if we've already known the secret is verified, or that the
+            # verification process that just occurred proved it valid.
+            VerifiedResult.VERIFIED_TRUE: 'True  (verified)',
+
+            # Sometimes, the plugin may not have defined a verification process.
+            VerifiedResult.UNVERIFIED: 'True  (unverified)',
+        }[verified_result]
+
+
+class RegexBasedDetector(BasePlugin, metaclass=ABCMeta):
     """Parent class for regular-expression based detectors.
 
-    To create a new regex-based detector, subclass this and set
-    `secret_type` with a description and `denylist`
-    with a sequence of regular expressions, like:
+    To create a new regex-based detector, subclass this and set `secret_type` with a
+    description and `denylist` with a sequence of *compiled* regular expressions, like:
 
     class FooDetector(RegexBasedDetector):
 
@@ -289,14 +114,21 @@ class RegexBasedDetector(BasePlugin):
             re.compile(r'foo'),
         )
     """
-    __metaclass__ = ABCMeta
-
     @abstractproperty
-    def denylist(self):
+    def denylist(self) -> Iterable[Pattern]:
         raise NotImplementedError
 
+    def analyze_string(self, string: str) -> Generator[str, None, None]:
+        for regex in self.denylist:
+            for match in regex.findall(string):
+                yield match
+
     @staticmethod
-    def assign_regex_generator(prefix_regex, secret_keyword_regex, secret_regex):
+    def build_assignment_regex(
+        prefix_regex: str,
+        secret_keyword_regex: str,
+        secret_regex: str,
+    ) -> Pattern:
         """Generate assignment regex
         It reads 3 input parameters, each stands for regex. The return regex would look for
         secret in following format.
@@ -327,22 +159,3 @@ class RegexBasedDetector(BasePlugin):
                 secret_regex=secret_regex,
             ), flags=re.IGNORECASE,
         )
-
-    def analyze_string_content(self, string, line_num, filename):
-        output = {}
-
-        for identifier in self.secret_generator(string):
-            secret = PotentialSecret(
-                self.secret_type,
-                filename,
-                identifier,
-                line_num,
-            )
-            output[secret] = secret
-
-        return output
-
-    def secret_generator(self, string, *args, **kwargs):
-        for regex in self.denylist:
-            for match in regex.findall(string):
-                yield match

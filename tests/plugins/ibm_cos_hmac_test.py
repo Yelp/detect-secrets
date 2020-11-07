@@ -5,7 +5,7 @@ import requests
 import responses
 from mock import patch
 
-from detect_secrets.core.constants import VerifiedResult
+from detect_secrets.constants import VerifiedResult
 from detect_secrets.plugins.ibm_cos_hmac import find_access_key_id
 from detect_secrets.plugins.ibm_cos_hmac import IbmCosHmacDetector
 from detect_secrets.plugins.ibm_cos_hmac import verify_ibm_cos_hmac_credentials
@@ -95,10 +95,10 @@ class TestIbmCosHmacDetector:
     def test_analyze_string(self, payload, should_flag):
         logic = IbmCosHmacDetector()
 
-        output = logic.analyze_line(payload, 1, 'mock_filename')
+        output = logic.analyze_line(filename='mock_filename', line=payload)
         assert len(output) == int(should_flag)
         if should_flag:
-            assert list(output.values())[0].secret_value == SECRET_ACCESS_KEY
+            assert list(output)[0].secret_value == SECRET_ACCESS_KEY
 
     @patch('detect_secrets.plugins.ibm_cos_hmac.verify_ibm_cos_hmac_credentials')
     def test_verify_invalid_secret(self, mock_hmac_verify):

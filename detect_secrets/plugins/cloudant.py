@@ -2,8 +2,8 @@ import re
 
 import requests
 
-from detect_secrets.core.constants import VerifiedResult
-from detect_secrets.plugins.base import RegexBasedDetector
+from ..constants import VerifiedResult
+from .base import RegexBasedDetector
 
 
 class CloudantDetector(RegexBasedDetector):
@@ -24,12 +24,12 @@ class CloudantDetector(RegexBasedDetector):
     http = r'(?:https?\:\/\/)'
     cloudant_api_url = r'cloudant\.com'
     denylist = [
-        RegexBasedDetector.assign_regex_generator(
+        RegexBasedDetector.build_assignment_regex(
             prefix_regex=cl,
             secret_keyword_regex=cl_key_or_pass,
             secret_regex=cl_pw,
         ),
-        RegexBasedDetector.assign_regex_generator(
+        RegexBasedDetector.build_assignment_regex(
             prefix_regex=cl,
             secret_keyword_regex=cl_key_or_pass,
             secret_regex=cl_api_key,
@@ -79,7 +79,7 @@ def find_account(context):
     opt_basic_auth = r'(?:[\w\-:%]*\@)?'
 
     regexes = (
-        RegexBasedDetector.assign_regex_generator(
+        RegexBasedDetector.build_assignment_regex(
             prefix_regex=CloudantDetector.cl,
             secret_keyword_regex=opt_hostname_keyword,
             secret_regex=account,

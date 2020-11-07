@@ -5,8 +5,8 @@ import re
 
 import requests
 
-from detect_secrets.core.constants import VerifiedResult
-from detect_secrets.plugins.base import RegexBasedDetector
+from ..constants import VerifiedResult
+from .base import RegexBasedDetector
 
 
 class SlackDetector(RegexBasedDetector):

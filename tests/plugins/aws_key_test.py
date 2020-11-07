@@ -3,10 +3,9 @@ import textwrap
 import mock
 import pytest
 
-from detect_secrets.core.constants import VerifiedResult
+from detect_secrets.constants import VerifiedResult
 from detect_secrets.plugins.aws import AWSKeyDetector
 from detect_secrets.plugins.aws import get_secret_access_keys
-from testing.mocks import mock_file_object
 
 
 EXAMPLE_SECRET = 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'
@@ -18,7 +17,7 @@ class TestAWSKeyDetector:
         self.example_key = 'AKIAZZZZZZZZZZZZZZZZ'
 
     @pytest.mark.parametrize(
-        'file_content,should_flag',
+        'line,should_flag',
         [
             (
                 'AKIAZZZZZZZZZZZZZZZZ',
@@ -34,14 +33,11 @@ class TestAWSKeyDetector:
             ),
         ],
     )
-    def test_analyze(self, file_content, should_flag):
+    def test_analyze(self, line, should_flag):
         logic = AWSKeyDetector()
 
-        f = mock_file_object(file_content)
-        output = logic.analyze(f, 'mock_filename')
+        output = logic.analyze_line(filename='mock_filename', line=line)
         assert len(output) == (1 if should_flag else 0)
-        for potential_secret in output:
-            assert 'mock_filename' == potential_secret.filename
 
     def test_verify_no_secret(self):
         logic = AWSKeyDetector()

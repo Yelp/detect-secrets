@@ -1,7 +1,7 @@
 import requests
 
-from detect_secrets.core.constants import VerifiedResult
-from detect_secrets.plugins.base import RegexBasedDetector
+from ..constants import VerifiedResult
+from .base import RegexBasedDetector
 
 
 class IbmCloudIamDetector(RegexBasedDetector):
@@ -17,7 +17,7 @@ class IbmCloudIamDetector(RegexBasedDetector):
     key_or_pass = r'(?:key|pwd|password|pass|token)'
     secret = r'([a-zA-Z0-9_\-]{44}(?![a-zA-Z0-9_\-]))'
     denylist = [
-        RegexBasedDetector.assign_regex_generator(
+        RegexBasedDetector.build_assignment_regex(
             prefix_regex=opt_ibm_cloud_iam + opt_dash_undrscr + opt_api,
             secret_keyword_regex=key_or_pass,
             secret_regex=secret,

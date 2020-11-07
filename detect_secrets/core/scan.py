@@ -68,7 +68,7 @@ def scan_diff(diff: str) -> Generator[PotentialSecret, None, None]:
     from unidiff import PatchSet
 
     if not get_plugins():   # pragma: no cover
-        log.warn('No plugins to scan with!')
+        log.warning('No plugins to scan with!')
         return
 
     patch_set = PatchSet.from_string(diff)
@@ -184,7 +184,7 @@ def get_filters() -> List[SelfAwareCallable]:
         try:
             function = getattr(import_module(module_path), function_name)
         except (ModuleNotFoundError, AttributeError):
-            log.warn(f'Invalid filter: {path}')
+            log.warning(f'Invalid filter: {path}')
             continue
 
         # We attach this metadata to the function itself, so that we don't need to

@@ -2,8 +2,8 @@ import re
 
 import requests
 
-from detect_secrets.core.constants import VerifiedResult
-from detect_secrets.plugins.base import RegexBasedDetector
+from ..constants import VerifiedResult
+from .base import RegexBasedDetector
 
 
 class SoftlayerDetector(RegexBasedDetector):
@@ -16,7 +16,7 @@ class SoftlayerDetector(RegexBasedDetector):
     key_or_pass = r'(?:key|pwd|password|pass|token)'
     secret = r'([a-z0-9]{64})'
     denylist = [
-        RegexBasedDetector.assign_regex_generator(
+        RegexBasedDetector.build_assignment_regex(
             prefix_regex=sl,
             secret_keyword_regex=key_or_pass,
             secret_regex=secret,
@@ -49,7 +49,7 @@ def find_username(context):
     )
     username = r'(\w(?:\w|_|@|\.|-)+)'
     regex = re.compile(
-        RegexBasedDetector.assign_regex_generator(
+        RegexBasedDetector.build_assignment_regex(
             prefix_regex=SoftlayerDetector.sl,
             secret_keyword_regex=username_keyword,
             secret_regex=username,

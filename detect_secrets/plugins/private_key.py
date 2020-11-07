@@ -26,7 +26,7 @@ THE SOFTWARE.
 """
 import re
 
-from detect_secrets.plugins.base import RegexBasedDetector
+from .base import RegexBasedDetector
 
 
 class PrivateKeyDetector(RegexBasedDetector):

@@ -35,14 +35,14 @@ class TestScanFile:
         )
 
     @staticmethod
-    def test_error_reading_file(mock_log):
+    def test_error_reading_file(mock_log_warning):
         with mock.patch(
             'detect_secrets.core.scan.open',
             side_effect=IOError,
         ):
             SecretsCollection().scan_file('test_data/config.env')
 
-        mock_log.warning.assert_called_once_with(
+        mock_log_warning.assert_called_once_with(
             'Unable to open file: test_data/config.env',
         )
 
@@ -68,9 +68,64 @@ class TestScanFile:
         assert len(secrets['test_data/each_secret.py']) == 1
 
     @staticmethod
-    def test_file_based_success():
+    def test_file_based_success_config():
+        get_settings().configure_plugins([
+            {
+                'name': 'Base64HighEntropyString',
+                'base64_limit': 3.0,
+            },
+        ])
         secrets = SecretsCollection()
-        secrets.scan_file('test_data/config.env')
+        secrets.scan_file('test_data/config.ini')
+
+        assert [str(secret).splitlines()[1] for _, secret in secrets] == [
+            'Location:    test_data/config.ini:2',
+            'Location:    test_data/config.ini:6',
+            'Location:    test_data/config.ini:10',
+            'Location:    test_data/config.ini:15',
+            'Location:    test_data/config.ini:21',
+            'Location:    test_data/config.ini:22',
+            'Location:    test_data/config.ini:32',
+        ]
+
+    @staticmethod
+    def test_file_based_success_yaml():
+        get_settings().configure_plugins([
+            {
+                'name': 'HexHighEntropyString',
+                'hex_limit': 3.0,
+            },
+        ])
+        secrets = SecretsCollection()
+        secrets.scan_file('test_data/config.yaml')
+
+        assert [str(secret).splitlines()[1] for _, secret in secrets] == [
+            'Location:    test_data/config.yaml:3',
+            'Location:    test_data/config.yaml:5',
+        ]
+
+    @staticmethod
+    def test_file_based_yaml_only_comments():
+        secrets = SecretsCollection()
+        secrets.scan_file('test_data/only_comments.yaml')
+
+        assert not secrets
+
+    @staticmethod
+    @pytest.mark.parametrize(
+        'filename',
+        (
+            'test_data/config.env',
+
+            # Markdown files with colons and unicode characters preceding the colon on the line
+            # would have caused the scanner to fail and exit on python2.7.
+            # This test case ensures scanning can complete and still find high entropy strings.
+            'test_data/config.md',
+        ),
+    )
+    def test_file_based_success_unexpected_config_file(filename):
+        secrets = SecretsCollection()
+        secrets.scan_file(filename)
 
         assert bool(secrets)
 

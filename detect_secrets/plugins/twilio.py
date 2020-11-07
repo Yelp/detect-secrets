@@ -3,7 +3,7 @@ This plugin searches for Twilio API keys
 """
 import re
 
-from detect_secrets.plugins.base import RegexBasedDetector
+from .base import RegexBasedDetector
 
 
 class TwilioKeyDetector(RegexBasedDetector):
