@@ -42,6 +42,7 @@ def initialize(wordlist_filename: str, min_length: int = 3) -> Automaton:
     path = f'{__name__}.should_exclude_secret'
     get_settings().filters[path] = {
         'min_length': min_length,
+        'file_name': wordlist_filename,
         'file_hash': _compute_wordlist_hash(wordlist_filename),
     }
 

@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 import sys
 import textwrap
@@ -40,7 +41,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         return 0
 
     # Only attempt baseline modifications if we don't find any new secrets.
-    is_modified = update_baseline(
+    is_modified = should_update_baseline(
         args.baseline,
         scanned_results=secrets,
         filelist=args.filenames,
@@ -48,6 +49,15 @@ def main(argv: Optional[List[str]] = None) -> int:
     )
 
     if is_modified:
+        if args.baseline_version != VERSION:
+            with open(args.baseline_filename) as f:
+                old_baseline = json.loads(f.read())
+
+            # Override the results, because this has been updated in `should_update_baseline`.
+            old_baseline['results'] = args.baseline.json()
+
+            args.baseline = baseline.upgrade(old_baseline)
+
         baseline.save_to_file(args.baseline, filename=args.baseline_filename)
         print(
             'The baseline file was updated.\n'
@@ -86,7 +96,7 @@ def raise_exception_if_baseline_file_is_unstaged(filename: str) -> None:
         raise ValueError
 
 
-def update_baseline(
+def should_update_baseline(
     secrets: SecretsCollection,
     scanned_results: SecretsCollection,
     filelist: List[str],

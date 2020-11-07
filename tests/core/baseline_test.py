@@ -92,3 +92,16 @@ def test_load_and_output():
 
     secrets = baseline.load(data)
     assert baseline.format_for_output(secrets) == data
+
+
+def test_upgrade_does_nothing_if_newer_version():
+    current_baseline = {'version': '3.0.0'}
+    assert baseline.upgrade(current_baseline) == current_baseline
+
+
+def test_upgrade_succeeds():
+    current_baseline = {'version': '0.14.2'}
+    new_baseline = baseline.upgrade(current_baseline)
+
+    assert new_baseline     # assert *something* exists
+    assert current_baseline != new_baseline

@@ -81,7 +81,11 @@ def test_modifies_baseline_from_version_change():
 
     with tempfile.NamedTemporaryFile() as f:
         with mock.patch('detect_secrets.core.baseline.VERSION', '0.0.1'):
-            baseline.save_to_file(secrets, f.name)
+            data = baseline.format_for_output(secrets)
+
+        # Simulating old version
+        data['plugins_used'][0]['base64_limit'] = data['plugins_used'][0].pop('limit')
+        baseline.save_to_file(data, f.name)
 
         assert_commit_blocked_with_diff_exit_code([
             'test_data/files/file_with_no_secrets.py',

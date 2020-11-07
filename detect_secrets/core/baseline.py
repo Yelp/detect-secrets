@@ -2,14 +2,19 @@ import json
 import os
 import time
 from typing import Any
+from typing import Callable
 from typing import Dict
 from typing import List
+from typing import Union
 
+from . import upgrades
 from ..__version__ import VERSION
 from ..settings import configure_settings_from_baseline
 from ..settings import get_settings
 from ..util import git
+from ..util.importlib import import_modules_from_package
 from ..util.path import get_relative_path_if_in_cwd
+from ..util.semver import Version
 from .log import log
 from .secrets_collection import SecretsCollection
 
@@ -73,6 +78,56 @@ def format_for_output(secrets: SecretsCollection) -> Dict[str, Any]:
     }
 
 
-def save_to_file(secrets: SecretsCollection, filename: str) -> None:    # pragma: no cover
+def save_to_file(
+    secrets: Union[SecretsCollection, Dict[str, Any]],
+    filename: str,
+) -> None:    # pragma: no cover
+    """
+    :param secrets: if this is a SecretsCollection, it will output the baseline in its latest
+        format. Otherwise, you should pass in a dictionary to this function, to manually
+        specify the baseline format to save as.
+
+        If you're trying to decide the difference, ask yourself whether there are any changes
+        that does not directly impact the results of the scan.
+    """
+    output = secrets
+    if isinstance(secrets, SecretsCollection):
+        output = format_for_output(secrets)
+
     with open(filename, 'w') as f:
-        f.write(json.dumps(format_for_output(secrets), indent=2) + '\n')
+        f.write(json.dumps(output, indent=2) + '\n')
+
+
+def upgrade(baseline: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Baselines will eventually require format changes. This function is responsible for upgrading
+    an older baseline to the latest version.
+    """
+    baseline_version = Version(baseline['version'])
+    if baseline_version >= Version(VERSION):
+        return baseline
+
+    modules = import_modules_from_package(
+        upgrades,
+        filter=lambda x: not _is_relevant_upgrade_module(baseline_version)(x),
+    )
+
+    new_baseline = {**baseline}
+    for module in modules:
+        module.upgrade(new_baseline)
+
+    new_baseline['version'] = VERSION
+    return new_baseline
+
+
+def _is_relevant_upgrade_module(current_version: Version) -> Callable:
+    def wrapped(module_path: str) -> bool:
+        # This converts `v1_0` to `1.0`
+        affected_version_string = module_path.rsplit('.', 1)[-1].lstrip('v').replace('_', '.')
+
+        # Patch version doesn't matter, because patches should not require baseline bumps.
+        affected_version = Version(f'{affected_version_string}.0')
+
+        return current_version < affected_version
+
+    return wrapped
