@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+from copy import deepcopy
 from functools import lru_cache
 from typing import Any
 from typing import Dict
@@ -120,7 +121,9 @@ class Settings:
             for path in self.DEFAULT_FILTERS
         }
 
-        for filter_config in config:
+        # Make a copy, so we don't affect the original.
+        filter_configs = deepcopy(config)
+        for filter_config in filter_configs:
             path = filter_config.pop('path')
             self.filters[path] = filter_config
 

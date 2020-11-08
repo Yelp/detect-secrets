@@ -1,7 +1,7 @@
 import argparse
-import json
 
 from .. import baseline
+from ..exceptions import UnableToReadBaselineError
 from .common import initialize_plugin_settings
 from .common import valid_path
 
@@ -21,9 +21,8 @@ def parse_args(args: argparse.Namespace) -> None:
         return initialize_plugin_settings(args)
 
     try:
-        with open(args.baseline[0]) as f:
-            loaded_baseline = json.loads(f.read())
-    except (FileNotFoundError, json.decoder.JSONDecodeError):
+        loaded_baseline = baseline.load_from_file(args.baseline[0])
+    except UnableToReadBaselineError:
         raise argparse.ArgumentTypeError('Unable to read baseline.')
 
     try:

@@ -4,8 +4,10 @@ import sys
 from typing import List
 from typing import Optional
 
+from . import audit
 from .core import baseline
 from .core import plugins
+from .core.exceptions import InvalidBaselineError
 from .core.log import log
 from .core.scan import get_plugins
 from .core.scan import scan_line
@@ -88,8 +90,27 @@ def scan_adhoc_string(line: str) -> str:
 
 
 def handle_audit_action(args: argparse.Namespace) -> None:
-    # TODO
-    pass
+    try:
+        if args.stats:
+            stats = audit.analytics.calculate_statistics_for_baseline(args.filename[0])
+            if args.diff:
+                # TODO
+                raise NotImplementedError
+
+            if args.json:
+                print(json.dumps(stats.json(), indent=2))
+            else:
+                print(str(stats))
+        else:
+            # Starts interactive session.
+            if args.diff:
+                # Show changes
+                audit.compare_baselines(args.filename[0], args.filename[1])
+            else:
+                # Label secrets
+                audit.audit_baseline(args.filename[0])
+    except InvalidBaselineError:
+        pass
 
 
 if __name__ == '__main__':

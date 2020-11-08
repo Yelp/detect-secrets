@@ -1,6 +1,6 @@
 import pytest
 
-from detect_secrets.audit.bidirectional_iterator import BidirectionalIterator
+from detect_secrets.audit.iterator import BidirectionalIterator
 
 
 class TestBidirectionalIterator:

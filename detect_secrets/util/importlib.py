@@ -12,7 +12,7 @@ def import_types_from_module(
     filter: Callable[[Any], bool],
 ) -> Iterable[Type]:
     output = []
-    modules = _get_modules_from_package(root)
+    modules = get_modules_from_package(root)
 
     for module_path in modules:
         module = import_module(module_path)
@@ -34,7 +34,7 @@ def import_modules_from_package(
     filter: Callable[[str], bool],
 ) -> Iterable[ModuleType]:
     output = []
-    modules = _get_modules_from_package(root)
+    modules = get_modules_from_package(root)
 
     # NOTE: It should be auto-sorted, but let's just do it for sanity sake.
     for module_path in sorted(modules):
@@ -46,7 +46,7 @@ def import_modules_from_package(
     return output
 
 
-def _get_modules_from_package(root: ModuleType) -> Iterable[str]:
+def get_modules_from_package(root: ModuleType) -> Iterable[str]:
     return [
         module
         for _, module, is_package in pkgutil.walk_packages(

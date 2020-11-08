@@ -4,6 +4,8 @@ from collections import defaultdict
 from collections import namedtuple
 from contextlib import contextmanager
 from subprocess import CalledProcessError
+from types import ModuleType
+from typing import Optional
 
 import mock
 
@@ -128,23 +130,23 @@ def mock_file_object(string):
     return io.StringIO(string)
 
 
+class PrinterShim:
+    def __init__(self):
+        self.clear()
+
+    def add(self, message, *args, **kwargs):
+        self.message += str(message) + '\n'
+
+    def clear(self):
+        self.message = ''
+
+
 @contextmanager
-def mock_printer(obj):
-    """
-    :type obj: module
-    """
-    class PrinterShim:
-        def __init__(self):
-            self.clear()
+def mock_printer(module: ModuleType, shim: Optional[PrinterShim] = None):
+    if not shim:
+        shim = PrinterShim()
 
-        def add(self, message, *args, **kwargs):
-            self.message += str(message) + '\n'
-
-        def clear(self):
-            self.message = ''
-
-    shim = PrinterShim()
-    with mock.patch.object(obj, 'print', shim.add):
+    with mock.patch.object(module, 'print', shim.add):
         yield shim
 
 

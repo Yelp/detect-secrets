@@ -1,5 +1,4 @@
 import contextlib
-import pkgutil
 import warnings
 from unittest import mock
 
@@ -7,6 +6,7 @@ import pytest
 
 import detect_secrets
 from detect_secrets import settings
+from detect_secrets.util.importlib import get_modules_from_package
 
 
 @pytest.fixture(autouse=True)
@@ -22,10 +22,7 @@ def mock_log():
     with contextlib.ExitStack() as ctx_stack:
         for ctx in [
             mock.patch(f'{module}.log', log, create=True)
-            for _, module, is_package in pkgutil.walk_packages(
-                path=detect_secrets.__path__, prefix=f'{detect_secrets.__name__}.',
-            )
-            if not is_package
+            for module in get_modules_from_package(detect_secrets)
         ]:
             ctx_stack.enter_context(ctx)
 
@@ -36,3 +33,18 @@ def mock_log():
 def mock_log_warning(mock_log):
     mock_log.warning = mock.Mock()
     yield mock_log.warning
+
+
+@pytest.fixture(autouse=True)
+def prevent_color():
+    def uncolor(text, color):
+        return text
+
+    with contextlib.ExitStack() as ctx_stack:
+        for ctx in [
+            mock.patch(f'{module}.colorize', uncolor, create=True)
+            for module in get_modules_from_package(detect_secrets)
+        ]:
+            ctx_stack.enter_context(ctx)
+
+        yield

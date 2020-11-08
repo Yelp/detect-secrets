@@ -277,6 +277,17 @@ class TestTrim:
 
         assert secrets.json() == base_state
 
+    @staticmethod
+    def test_remove_non_existent_files():
+        secrets = SecretsCollection()
+        secrets.scan_file('test_data/each_secret.py')
+        assert bool(secrets)
+
+        secrets.data['does-not-exist'] = secrets.data.pop('test_data/each_secret.py')
+        secrets.trim()
+
+        assert not bool(secrets)
+
 
 def test_bool():
     secrets = SecretsCollection()

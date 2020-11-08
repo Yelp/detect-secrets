@@ -14,12 +14,12 @@ def add_audit_action(parent: argparse._SubParsersAction) -> argparse.ArgumentPar
     )
 
     _add_mode_parser(parser)
+    _add_statistics_module(parser)
     return parser
 
 
 def _add_mode_parser(parser: argparse.ArgumentParser) -> None:
-    mode_parser = parser.add_mutually_exclusive_group()
-    mode_parser.add_argument(
+    parser.add_argument(
         '--diff',
         action='store_true',
         help=(
@@ -29,13 +29,29 @@ def _add_mode_parser(parser: argparse.ArgumentParser) -> None:
         ),
     )
 
-    mode_parser.add_argument(
+    parser.add_argument(
         '--stats',
         action='store_true',
         help=(
             'Displays the results of an interactive auditing session '
             'which have been saved to a baseline file.'
         ),
+    )
+
+
+def _add_statistics_module(parent: argparse.ArgumentParser) -> None:
+    parser = parent.add_argument_group(
+        title='analytics',
+        description=(
+            'Quantify the success of your plugins based on the labelled results '
+            'in your baseline. To be used with the statisitcs mode (--stats).'
+        ),
+    )
+
+    parser.add_argument(
+        '--json',
+        action='store_true',
+        help='Outputs results in a machine-readable format.',
     )
 
 

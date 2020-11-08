@@ -12,7 +12,13 @@ def potential_secret_factory(
     """This is only marginally better than creating PotentialSecret objects directly,
     because of the default values.
     """
-    return PotentialSecret(type, filename, secret, line_number, **kwargs)
+    return PotentialSecret(
+        type=type,
+        filename=filename,
+        secret=secret,
+        line_number=line_number,
+        **kwargs
+    )
 
 
 def secrets_collection_factory(

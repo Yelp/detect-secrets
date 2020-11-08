@@ -1,3 +1,4 @@
+import os
 from collections import defaultdict
 from typing import Any
 from typing import Dict
@@ -88,7 +89,7 @@ class SecretsCollection:
 
     def trim(
         self,
-        scanned_results: 'SecretsCollection',
+        scanned_results: Optional['SecretsCollection'] = None,
         filelist: Optional[List[str]] = None,
     ) -> None:
         """
@@ -107,10 +108,19 @@ class SecretsCollection:
                the same settings (otherwise, we can't determine whether a missing secret is due
                to newly filtered secrets, or actually removed).
 
+        :param scanned_results: if None, will just clear out non-existent files.
         :param filelist: files without secrets are not present in `scanned_results`. Therefore,
             by supplying this additional filelist, we can assert that if an entry is missing in
             `scanned_results`, it must not have secrets in it.
         """
+        if scanned_results is None:
+            scanned_results = SecretsCollection()
+            filelist = [
+                filename
+                for filename in self.files
+                if not os.path.exists(filename)
+            ]
+
         if not filelist:
             fileset = set([])
         else:
@@ -163,9 +173,11 @@ class SecretsCollection:
         self.data[filename] = value
 
     def __iter__(self) -> Generator[Tuple[str, PotentialSecret], None, None]:
-        for filename, secrets in self.data.items():
+        for filename in sorted(self.files):
+            secrets = self[filename]
+
             # TODO: Handle cases when line numbers are not supplied
-            for secret in sorted(secrets, key=lambda x: x.line_number):
+            for secret in sorted(secrets, key=lambda x: (x.line_number, x.secret_hash)):
                 yield filename, secret
 
     def __bool__(self) -> bool:

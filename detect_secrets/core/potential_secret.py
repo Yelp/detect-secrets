@@ -85,7 +85,7 @@ class PotentialSecret:
             'is_secret',
             'is_verified',
         }:
-            if data.get(parameter):
+            if parameter in data:
                 kwargs[parameter] = data[parameter]
 
         output = cls(**kwargs)

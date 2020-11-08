@@ -4,7 +4,3 @@ class SecretNotFoundOnSpecifiedLineError(Exception):
             'ERROR: Secret not found on line {}!\n'.format(line)
             + 'Try recreating your baseline to fix this issue.',
         )
-
-
-class RedundantComparisonError(Exception):
-    pass

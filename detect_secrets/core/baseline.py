@@ -15,6 +15,7 @@ from ..util import git
 from ..util.importlib import import_modules_from_package
 from ..util.path import get_relative_path_if_in_cwd
 from ..util.semver import Version
+from .exceptions import UnableToReadBaselineError
 from .log import log
 from .secrets_collection import SecretsCollection
 
@@ -69,6 +70,18 @@ def load(baseline: Dict[str, Any], filename: str) -> SecretsCollection:
 
     configure_settings_from_baseline(baseline, filename=filename)
     return SecretsCollection.load_from_baseline(baseline)
+
+
+def load_from_file(filename: str) -> Dict[str, Any]:
+    """
+    :raises: UnableToReadBaselineError
+    :raises: InvalidBaselineError
+    """
+    try:
+        with open(filename) as f:
+            return json.loads(f.read())
+    except (FileNotFoundError, IOError, json.decoder.JSONDecodeError):
+        raise UnableToReadBaselineError
 
 
 def format_for_output(secrets: SecretsCollection) -> Dict[str, Any]:
