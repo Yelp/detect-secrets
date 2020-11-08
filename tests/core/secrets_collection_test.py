@@ -168,6 +168,43 @@ class TestScanDiff:
         }
 
 
+def test_merge():
+    old_secrets = SecretsCollection()
+    old_secrets.scan_file('test_data/each_secret.py')
+    assert len(list(old_secrets)) >= 3      # otherwise, this test won't work.
+
+    index = 0
+    for _, secret in old_secrets:
+        if index == 0:
+            secret.is_secret = False
+        elif index == 1:
+            secret.is_secret = True
+        elif index == 2:
+            secret.is_verified = True
+
+        index += 1
+
+    new_secrets = SecretsCollection()
+    new_secrets.scan_file('test_data/each_secret.py')
+    list(new_secrets)[-1][1].is_secret = True
+
+    new_secrets.merge(old_secrets)
+
+    index = 0
+    for _, secret in new_secrets:
+        if index == 0:
+            assert secret.is_secret is False
+            assert secret.is_verified is False
+        elif index == 1:
+            assert secret.is_secret is True
+            assert secret.is_verified is False
+        elif index == 2:
+            assert secret.is_secret is True
+            assert secret.is_verified is True
+
+        index += 1
+
+
 class TestTrim:
     @staticmethod
     def test_deleted_secret():

@@ -18,6 +18,22 @@ from .plugins.util import Plugin
 from .potential_secret import PotentialSecret
 
 
+def scan_line(line: str) -> Generator[PotentialSecret, None, None]:
+    """Used for adhoc string scanning."""
+    # Disable this, since it doesn't make sense to run this for adhoc usage.
+    get_settings().disable_filters(
+        'detect_secrets.filters.common.is_invalid_file',
+    )
+
+    for plugin in get_plugins():
+        yield from _scan_line(
+            plugin=plugin,
+            filename='adhoc-string-scan',
+            line=line,
+            line_number=0,
+        )
+
+
 def scan_file(filename: str) -> Generator[PotentialSecret, None, None]:
     if not get_plugins():   # pragma: no cover
         log.warning('No plugins to scan with!')
@@ -128,7 +144,7 @@ def _process_line_based_plugins(
         # We apply line-specific filters, and see whether that allows us to quit early.
         if any([
             inject_variables_into_function(filter_fn, filename=filename, line=line)
-            for filter_fn in get_filters()
+            for filter_fn in get_filters_with_parameter('line')
         ]):
             continue
 
@@ -153,19 +169,18 @@ def _scan_line(
         return
 
     for secret in secrets:
-        if any([
-            inject_variables_into_function(
+        for filter_fn in get_filters_with_parameter('secret'):
+            if inject_variables_into_function(
                 filter_fn,
                 filename=secret.filename,
                 secret=secret.secret_value,
                 plugin=plugin,
                 line=line,
-            )
-            for filter_fn in get_filters()
-        ]):
-            continue
-
-        yield secret
+            ):
+                log.debug(f'Skipping "{secret.secret_value}" due to `{filter_fn.path}`.')
+                break
+        else:
+            yield secret
 
 
 @lru_cache(maxsize=1)
@@ -173,6 +188,33 @@ def get_plugins() -> List[Plugin]:
     return [
         plugins.initialize.from_plugin_classname(classname)
         for classname in get_settings().plugins
+    ]
+
+
+def get_filters_with_parameter(*parameters: str) -> List[SelfAwareCallable]:
+    """
+    The issue of our method of dependency injection is that functions will be called multiple
+    times. For example, if we have two functions:
+
+    >>> def foo(filename: str): ...
+    >>> def bar(filename: str, secret: str): ...
+
+    our invocation of `inject_variables_into_function(filename=filename, secret=secret)`
+    will run both of these functions. While expected, this results in multiple invocations of
+    the same function, which can be less than ideal (especially if we have a heavy duty filter).
+
+    To address this, we filter our filters with this function. It will return the functions
+    that accept a minimum set of parameters, to avoid duplicative work. For instance,
+
+    >>> get_filters_with_parameter('secret')
+    [bar]
+    """
+    minimum_parameters = set(parameters)
+
+    return [
+        filter
+        for filter in get_filters()
+        if minimum_parameters <= filter.injectable_variables
     ]
 
 

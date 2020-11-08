@@ -154,16 +154,22 @@ class YAMLFileParser:
                 continue
 
             # If it doesn't have our meta-tags, it's not a value worth scanning.
-            if '__line__' not in item:
-                # However, we need to recursively search in the dictionary for other such values
-                # that we may care about.
-                for value in item.values():
-                    # TODO: We don't support arrays right now.
-                    if not isinstance(value, dict):
+            try:
+                if '__line__' not in item:
+                    if isinstance(item, str):
                         continue
 
-                    to_search.append(value)
+                    # However, we need to recursively search in the dictionary for other such values
+                    # that we may care about.
+                    try:
+                        to_search.extend(item.values())
+                    except AttributeError:
+                        # This is an array
+                        to_search.extend(item)
 
+                    continue
+            except TypeError:
+                # e.g. if item is a float.
                 continue
 
             yield YAMLValue(

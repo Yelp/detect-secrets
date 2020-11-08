@@ -38,25 +38,31 @@ def _migrate_filters(baseline: Dict[str, Any]) -> None:
         },
     ]
 
-    if baseline.get('exclude', {}).get('files'):
-        baseline['filters_used'].append({
-            'path': 'detect_secrets.filters.regex.should_exclude_file',
-            'pattern': baseline['exclude']['files'],
-        })
+    if baseline.get('exclude'):
+        if baseline['exclude'].get('files'):
+            baseline['filters_used'].append({
+                'path': 'detect_secrets.filters.regex.should_exclude_file',
+                'pattern': baseline['exclude']['files'],
+            })
 
-    if baseline.get('exclude', {}).get('lines'):
-        baseline['filters_used'].append({
-            'path': 'detect_secrets.filters.regex.should_exclude_line',
-            'pattern': baseline['exclude']['lines'],
-        })
+        if baseline['exclude'].get('lines'):
+            baseline['filters_used'].append({
+                'path': 'detect_secrets.filters.regex.should_exclude_line',
+                'pattern': baseline['exclude']['lines'],
+            })
+
+        baseline.pop('exclude')
 
     if baseline.get('word_list'):
-        baseline['filters_used'].append({
-            'path': 'detect_secrets.filters.wordlist.should_exclude_secret',
-            'min_length': 3,
-            'file_name': baseline['word_list']['file'],
-            'file_hash': baseline['word_list']['hash'],
-        })
+        if baseline['word_list']['file']:
+            baseline['filters_used'].append({
+                'path': 'detect_secrets.filters.wordlist.should_exclude_secret',
+                'min_length': 3,
+                'file_name': baseline['word_list']['file'],
+                'file_hash': baseline['word_list']['hash'],
+            })
+
+        baseline.pop('word_list')
 
 
 def _rename_high_entropy_string_arguments(baseline: Dict[str, Any]) -> None:

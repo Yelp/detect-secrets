@@ -126,6 +126,15 @@ class Settings:
 
         return self
 
+    def disable_filters(self, *filter_paths: str) -> 'Settings':
+        new_filters = {}
+        for filter_path, config in self.filters.items():
+            if filter_path not in filter_paths:
+                new_filters[filter_path] = config
+
+        self.filters = new_filters
+        return self
+
     def json(self) -> Dict[str, Any]:
         return {
             'plugins_used': [

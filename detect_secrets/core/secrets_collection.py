@@ -28,7 +28,7 @@ class SecretsCollection:
         output = cls()
         for filename in baseline['results']:
             for item in baseline['results'][filename]:
-                secret = PotentialSecret.load_secret_from_dict(item)
+                secret = PotentialSecret.load_secret_from_dict({'filename': filename, **item})
                 output[filename].add(secret)
 
         return output
@@ -53,6 +53,38 @@ class SecretsCollection:
                 'SecretsCollection.scan_diff requires `unidiff` to work. Try pip '
                 'installing that package, and try again.',
             )
+
+    def merge(self, old_results: 'SecretsCollection') -> None:
+        """
+        We operate under an assumption that the latest results are always more accurate,
+        assuming that the baseline is created on the same repository. However, we cannot
+        merely discard the old results in favor of the new, since there is valuable information
+        that ought to be preserved: verification of secrets, both automated and manual.
+
+        Therefore, this function serves to extract this information from the old results,
+        and amend the new results with it.
+        """
+        for filename in old_results.files:
+            if filename not in self.files:
+                continue
+
+            # This allows us to obtain the same secret, by accessing the hash.
+            mapping = {
+                secret: secret
+                for secret in self.data[filename]
+            }
+
+            for secret in old_results.data[filename]:
+                if secret not in mapping:
+                    continue
+
+                # Only override if there's no newer value.
+                if mapping[secret].is_secret is None:
+                    mapping[secret].is_secret = secret.is_secret
+
+                # If the old value is false, it won't make a difference.
+                if not mapping[secret].is_verified:
+                    mapping[secret].is_verified = secret.is_verified
 
     def trim(
         self,

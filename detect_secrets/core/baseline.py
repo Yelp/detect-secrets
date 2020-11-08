@@ -19,13 +19,14 @@ from .log import log
 from .secrets_collection import SecretsCollection
 
 
-def create(path: str, should_scan_all_files: bool = False) -> SecretsCollection:
+def create(*paths: str, should_scan_all_files: bool = False) -> SecretsCollection:
     """Scans all the files recursively in path to initialize a baseline."""
     secrets = SecretsCollection()
 
-    files = _get_files_to_scan(path, should_scan_all_files)
-    for filename in files:
-        secrets.scan_file(filename)
+    for path in paths:
+        files = _get_files_to_scan(path, should_scan_all_files)
+        for filename in files:
+            secrets.scan_file(filename)
 
     return secrets
 
@@ -63,6 +64,9 @@ def load(baseline: Dict[str, Any], filename: str) -> SecretsCollection:
 
     :raises: KeyError
     """
+    # This is required for backwards compatibility, and supporting upgrades from older versions.
+    baseline = upgrade(baseline)
+
     configure_settings_from_baseline(baseline, filename=filename)
     return SecretsCollection.load_from_baseline(baseline)
 
@@ -71,10 +75,11 @@ def format_for_output(secrets: SecretsCollection) -> Dict[str, Any]:
     return {
         'generated_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
         'version': VERSION,
-        'results': secrets.json(),
 
         # This will populate settings of filters and plugins,
         **get_settings().json(),
+
+        'results': secrets.json(),
     }
 
 

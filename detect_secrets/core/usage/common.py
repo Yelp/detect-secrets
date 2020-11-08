@@ -20,7 +20,12 @@ def initialize_plugin_settings(args: argparse.Namespace) -> None:
     This ensures that our global settings object is initialized to a minimal state
     (all built-in plugins, default options)
     """
+    # This is a sanity check to ensure we don't override any current settings.
+    if get_settings().plugins:
+        return
+
     # TODO: This should take cli args (e.g. --base64-limit)
+
     get_settings().configure_plugins([
         {'name': plugin_type.__name__}
         for plugin_type in get_mapping_from_secret_type_to_class().values()

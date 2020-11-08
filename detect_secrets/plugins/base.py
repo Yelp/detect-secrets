@@ -70,6 +70,7 @@ class BasePlugin(metaclass=ABCMeta):
         if not secret:
             return 'False'
 
+        return 'True'
         # TODO: check settings for verification
         # if not should_verify:
         #     # This is a secret, but we can't verify it. So this is the best we can do.
