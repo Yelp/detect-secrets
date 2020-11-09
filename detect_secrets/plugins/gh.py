@@ -52,7 +52,7 @@ class GheDetector(RegexBasedDetector):
         ),
     ]
 
-    def verify(self, token, **kwargs):
+    def verify(self, token, *args, **kwargs):
         try:
             if type(token) == bytes:
                 token = token.decode('UTF-8')

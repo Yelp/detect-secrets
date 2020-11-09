@@ -16,7 +16,7 @@ class StripeDetector(RegexBasedDetector):
         re.compile(r'(?:r|s)k_live_[0-9a-zA-Z]{24}'),
     )
 
-    def verify(self, token, **kwargs):  # pragma: no cover
+    def verify(self, token, *args, **kwargs):  # pragma: no cover
         response = requests.get(
             'https://api.stripe.com/v1/charges',
             headers={

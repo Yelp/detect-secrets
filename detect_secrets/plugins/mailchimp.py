@@ -18,7 +18,7 @@ class MailchimpDetector(RegexBasedDetector):
         re.compile(r'[0-9a-z]{32}-us[0-9]{1,2}'),
     )
 
-    def verify(self, token, **kwargs):  # pragma: no cover
+    def verify(self, token, *args, **kwargs):  # pragma: no cover
         _, datacenter_number = token.split('-us')
 
         response = requests.get(
