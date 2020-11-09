@@ -33,7 +33,7 @@ class TestIsSequentialString:
         assert filters.heuristic.is_sequential_string(secret)
 
     @staticmethod
-    def test_failure(secret):
+    def test_failure():
         assert not filters.heuristic.is_sequential_string('BEEF1234')
 
 

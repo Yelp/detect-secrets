@@ -115,7 +115,7 @@ class UserPrompt:
         self.options = [option.name.lower() for option in options]
 
     def __str__(self) -> str:
-        if 'y' in self.valid_input:
+        if 'Y' in self.valid_input:
             output = 'Is this a valid secret (not a false-positive)?'
         else:
             output = 'What would you like to do?'

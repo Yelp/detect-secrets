@@ -1,6 +1,6 @@
 import textwrap
+from unittest import mock
 
-import mock
 import pytest
 
 from detect_secrets.constants import VerifiedResult

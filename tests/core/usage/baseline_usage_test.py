@@ -43,7 +43,7 @@ def test_success(parser):
                 'name': 'AWSKeyDetector',
             },
             {
-                'limit': 3,
+                'base64_limit': 3,
                 'name': 'Base64HighEntropyString',
             },
         ],

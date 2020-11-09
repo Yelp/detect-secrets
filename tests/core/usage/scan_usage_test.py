@@ -17,11 +17,13 @@ def test_force_use_all_plugins(parser):
     with tempfile.NamedTemporaryFile() as f:
         f.write(
             json.dumps({
+                'version': '0.0.1',
                 'plugins_used': [
                     {
                         'name': 'AWSKeyDetector',
                     },
                 ],
+                'results': [],
             }).encode(),
         )
         f.seek(0)

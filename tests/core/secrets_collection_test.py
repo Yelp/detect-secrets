@@ -30,8 +30,9 @@ class TestScanFile:
         # detect_secrets.filters.common.is_invalid_file
         SecretsCollection().scan_file('test_data')
 
-        mock_log.info.assert_called_once_with(
-            'Skipping "test_data" due to "detect_secrets.filters.common.is_invalid_file"',
+        assert (
+            'Skipping "test_data" due to "detect_secrets.filters.common.is_invalid_file"'
+            in mock_log.info_messages
         )
 
     @staticmethod
@@ -42,9 +43,7 @@ class TestScanFile:
         ):
             SecretsCollection().scan_file('test_data/config.env')
 
-        mock_log_warning.assert_called_once_with(
-            'Unable to open file: test_data/config.env',
-        )
+        assert 'Unable to open file: test_data/config.env' in mock_log_warning.warning_messages
 
     @staticmethod
     def test_line_based_success():

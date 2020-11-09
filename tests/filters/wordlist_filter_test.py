@@ -25,6 +25,7 @@ def test_success():
 
         # Manually computed with `sha1sum test_data/word_list.txt`
         'file_hash': '116598304e5b33667e651025bcfed6b9a99484c7',
+        'file_name': 'test_data/word_list.txt',
     }
 
 

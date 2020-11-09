@@ -22,3 +22,6 @@ exclude_lines =
 
     # Need to redefine this, as per documentation
     pragma: no cover
+
+    # Don't complain for skipped tests
+    ^@pytest.mark.skip

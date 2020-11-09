@@ -66,6 +66,9 @@ class Settings:
     }
 
     def __init__(self) -> None:
+        self.clear()
+
+    def clear(self) -> None:
         # mapping of class names to initialization variables
         self.plugins: Dict[str, Dict[str, Any]] = {}
 
@@ -89,7 +92,6 @@ class Settings:
             ]
         """
         for plugin in config:
-            # TODO: Can we remove this, once we fix up SecretsCollection?
             plugin = {**plugin}
             name = plugin.pop('name')
             self.plugins[name] = plugin

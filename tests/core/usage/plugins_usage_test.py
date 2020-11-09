@@ -51,7 +51,7 @@ class TestAddCustomLimits:
                     'plugins_used': [
                         {
                             'name': 'Base64HighEntropyString',
-                            'limit': 3,
+                            'base64_limit': 3,
                         },
                     ],
                     'results': [],
@@ -72,7 +72,7 @@ class TestAddCustomLimits:
                     'plugins_used': [
                         {
                             'name': 'Base64HighEntropyString',
-                            'limit': 3,
+                            'base64_limit': 3,
                         },
                     ],
                     'results': [],
@@ -115,7 +115,7 @@ class TestAddDisableFlag:
                     'plugins_used': [
                         {
                             'name': 'Base64HighEntropyString',
-                            'limit': 3,
+                            'base64_limit': 3,
                         },
                         {
                             'name': 'AWSKeyDetector',

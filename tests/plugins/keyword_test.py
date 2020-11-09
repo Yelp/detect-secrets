@@ -324,7 +324,7 @@ class TestKeywordDetector:
     )
     def test_analyze_example_negatives(self, file_content):
         assert not KeywordDetector().analyze_line(
-            filename=f'mock_filename.example',
+            filename='mock_filename.example',
 
             # Make it start with `<`, (and end with `>`) so it hits our false-positive check
             line=file_content.replace('m{', '<').replace('}', '>'),

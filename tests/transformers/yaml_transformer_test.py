@@ -28,15 +28,15 @@ class TestYAMLTransformer:
         )
 
         assert YAMLTransformer().parse_file(file) == [
-            'keyA: string',
-            'keyB: string    # with comments',
+            'keyA: "string"',
+            'keyB: "string"    # with comments',
             '',
-            'keyC: abcdef',
-            'keyD: abcdef     # with comments',
+            'keyC: "abcdef"',
+            'keyD: "abcdef"     # with comments',
             '',
             '',
             '',
-            'keyD: nested string',
+            'keyD: "nested string"',
         ]
 
     @staticmethod
@@ -72,7 +72,7 @@ class TestYAMLTransformer:
     )
     def test_multiline_block_scalar_literal_style(block_chomping):
         file = mock_file_object(
-            textwrap.dedent(f"""
+            textwrap.dedent("""
                 multiline: >
                     this will be skipped
             """)[1:-1],

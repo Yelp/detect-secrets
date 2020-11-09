@@ -13,7 +13,7 @@ from detect_secrets.audit import io
             },
             (
                 'Is this a valid secret (not a false-positive)? '
-                '(y)es, (n)o, (s)kip, (b)ack, (q)uit'
+                '(y)es, (n)o, (s)kip, (b)ack, (q)uit: '
             ),
         ),
         (
@@ -23,7 +23,7 @@ from detect_secrets.audit import io
             },
             (
                 'What would you like to do? '
-                '(s)kip, (b)ack, (q)uit'
+                '(s)kip, (b)ack, (q)uit: '
             ),
         ),
     ),

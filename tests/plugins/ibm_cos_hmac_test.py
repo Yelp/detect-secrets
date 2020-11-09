@@ -1,9 +1,9 @@
 import textwrap
+from unittest.mock import patch
 
 import pytest
 import requests
 import responses
-from mock import patch
 
 from detect_secrets.constants import VerifiedResult
 from detect_secrets.plugins.ibm_cos_hmac import find_access_key_id

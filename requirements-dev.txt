@@ -2,8 +2,8 @@
 # on python 3.6.0 (xenial)
 coverage<5
 flake8==3.5.0
-mock
 monotonic
+mypy
 pre-commit==1.11.2
 pyahocorasick
 pytest

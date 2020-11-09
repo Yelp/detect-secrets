@@ -58,7 +58,11 @@ def _get_uuid_regex() -> Pattern:
 
 
 def is_likely_id_string(secret: str, line: str) -> bool:
-    index = line.index(secret)
+    try:
+        index = line.index(secret)
+    except ValueError:
+        return False
+
     return bool(_get_id_detector_regex().search(line, pos=0, endpos=index))
 
 

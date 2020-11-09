@@ -19,15 +19,6 @@ def _migrate_filters(baseline: Dict[str, Any]) -> None:
     """
     baseline['filters_used'] = [
         {
-            'path': 'detect_secrets.filters.allowlist.is_line_allowlisted',
-        },
-        {
-            'path': 'detect_secrets.filters.common.is_invalid_file',
-        },
-        {
-            'path': 'detect_secrets.filters.heuristic.is_non_text_file',
-        },
-        {
             'path': 'detect_secrets.filters.heuristic.is_sequential_string',
         },
         {

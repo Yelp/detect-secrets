@@ -4,6 +4,10 @@ from typing import NoReturn
 from typing import Optional
 from typing import Set
 
+from .audit.exceptions import SecretNotFoundOnSpecifiedLineError
+from .core.potential_secret import PotentialSecret
+from .util.code_snippet import CodeSnippet
+
 
 class SelfAwareCallable:
     """
@@ -28,11 +32,11 @@ class SecretContext(NamedTuple):
     current_index: int
     num_total_secrets: int
 
-    secret: 'PotentialSecret'       # noqa: F821
+    secret: PotentialSecret
     header: Optional[str] = None
 
     # Either secret context is provided...
-    snippet: Optional['CodeSnippet'] = None
+    snippet: Optional[CodeSnippet] = None
 
     # ...or error information. But it has an XOR relationship.
-    error: Optional['SecretNotFoundOnSpecifiedLineError'] = None
+    error: Optional[SecretNotFoundOnSpecifiedLineError] = None

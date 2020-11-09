@@ -100,7 +100,7 @@ def test_upgrade_does_nothing_if_newer_version():
 
 
 def test_upgrade_succeeds():
-    current_baseline = {'version': '0.14.2'}
+    current_baseline = {'version': '0.14.2', 'plugins_used': []}
     new_baseline = baseline.upgrade(current_baseline)
 
     assert new_baseline     # assert *something* exists

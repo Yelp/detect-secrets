@@ -1,7 +1,7 @@
 from setuptools import find_packages
 from setuptools import setup
 
-from detect_secrets import VERSION
+from detect_secrets.__version__ import VERSION
 
 
 setup(

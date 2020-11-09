@@ -65,6 +65,6 @@ def parse_args(args: argparse.Namespace) -> None:
 
     # NOTE: This is assumed to run *after* the baseline argument processor, and before
     # the plugin argument processor.
-    if args.baseline and args.force_use_all_plugins:
+    if args.baseline is not None and args.force_use_all_plugins:
         get_settings().plugins.clear()
         initialize_plugin_settings(args)
