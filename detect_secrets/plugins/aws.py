@@ -7,10 +7,13 @@ import re
 import string
 import textwrap
 from datetime import datetime
+from typing import List
+from typing import Union
 
 import requests
 
 from ..constants import VerifiedResult
+from ..util.code_snippet import CodeSnippet
 from .base import RegexBasedDetector
 
 
@@ -22,19 +25,19 @@ class AWSKeyDetector(RegexBasedDetector):
         re.compile(r'AKIA[0-9A-Z]{16}'),
     )
 
-    def verify(self, token, context):
+    def verify(self, secret: str, context: CodeSnippet) -> VerifiedResult:
         secret_access_key_candidates = get_secret_access_keys(context)
         if not secret_access_key_candidates:
             return VerifiedResult.UNVERIFIED
 
         for candidate in secret_access_key_candidates:
-            if verify_aws_secret_access_key(token, candidate):
+            if verify_aws_secret_access_key(secret, candidate):
                 return VerifiedResult.VERIFIED_TRUE
 
         return VerifiedResult.VERIFIED_FALSE
 
 
-def get_secret_access_keys(content):
+def get_secret_access_keys(content: CodeSnippet) -> List[str]:
     # AWS secret access keys are 40 characters long.
     # e.g. some_function('AKIA...', '[secret key]')
     # e.g. secret_access_key = '[secret key]'
@@ -46,21 +49,18 @@ def get_secret_access_keys(content):
 
     return [
         match[2]
-        for line in content.splitlines()
+        for line in content
         for match in regex.findall(line)
     ]
 
 
-def verify_aws_secret_access_key(key, secret):  # pragma: no cover
+def verify_aws_secret_access_key(key: str, secret: str) -> bool:  # pragma: no cover
     """
     Using requests, because we don't want to require boto3 for this one
     optional verification step.
 
     Loosely based off:
     https://docs.aws.amazon.com/general/latest/gr/sigv4-signed-request-examples.html
-
-    :type key: str
-    :type secret: str
     """
     now = datetime.utcnow()
     amazon_datetime = now.strftime('%Y%m%dT%H%M%SZ')
@@ -176,7 +176,7 @@ def verify_aws_secret_access_key(key, secret):  # pragma: no cover
     return True
 
 
-def _sign(key, message, hex=False):  # pragma: no cover
+def _sign(key, message: str, hex: bool = False) -> Union[str, bytes]:  # pragma: no cover
     value = hmac.new(key, message.encode('utf-8'), hashlib.sha256)
     if not hex:
         return value.digest()

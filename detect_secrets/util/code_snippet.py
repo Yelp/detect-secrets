@@ -1,4 +1,5 @@
 import itertools
+from typing import Generator
 from typing import List
 
 from .color import AnsiColor
@@ -86,3 +87,6 @@ class CodeSnippet:
 
     def __str__(self) -> str:
         return '\n'.join(self.lines)
+
+    def __iter__(self) -> Generator[str, None, None]:
+        yield from self.lines

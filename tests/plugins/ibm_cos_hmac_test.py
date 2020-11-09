@@ -9,6 +9,7 @@ from detect_secrets.constants import VerifiedResult
 from detect_secrets.plugins.ibm_cos_hmac import find_access_key_id
 from detect_secrets.plugins.ibm_cos_hmac import IbmCosHmacDetector
 from detect_secrets.plugins.ibm_cos_hmac import verify_ibm_cos_hmac_credentials
+from detect_secrets.util.code_snippet import get_code_snippet
 
 
 ACCESS_KEY_ID = '1234567890abcdef1234567890abcdef'
@@ -106,7 +107,7 @@ class TestIbmCosHmacDetector:
 
         assert IbmCosHmacDetector().verify(
             SECRET_ACCESS_KEY,
-            '''access_key_id={}'''.format(ACCESS_KEY_ID),
+            get_code_snippet(['access_key_id={}'.format(ACCESS_KEY_ID)], 1),
         ) == VerifiedResult.VERIFIED_FALSE
 
         mock_hmac_verify.assert_called_with(ACCESS_KEY_ID, SECRET_ACCESS_KEY)
@@ -117,7 +118,7 @@ class TestIbmCosHmacDetector:
 
         assert IbmCosHmacDetector().verify(
             SECRET_ACCESS_KEY,
-            '''access_key_id={}'''.format(ACCESS_KEY_ID),
+            get_code_snippet(['access_key_id={}'.format(ACCESS_KEY_ID)], 1),
         ) == VerifiedResult.VERIFIED_TRUE
 
         mock_hmac_verify.assert_called_with(ACCESS_KEY_ID, SECRET_ACCESS_KEY)
@@ -128,7 +129,7 @@ class TestIbmCosHmacDetector:
 
         assert IbmCosHmacDetector().verify(
             SECRET_ACCESS_KEY,
-            '''access_key_id={}'''.format(ACCESS_KEY_ID),
+            get_code_snippet(['access_key_id={}'.format(ACCESS_KEY_ID)], 1),
         ) == VerifiedResult.UNVERIFIED
 
         mock_hmac_verify.assert_called_with(ACCESS_KEY_ID, SECRET_ACCESS_KEY)
@@ -139,7 +140,7 @@ class TestIbmCosHmacDetector:
 
         assert IbmCosHmacDetector().verify(
             SECRET_ACCESS_KEY,
-            '''something={}'''.format(ACCESS_KEY_ID),
+            get_code_snippet(['something={}'.format(ACCESS_KEY_ID)], 1),
         ) == VerifiedResult.UNVERIFIED
 
         mock_hmac_verify.assert_not_called()
@@ -190,7 +191,7 @@ class TestIbmCosHmacDetector:
         ),
     )
     def test_find_access_key_id(self, content, expected_output):
-        assert find_access_key_id(content) == expected_output
+        assert find_access_key_id(get_code_snippet(content.splitlines(), 1)) == expected_output
 
 
 @pytest.mark.parametrize(

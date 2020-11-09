@@ -6,6 +6,7 @@ import responses
 from detect_secrets.constants import VerifiedResult
 from detect_secrets.plugins.cloudant import CloudantDetector
 from detect_secrets.plugins.cloudant import find_account
+from detect_secrets.util.code_snippet import get_code_snippet
 
 CL_ACCOUNT = 'testy_-test'  # also called user
 # only detecting 64 hex CL generated password
@@ -77,7 +78,7 @@ class TestCloudantDetector:
 
         assert CloudantDetector().verify(
             CL_PW,
-            'cloudant_host={}'.format(CL_ACCOUNT),
+            get_code_snippet(['cloudant_host={}'.format(CL_ACCOUNT)], 1),
         ) == VerifiedResult.VERIFIED_FALSE
 
     @responses.activate
@@ -91,20 +92,20 @@ class TestCloudantDetector:
         )
         assert CloudantDetector().verify(
             CL_PW,
-            'cloudant_host={}'.format(CL_ACCOUNT),
+            get_code_snippet(['cloudant_host={}'.format(CL_ACCOUNT)], 1),
         ) == VerifiedResult.VERIFIED_TRUE
 
     @responses.activate
     def test_verify_unverified_secret(self):
         assert CloudantDetector().verify(
             CL_PW,
-            'cloudant_host={}'.format(CL_ACCOUNT),
+            get_code_snippet(['cloudant_host={}'.format(CL_ACCOUNT)], 1),
         ) == VerifiedResult.UNVERIFIED
 
     def test_verify_no_secret(self):
         assert CloudantDetector().verify(
             CL_PW,
-            'no_un={}'.format(CL_ACCOUNT),
+            get_code_snippet(['no_un={}'.format(CL_ACCOUNT)], 1),
         ) == VerifiedResult.UNVERIFIED
 
     @pytest.mark.parametrize(
@@ -166,4 +167,4 @@ class TestCloudantDetector:
         ),
     )
     def test_find_account(self, content, expected_output):
-        assert find_account(content) == expected_output
+        assert find_account(get_code_snippet(content.splitlines(), 1)) == expected_output

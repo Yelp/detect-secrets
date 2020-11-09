@@ -24,14 +24,14 @@ class IbmCloudIamDetector(RegexBasedDetector):
         ),
     ]
 
-    def verify(self, token, **kwargs):
-        response = verify_cloud_iam_api_key(token)
+    def verify(self, secret: str) -> VerifiedResult:
+        response = verify_cloud_iam_api_key(secret)
 
         return VerifiedResult.VERIFIED_TRUE if response.status_code == 200 \
             else VerifiedResult.VERIFIED_FALSE
 
 
-def verify_cloud_iam_api_key(apikey):  # pragma: no cover
+def verify_cloud_iam_api_key(apikey: str) -> requests.Response:  # pragma: no cover
     if type(apikey) == bytes:
         apikey = apikey.decode('UTF-8')
     headers = {

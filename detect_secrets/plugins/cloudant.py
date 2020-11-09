@@ -1,8 +1,10 @@
 import re
+from typing import List
 
 import requests
 
 from ..constants import VerifiedResult
+from ..util.code_snippet import CodeSnippet
 from .base import RegexBasedDetector
 
 
@@ -60,19 +62,18 @@ class CloudantDetector(RegexBasedDetector):
         ),
     ]
 
-    def verify(self, token, context):
-
+    def verify(self, secret: str, context: CodeSnippet) -> VerifiedResult:
         hosts = find_account(context)
         if not hosts:
             return VerifiedResult.UNVERIFIED
 
         for host in hosts:
-            return verify_cloudant_key(host, token)
+            return verify_cloudant_key(host, secret)
 
         return VerifiedResult.VERIFIED_FALSE
 
 
-def find_account(context):
+def find_account(context: CodeSnippet) -> List[str]:
     opt_hostname_keyword = r'(?:hostname|host|username|id|user|userid|user-id|user-name|' \
         'name|user_id|user_name|uname|account)'
     account = r'(\w[\w\-]*)'
@@ -98,13 +99,13 @@ def find_account(context):
 
     return [
         match
-        for line in context.splitlines()
+        for line in context
         for regex in regexes
         for match in regex.findall(line)
     ]
 
 
-def verify_cloudant_key(hostname, token):
+def verify_cloudant_key(hostname: str, token: str) -> VerifiedResult:
     headers = {'Content-type': 'application/json'}
     request_url = 'https://{hostname}:' \
         '{token}' \

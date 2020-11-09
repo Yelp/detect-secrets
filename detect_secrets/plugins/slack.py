@@ -23,10 +23,10 @@ class SlackDetector(RegexBasedDetector):
         ),
     )
 
-    def verify(self, token, **kwargs):  # pragma: no cover
-        if token.startswith('https://hooks.slack.com/services/T'):
+    def verify(self, secret: str) -> VerifiedResult:  # pragma: no cover
+        if secret.startswith('https://hooks.slack.com/services/T'):
             response = requests.post(
-                token,
+                secret,
                 json={
                     'text': '',
                 },
@@ -36,7 +36,7 @@ class SlackDetector(RegexBasedDetector):
             response = requests.post(
                 'https://slack.com/api/auth.test',
                 data={
-                    'token': token,
+                    'token': secret,
                 },
             ).json()
             valid = response['ok']

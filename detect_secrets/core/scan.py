@@ -11,6 +11,7 @@ from ..settings import get_settings
 from ..transformers import get_transformers
 from ..transformers import ParsingError
 from ..types import SelfAwareCallable
+from ..util.code_snippet import get_code_snippet
 from ..util.inject import get_injectable_variables
 from ..util.inject import inject_variables_into_function
 from .log import log
@@ -26,12 +27,28 @@ def scan_line(line: str) -> Generator[PotentialSecret, None, None]:
     )
 
     for plugin in get_plugins():
-        yield from _scan_line(
+        for secret in _scan_line(
             plugin=plugin,
             filename='adhoc-string-scan',
             line=line,
             line_number=0,
-        )
+        ):
+            for filter_fn in get_filters_with_parameter('context'):
+                if inject_variables_into_function(
+                    filter_fn,
+                    filename=secret.filename,
+                    secret=secret.secret_value,
+                    plugin=plugin,
+                    line=line,
+                    context=get_code_snippet(
+                        lines=[line],
+                        line_number=1,
+                    ),
+                ):
+                    log.debug(f'Skipping "{secret.secret_value}" due to `{filter_fn.path}`.')
+                    break
+            else:
+                yield secret
 
 
 def scan_file(filename: str) -> Generator[PotentialSecret, None, None]:
@@ -136,6 +153,8 @@ def _process_line_based_plugins(
     lines: List[Tuple[int, str]],
     filename: str,
 ) -> Generator[PotentialSecret, None, None]:
+    line_content = [line[1] for line in lines]
+
     # NOTE: We iterate through lines *then* plugins, because we want to quit early if any of the
     # filters return True.
     for line_number, line in lines:
@@ -149,7 +168,23 @@ def _process_line_based_plugins(
             continue
 
         for plugin in get_plugins():
-            yield from _scan_line(plugin, filename, line, line_number)
+            for secret in _scan_line(plugin, filename, line, line_number):
+                for filter_fn in get_filters_with_parameter('context'):
+                    if inject_variables_into_function(
+                        filter_fn,
+                        filename=secret.filename,
+                        secret=secret.secret_value,
+                        plugin=plugin,
+                        line=line,
+                        context=get_code_snippet(
+                            lines=line_content,
+                            line_number=line_number,
+                        ),
+                    ):
+                        log.debug(f'Skipping "{secret.secret_value}" due to `{filter_fn.path}`.')
+                        break
+                else:
+                    yield secret
 
 
 def _scan_line(

@@ -3,6 +3,7 @@ import warnings
 from unittest import mock
 
 import pytest
+import responses
 
 import detect_secrets
 from detect_secrets import filters
@@ -64,3 +65,10 @@ def prevent_color():
             ctx_stack.enter_context(ctx)
 
         yield
+
+
+@pytest.fixture(autouse=True)
+def mocked_requests():
+    # With default verified secrets, we don't want to be making API calls during tests.
+    with responses.RequestsMock() as rsps:
+        yield rsps

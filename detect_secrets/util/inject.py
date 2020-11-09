@@ -1,11 +1,12 @@
 from typing import Any
 from typing import Callable
+from typing import Optional
 from typing import Tuple
 
 from ..types import SelfAwareCallable
 
 
-def inject_variables_into_function(func: SelfAwareCallable, **kwargs: Any) -> Any:
+def inject_variables_into_function(func: SelfAwareCallable, **kwargs: Any) -> Optional[Any]:
     variables_to_inject = set(kwargs.keys())
     values = {
         key: kwargs[key]
