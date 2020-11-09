@@ -9,13 +9,13 @@ from typing import Union
 
 from . import upgrades
 from ..__version__ import VERSION
+from ..exceptions import UnableToReadBaselineError
 from ..settings import configure_settings_from_baseline
 from ..settings import get_settings
 from ..util import git
 from ..util.importlib import import_modules_from_package
 from ..util.path import get_relative_path_if_in_cwd
 from ..util.semver import Version
-from .exceptions import UnableToReadBaselineError
 from .log import log
 from .secrets_collection import SecretsCollection
 

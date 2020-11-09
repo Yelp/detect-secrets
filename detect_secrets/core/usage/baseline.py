@@ -1,7 +1,7 @@
 import argparse
 
 from .. import baseline
-from ..exceptions import UnableToReadBaselineError
+from ...exceptions import UnableToReadBaselineError
 from .common import initialize_plugin_settings
 from .common import valid_path
 

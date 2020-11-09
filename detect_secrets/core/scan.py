@@ -14,7 +14,7 @@ from ..types import SelfAwareCallable
 from ..util.inject import get_injectable_variables
 from ..util.inject import inject_variables_into_function
 from .log import log
-from .plugins.util import Plugin
+from .plugins import Plugin
 from .potential_secret import PotentialSecret
 
 

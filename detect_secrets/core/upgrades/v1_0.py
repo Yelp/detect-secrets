@@ -27,6 +27,13 @@ def _migrate_filters(baseline: Dict[str, Any]) -> None:
         {
             'path': 'detect_secrets.filters.heuristic.is_likely_id_string',
         },
+        {
+            'path': 'detect_secrets.filters.common.is_ignored_due_to_verification_policies',
+
+            # Hard-code this, just in case VerifiedResult enum values changes.
+            # This corresponds to VerifiedResult.UNVERIFIED
+            'min_level': 2,
+        },
     ]
 
     if baseline.get('exclude'):

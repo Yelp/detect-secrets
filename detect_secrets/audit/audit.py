@@ -4,12 +4,12 @@ the secrets flagged are actually secrets.
 """
 from . import io
 from ..core import baseline
+from ..exceptions import SecretNotFoundOnSpecifiedLineError
 from ..types import SecretContext
 from ..util.code_snippet import get_code_snippet
 from .common import get_baseline_from_file
 from .common import get_raw_secret_from_file
 from .common import open_file
-from .exceptions import SecretNotFoundOnSpecifiedLineError
 from .iterator import BidirectionalIterator
 from .iterator import get_secret_iterator
 

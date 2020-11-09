@@ -1,6 +1,7 @@
 import argparse
 
 from ... import filters
+from ...constants import VerifiedResult
 from ...settings import get_settings
 from .common import valid_path
 
@@ -14,11 +15,17 @@ def add_filter_options(parent: argparse.ArgumentParser) -> None:
         ),
     )
 
-    parser.add_argument(
+    verify_group = parser.add_mutually_exclusive_group()
+    verify_group.add_argument(
         '-n',
         '--no-verify',
         action='store_true',
         help='Disables additional verification of secrets via network call.',
+    )
+    verify_group.add_argument(
+        '--only-verified',
+        action='store_true',
+        help='Only flags secrets that can be verified.',
     )
 
     parser.add_argument(
@@ -60,3 +67,18 @@ def parse_args(args: argparse.Namespace) -> None:
         and args.word_list_file
     ):
         filters.wordlist.initialize(args.word_list_file)
+
+    if not args.no_verify:
+        get_settings().filters[
+            'detect_secrets.filters.common.is_ignored_due_to_verification_policies'
+        ] = {
+            'min_level': (
+                VerifiedResult.VERIFIED_TRUE
+                if args.only_verified
+                else VerifiedResult.UNVERIFIED
+            ).value,
+        }
+    else:
+        get_settings().disable_filters(
+            'detect_secrets.filters.common.is_ignored_due_to_verification_policies',
+        )
