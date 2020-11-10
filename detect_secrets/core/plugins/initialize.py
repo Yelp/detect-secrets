@@ -1,6 +1,11 @@
+from typing import Any
+from typing import Dict
+from typing import Iterable
+
 from ...settings import get_settings
 from ..log import log
 from .util import get_mapping_from_secret_type_to_class
+from .util import get_plugins_from_file
 from .util import Plugin
 
 
@@ -13,10 +18,8 @@ def from_secret_type(secret_type: str) -> Plugin:
     except KeyError:
         raise TypeError
 
-    config = get_settings().plugins.get(plugin_type.__name__, {})
-
     try:
-        return plugin_type(**config)
+        return plugin_type(**_get_config(plugin_type.__name__))
     except TypeError:
         log.error('Unable to initialize plugin!')
         raise
@@ -38,9 +41,35 @@ def from_plugin_classname(classname: str) -> Plugin:
         )
         raise TypeError
 
-    config = get_settings().plugins.get(classname, {})
     try:
-        return plugin_type(**config)
+        return plugin_type(**_get_config(classname))
     except TypeError:
         log.error('Unable to initialize plugin!')
         raise
+
+
+def from_file(filename: str) -> Iterable[Plugin]:
+    """
+    :raises: FileNotFoundError
+    :raises: InvalidFile
+    """
+    output = []
+    for plugin_class in get_plugins_from_file(filename):
+        if plugin_class.secret_type in get_mapping_from_secret_type_to_class():
+            log.debug(f'Duplicate plugin detected: {plugin_class.__name__}. Skipping...')
+
+        get_mapping_from_secret_type_to_class()[plugin_class.secret_type] = plugin_class
+        output.append(plugin_class)
+
+    return output
+
+
+def _get_config(classname: str) -> Dict[str, Any]:
+    output = {**get_settings().plugins.get(classname, {})}
+
+    # External plugins use this key to specify the source. However, this key is not an
+    # initialization variable. Therefore, let's remove it when initializing this config.
+    if 'path' in output:
+        output.pop('path')
+
+    return output

@@ -7,9 +7,9 @@ from typing import List
 from . import io
 from ..core import baseline
 from ..core import plugins
-from ..core.exceptions import InvalidBaselineError
 from ..core.potential_secret import PotentialSecret
-from .exceptions import SecretNotFoundOnSpecifiedLineError
+from ..exceptions import InvalidBaselineError
+from ..exceptions import SecretNotFoundOnSpecifiedLineError
 
 
 def get_baseline_from_file(filename: str) -> Dict[str, Any]:
@@ -18,7 +18,6 @@ def get_baseline_from_file(filename: str) -> Dict[str, Any]:
     """
     try:
         # TODO: how to quit early if no line numbers provided?
-        # TODO: What to do about `custom_plugin_paths`?
         # TODO: Should we upgrade this?
         return baseline.load(baseline.load_from_file(filename), filename)
     except (IOError, json.decoder.JSONDecodeError):

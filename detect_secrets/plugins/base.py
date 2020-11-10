@@ -100,6 +100,12 @@ class BasePlugin(metaclass=ABCMeta):
             VerifiedResult.UNVERIFIED: 'True  (unverified)',
         }[verified_result]
 
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, BasePlugin):
+            raise NotImplementedError
+
+        return self.json() == other.json()
+
 
 class RegexBasedDetector(BasePlugin, metaclass=ABCMeta):
     """Parent class for regular-expression based detectors.
