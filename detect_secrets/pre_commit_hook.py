@@ -34,7 +34,10 @@ def main(argv=None):
     try:
         # If baseline is provided, we first want to make sure
         # it's valid, before doing any further computation.
-        baseline_collection = get_baseline(args.baseline[0])
+        baseline_collection = get_baseline(
+            args.baseline[0],
+            plugin_filenames=args.plugin_filenames,
+        )
     except (IOError, TypeError, ValueError):
         # Error logs handled within logic.
         return 1
@@ -123,8 +126,14 @@ def main(argv=None):
     return 0
 
 
-def get_baseline(baseline_filename):
+def get_baseline(baseline_filename, plugin_filenames=None):
     """
+    :type baseline_filename: string
+    :param baseline_filename: name of the baseline file
+
+    :type plugin_filenames: tuple
+    :param plugin_filenames: list of plugins to import
+
     :raises: IOError
     :raises: ValueError
     """
@@ -137,6 +146,7 @@ def get_baseline(baseline_filename):
         _get_baseline_string_from_file(
             baseline_filename,
         ),
+        plugin_filenames=plugin_filenames,
     )
 
 

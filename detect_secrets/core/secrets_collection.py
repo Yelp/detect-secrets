@@ -52,17 +52,23 @@ class SecretsCollection:
         self.output_verified_false = output_verified_false
 
     @classmethod
-    def load_baseline_from_string(cls, string):
+    def load_baseline_from_string(cls, string, plugin_filenames=None):
         """Initializes a SecretsCollection object from string.
 
         :type string: str
         :param string: string to load SecretsCollection from.
 
+        :type plugin_filenames: tuple
+        :param plugin_filenames: list of plugins to import
+
         :rtype: SecretsCollection
         :raises: IOError
         """
         try:
-            return cls.load_baseline_from_dict(json.loads(string))
+            return cls.load_baseline_from_dict(
+                json.loads(string),
+                plugin_filenames=plugin_filenames,
+            )
         except (IOError, ValueError):
             log.error('Incorrectly formatted baseline!')
             raise
