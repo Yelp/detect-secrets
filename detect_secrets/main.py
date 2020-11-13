@@ -7,11 +7,11 @@ from typing import Optional
 from . import audit
 from .core import baseline
 from .core import plugins
-from .core.exceptions import InvalidBaselineError
 from .core.log import log
 from .core.scan import get_plugins
 from .core.scan import scan_line
 from .core.usage import ParserBuilder
+from .exceptions import InvalidBaselineError
 
 
 def main(argv: Optional[List[str]] = None) -> int:

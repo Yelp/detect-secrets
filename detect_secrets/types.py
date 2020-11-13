@@ -4,8 +4,8 @@ from typing import NoReturn
 from typing import Optional
 from typing import Set
 
-from .audit.exceptions import SecretNotFoundOnSpecifiedLineError
 from .core.potential_secret import PotentialSecret
+from .exceptions import SecretNotFoundOnSpecifiedLineError
 from .util.code_snippet import CodeSnippet
 
 
