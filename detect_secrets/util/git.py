@@ -5,6 +5,15 @@ from typing import Set
 from .path import get_relative_path_if_in_cwd
 
 
+def get_root_directory() -> str:
+    """
+    :raises: CalledProcessError
+    """
+    return subprocess.check_output(
+        'git rev-parse --show-toplevel'.split(),
+    ).decode('utf-8').strip()
+
+
 def get_tracked_files(root: str) -> Set[str]:
     """Parsing .gitignore rules is hard.
 
@@ -12,21 +21,19 @@ def get_tracked_files(root: str) -> Set[str]:
     currently tracked git files, and start our search from there.
     After all, if it isn't in the git repo, we're not concerned about
     it, because secrets aren't being entered in a shared place.
+
+    :raises: CalledProcessError
     """
+    files = subprocess.check_output(
+        ['git', '-C', root, 'ls-files'],
+        stderr=subprocess.DEVNULL,
+    )
+
     output = set([])
-    try:
-        files = subprocess.check_output(
-            ['git', '-C', root, 'ls-files'],
-            stderr=subprocess.DEVNULL,
-        )
-
-        for filename in files.decode('utf-8').split():
-            path = get_relative_path_if_in_cwd(os.path.join(root, filename))
-            if path:
-                output.add(path)
-
-    except subprocess.CalledProcessError:
-        pass
+    for filename in files.decode('utf-8').split():
+        path = get_relative_path_if_in_cwd(os.path.join(root, filename))
+        if path:
+            output.add(path)
 
     return output
 

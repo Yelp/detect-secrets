@@ -42,11 +42,12 @@ class HighEntropyStringsPlugin(BasePlugin, metaclass=ABCMeta):
 
     def analyze_line(
         self,
-        *args,
+        filename: str,
+        line: str,
+        line_number: int = 0,
         enable_eager_search: bool = False,
-        **kwargs,
     ) -> Set[PotentialSecret]:
-        output = super().analyze_line(*args, **kwargs)
+        output = super().analyze_line(filename=filename, line=line, line_number=line_number)
         if output or not enable_eager_search:
             return output
 
@@ -54,7 +55,7 @@ class HighEntropyStringsPlugin(BasePlugin, metaclass=ABCMeta):
         # quotes around the expected secret. In these cases, we only try to search it without
         # requiring quotes when we can't find any results *with* quotes.
         with self.non_quoted_string_regex(is_exact_match=False):
-            return super().analyze_line(*args, **kwargs)
+            return super().analyze_line(filename=filename, line=line, line_number=line_number)
 
     def calculate_shannon_entropy(self, data: str) -> float:
         """Returns the entropy of a given string.

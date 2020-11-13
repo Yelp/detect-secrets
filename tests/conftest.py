@@ -64,3 +64,9 @@ def prevent_color():
             ctx_stack.enter_context(ctx)
 
         yield
+
+
+@pytest.fixture(autouse=True)
+def prevent_clear_screen():
+    with mock.patch('detect_secrets.audit.io.clear_screen'):
+        yield

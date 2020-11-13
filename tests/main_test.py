@@ -120,6 +120,49 @@ class TestScanString:
             assert printer.message.strip() == 'AWSKeyDetector: False'
 
 
+class TestScanOnlyAllowlisted:
+    @staticmethod
+    def test_basic(mock_log):
+        with mock_printer(main_module) as printer:
+            main_module.main(['scan', '--only-allowlisted', 'test_data/config.yaml'])
+
+        output = json.loads(printer.message)
+        assert len(output['results']) == 1
+
+        # Baseline carries this configuration.
+        assert 'detect_secrets.filters.allowlist.is_line_allowlisted' not in {
+            item['path']
+            for item in output['filters_used']
+        }
+
+        with tempfile.NamedTemporaryFile() as f, mock.patch(
+            'detect_secrets.audit.io.get_user_decision',
+            return_value='s',
+        ):
+            f.write(printer.message.encode())
+            f.seek(0)
+
+            main_module.main(['audit', f.name])
+
+        assert 'Nothing to audit' not in mock_log.info_messages
+
+    @staticmethod
+    def test_only_displays_result_if_actual_secret():
+        with mock_printer(main_module) as printer:
+            main_module.main([
+                'scan',
+                '--only-allowlisted',
+                '--disabled-plugins', 'KeywordDetector',
+                'test_data/config.ini',
+            ])
+
+        output = json.loads(printer.message)
+
+        # The only allowlisted item in this is an entirely numerical string, so this
+        # should not be detected.
+        assert not output['results']
+
+
 @contextmanager
 def mock_stdin(response=None):
     if not response:

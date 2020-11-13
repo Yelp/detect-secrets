@@ -10,6 +10,7 @@ def add_scan_action(parent: argparse._SubParsersAction) -> argparse.ArgumentPars
     parser = parent.add_parser('scan')
 
     _add_adhoc_scanning(parser)
+    _add_pragma_scanning(parser)
     _add_initialize_baseline_options(parser)
 
     return parser
@@ -22,6 +23,17 @@ def _add_adhoc_scanning(parser: argparse.ArgumentParser) -> None:
         const=True,
         help=(
             'Scans an individual string, and displays configured plugins\' verdict.'
+        ),
+    )
+
+
+def _add_pragma_scanning(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        '--only-allowlisted',
+        action='store_true',
+        help=(
+            'Only scans the lines that are flagged with `allowlist secret`. This helps '
+            'verify that individual exceptions are indeed non-secrets.'
         ),
     )
 

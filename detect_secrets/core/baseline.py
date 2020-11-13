@@ -1,10 +1,8 @@
 import json
-import os
 import time
 from typing import Any
 from typing import Callable
 from typing import Dict
-from typing import List
 from typing import Union
 
 from . import upgrades
@@ -12,11 +10,9 @@ from ..__version__ import VERSION
 from ..exceptions import UnableToReadBaselineError
 from ..settings import configure_settings_from_baseline
 from ..settings import get_settings
-from ..util import git
 from ..util.importlib import import_modules_from_package
-from ..util.path import get_relative_path_if_in_cwd
 from ..util.semver import Version
-from .log import log
+from .scan import get_files_to_scan
 from .secrets_collection import SecretsCollection
 
 
@@ -24,39 +20,10 @@ def create(*paths: str, should_scan_all_files: bool = False) -> SecretsCollectio
     """Scans all the files recursively in path to initialize a baseline."""
     secrets = SecretsCollection()
 
-    for path in paths:
-        files = _get_files_to_scan(path, should_scan_all_files)
-        for filename in files:
-            secrets.scan_file(filename)
+    for filename in get_files_to_scan(*paths, should_scan_all_files=should_scan_all_files):
+        secrets.scan_file(filename)
 
     return secrets
-
-
-def _get_files_to_scan(root: str, should_scan_all_files: bool) -> List[str]:
-    output: List[str] = []
-    if not should_scan_all_files:
-        valid_paths = git.get_tracked_files(root)
-        if not valid_paths:
-            log.warning('Did not detect git repository. Try scanning all files instead.')
-            return output
-
-    for path_root, _, filenames in os.walk(root):
-        for filename in filenames:
-            path = get_relative_path_if_in_cwd(os.path.join(path_root, filename))
-            if not path:
-                # e.g. symbolic links may be pointing outside the root directory
-                continue
-
-            if (
-                not should_scan_all_files
-                and path not in valid_paths
-            ):
-                # Not a git-tracked file
-                continue
-
-            output.append(path)
-
-    return output
 
 
 def load(baseline: Dict[str, Any], filename: str) -> SecretsCollection:

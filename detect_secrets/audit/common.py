@@ -10,6 +10,8 @@ from ..core import plugins
 from ..core.potential_secret import PotentialSecret
 from ..exceptions import InvalidBaselineError
 from ..exceptions import SecretNotFoundOnSpecifiedLineError
+from ..util.inject import get_injectable_variables
+from ..util.inject import inject_variables_into_function
 
 
 def get_baseline_from_file(filename: str) -> Dict[str, Any]:
@@ -43,10 +45,18 @@ def get_raw_secret_from_file(secret: PotentialSecret) -> str:
     except IndexError:
         raise SecretNotFoundOnSpecifiedLineError(secret.line_number)
 
-    identified_secrets = plugin.analyze_line(
+    function = plugin.__class__.analyze_line
+    if not hasattr(function, 'injectable_variables'):
+        function.injectable_variables = set(get_injectable_variables(plugin.analyze_line))
+        function.path = f'{plugin.__class__.__name__}.analyze_line'
+
+    identified_secrets = inject_variables_into_function(
+        function,
+        self=plugin,
         filename=secret.filename,
         line=target_line,
         line_number=secret.line_number,     # TODO: this will be optional
+        enable_eager_search=True,
     )
 
     for identified_secret in identified_secrets:
