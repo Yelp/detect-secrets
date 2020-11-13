@@ -2,7 +2,14 @@ import argparse
 
 
 def add_audit_action(parent: argparse._SubParsersAction) -> argparse.ArgumentParser:
-    parser = parent.add_parser('audit')
+    parser = parent.add_parser(
+        'audit',
+        help='Manually assesses a baseline to determine validity of secrets found.',
+        description=(
+            'Auditing a baseline allows analysts to optimize plugins for the highest '
+            'signal-to-noise ratio, for their environment.'
+        ),
+    )
 
     parser.add_argument(
         'filename',

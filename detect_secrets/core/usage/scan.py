@@ -7,7 +7,14 @@ from .common import initialize_plugin_settings
 
 
 def add_scan_action(parent: argparse._SubParsersAction) -> argparse.ArgumentParser:
-    parser = parent.add_parser('scan')
+    parser = parent.add_parser(
+        'scan',
+        help='Creates a baseline by scanning a repository for secrets.',
+        description=(
+            'Scans a repository for secrets in code. The generated output is compatible with '
+            '`detect-secrets-hook --baseline`.'
+        ),
+    )
 
     _add_adhoc_scanning(parser)
     _add_initialize_baseline_options(parser)
