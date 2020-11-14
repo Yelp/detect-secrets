@@ -12,6 +12,7 @@ from .core.scan import get_plugins
 from .core.scan import scan_line
 from .core.usage import ParserBuilder
 from .exceptions import InvalidBaselineError
+from .settings import get_settings
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -35,6 +36,12 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
 
 
 def handle_scan_action(args: argparse.Namespace) -> None:
+    if args.list_all_plugins:
+        # NOTE: If there was a baseline provided, it would already have been parsed and
+        # settings populated by the time it reaches here.
+        print('\n'.join(get_settings().plugins))
+        return
+
     if args.string:
         line = args.string
         if isinstance(args.string, bool):
