@@ -1,6 +1,8 @@
 import os
 from functools import lru_cache
 
+import requests
+
 from ..constants import VerifiedResult
 from ..core.plugins import Plugin
 from ..settings import get_settings
@@ -43,12 +45,16 @@ def is_ignored_due_to_verification_policies(
         function.injectable_variables = set(get_injectable_variables(plugin.verify))
         function.path = f'{plugin.__class__.__name__}.verify'
 
-    verify_result = inject_variables_into_function(
-        function,
-        self=plugin,
-        secret=secret,
-        context=context,
-    )
+    try:
+        verify_result = inject_variables_into_function(
+            function,
+            self=plugin,
+            secret=secret,
+            context=context,
+        )
+    except requests.exceptions.RequestException:
+        verify_result = VerifiedResult.UNVERIFIED
+
     if not verify_result:
         return False
 

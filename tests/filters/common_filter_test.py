@@ -1,6 +1,7 @@
 import re
 
 import pytest
+import requests
 
 from detect_secrets import main as main_module
 from detect_secrets.constants import VerifiedResult
@@ -43,6 +44,11 @@ class TestVerify:
         with register_plugin(ContextAwareMockPlugin()):
             main_module.main(['scan', '--string', 'fake-secret'])
 
+    @staticmethod
+    def test_handles_request_error_gracefully():
+        with register_plugin(ExceptionRaisingMockPlugin()):
+            main_module.main(['scan', '--string', 'fake-secret'])
+
 
 class MockPlugin(RegexBasedDetector):
     denylist = (
@@ -65,3 +71,8 @@ class MockPlugin(RegexBasedDetector):
 class ContextAwareMockPlugin(MockPlugin):
     def verify(self, secret, context):
         return VerifiedResult.UNVERIFIED
+
+
+class ExceptionRaisingMockPlugin(MockPlugin):
+    def verify(self, secret):
+        raise requests.exceptions.ConnectionError
