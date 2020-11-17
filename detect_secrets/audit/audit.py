@@ -72,10 +72,12 @@ def _classify_secrets(iterator: BidirectionalIterator) -> bool:
 
         if decision == io.InputOptions.BACK:
             iterator.step_back_on_next_iteration()
-        elif decision == io.InputOptions.YES:
+
+        # The question asked is: "Should this be committed to the repository?"
+        elif decision == io.InputOptions.NO:
             secret.is_secret = True
             has_changes = True
-        elif decision == io.InputOptions.NO:
+        elif decision == io.InputOptions.YES:
             secret.is_secret = False
             has_changes = True
         elif decision == io.InputOptions.SKIP and secret.is_secret is not None:
