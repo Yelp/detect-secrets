@@ -107,14 +107,12 @@ FALSE_POSITIVES = {
     'null;',
     'pass',
     'pass)',
-    'password',
     'password)',
     'password))',
     'password,',
     'password},',
     'prompt',
     'redacted',
-    'secret',
     'some_key',
     'str',
     'str_to_sign',
@@ -151,7 +149,7 @@ SQUARE_BRACKETS = r'(\[\])'
 
 FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
     # e.g. my_password := "bar" or my_password := bar
-    r'({denylist})({closing})?{whitespace}:=?{whitespace}({quote}?)({secret})(\3)'.format(
+    r'({denylist})[^.]*({closing})?{whitespace}:=?{whitespace}({quote}?)({secret})(\3)'.format(
         denylist=DENYLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
@@ -161,7 +159,7 @@ FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
 )
 FOLLOWED_BY_COLON_REGEX = re.compile(
     # e.g. api_key: foo
-    r'({denylist})({closing})?:{whitespace}({quote}?)({secret})(\3)'.format(
+    r'({denylist})[^.]*({closing})?:{whitespace}({quote}?)({secret})(\3)'.format(
         denylist=DENYLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
@@ -171,7 +169,7 @@ FOLLOWED_BY_COLON_REGEX = re.compile(
 )
 FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX = re.compile(
     # e.g. api_key: "foo"
-    r'({denylist})({closing})?:({whitespace})({quote})({secret})(\4)'.format(
+    r'({denylist})[^.]*({closing})?:({whitespace})({quote})({secret})(\4)'.format(
         denylist=DENYLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
@@ -183,7 +181,7 @@ FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX
     # e.g. my_password = "bar"
     # e.g. my_password = @"bar"
     # e.g. my_password[] = "bar";
-    r'({denylist})({square_brackets})?{optional_whitespace}={optional_whitespace}(@)?(")({secret})(\5)'.format(  # noqa: E501
+    r'({denylist})[^.]*({square_brackets})?{optional_whitespace}={optional_whitespace}(@)?(")({secret})(\5)'.format(  # noqa: E501
         denylist=DENYLIST_REGEX,
         square_brackets=SQUARE_BRACKETS,
         optional_whitespace=OPTIONAL_WHITESPACE,
@@ -192,7 +190,7 @@ FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX
 )
 FOLLOWED_BY_EQUAL_SIGNS_REGEX = re.compile(
     # e.g. my_password = bar
-    r'({denylist})({closing})?{whitespace}={whitespace}({quote}?)({secret})(\3)'.format(
+    r'({denylist})[^.]*({closing})?{whitespace}={whitespace}({quote}?)({secret})(\3)'.format(
         denylist=DENYLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
@@ -202,7 +200,7 @@ FOLLOWED_BY_EQUAL_SIGNS_REGEX = re.compile(
 )
 FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
     # e.g. my_password = "bar"
-    r'({denylist})({closing})?{whitespace}={whitespace}({quote})({secret})(\3)'.format(
+    r'({denylist})[^.]*({closing})?{whitespace}={whitespace}({quote})({secret})(\3)'.format(
         denylist=DENYLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
