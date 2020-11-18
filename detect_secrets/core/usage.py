@@ -256,17 +256,24 @@ class ScanOptions:
         # Pairing `--update` with `--scan` because it's only used for
         # initialization.
         self.parser.add_argument(
-            '--update',
+            '--old-baseline',
             nargs=1,
             metavar='OLD_BASELINE_FILE',
-            help='Update existing baseline by importing settings from it.',
-            dest='import_filename',
+            help='Exitinting secrets from existing baseline.',
+            dest='old_baseline',
         )
 
         self.parser.add_argument(
             '--all-files',
             action='store_true',
             help='Scan all files recursively (as compared to only scanning git tracked files).',
+        )
+
+        self.parser.add_argument(
+            '--junit-xml',
+            action='store_true',
+            dest='junit_xml',
+            help='Returns output in JUnit XML format.',
         )
 
         return self
