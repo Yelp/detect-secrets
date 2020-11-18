@@ -448,15 +448,18 @@ class PluginOptions:
 
         active_plugins = {}
         is_using_default_value = {}
+        # Validate custom_plugin_paths arg as it's optional parameter.
+        custom_plugin_paths = args.custom_plugin_paths if 'custom_plugin_paths' in args else ()
 
-        for plugin in get_all_plugin_descriptors(args.custom_plugin_paths):
+        for plugin in get_all_plugin_descriptors(custom_plugin_paths):
             arg_name = PluginOptions._convert_flag_text_to_argument_name(
                 plugin.disable_flag_text,
             )
 
             # Remove disabled plugins
             is_disabled = getattr(args, arg_name, False)
-            delattr(args, arg_name)
+            if(hasattr(args, arg_name)):
+                delattr(args, arg_name)
             if is_disabled:
                 continue
 

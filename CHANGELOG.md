@@ -29,6 +29,13 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 -->
 
 ### v0.14.3
+
+##### September 16th, 2020
+
+#### :bug: Bugfixes
+
+- Fix compatibility issue with detect-secrets-server after introduction of "---custom-plugins" ([#343], by [@francisluz])
+
 ##### August 27th, 2020
 
 #### :telescope: Accuracy
