@@ -23,6 +23,11 @@ class TestPotentialSecret:
                 potential_secret_factory(secret='B'),
                 False,
             ),
+            (
+                potential_secret_factory(lineno=1, extra_fields_to_compare=('lineno',)),
+                potential_secret_factory(lineno=2, extra_fields_to_compare=('lineno',)),
+                False,
+            ),
         ],
     )
     def test_equality(self, a, b, is_equal):

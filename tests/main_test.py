@@ -91,6 +91,7 @@ class TestMain:
             should_scan_all_files=False,
             word_list_file=None,
             word_list_hash=None,
+            extra_fields_to_compare=Any(tuple),
         )
 
     def test_scan_with_rootdir(self, mock_baseline_initialize):
@@ -106,6 +107,7 @@ class TestMain:
             should_scan_all_files=False,
             word_list_file=None,
             word_list_hash=None,
+            extra_fields_to_compare=Any(tuple),
         )
 
     def test_scan_with_exclude_args(self, mock_baseline_initialize):
@@ -123,6 +125,7 @@ class TestMain:
             should_scan_all_files=False,
             word_list_file=None,
             word_list_hash=None,
+            extra_fields_to_compare=Any(tuple),
         )
 
     @pytest.mark.parametrize(
@@ -190,6 +193,23 @@ class TestMain:
             should_scan_all_files=True,
             word_list_file=None,
             word_list_hash=None,
+            extra_fields_to_compare=Any(tuple),
+        )
+
+    def test_scan_with_extra_field_to_compare(self, mock_baseline_initialize):
+        with mock_stdin():
+            assert wrap_detect_secrets_main('scan --extra-field-to-compare lineno') == 0
+
+        mock_baseline_initialize.assert_called_once_with(
+            plugins=Any(tuple),
+            custom_plugin_paths=Any(tuple),
+            exclude_files_regex=None,
+            exclude_lines_regex=None,
+            path='.',
+            should_scan_all_files=False,
+            word_list_file=None,
+            word_list_hash=None,
+            extra_fields_to_compare=('lineno',),
         )
 
     def test_reads_from_stdin(self, mock_merge_baseline):

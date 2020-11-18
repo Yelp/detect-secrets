@@ -21,6 +21,7 @@ class PotentialSecret:
         secret,
         lineno=0,
         is_secret=None,
+        extra_fields_to_compare=None,
     ):
         """
         :type typ: str
@@ -41,6 +42,9 @@ class PotentialSecret:
         :type is_secret: bool|None
         :param is_secret: whether or not the secret is a true- or false- positive
 
+        :type extra_fields_to_compare: Tuple[str]|None
+        :param extra_fields_to_compare: Extra fields to be used during secrets comparison.
+
         :type is_verified: bool
         :param is_verified: whether the secret has been externally verified
         """
@@ -50,11 +54,13 @@ class PotentialSecret:
         self.set_secret(secret)
         self.is_secret = is_secret
         self.is_verified = False
+        # Remove duplicate extra fields
+        extra_compare_fields = list(set(extra_fields_to_compare or ()))
 
         # If two PotentialSecrets have the same values for these fields,
         # they are considered equal. Note that line numbers aren't included
         # in this, because line numbers are subject to change.
-        self.fields_to_compare = ['filename', 'secret_hash', 'type']
+        self.fields_to_compare = ['filename', 'secret_hash', 'type'] + extra_compare_fields
 
     def set_secret(self, secret):
         self.secret_hash = self.hash_secret(secret)

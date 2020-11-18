@@ -58,6 +58,7 @@ class BasePlugin:
         exclude_lines_regex=None,
         should_verify=False,
         false_positive_heuristics=None,
+        extra_fields_to_compare=None,
         **kwargs
     ):
         """
@@ -69,6 +70,9 @@ class BasePlugin:
         :type false_positive_heuristics: List[Callable]|None
         :param false_positive_heuristics: List of fp-heuristic functions
         applicable to this plugin
+
+        :type extra_fields_to_compare: Tuple[str]|None
+        :param extra_fields_to_compare: Extra fields to be used during secrets comparison.
         """
         self.exclude_lines_regex = (
             re.compile(exclude_lines_regex)
@@ -79,6 +83,8 @@ class BasePlugin:
         self.should_verify = should_verify
 
         self.false_positive_heuristics = false_positive_heuristics or []
+
+        self.extra_fields_to_compare = extra_fields_to_compare
 
     @classproperty
     def disable_flag_text(cls):
@@ -337,6 +343,7 @@ class RegexBasedDetector(BasePlugin):
                 filename,
                 identifier,
                 line_num,
+                extra_fields_to_compare=self.extra_fields_to_compare,
             )
             output[secret] = secret
 

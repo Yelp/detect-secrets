@@ -20,6 +20,7 @@ def initialize(
     word_list_file=None,
     word_list_hash=None,
     should_scan_all_files=False,
+    extra_fields_to_compare=None,
 ):
     """Scans the entire codebase for secrets, and returns a
     SecretsCollection object.
@@ -43,6 +44,9 @@ def initialize(
 
     :type should_scan_all_files: bool
 
+    :type extra_fields_to_compare: Tuple[str]|None
+    :param extra_fields_to_compare: Extra fields to be used during secrets comparison.
+
     :rtype: SecretsCollection
     """
     output = SecretsCollection(
@@ -52,6 +56,7 @@ def initialize(
         exclude_lines=exclude_lines_regex,
         word_list_file=word_list_file,
         word_list_hash=word_list_hash,
+        extra_fields_to_compare=extra_fields_to_compare,
     )
 
     files_to_scan = []

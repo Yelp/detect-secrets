@@ -7,11 +7,13 @@ def potential_secret_factory(
     filename='filename',
     secret='secret',
     lineno=1,
+    is_secret=None,
+    extra_fields_to_compare=(),
 ):
     """This is only marginally better than creating PotentialSecret objects directly,
     because of the default values.
     """
-    return PotentialSecret(type_, filename, secret, lineno)
+    return PotentialSecret(type_, filename, secret, lineno, is_secret, extra_fields_to_compare)
 
 
 def secrets_collection_factory(
@@ -20,6 +22,7 @@ def secrets_collection_factory(
     exclude_files_regex=None,
     word_list_file=None,
     word_list_hash=None,
+    extra_fields_to_compare=None,
 ):
     """
     :type secrets: list(dict)
@@ -28,6 +31,7 @@ def secrets_collection_factory(
 
     :type plugins: tuple
     :type exclude_files_regex: str|None
+    :type extra_fields_to_compare: Tuple[str]|None
 
     :rtype: SecretsCollection
     """
@@ -36,6 +40,7 @@ def secrets_collection_factory(
         exclude_files=exclude_files_regex,
         word_list_file=word_list_file,
         word_list_hash=word_list_hash,
+        extra_fields_to_compare=extra_fields_to_compare,
     )
 
     if plugins:
@@ -71,5 +76,6 @@ def _add_secret(collection, type_='type', secret='secret', filename='filename', 
         filename=filename,
         secret=secret,
         lineno=lineno,
+        extra_fields_to_compare=collection.extra_fields_to_compare,
     )
     collection.data[filename][tmp_secret] = tmp_secret

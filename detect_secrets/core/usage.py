@@ -49,6 +49,20 @@ class TupleAction(argparse.Action):
         )
 
 
+def add_extra_field_to_compare_argument(parser):
+    parser.add_argument(
+        '--extra-field-to-compare',
+        choices=['lineno'],
+        action=TupleAction,
+        default=(),
+        dest='extra_fields_to_compare',
+        help=(
+            'Extra field to compare while filtering potential secrets '
+            'detected during the initial scan, to avoid any possible rescan.'
+        ),
+    )
+
+
 def add_custom_plugins_argument(parser):
     """
     We turn custom_plugins_paths into a tuple so that we can
@@ -91,6 +105,7 @@ def add_shared_arguments(parser):
     """
     add_exclude_lines_argument(parser)
     add_word_list_argument(parser)
+    add_extra_field_to_compare_argument(parser)
     add_custom_plugins_argument(parser)
     add_use_all_plugins_argument(parser)
     add_no_verify_flag(parser)

@@ -23,6 +23,7 @@ class SecretsCollection:
         exclude_lines=None,
         word_list_file=None,
         word_list_hash=None,
+        extra_fields_to_compare=None,
     ):
         """
         :type plugins: tuple of detect_secrets.plugins.base.BasePlugin
@@ -42,6 +43,9 @@ class SecretsCollection:
 
         :type word_list_hash: str|None
         :param word_list_hash: optional iterated sha1 hash of the words in the word list.
+
+        :type extra_fields_to_compare: Tuple[str]|None
+        :param extra_fields_to_compare: Extra fields to be used during secrets comparison.
         """
         self.data = {}
         self.version = VERSION
@@ -52,6 +56,7 @@ class SecretsCollection:
         self.exclude_lines = exclude_lines
         self.word_list_file = word_list_file
         self.word_list_hash = word_list_hash
+        self.extra_fields_to_compare = extra_fields_to_compare
 
     @classmethod
     def load_baseline_from_string(cls, string):
@@ -117,6 +122,7 @@ class SecretsCollection:
 
         # In v0.14.0 the `--custom-plugins` option got added
         result.custom_plugin_paths = tuple(data.get('custom_plugin_paths', ()))
+        result.extra_fields_to_compare = tuple(data.get('extra_fields_to_compare', ()))
 
         result.plugins = tuple(
             initialize.from_plugin_classname(
@@ -125,6 +131,7 @@ class SecretsCollection:
                 exclude_lines_regex=result.exclude_lines,
                 automaton=automaton,
                 should_verify_secrets=False,
+                extra_fields_to_compare=result.extra_fields_to_compare,
                 **plugin
             ) for plugin in data['plugins_used']
         )
@@ -139,6 +146,7 @@ class SecretsCollection:
                     secret='will be replaced',
                     lineno=item['line_number'],
                     is_secret=item.get('is_secret'),
+                    extra_fields_to_compare=result.extra_fields_to_compare,
                 )
                 secret.secret_hash = item['hashed_secret']
                 result.data[filename][secret] = secret
@@ -257,7 +265,12 @@ class SecretsCollection:
         if type_:
             # Optimized lookup, because we know the type of secret
             # (and therefore, its hash)
-            tmp_secret = PotentialSecret(type_, filename, secret='will be overriden')
+            tmp_secret = PotentialSecret(
+                type_,
+                filename,
+                secret='will be overriden',
+                extra_fields_to_compare=self.extra_fields_to_compare,
+            )
             tmp_secret.secret_hash = secret
 
             if tmp_secret in self.data[filename]:
@@ -291,6 +304,7 @@ class SecretsCollection:
 
         return {
             'generated_at': strftime('%Y-%m-%dT%H:%M:%SZ', gmtime()),
+            'extra_fields_to_compare': self.extra_fields_to_compare,
             'exclude': {
                 'files': self.exclude_files,
                 'lines': self.exclude_lines,

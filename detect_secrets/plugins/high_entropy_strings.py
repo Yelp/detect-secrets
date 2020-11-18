@@ -27,7 +27,15 @@ class HighEntropyStringsPlugin(BasePlugin):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, charset, limit, exclude_lines_regex, automaton, *args):
+    def __init__(
+        self,
+        charset,
+        limit,
+        exclude_lines_regex,
+        automaton,
+        extra_fields_to_compare,
+        *args
+    ):
         if limit < 0 or limit > 8:
             raise ValueError(
                 'The limit set for HighEntropyStrings must be between 0.0 and 8.0',
@@ -46,6 +54,7 @@ class HighEntropyStringsPlugin(BasePlugin):
         super(HighEntropyStringsPlugin, self).__init__(
             exclude_lines_regex=exclude_lines_regex,
             false_positive_heuristics=false_positive_heuristics,
+            extra_fields_to_compare=extra_fields_to_compare,
         )
 
     def analyze(self, file, filename):
@@ -119,7 +128,13 @@ class HighEntropyStringsPlugin(BasePlugin):
             if self.is_secret_false_positive(result):
                 continue
 
-            secret = PotentialSecret(self.secret_type, filename, result, line_num)
+            secret = PotentialSecret(
+                self.secret_type,
+                filename,
+                result,
+                line_num,
+                extra_fields_to_compare=self.extra_fields_to_compare,
+            )
             output[secret] = secret
 
         return output
@@ -335,12 +350,20 @@ class HexHighEntropyString(HighEntropyStringsPlugin):
 
     secret_type = 'Hex High Entropy String'
 
-    def __init__(self, hex_limit, exclude_lines_regex=None, automaton=None, **kwargs):
+    def __init__(
+        self,
+        hex_limit,
+        exclude_lines_regex=None,
+        automaton=None,
+        extra_fields_to_compare=None,
+        **kwargs
+    ):
         super(HexHighEntropyString, self).__init__(
             charset=string.hexdigits,
             limit=hex_limit,
             exclude_lines_regex=exclude_lines_regex,
             automaton=automaton,
+            extra_fields_to_compare=extra_fields_to_compare,
         )
 
     @classproperty
@@ -405,7 +428,14 @@ class Base64HighEntropyString(HighEntropyStringsPlugin):
 
     secret_type = 'Base64 High Entropy String'
 
-    def __init__(self, base64_limit, exclude_lines_regex=None, automaton=None, **kwargs):
+    def __init__(
+        self,
+        base64_limit,
+        exclude_lines_regex=None,
+        automaton=None,
+        extra_fields_to_compare=None,
+        **kwargs
+    ):
         charset = (
             string.ascii_letters
             + string.digits
@@ -418,6 +448,7 @@ class Base64HighEntropyString(HighEntropyStringsPlugin):
             limit=base64_limit,
             exclude_lines_regex=exclude_lines_regex,
             automaton=automaton,
+            extra_fields_to_compare=extra_fields_to_compare,
         )
 
     @classproperty
