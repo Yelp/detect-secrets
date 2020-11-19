@@ -326,7 +326,7 @@ There are three different strategies we employ to try and find secrets in code:
 1. Regex-based Rules
 
    These are the most common type of plugin, and work well with well-structured secrets.
-   These secrets can optionally be [verified](docs/plugins.md#Verified%20Secrets), which increases
+   These secrets can optionally be [verified](docs/plugins.md#Verified-Secrets), which increases
    scanning precision. However, solely depending on these may negatively affect the recall of your
    scan.
 
@@ -343,7 +343,7 @@ There are three different strategies we employ to try and find secrets in code:
 
 Want to find a secret that we don't currently catch? You can also (easily) develop your own
 plugin, and use it with the engine! For more information, check out the
-[plugin documentation](docs/plugins.md#Using%20Your%20Own%20Plugin).
+[plugin documentation](docs/plugins.md#Using-Your-Own-Plugin).
 
 ### Filters
 
@@ -408,7 +408,7 @@ $ detect-secrets scan --only-allowlisted
 ```
 
 Want to write more custom logic to filter out false positives? Check out how to do this in
-our [filters documentation](docs/filters.md#Using%20Your%20Own%20Filters).
+our [filters documentation](docs/filters.md#Using-Your-Own-Filters).
 
 ## Caveats
 

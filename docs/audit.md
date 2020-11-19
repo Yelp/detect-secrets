@@ -46,7 +46,7 @@ labelled.
 
 > **Developer Note**: If you are using this to test your plugins, you may want to run the scan
   with only a specific plugin enabled. Check out
-  [how to disable plugins here](plugins.md#Disabling%20Plugins).
+  [how to disable plugins here](plugins.md#Disabling-Plugins).
 
 ### Handling Developer Secrets
 
@@ -63,7 +63,7 @@ the development teams.
 As `detect-secrets` exists to keep secrets out of source code, it makes no distinction between
 special types of secrets, and will treat all secrets equally. If you are looking for a more
 systematic method of excluding "test" secrets, try
-[writing your own filter](filters.md#Writing%20Your%20Own%20Filter).
+[writing your own filter](filters.md#Writing-Your-Own-Filter).
 
 ## Comparing Baselines
 
