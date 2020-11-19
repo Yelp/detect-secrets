@@ -73,10 +73,11 @@ def _get_allowlist_regexes(comment_tuple: Tuple[str, str], nextline: bool) -> Pa
     start = comment_tuple[0]
     end = comment_tuple[1]
     return re.compile(
-        # Note: Always use allowlist, whitelist will be deprecated in the future
-        r'{}{} *pragma: ?{}{}[ -]secret.*?{}[ \t]*$'.format(
-            r'^[ \t]*' if nextline else r'[ \t]+',
+        r'{}[ \t]*{} *pragma: ?{}{}[ -]secret.*?{}[ \t]*$'.format(
+            # Note: No text can precede a nextline pragma, this prevents obscuring what is allowed
+            r'^' if nextline else '',
             start,
+            # Note: Always use allowlist, whitelist will be deprecated in the future
             r'allowlist' if nextline else r'(allow|white)list',
             r'[ -]nextline' if nextline else '',
             end,
