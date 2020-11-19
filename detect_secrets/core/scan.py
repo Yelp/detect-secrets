@@ -162,7 +162,15 @@ def _process_line_based_plugins(
 
         # We apply line-specific filters, and see whether that allows us to quit early.
         if any([
-            inject_variables_into_function(filter_fn, filename=filename, line=line)
+            inject_variables_into_function(
+                filter_fn,
+                filename=filename,
+                line=line,
+                context=get_code_snippet(
+                    lines=line_content,
+                    line_number=line_number,
+                ),
+            )
             for filter_fn in get_filters_with_parameter('line')
         ]):
             continue
