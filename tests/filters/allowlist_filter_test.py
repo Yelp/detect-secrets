@@ -4,23 +4,26 @@ from detect_secrets.filters.allowlist import is_line_allowlisted
 from detect_secrets.util.code_snippet import CodeSnippet
 
 
+EXAMPLE_COMMENT_PARTS = (
+    ('#', ''),
+    ('# ', ' more text'),
+
+    ('//', ''),
+    ('// ', ' more text'),
+
+    ('/*', '*/'),
+    ('/* ', ' */'),
+
+    ('--', ''),
+    ('-- ', ' more text'),
+
+    ('<!--', '-->'),
+)
+
+
 @pytest.mark.parametrize(
     'prefix, suffix',
-    (
-        ('#', ''),
-        ('# ', ' more text'),
-
-        ('//', ''),
-        ('// ', ' more text'),
-
-        ('/*', '*/'),
-        ('/* ', ' */'),
-
-        ('--', ''),
-        ('-- ', ' more text'),
-
-        ('<!--', '-->'),
-    ),
+    EXAMPLE_COMMENT_PARTS,
 )
 def test_basic(prefix, suffix):
     line = f'AKIAEXAMPLE  {prefix}pragma: allowlist secret{suffix}'
@@ -33,21 +36,7 @@ def test_basic(prefix, suffix):
 
 @pytest.mark.parametrize(
     'prefix, suffix',
-    (
-        ('#', ''),
-        ('# ', ' more text'),
-
-        ('//', ''),
-        ('// ', ' more text'),
-
-        ('/*', '*/'),
-        ('/* ', ' */'),
-
-        ('--', ''),
-        ('-- ', ' more text'),
-
-        ('<!--', '-->'),
-    ),
+    EXAMPLE_COMMENT_PARTS,
 )
 def test_nextline(prefix, suffix):
     comment = f'{prefix}pragma: allowlist nextline secret{suffix}'
