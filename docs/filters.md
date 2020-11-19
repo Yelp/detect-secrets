@@ -143,7 +143,7 @@ Filters **MUST** only depend on some combination of the following variables:
 | `line`        | string                                         | The line being scanned.           |
 | `plugin`      | `detect_secrets.core.plugins.util.Plugin`      | The plugin that found the secret. |
 | `secret`      | string                                         | The raw secret value.             |
-| `context`     | `detect_secrets.util.code_snippet.CodeSnippet` | The file being scanned.           |
+| `context`     | `detect_secrets.util.code_snippet.CodeSnippet` | Lines of code surrounding secret. |
 
 ### Best Practices
 

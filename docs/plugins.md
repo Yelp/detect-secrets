@@ -173,6 +173,8 @@ The context is especially useful since research has shown
 Section V-D) that there's an 80% chance of finding a multi-factor secret (e.g. username + password)
 within five lines of context, before and after a secret.
 
+For more information on how to verify secrets, check out: https://github.com/streaak/keyhacks.
+
 ### Tips
 
 - There should be a total of three modified files in a minimal new plugin: the
