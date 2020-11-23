@@ -13,8 +13,18 @@ def test_handles_broken_yaml_gracefully():
             textwrap.dedent("""
             metadata:
                 name: {{ .values.name }}
-        """)[1:].encode(),
+            """)[1:].encode(),
         )
+        f.seek(0)
+
+        assert not list(scan.scan_file(f.name))
+
+
+def test_handles_binary_files_gracefully():
+    # NOTE: This suffix needs to be something that isn't in the known file types, as determined
+    # by `detect_secrets.util.filetype.determine_file_type`.
+    with tempfile.NamedTemporaryFile(suffix='.woff2') as f:
+        f.write(b'\x86')
         f.seek(0)
 
         assert not list(scan.scan_file(f.name))
