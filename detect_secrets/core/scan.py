@@ -159,6 +159,10 @@ def _process_line_based_plugins(
     # filters return True.
     for line_number, line in lines:
         line = line.rstrip()
+        code_snippet = get_code_snippet(
+            lines=line_content,
+            line_number=line_number,
+        )
 
         # We apply line-specific filters, and see whether that allows us to quit early.
         if any([
@@ -166,10 +170,7 @@ def _process_line_based_plugins(
                 filter_fn,
                 filename=filename,
                 line=line,
-                context=get_code_snippet(
-                    lines=line_content,
-                    line_number=line_number,
-                ),
+                context=code_snippet,
             )
             for filter_fn in get_filters_with_parameter('line')
         ]):
@@ -184,10 +185,7 @@ def _process_line_based_plugins(
                         secret=secret.secret_value,
                         plugin=plugin,
                         line=line,
-                        context=get_code_snippet(
-                            lines=line_content,
-                            line_number=line_number,
-                        ),
+                        context=code_snippet,
                     ):
                         log.debug(f'Skipping "{secret.secret_value}" due to `{filter_fn.path}`.')
                         break
