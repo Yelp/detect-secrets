@@ -75,6 +75,9 @@ def _get_allowlist_regexes(comment_tuple: Tuple[str, str], nextline: bool) -> Pa
     return re.compile(
         r'{}[ \t]*{} *pragma: ?{}{}[ -]secret.*?{}[ \t]*$'.format(
             # Note: No text can precede a nextline pragma, this prevents obscuring what is allowed
+            # For instance, we want to prevent the following case from working:
+            #     foo = 'bar' # pragma: allowlist nextline secret
+            #     pass = 'hunter2'
             r'^' if nextline else '',
             start,
             # Note: Always use allowlist, whitelist will be deprecated in the future
