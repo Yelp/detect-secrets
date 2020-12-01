@@ -126,18 +126,15 @@ class Settings:
         # Make a copy, so we don't affect the original.
         filter_configs = deepcopy(config)
         for filter_config in filter_configs:
-            path = filter_config.pop('path')
+            path = filter_config['path']
             self.filters[path] = filter_config
 
         return self
 
     def disable_filters(self, *filter_paths: str) -> 'Settings':
-        new_filters = {}
-        for filter_path, config in self.filters.items():
-            if filter_path not in filter_paths:
-                new_filters[filter_path] = config
+        for filter_path in filter_paths:
+            self.filters.pop(filter_path, None)
 
-        self.filters = new_filters
         return self
 
     def json(self) -> Dict[str, Any]:

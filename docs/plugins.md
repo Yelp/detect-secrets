@@ -99,7 +99,8 @@ This will be reflected in the baseline as such:
 ```
 
 Custom plugins will still need to extend `detect_secrets.plugins.base.BasePlugin`, and adhere to
-the interface for any other plugin (see [Writing Your Own Plugin](#Writing-Your-Own-Plugin)).
+the interface for any other plugin (see [Writing Your Own Plugin](#Writing-Your-Own-Plugin)). If
+there is something wrong with your plugin initialization, it will raise a `TypeError`.
 
 > :warning: **WARNING** :warning:
 >

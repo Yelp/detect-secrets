@@ -75,17 +75,17 @@ class SecretsCollection:
                 for secret in self.data[filename]
             }
 
-            for secret in old_results.data[filename]:
-                if secret not in mapping:
+            for old_secret in old_results.data[filename]:
+                if old_secret not in mapping:
                     continue
 
                 # Only override if there's no newer value.
-                if mapping[secret].is_secret is None:
-                    mapping[secret].is_secret = secret.is_secret
+                if mapping[old_secret].is_secret is None:
+                    mapping[old_secret].is_secret = old_secret.is_secret
 
                 # If the old value is false, it won't make a difference.
-                if not mapping[secret].is_verified:
-                    mapping[secret].is_verified = secret.is_verified
+                if not mapping[old_secret].is_verified:
+                    mapping[old_secret].is_verified = old_secret.is_verified
 
     def trim(
         self,

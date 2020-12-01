@@ -279,7 +279,19 @@ repos:
 
 #### Inline Allowlisting
 
-There are times when we want to exclude a false positive from blocking a commit
+There are times when we want to exclude a false positive from blocking a commit, without creating
+a baseline to do so. You can do so by adding a comment as such:
+
+```python
+secret = "hunter2"      # pragma: allowlist secret
+```
+
+or
+
+```javascript
+//  pragma: allowlist nextline secret
+const secret = "hunter2";
+```
 
 ### Auditing Secrets in Baseline
 
