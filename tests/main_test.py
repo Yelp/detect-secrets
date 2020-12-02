@@ -102,7 +102,7 @@ class TestScanString:
         ), mock_printer(main_module) as printer:
             assert main_module.main(['scan', '--string']) == 0
 
-            assert printer.message.strip() == 'AWSKeyDetector: True'
+            assert printer.message.strip() == 'AWSKeyDetector: True  (unverified)'
 
     @staticmethod
     def test_cli_overrides_stdin():

@@ -37,12 +37,14 @@ class TestVerify:
             if plugin_name != 'MockPlugin':
                 continue
 
-            assert should_be_present == (result == 'True')
+            assert should_be_present == result.startswith('True')
 
     @staticmethod
     def test_supports_injection_of_context():
+        # NOTE: This test case relies on the fact that this file contains a multi-factor
+        # AWS KeyPair.
         with register_plugin(ContextAwareMockPlugin()):
-            main_module.main(['scan', '--string', 'fake-secret'])
+            main_module.main(['scan', 'test_data/each_secret.py'])
 
     @staticmethod
     def test_handles_request_error_gracefully():
@@ -60,7 +62,6 @@ class MockPlugin(RegexBasedDetector):
         self.should_verify = should_verify
         self.verified_result = verified_result
 
-    # TODO: Need to inject context.
     def verify(self, secret):
         if not self.should_verify:
             raise AssertionError('Verification should not occur.')

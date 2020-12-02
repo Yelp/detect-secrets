@@ -17,8 +17,11 @@ from typing import Optional
 from typing import Pattern
 from typing import Set
 
+import requests
+
 from ..constants import VerifiedResult
 from ..core.potential_secret import PotentialSecret
+from ..settings import get_settings
 
 
 class BasePlugin(metaclass=ABCMeta):
@@ -70,11 +73,18 @@ class BasePlugin(metaclass=ABCMeta):
         if not secret:
             return 'False'
 
-        return 'True'
-        # TODO: check settings for verification
-        # if not should_verify:
-        #     # This is a secret, but we can't verify it. So this is the best we can do.
-        #     return 'True'
+        try:
+            verification_level = VerifiedResult(
+                get_settings().filters[
+                    'detect_secrets.filters.common.is_ignored_due_to_verification_policies'
+                ]['min_level'],
+            )
+        except KeyError:
+            verification_level = VerifiedResult.VERIFIED_FALSE
+
+        if verification_level == VerifiedResult.VERIFIED_FALSE:
+            # This is a secret, but we can't verify it. So this is the best we can do.
+            return 'True'
 
         if not secret.secret_value and not secret.is_verified:
             # If the secret isn't verified, but we don't know the true secret value, this
@@ -82,7 +92,16 @@ class BasePlugin(metaclass=ABCMeta):
             return 'True  (unverified)'
 
         if not secret.is_verified:
-            verified_result = self.verify(secret.secret_value)
+            try:
+                # NOTE: There is no context here, since in this frame, we're only aware of the
+                # secret itself.
+                verified_result = self.verify(secret.secret_value)
+            except (requests.exceptions.RequestException, TypeError):
+                # NOTE: A TypeError is raised when the function expects a `context` to be supplied.
+                # However, if this function is run through a context-less situation (e.g. adhoc
+                # string scanning), we don't have that context to provide. As such, the secret is
+                # UNVERIFIED.
+                verified_result = VerifiedResult.UNVERIFIED
         else:
             # It's not going to be VERIFIED_FALSE, otherwise, we won't have the secret object
             # to format.
