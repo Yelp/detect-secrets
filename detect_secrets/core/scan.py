@@ -167,10 +167,14 @@ def _scan_for_allowlisted_secrets_in_lines(
     get_settings().disable_filters('detect_secrets.filters.allowlist.is_line_allowlisted')
     get_filters.cache_clear()
 
-    for line_number, line in lines:
-        line = line.rstrip()
-
-        if not is_line_allowlisted(filename, line):
+    line_numbers, lines = zip(*lines)
+    lines = [line.rstrip() for line in lines]
+    for line_number, line in zip(line_numbers, lines):
+        if not is_line_allowlisted(
+            filename,
+            line,
+            context=get_code_snippet(lines, line_number),
+        ):
             continue
 
         if any([
@@ -277,10 +281,19 @@ def _process_line_based_plugins(
     # filters return True.
     for line_number, line in lines:
         line = line.rstrip()
+        code_snippet = get_code_snippet(
+            lines=line_content,
+            line_number=line_number,
+        )
 
         # We apply line-specific filters, and see whether that allows us to quit early.
         if any([
-            inject_variables_into_function(filter_fn, filename=filename, line=line)
+            inject_variables_into_function(
+                filter_fn,
+                filename=filename,
+                line=line,
+                context=code_snippet,
+            )
             for filter_fn in get_filters_with_parameter('line')
         ]):
             continue
@@ -294,10 +307,7 @@ def _process_line_based_plugins(
                         secret=secret.secret_value,
                         plugin=plugin,
                         line=line,
-                        context=get_code_snippet(
-                            lines=line_content,
-                            line_number=line_number,
-                        ),
+                        context=code_snippet,
                     ):
                         log.debug(f'Skipping "{secret.secret_value}" due to `{filter_fn.path}`.')
                         break
