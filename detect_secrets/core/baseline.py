@@ -80,8 +80,8 @@ def load_from_file(filename: str) -> Dict[str, Any]:
     try:
         with open(filename) as f:
             return json.loads(f.read())
-    except (FileNotFoundError, IOError, json.decoder.JSONDecodeError):
-        raise UnableToReadBaselineError
+    except (FileNotFoundError, IOError, json.decoder.JSONDecodeError) as e:
+        raise UnableToReadBaselineError from e
 
 
 def format_for_output(secrets: SecretsCollection) -> Dict[str, Any]:

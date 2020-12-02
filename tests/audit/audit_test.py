@@ -43,13 +43,13 @@ def test_file_no_longer_exists():
     (
         # Basic tests (yes, no, invalid input)
         (
-            'ynay',
+            'nyan',
             [True, False, True],
         ),
 
         # Skip forwards
         (
-            'sy',
+            'sn',
             [None, True],
         ),
 
@@ -61,22 +61,22 @@ def test_file_no_longer_exists():
 
         # Going back and changing answer
         (
-            'ybn',
+            'nby',
             [False],
         ),
         (
-            'nby',
+            'ybn',
             [True],
         ),
         (
-            'ybs',
+            'nbs',
             [None],
         ),
 
         # Going back several steps
         (
             'sybsbbnnn',
-            [False, False, False],
+            [True, True, True],
         ),
     ),
 )
@@ -90,12 +90,12 @@ def test_make_decisions(test_baseline, input_order, expected_order):
         # Leapfrog
         (
             [None, True, None, True],
-            'yy',
+            'nn',
             [True, True, True, True],
         ),
         (
             [True, None, True],
-            'nn',
+            'yy',
             [True, False, True, False],
         ),
     ),

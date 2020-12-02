@@ -2,6 +2,7 @@ import os
 import subprocess
 from typing import Set
 
+from ..core.log import log
 from .path import get_relative_path_if_in_cwd
 
 
@@ -27,6 +28,8 @@ def get_tracked_files(root: str) -> Set[str]:
 
     except subprocess.CalledProcessError:
         pass
+    except FileNotFoundError:   # pragma: no cover
+        log.warning('Unable to find `git` in PATH, and therefore, unable to get tracked files.')
 
     return output
 
