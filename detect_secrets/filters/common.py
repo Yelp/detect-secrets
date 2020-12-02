@@ -1,11 +1,13 @@
 import os
 from functools import lru_cache
+from typing import cast
 
 import requests
 
 from ..constants import VerifiedResult
 from ..core.plugins import Plugin
 from ..settings import get_settings
+from ..types import SelfAwareCallable
 from ..util.code_snippet import CodeSnippet
 from ..util.inject import get_injectable_variables
 from ..util.inject import inject_variables_into_function
@@ -23,7 +25,7 @@ def is_baseline_file(filename: str) -> bool:
 @lru_cache(maxsize=1)
 def _get_baseline_filename() -> str:
     path = get_caller_path(offset=1)
-    return get_settings().filters[path]['filename']
+    return cast(str, get_settings().filters[path]['filename'])
 
 
 def is_ignored_due_to_verification_policies(
@@ -42,12 +44,12 @@ def is_ignored_due_to_verification_policies(
     """
     function = plugin.__class__.verify
     if not hasattr(function, 'injectable_variables'):
-        function.injectable_variables = set(get_injectable_variables(plugin.verify))
-        function.path = f'{plugin.__class__.__name__}.verify'
+        function.injectable_variables = set(get_injectable_variables(plugin.verify))  # type: ignore
+        function.path = f'{plugin.__class__.__name__}.verify'   # type: ignore
 
     try:
         verify_result = inject_variables_into_function(
-            function,
+            cast(SelfAwareCallable, function),
             self=plugin,
             secret=secret,
             context=context,

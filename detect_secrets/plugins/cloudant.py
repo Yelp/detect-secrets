@@ -62,7 +62,11 @@ class CloudantDetector(RegexBasedDetector):
         ),
     ]
 
-    def verify(self, secret: str, context: CodeSnippet) -> VerifiedResult:
+    def verify(       # type: ignore[override]  # noqa: F821
+        self,
+        secret: str,
+        context: CodeSnippet,
+    ) -> VerifiedResult:
         hosts = find_account(context)
         if not hosts:
             return VerifiedResult.UNVERIFIED

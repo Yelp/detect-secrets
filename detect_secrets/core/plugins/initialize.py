@@ -1,6 +1,8 @@
 from typing import Any
 from typing import Dict
 from typing import Iterable
+from typing import List
+from typing import Type
 
 from ...settings import get_settings
 from ..log import log
@@ -19,7 +21,7 @@ def from_secret_type(secret_type: str) -> Plugin:
         raise TypeError
 
     try:
-        return plugin_type(**_get_config(plugin_type.__name__))
+        return plugin_type(**_get_config(plugin_type.__name__))     # type: ignore
     except TypeError:
         log.error('Unable to initialize plugin!')
         raise
@@ -42,23 +44,25 @@ def from_plugin_classname(classname: str) -> Plugin:
         raise TypeError
 
     try:
-        return plugin_type(**_get_config(classname))
+        return plugin_type(**_get_config(classname))        # type: ignore
     except TypeError:
         log.error('Unable to initialize plugin!')
         raise
 
 
-def from_file(filename: str) -> Iterable[Plugin]:
+def from_file(filename: str) -> Iterable[Type[Plugin]]:
     """
     :raises: FileNotFoundError
     :raises: InvalidFile
     """
-    output = []
+    output: List[Type[Plugin]] = []
+    plugin_class: Type[Plugin]
     for plugin_class in get_plugins_from_file(filename):
-        if plugin_class.secret_type in get_mapping_from_secret_type_to_class():
+        secret_type = plugin_class.secret_type  # type: ignore
+        if secret_type in get_mapping_from_secret_type_to_class():
             log.debug(f'Duplicate plugin detected: {plugin_class.__name__}. Skipping...')
 
-        get_mapping_from_secret_type_to_class()[plugin_class.secret_type] = plugin_class
+        get_mapping_from_secret_type_to_class()[secret_type] = plugin_class
         output.append(plugin_class)
 
     return output

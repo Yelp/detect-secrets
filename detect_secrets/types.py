@@ -14,18 +14,18 @@ except ImportError:
     # NOTE: NoReturn was introduced in Python3.6.2. However, we need to support Python3.6.0.
     # This section of code is inline imported from `typing-extensions`, so that we don't need
     # to introduce an additional package for such an edge case.
-    from typing import _FinalTypingBase
+    from typing import _FinalTypingBase     # type: ignore
 
-    class _NoReturn(_FinalTypingBase, _root=True):
+    class _NoReturn(_FinalTypingBase):
         __slots__ = ()
 
-        def __instancecheck__(self, obj: Any):
+        def __instancecheck__(self, obj: Any) -> None:
             raise TypeError('NoReturn cannot be used with isinstance().')
 
-        def __subclasscheck__(self, cls: Any):
+        def __subclasscheck__(self, cls: Any) -> None:
             raise TypeError('NoReturn cannot be used with issubclass().')
 
-    NoReturn = _NoReturn(_root=True)
+    NoReturn = _NoReturn(_root=True)    # type: ignore
 
 
 class SelfAwareCallable:

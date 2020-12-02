@@ -2,6 +2,9 @@
 This plugin searches for Slack tokens
 """
 import re
+from typing import Any
+from typing import cast
+from typing import Dict
 
 import requests
 
@@ -39,7 +42,7 @@ class SlackDetector(RegexBasedDetector):
                     'token': secret,
                 },
             ).json()
-            valid = response['ok']
+            valid = cast(Dict[str, Any], response)['ok']
 
         return (
             VerifiedResult.VERIFIED_TRUE

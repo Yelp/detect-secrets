@@ -4,11 +4,14 @@ from collections import defaultdict
 from contextlib import contextmanager
 from types import ModuleType
 from typing import Any
+from typing import Dict
+from typing import Generator
+from typing import IO
 from typing import Optional
 from unittest import mock
 
 
-def mock_file_object(string: str):
+def mock_file_object(string: str) -> IO:
     return io.StringIO(string)
 
 
@@ -24,7 +27,10 @@ class PrinterShim:
 
 
 @contextmanager
-def mock_printer(module: ModuleType, shim: Optional[PrinterShim] = None):
+def mock_printer(
+    module: ModuleType,
+    shim: Optional[PrinterShim] = None,
+) -> Generator[PrinterShim, None, None]:
     if not shim:
         shim = PrinterShim()
 
@@ -35,8 +41,8 @@ def mock_printer(module: ModuleType, shim: Optional[PrinterShim] = None):
 class MockLogWrapper:
     """This is used to check what is being logged."""
 
-    def __init__(self):
-        self.messages = defaultdict(str)
+    def __init__(self) -> None:
+        self.messages: Dict[str, str] = defaultdict(str)
 
     def error(self, message: str, *args: Any) -> None:
         self.messages['error'] += (str(message) + '\n') % args

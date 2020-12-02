@@ -33,8 +33,8 @@ def _get_file_to_index_dict() -> Dict[str, int]:
 
 
 @lru_cache(maxsize=1)
-def _get_comment_tuples() -> Iterable[Tuple[str, str]]:
-    return (
+def _get_comment_tuples() -> List[Tuple[str, str]]:
+    return [
         ('#', ''),                    # e.g. python or yaml
         ('//', ''),                   # e.g. golang
         (r'/\*', r' *\*/'),           # e.g. c
@@ -47,7 +47,7 @@ def _get_comment_tuples() -> Iterable[Tuple[str, str]]:
         # calls. of course, this won't be a concern if detect-secrets
         # switches over to implementing file plugins for each supported
         # filetype.
-    )
+    ]
 
 
 def _get_allowlist_regexes_for_file(filename: str) -> Iterable[List[Pattern]]:
@@ -55,7 +55,7 @@ def _get_allowlist_regexes_for_file(filename: str) -> Iterable[List[Pattern]]:
 
     _, ext = os.path.splitext(filename)
     if ext[1:] in _get_file_to_index_dict():
-        comment_tuples = (comment_tuples[_get_file_to_index_dict()[ext[1:]]],)
+        comment_tuples = [comment_tuples[_get_file_to_index_dict()[ext[1:]]]]
 
     yield [
         _get_allowlist_regexes(comment_tuple=t, nextline=False)

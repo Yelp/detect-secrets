@@ -1,3 +1,6 @@
+from typing import cast
+from typing import Union
+
 import requests
 
 from ..constants import VerifiedResult
@@ -31,9 +34,10 @@ class IbmCloudIamDetector(RegexBasedDetector):
             else VerifiedResult.VERIFIED_FALSE
 
 
-def verify_cloud_iam_api_key(apikey: str) -> requests.Response:  # pragma: no cover
+def verify_cloud_iam_api_key(apikey: Union[str, bytes]) -> requests.Response:  # pragma: no cover
     if type(apikey) == bytes:
-        apikey = apikey.decode('UTF-8')
+        apikey = cast(bytes, apikey).decode('UTF-8')
+
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Accept': 'application/json',

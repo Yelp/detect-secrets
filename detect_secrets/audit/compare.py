@@ -20,6 +20,8 @@ from typing import Dict
 from typing import Generator
 from typing import Optional
 from typing import Tuple
+from typing import Type
+from typing import Union
 
 from . import io
 from ..core import baseline
@@ -87,7 +89,7 @@ def _compare_baselines(
             # This allows us to delay execution of the exception handling, until we had a chance
             # to initialize both variables. Either one must at least pass, otherwise the while
             # statement will be False.
-            exception = None
+            exception: Optional[Union[Type[LeftSecret], Type[RightSecret]]] = None
             try:
                 left_secret = left_secrets[left_index]
             except IndexError:

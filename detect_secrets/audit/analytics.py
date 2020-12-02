@@ -4,8 +4,8 @@ for a given audited baseline.
 """
 from collections import defaultdict
 from typing import Any
+from typing import cast
 from typing import Dict
-from typing import Tuple
 
 from ..core.plugins.util import get_mapping_from_secret_type_to_class
 from ..core.potential_secret import PotentialSecret
@@ -21,7 +21,7 @@ def calculate_statistics_for_baseline(
     """
     secrets = get_baseline_from_file(filename)
 
-    aggregator = StatisticsAggregator(**kwargs)
+    aggregator = StatisticsAggregator()
     for _, secret in secrets:
         # TODO: gather real secrets?
         # TODO: do we need repo_info?
@@ -36,7 +36,7 @@ class StatisticsAggregator:
             'stats': StatisticsCounter,
         }
 
-        self.data = defaultdict(
+        self.data: Dict[str, Any] = defaultdict(
             lambda: {
                 key: value()
                 for key, value in framework.items()
@@ -55,7 +55,7 @@ class StatisticsAggregator:
             counter.unknown += 1
 
     def _get_plugin_counter(self, secret_type: str) -> 'StatisticsCounter':
-        return self.data[secret_type]['stats']
+        return cast(StatisticsCounter, self.data[secret_type]['stats'])
 
     def __str__(self) -> str:
         raise NotImplementedError
@@ -77,7 +77,7 @@ class StatisticsCounter:
         self.incorrect: int = 0
         self.unknown: int = 0
 
-    def __repr__(self) -> Tuple[int, int, int]:
+    def __repr__(self) -> str:
         return (
             f'{self.__class__.__name__}(correct={self.correct}, '
             'incorrect={self.incorrect}, unknown={self.unknown},)'

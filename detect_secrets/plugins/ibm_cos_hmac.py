@@ -31,7 +31,11 @@ class IbmCosHmacDetector(RegexBasedDetector):
         ),
     )
 
-    def verify(self, secret: str, context: CodeSnippet) -> VerifiedResult:
+    def verify(       # type: ignore[override]  # noqa: F821
+        self,
+        secret: str,
+        context: CodeSnippet,
+    ) -> VerifiedResult:
         key_id_matches = find_access_key_id(context)
 
         if not key_id_matches:
@@ -65,11 +69,11 @@ def find_access_key_id(context: CodeSnippet) -> List[str]:
     ]
 
 
-def hash(key: str, msg: str) -> bytes:
+def hash(key: bytes, msg: str) -> bytes:
     return hmac.new(key, msg.encode('utf-8'), hashlib.sha256).digest()
 
 
-def createSignatureKey(key: str, datestamp: str, region: str, service: str) -> str:
+def createSignatureKey(key: str, datestamp: str, region: str, service: str) -> bytes:
     keyDate = hash(('AWS4' + key).encode('utf-8'), datestamp)
     keyString = hash(keyDate, region)
     keyService = hash(keyString, service)

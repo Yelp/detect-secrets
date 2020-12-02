@@ -1,20 +1,22 @@
 import json
 from functools import lru_cache
-from typing import Any
-from typing import Dict
+from typing import cast
 from typing import List
 
 from . import io
 from ..core import baseline
 from ..core import plugins
 from ..core.potential_secret import PotentialSecret
+from ..core.secrets_collection import SecretsCollection
 from ..exceptions import InvalidBaselineError
 from ..exceptions import SecretNotFoundOnSpecifiedLineError
+from ..plugins.base import BasePlugin
+from ..types import SelfAwareCallable
 from ..util.inject import get_injectable_variables
 from ..util.inject import inject_variables_into_function
 
 
-def get_baseline_from_file(filename: str) -> Dict[str, Any]:
+def get_baseline_from_file(filename: str) -> SecretsCollection:
     """
     :raises: InvalidBaselineError
     """
@@ -38,7 +40,7 @@ def get_raw_secret_from_file(secret: PotentialSecret) -> str:
 
     :raises: SecretNotFoundOnSpecifiedLineError
     """
-    plugin = plugins.initialize.from_secret_type(secret.type)
+    plugin = cast(BasePlugin, plugins.initialize.from_secret_type(secret.type))
     try:
         target_line = open_file(secret.filename)[secret.line_number - 1]
     except IndexError:
@@ -46,11 +48,13 @@ def get_raw_secret_from_file(secret: PotentialSecret) -> str:
 
     function = plugin.__class__.analyze_line
     if not hasattr(function, 'injectable_variables'):
-        function.injectable_variables = set(get_injectable_variables(plugin.analyze_line))
-        function.path = f'{plugin.__class__.__name__}.analyze_line'
+        function.injectable_variables = set(        # type: ignore
+            get_injectable_variables(plugin.analyze_line),
+        )
+        function.path = f'{plugin.__class__.__name__}.analyze_line'  # type: ignore
 
     identified_secrets = inject_variables_into_function(
-        function,
+        cast(SelfAwareCallable, function),
         self=plugin,
         filename=secret.filename,
         line=target_line,
@@ -58,9 +62,9 @@ def get_raw_secret_from_file(secret: PotentialSecret) -> str:
         enable_eager_search=True,
     )
 
-    for identified_secret in identified_secrets:
+    for identified_secret in (identified_secrets or []):
         if identified_secret == secret:
-            return identified_secret.secret_value
+            return cast(str, identified_secret.secret_value)
 
     raise SecretNotFoundOnSpecifiedLineError(secret.line_number)
 

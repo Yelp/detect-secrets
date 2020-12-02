@@ -6,6 +6,7 @@ from types import ModuleType
 from typing import Any
 from typing import Callable
 from typing import Iterable
+from typing import List
 from typing import Optional
 from typing import Type
 
@@ -16,7 +17,7 @@ def import_types_from_package(
     root: ModuleType,
     filter: Callable[[Any], bool],
 ) -> Iterable[Type]:
-    output = []
+    output: List[Type] = []
     modules = get_modules_from_package(root)
 
     for module_path in modules:
@@ -97,8 +98,8 @@ def import_file_as_module(filename: str, name: Optional[str] = None) -> ModuleTy
         raise InvalidFile
 
     module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    module.__path__ = os.path.abspath(filename)
+    spec.loader.exec_module(module)                 # type: ignore
+    module.__path__ = os.path.abspath(filename)     # type: ignore
 
     return module
 

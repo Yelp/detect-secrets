@@ -4,7 +4,6 @@ import string
 from abc import ABCMeta
 from contextlib import contextmanager
 from typing import Any
-from typing import ContextManager
 from typing import Dict
 from typing import Generator
 from typing import Optional
@@ -46,6 +45,7 @@ class HighEntropyStringsPlugin(BasePlugin, metaclass=ABCMeta):
         line: str,
         line_number: int = 0,
         enable_eager_search: bool = False,
+        **kwargs: Any,
     ) -> Set[PotentialSecret]:
         output = super().analyze_line(filename=filename, line=line, line_number=line_number)
         if output or not enable_eager_search:
@@ -65,7 +65,7 @@ class HighEntropyStringsPlugin(BasePlugin, metaclass=ABCMeta):
         if not data:  # pragma: no cover
             return 0
 
-        entropy = 0
+        entropy = 0.0
         for x in self.charset:
             p_x = float(data.count(x)) / len(data)
             if p_x > 0:
@@ -93,7 +93,7 @@ class HighEntropyStringsPlugin(BasePlugin, metaclass=ABCMeta):
         }
 
     @contextmanager
-    def non_quoted_string_regex(self, is_exact_match: bool = True) -> ContextManager:
+    def non_quoted_string_regex(self, is_exact_match: bool = True) -> Generator[None, None, None]:
         """
         For certain file formats, strings need not necessarily follow the
         normal convention of being denoted by single or double quotes. In these

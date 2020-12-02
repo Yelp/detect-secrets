@@ -28,7 +28,9 @@ class BasePlugin(metaclass=ABCMeta):
     @abstractproperty
     def secret_type(self) -> str:
         """
-        Unique, user-facing description to identify this type of secret.
+        Unique, user-facing description to identify this type of secret. This should be overloaded
+        by declaring a class variable (rather than a `property` function), since we need to know
+        a plugin's `secret_type` before initialization.
 
         NOTE: Choose carefully! If this value is changed, it will require old baselines to be
         updated to use the new secret type.
@@ -49,7 +51,7 @@ class BasePlugin(metaclass=ABCMeta):
     ) -> Set[PotentialSecret]:
         """This examines a line and finds all possible secret values in it."""
         output = set([])
-        for match in self.analyze_string(line, **kwargs):
+        for match in self.analyze_string(line, **kwargs):   # type: ignore
             output.add(
                 PotentialSecret(
                     type=self.secret_type,
@@ -95,7 +97,7 @@ class BasePlugin(metaclass=ABCMeta):
             try:
                 # NOTE: There is no context here, since in this frame, we're only aware of the
                 # secret itself.
-                verified_result = self.verify(secret.secret_value)
+                verified_result = self.verify(secret.secret_value)      # type: ignore
             except (requests.exceptions.RequestException, TypeError):
                 # NOTE: A TypeError is raised when the function expects a `context` to be supplied.
                 # However, if this function is run through a context-less situation (e.g. adhoc

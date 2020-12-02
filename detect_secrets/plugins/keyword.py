@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 import re
+from typing import Any
 from typing import Dict
 from typing import Generator
 from typing import Optional
@@ -293,7 +294,13 @@ class KeywordDetector(BasePlugin):
             if has_results:
                 break
 
-    def analyze_line(self, filename: str, line: str, line_number: int = 0) -> Set[PotentialSecret]:
+    def analyze_line(
+        self,
+        filename: str,
+        line: str,
+        line_number: int = 0,
+        **kwargs: Any,
+    ) -> Set[PotentialSecret]:
         filetype = determine_file_type(filename)
 
         if filetype in QUOTES_REQUIRED_FILETYPES:
@@ -312,8 +319,7 @@ class KeywordDetector(BasePlugin):
             denylist_regex_to_group=denylist_regex_to_group,
         )
 
-    @property
-    def json(self):
+    def json(self) -> Dict[str, Any]:
         return {
             'keyword_exclude': (
                 self.keyword_exclude.pattern
@@ -324,7 +330,7 @@ class KeywordDetector(BasePlugin):
         }
 
 
-def probably_false_positive(lowered_secret, filetype):
+def probably_false_positive(lowered_secret: str, filetype: str) -> bool:
     # TODO: Move this to filters/*
     if (
         any(

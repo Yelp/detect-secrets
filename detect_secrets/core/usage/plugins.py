@@ -1,5 +1,7 @@
 import argparse
 import os
+from typing import cast
+from typing import Iterable
 from typing import Set
 
 from .. import plugins
@@ -136,7 +138,7 @@ def parse_args(args: argparse.Namespace) -> None:
             # assume it works -- therefore, let's initialize it to discover any errors early
             # on, before storing it in settings.
             try:
-                custom_plugins = plugins.initialize.from_file(filename)
+                custom_plugins = cast(Iterable, plugins.initialize.from_file(filename))
             except InvalidFile:
                 raise argparse.ArgumentTypeError(f'Cannot load plugins from {filename}.')
 

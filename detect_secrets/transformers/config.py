@@ -64,7 +64,7 @@ def _parse_file(file: IO, add_header: bool = False) -> List[str]:
 
 class EfficientParsingError(configparser.ParsingError):
 
-    def append(self, lineno: int, line: str):
+    def append(self, lineno: int, line: str) -> None:
         """
         Rather than inefficiently add all the lines in the file
         to the error message like the CPython code from 1998,
@@ -186,7 +186,7 @@ class IniFileParser:
         return output
 
 
-def _construct_values_list(values: str):
+def _construct_values_list(values: str) -> List[str]:
     """
     This values_list is a strange construction, because of ini format.
     We need to extract the values with the following supported format:

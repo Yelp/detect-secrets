@@ -1,6 +1,8 @@
 import os
 from typing import Any
+from typing import cast
 from typing import Dict
+from typing import Iterable
 
 from ...exceptions import InvalidFile
 from ..plugins.util import get_plugins_from_file
@@ -95,7 +97,7 @@ def _migrate_custom_plugins(baseline: Dict[str, Any]) -> None:
             # since we don't want to *initialize* these plugins. That will pollute our global
             # settings object. Instead, we're merely "parsing" this file, and applying changes
             # as necessary.
-            custom_plugins = get_plugins_from_file(path)
+            custom_plugins = cast(Iterable, get_plugins_from_file(path))
         except InvalidFile:
             # Best effort upgrade. Don't break if invalid file.
             continue

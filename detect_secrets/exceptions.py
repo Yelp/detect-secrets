@@ -14,7 +14,7 @@ class InvalidFile(ValueError):
 
 
 class SecretNotFoundOnSpecifiedLineError(Exception):
-    def __init__(self, line):
+    def __init__(self, line: int):
         super().__init__(
             'ERROR: Secret not found on line {}!\n'.format(line)
             + 'Try recreating your baseline to fix this issue.',

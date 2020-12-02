@@ -9,7 +9,7 @@ def potential_secret_factory(
     secret: str = 'secret',
     line_number: int = 1,
     **kwargs: Any,
-):
+) -> PotentialSecret:
     """This is only marginally better than creating PotentialSecret objects directly,
     because of the default values.
     """

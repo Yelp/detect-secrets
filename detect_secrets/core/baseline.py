@@ -2,6 +2,7 @@ import json
 import time
 from typing import Any
 from typing import Callable
+from typing import cast
 from typing import Dict
 from typing import Union
 
@@ -46,7 +47,7 @@ def load_from_file(filename: str) -> Dict[str, Any]:
     """
     try:
         with open(filename) as f:
-            return json.loads(f.read())
+            return cast(Dict[str, Any], json.loads(f.read()))
     except (FileNotFoundError, IOError, json.decoder.JSONDecodeError) as e:
         raise UnableToReadBaselineError from e
 
@@ -99,7 +100,7 @@ def upgrade(baseline: Dict[str, Any]) -> Dict[str, Any]:
 
     new_baseline = {**baseline}
     for module in modules:
-        module.upgrade(new_baseline)
+        module.upgrade(new_baseline)    # type: ignore
 
     new_baseline['version'] = VERSION
     return new_baseline

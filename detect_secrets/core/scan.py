@@ -2,6 +2,7 @@ import os
 import subprocess
 from functools import lru_cache
 from importlib import import_module
+from typing import cast
 from typing import Generator
 from typing import IO
 from typing import Iterable
@@ -31,25 +32,30 @@ def get_files_to_scan(*paths: str, should_scan_all_files: bool) -> Generator[str
             valid_paths = git.get_tracked_files(git.get_root_directory())
         except subprocess.CalledProcessError:
             log.warning('Did not detect git repository. Try scanning all files instead.')
-            return []
+            yield from []
+            return
 
     for path in paths:
-        iterator = [(os.getcwd(), None, [path])] if os.path.isfile(path) else os.walk(path)
+        iterator = (
+            cast(List[Tuple], [(os.getcwd(), None, [path])])
+            if os.path.isfile(path)
+            else os.walk(path)
+        )
         for path_root, _, filenames in iterator:
             for filename in filenames:
-                path = get_relative_path_if_in_cwd(os.path.join(path_root, filename))
-                if not path:
+                relative_path = get_relative_path_if_in_cwd(os.path.join(path_root, filename))
+                if not relative_path:
                     # e.g. symbolic links may be pointing outside the root directory
                     continue
 
                 if (
                     not should_scan_all_files
-                    and path not in valid_paths
+                    and relative_path not in valid_paths
                 ):
                     # Not a git-tracked file
                     continue
 
-                yield path
+                yield relative_path
 
 
 def scan_line(line: str) -> Generator[PotentialSecret, None, None]:
@@ -168,12 +174,12 @@ def _scan_for_allowlisted_secrets_in_lines(
     get_filters.cache_clear()
 
     line_numbers, lines = zip(*lines)
-    lines = [line.rstrip() for line in lines]
-    for line_number, line in zip(line_numbers, lines):
+    line_content = [line.rstrip() for line in lines]
+    for line_number, line in zip(line_numbers, line_content):
         if not is_line_allowlisted(
             filename,
             line,
-            context=get_code_snippet(lines, line_number),
+            context=get_code_snippet(line_content, line_number),
         ):
             continue
 

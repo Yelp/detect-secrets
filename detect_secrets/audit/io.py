@@ -33,7 +33,7 @@ def print_context(context: SecretContext) -> None:
         context.snippet.highlight_line(context.secret.secret_value)
     else:
         context.snippet.target_line = colorize(context.snippet.target_line, AnsiColor.BOLD)
-    print_message(context.snippet)
+    print_message(str(context.snippet))
 
     print_message('-' * 10)
 
@@ -48,7 +48,7 @@ def print_secret_not_found(context: SecretContext) -> None:
 
     _print_header(context)
 
-    print_message(context.error)
+    print_message(str(context.error))
     print_message('-' * 10)
 
 
@@ -92,7 +92,7 @@ def get_user_decision(
     user_input = None
     while user_input not in prompter.valid_input:
         if user_input:
-            print('Invalid input.')
+            print('Invalid input.')     # type: ignore # Statement unreachable? Come on mypy...
 
         user_input = input(str(prompter))
         if user_input:

@@ -14,7 +14,7 @@ def inject_variables_into_function(func: SelfAwareCallable, **kwargs: Any) -> Op
     }
 
     if set(values.keys()) != func.injectable_variables:
-        return
+        return None
 
     return func(**values)
 

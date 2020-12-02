@@ -10,7 +10,7 @@ class AnsiColor(Enum):
     PURPLE = '[95m'
 
 
-def colorize(text, color):
+def colorize(text: str, color: AnsiColor) -> str:
     return '\x1b{}{}\x1b{}'.format(
         color.value,
         text,

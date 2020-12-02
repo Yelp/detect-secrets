@@ -30,7 +30,11 @@ class SoftlayerDetector(RegexBasedDetector):
         ),
     ]
 
-    def verify(self, secret: str, context: CodeSnippet) -> VerifiedResult:
+    def verify(       # type: ignore[override]  # noqa: F821
+        self,
+        secret: str,
+        context: CodeSnippet,
+    ) -> VerifiedResult:
         usernames = find_username(context)
         if not usernames:
             return VerifiedResult.UNVERIFIED

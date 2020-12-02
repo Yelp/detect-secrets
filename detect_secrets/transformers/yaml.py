@@ -2,6 +2,7 @@ import re
 from collections import deque
 from functools import lru_cache
 from typing import Any
+from typing import cast
 from typing import Dict
 from typing import Generator
 from typing import IO
@@ -47,7 +48,7 @@ class YAMLTransformer(BaseTransformer):
                 try:
                     value = value.decode()
                 except UnicodeDecodeError:
-                    log.error(f'Unable to process binary string: "{value}"')
+                    log.error('Unable to process binary string: {!r}'.format(value))
                     continue
 
             line = item.line.strip()
@@ -67,7 +68,7 @@ class YAMLTransformer(BaseTransformer):
             # However, if there is a quote inside, we need to escape it.
             value = value.replace('"', '\\"')
 
-            lines.append(f'{item.key}: "{value}"{comment}')
+            lines.append(f'{item.key}: "{value}"{comment}')     # type: ignore
 
         return lines
 
@@ -145,7 +146,7 @@ class YAMLFileParser:
         self.loader.compose_node = self._compose_node_shim  # type: ignore
 
     def json(self) -> Dict[str, Any]:
-        return self.loader.get_single_data()
+        return cast(Dict[str, Any], self.loader.get_single_data())
 
     def __iter__(self) -> Generator[YAMLValue, None, None]:
         """
@@ -156,7 +157,7 @@ class YAMLFileParser:
 
         to_search = deque([self.json()])
         while to_search:
-            item = to_search.pop()
+            item: Any = to_search.pop()
 
             if not item:
                 # mainly for base case (e.g. if file is all comments)
@@ -208,7 +209,7 @@ class YAMLFileParser:
 
         # TODO: Not sure if need to do :seq
 
-        return node
+        return cast(yaml.nodes.Node, node)
 
 
 def _tag_dict_values(map_node: yaml.nodes.MappingNode) -> yaml.nodes.MappingNode:

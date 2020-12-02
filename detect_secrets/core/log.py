@@ -1,13 +1,13 @@
 import logging
 import sys
+from functools import partial
+from typing import cast
+from typing import Optional
 
 
-def get_logger(name=None, format_string=None):
+def get_logger(name: Optional[str] = None, format_string: Optional[str] = None) -> 'CustomLogger':
     """
-    :type name: str
     :param name: used for declaring log channels.
-
-    :type format_string: str|None
     :param format_string: for custom formatting
     """
     logging.captureWarnings(True)
@@ -15,8 +15,8 @@ def get_logger(name=None, format_string=None):
 
     # Bind custom method to instance.
     # Source: https://stackoverflow.com/a/2982
-    log.set_debug_level = _set_debug_level.__get__(log)
-    log.set_debug_level(0)
+    log.set_debug_level = partial(CustomLogger.set_debug_level, log)    # type: ignore
+    cast(CustomLogger, log).set_debug_level(0)
 
     # Setting up log formats
     log.handlers = []
@@ -30,13 +30,12 @@ def get_logger(name=None, format_string=None):
     )
     log.addHandler(handler)
 
-    return log
+    return cast(CustomLogger, log)
 
 
-def _set_debug_level(self, debug_level):
+def _set_debug_level(self: logging.Logger, debug_level: int) -> None:
     """
-    :type debug_level: int, between 0-2
-    :param debug_level: configure verbosity of log
+    :param debug_level: between 0-2, configure verbosity of log
     """
     mapping = {
         0: logging.ERROR,
@@ -47,6 +46,22 @@ def _set_debug_level(self, debug_level):
     self.setLevel(
         mapping[min(debug_level, 2)],
     )
+
+
+class CustomLogger(logging.Logger):
+    def set_debug_level(self, debug_level: int) -> None:
+        """
+        :param debug_level: between 0-2, configure verbosity of log
+        """
+        mapping = {
+            0: logging.ERROR,
+            1: logging.INFO,
+            2: logging.DEBUG,
+        }
+
+        self.setLevel(
+            mapping[min(debug_level, 2)],
+        )
 
 
 log = get_logger()

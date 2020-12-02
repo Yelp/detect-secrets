@@ -7,6 +7,7 @@ import re
 import string
 import textwrap
 from datetime import datetime
+from typing import cast
 from typing import List
 from typing import Union
 
@@ -25,7 +26,11 @@ class AWSKeyDetector(RegexBasedDetector):
         re.compile(r'AKIA[0-9A-Z]{16}'),
     )
 
-    def verify(self, secret: str, context: CodeSnippet) -> VerifiedResult:
+    def verify(       # type: ignore[override]  # noqa: F821
+        self,
+        secret: str,
+        context: CodeSnippet,
+    ) -> VerifiedResult:
         secret_access_key_candidates = get_secret_access_keys(context)
         if not secret_access_key_candidates:
             return VerifiedResult.UNVERIFIED
@@ -131,21 +136,27 @@ def verify_aws_secret_access_key(key: str, secret: str) -> bool:  # pragma: no c
 
     # Step #3: Calculate signature
     signing_key = _sign(
-        _sign(
-            _sign(
-                _sign(
-                    'AWS4{}'.format(secret).encode('utf-8'),
-                    now.strftime('%Y%m%d'),
+        cast(
+            bytes, _sign(
+                cast(
+                    bytes, _sign(
+                        cast(
+                            bytes, _sign(
+                                'AWS4{}'.format(secret).encode('utf-8'),
+                                now.strftime('%Y%m%d'),
+                            ),
+                        ),
+                        region,
+                    ),
                 ),
-                region,
+                'sts',
             ),
-            'sts',
         ),
         'aws4_request',
     )
 
     signature = _sign(
-        signing_key,
+        cast(bytes, signing_key),
         string_to_sign,
         hex=True,
     )
@@ -153,14 +164,9 @@ def verify_aws_secret_access_key(key: str, secret: str) -> bool:  # pragma: no c
     # Step #4: Add to request headers
     headers['Authorization'] = (
         'AWS4-HMAC-SHA256 '
-        'Credential={access_key}/{scope}, '
-        'SignedHeaders={signed_headers}, '
-        'Signature={signature}'
-    ).format(
-        access_key=key,
-        scope=scope,
-        signed_headers=signed_headers,
-        signature=signature,
+        f'Credential={key}/{scope}, '
+        f'SignedHeaders={signed_headers}, '
+        f'Signature={cast(str, signature)}'
     )
 
     # Step #5: Finally send the request
@@ -176,7 +182,7 @@ def verify_aws_secret_access_key(key: str, secret: str) -> bool:  # pragma: no c
     return True
 
 
-def _sign(key, message: str, hex: bool = False) -> Union[str, bytes]:  # pragma: no cover
+def _sign(key: bytes, message: str, hex: bool = False) -> Union[str, bytes]:  # pragma: no cover
     value = hmac.new(key, message.encode('utf-8'), hashlib.sha256)
     if not hex:
         return value.digest()
