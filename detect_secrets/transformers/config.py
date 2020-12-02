@@ -42,6 +42,7 @@ class EagerConfigFileTransformer(BaseTransformer):
 def _parse_file(file: IO, add_header: bool = False) -> List[str]:
     """
     :raises: configparser.Error
+    :raises: UnicodeDecodeError
     """
     lines: List[str] = []
     for key, value, line_number in IniFileParser(file, add_header=add_header):
