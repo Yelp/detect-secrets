@@ -123,7 +123,3 @@ def handle_audit_action(args: argparse.Namespace) -> None:
                 audit.audit_baseline(args.filename[0])
     except InvalidBaselineError:
         pass
-
-
-if __name__ == '__main__':
-    sys.exit(main())

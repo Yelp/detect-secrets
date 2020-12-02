@@ -18,6 +18,7 @@ from ..core.log import log
 from ..util.filetype import determine_file_type
 from ..util.filetype import FileType
 from .base import BaseTransformer
+from .exceptions import ParsingError
 
 
 class YAMLTransformer(BaseTransformer):
@@ -25,8 +26,16 @@ class YAMLTransformer(BaseTransformer):
         return determine_file_type(filename) == FileType.YAML
 
     def parse_file(self, file: IO) -> List[str]:
+        """
+        :raises: ParsingError
+        """
+        try:
+            items = sorted(YAMLFileParser(file), key=lambda x: x.line_number)
+        except yaml.YAMLError:
+            raise ParsingError
+
         lines: List[str] = []
-        for item in sorted(YAMLFileParser(file), key=lambda x: x.line_number):
+        for item in items:
             while len(lines) < item.line_number - 1:
                 lines.append('')
 

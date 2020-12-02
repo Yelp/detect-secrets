@@ -2,6 +2,7 @@ import os
 import subprocess
 from typing import Set
 
+from ..core.log import log
 from .path import get_relative_path_if_in_cwd
 
 
@@ -30,10 +31,21 @@ def get_tracked_files(root: str) -> Set[str]:
     )
 
     output = set([])
-    for filename in files.decode('utf-8').split():
-        path = get_relative_path_if_in_cwd(os.path.join(root, filename))
-        if path:
-            output.add(path)
+    try:
+        files = subprocess.check_output(
+            ['git', '-C', root, 'ls-files'],
+            stderr=subprocess.DEVNULL,
+        )
+
+        for filename in files.decode('utf-8').split():
+            path = get_relative_path_if_in_cwd(os.path.join(root, filename))
+            if path:
+                output.add(path)
+
+    except subprocess.CalledProcessError:
+        pass
+    except FileNotFoundError:   # pragma: no cover
+        log.warning('Unable to find `git` in PATH, and therefore, unable to get tracked files.')
 
     return output
 

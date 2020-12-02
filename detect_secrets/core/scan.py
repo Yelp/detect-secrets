@@ -126,6 +126,7 @@ def scan_for_allowlisted_secrets_in_file(filename: str) -> Generator[PotentialSe
     try:
         for lines in _get_lines_from_file(filename):
             yield from _scan_for_allowlisted_secrets_in_lines(enumerate(lines, 1), filename)
+            break
     except IOError:
         log.warning(f'Unable to open file: {filename}')
         return
@@ -176,9 +177,13 @@ def _get_lines_from_file(filename: str) -> Generator[List[str], None, None]:
     with open(filename) as f:
         log.info(f'Checking file: {filename}')
 
-        lines = _get_transformed_file(f)
-        if not lines:
-            lines = f.readlines()
+        try:
+            lines = _get_transformed_file(f)
+            if not lines:
+                lines = f.readlines()
+        except UnicodeDecodeError:
+            # We flat out ignore binary files
+            return
 
         yield lines
 
