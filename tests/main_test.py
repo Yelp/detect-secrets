@@ -163,6 +163,13 @@ class TestScanOnlyAllowlisted:
         assert not output['results']
 
 
+def test_list_all_plugins():
+    with mock_printer(main_module) as printer:
+        assert main_module.main(['scan', '--list-all-plugins']) == 0
+
+    assert printer.message
+
+
 @contextmanager
 def mock_stdin(response=None):
     if not response:

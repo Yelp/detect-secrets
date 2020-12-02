@@ -18,10 +18,15 @@ def add_plugin_options(parent: argparse.ArgumentParser) -> None:
         ),
     )
 
+    parser.add_argument(
+        '--list-all-plugins',
+        action='store_true',
+        help='Lists all plugins that will be used for the scan.',
+    )
+
     _add_custom_plugins(parser)
     _add_custom_limits(parser)
     _add_disable_flag(parser)
-    # TODO: custom plugins?
 
 
 def _add_custom_plugins(parser: argparse._ArgumentGroup) -> None:
