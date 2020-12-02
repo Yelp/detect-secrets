@@ -28,13 +28,6 @@ def test_basic(prefix, suffix):
     )
 
 
-def test_backwards_compatibility():
-    assert is_line_allowlisted(
-        'filename',
-        'AKIAEXAMPLE  # pragma: whitelist secret',
-    )
-
-
 @pytest.mark.parametrize(
     'line, expected_result',
     (
