@@ -37,6 +37,7 @@ def import_modules_from_package(
     modules = get_modules_from_package(root)
 
     # NOTE: It should be auto-sorted, but let's just do it for sanity sake.
+    # This sorting is required for performing upgrades in order.
     for module_path in sorted(modules):
         if filter(module_path):
             continue

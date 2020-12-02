@@ -63,9 +63,13 @@ def scan_file(filename: str) -> Generator[PotentialSecret, None, None]:
         with open(filename) as f:
             log.info(f'Checking file: {filename}')
 
-            lines = _get_transformed_file(f)
-            if not lines:
-                lines = f.readlines()
+            try:
+                lines = _get_transformed_file(f)
+                if not lines:
+                    lines = f.readlines()
+            except UnicodeDecodeError:
+                # We flat out ignore binary files.
+                return
 
             has_secret = False
             for secret in _process_line_based_plugins(

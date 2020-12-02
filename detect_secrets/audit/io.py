@@ -23,6 +23,9 @@ def clear_screen() -> None:     # pragma: no cover
 
 
 def print_context(context: SecretContext) -> None:
+    if not context.snippet:     # pragma: no cover
+        raise ValueError('You should be using `print_secret_not_found` instead.')
+
     _print_header(context)
 
     context.snippet.add_line_numbers()
@@ -36,6 +39,13 @@ def print_context(context: SecretContext) -> None:
 
 
 def print_secret_not_found(context: SecretContext) -> None:
+    if context.snippet:     # pragma: no cover
+        raise ValueError(
+            'Are you sure you want to do this? The secret *was* found in this context. '
+            'If you are certain you want to override this behavior, be sure to null out '
+            'the `context.snippet` value.',
+        )
+
     _print_header(context)
 
     print_message(context.error)
@@ -116,7 +126,7 @@ class UserPrompt:
 
     def __str__(self) -> str:
         if 'Y' in self.valid_input:
-            output = 'Is this a valid secret (not a false-positive)?'
+            output = 'Is this a secret that should be committed to this repository?'
         else:
             output = 'What would you like to do?'
 
