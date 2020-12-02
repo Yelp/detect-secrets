@@ -1,22 +1,55 @@
+import os
+import subprocess
 from functools import lru_cache
 from importlib import import_module
 from typing import Generator
 from typing import IO
+from typing import Iterable
 from typing import List
 from typing import Optional
 from typing import Tuple
 
 from . import plugins
+from ..filters.allowlist import is_line_allowlisted
 from ..settings import get_settings
 from ..transformers import get_transformers
 from ..transformers import ParsingError
 from ..types import SelfAwareCallable
+from ..util import git
 from ..util.code_snippet import get_code_snippet
 from ..util.inject import get_injectable_variables
 from ..util.inject import inject_variables_into_function
+from ..util.path import get_relative_path_if_in_cwd
 from .log import log
 from .plugins import Plugin
 from .potential_secret import PotentialSecret
+
+
+def get_files_to_scan(*paths: str, should_scan_all_files: bool) -> Generator[str, None, None]:
+    if not should_scan_all_files:
+        try:
+            valid_paths = git.get_tracked_files(git.get_root_directory())
+        except subprocess.CalledProcessError:
+            log.warning('Did not detect git repository. Try scanning all files instead.')
+            return []
+
+    for path in paths:
+        iterator = [(os.getcwd(), None, [path])] if os.path.isfile(path) else os.walk(path)
+        for path_root, _, filenames in iterator:
+            for filename in filenames:
+                path = get_relative_path_if_in_cwd(os.path.join(path_root, filename))
+                if not path:
+                    # e.g. symbolic links may be pointing outside the root directory
+                    continue
+
+                if (
+                    not should_scan_all_files
+                    and path not in valid_paths
+                ):
+                    # Not a git-tracked file
+                    continue
+
+                yield path
 
 
 def scan_line(line: str) -> Generator[PotentialSecret, None, None]:
@@ -25,6 +58,7 @@ def scan_line(line: str) -> Generator[PotentialSecret, None, None]:
     get_settings().disable_filters(
         'detect_secrets.filters.common.is_invalid_file',
     )
+    get_filters.cache_clear()
 
     for plugin in get_plugins():
         for secret in _scan_line(
@@ -60,43 +94,126 @@ def scan_file(filename: str) -> Generator[PotentialSecret, None, None]:
         return
 
     try:
-        with open(filename) as f:
-            log.info(f'Checking file: {filename}')
-
-            try:
-                lines = _get_transformed_file(f)
-                if not lines:
-                    lines = f.readlines()
-            except UnicodeDecodeError:
-                # We flat out ignore binary files.
-                return
-
-            has_secret = False
+        has_secret = False
+        for lines in _get_lines_from_file(filename):
             for secret in _process_line_based_plugins(
                 lines=list(enumerate(lines, 1)),
-                filename=f.name,
+                filename=filename,
             ):
                 has_secret = True
                 yield secret
 
             if has_secret:
-                return
-
-            # Only if no secrets, then use eager transformers
-            f.seek(0)
-            lines = _get_transformed_file(f, use_eager_transformers=True)
-            if not lines:
-                return
-
-            yield from _process_line_based_plugins(
-                lines=list(enumerate(lines, 1)),
-                filename=f.name,
-            )
+                break
     except IOError:
         log.warning(f'Unable to open file: {filename}')
+        return
 
 
 def scan_diff(diff: str) -> Generator[PotentialSecret, None, None]:
+    """
+    :raises: ImportError
+    """
+    if not get_plugins():   # pragma: no cover
+        log.warning('No plugins to scan with!')
+        return
+
+    for filename, lines in _get_lines_from_diff(diff):
+        yield from _process_line_based_plugins(lines, filename=filename)
+
+
+def scan_for_allowlisted_secrets_in_file(filename: str) -> Generator[PotentialSecret, None, None]:
+    """
+    Developers are able to add individual lines to the allowlist using
+    `detect_secrets.filters.allowlist.is_line_allowlisted`. However, there are
+    times when we want to verify that no *actual* secrets are added to the codebase
+    via this feature.
+
+    This scans specifically for these lines, and ignores everything else.
+    """
+    if not get_plugins():   # pragma: no cover
+        log.warning('No plugins to scan with!')
+        return
+
+    if _filter_files(filename):
+        return
+
+    # NOTE: Unlike `scan_file`, we don't ever have to use eager file transfomers, since we already
+    # know which lines we want to scan.
+    try:
+        for lines in _get_lines_from_file(filename):
+            yield from _scan_for_allowlisted_secrets_in_lines(enumerate(lines, 1), filename)
+            break
+    except IOError:
+        log.warning(f'Unable to open file: {filename}')
+        return
+
+
+def scan_for_allowlisted_secrets_in_diff(diff: str) -> Generator[PotentialSecret, None, None]:
+    if not get_plugins():   # pragma: no cover
+        log.warning('No plugins to scan with!')
+        return
+
+    for filename, lines in _get_lines_from_diff(diff):
+        yield from _scan_for_allowlisted_secrets_in_lines(lines, filename)
+
+
+def _scan_for_allowlisted_secrets_in_lines(
+    lines: Iterable[Tuple[int, str]],
+    filename: str,
+) -> Generator[PotentialSecret, None, None]:
+    # We control the setting here because it makes more sense than requiring the caller
+    # to set this setting before calling this function.
+    get_settings().disable_filters('detect_secrets.filters.allowlist.is_line_allowlisted')
+    get_filters.cache_clear()
+
+    for line_number, line in lines:
+        line = line.rstrip()
+
+        if not is_line_allowlisted(filename, line):
+            continue
+
+        if any([
+            inject_variables_into_function(filter_fn, filename=filename, line=line)
+            for filter_fn in get_filters_with_parameter('line')
+        ]):
+            continue
+
+        for plugin in get_plugins():
+            yield from _scan_line(plugin, filename, line, line_number)
+
+
+def _get_lines_from_file(filename: str) -> Generator[List[str], None, None]:
+    """
+    This attempts to get lines in a given file. If no more lines are needed, the caller
+    is responsible for breaking out of this loop.
+
+    :raises: IOError
+    :raises: FileNotFoundError
+    """
+    with open(filename) as f:
+        log.info(f'Checking file: {filename}')
+
+        try:
+            lines = _get_transformed_file(f)
+            if not lines:
+                lines = f.readlines()
+        except UnicodeDecodeError:
+            # We flat out ignore binary files
+            return
+
+        yield lines
+
+        # If the above lines don't prove to be useful to the caller, try using eager transformers.
+        f.seek(0)
+        lines = _get_transformed_file(f, use_eager_transformers=True)
+        if not lines:
+            return
+
+        yield lines
+
+
+def _get_lines_from_diff(diff: str) -> Generator[Tuple[str, List[Tuple[int, str]]], None, None]:
     """
     :raises: ImportError
     """
@@ -104,25 +221,22 @@ def scan_diff(diff: str) -> Generator[PotentialSecret, None, None]:
     # detect-secrets that don't use it.
     from unidiff import PatchSet
 
-    if not get_plugins():   # pragma: no cover
-        log.warning('No plugins to scan with!')
-        return
-
     patch_set = PatchSet.from_string(diff)
     for patch_file in patch_set:
         filename = patch_file.path
         if _filter_files(filename):
             continue
 
-        lines = [
-            (line.target_line_no, line.value)
-            for chunk in patch_file
-            # target_lines refers to incoming (new) changes
-            for line in chunk.target_lines()
-            if line.is_added
-        ]
-
-        yield from _process_line_based_plugins(lines, filename=filename)
+        yield (
+            filename,
+            [
+                (line.target_line_no, line.value)
+                for chunk in patch_file
+                # target_lines refers to incoming (new) changes
+                for line in chunk.target_lines()
+                if line.is_added
+            ],
+        )
 
 
 def _filter_files(filename: str) -> bool:

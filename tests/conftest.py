@@ -78,3 +78,9 @@ def mocked_requests():
     # With default verified secrets, we don't want to be making API calls during tests.
     with responses.RequestsMock() as rsps:
         yield rsps
+
+
+@pytest.fixture(autouse=True)
+def prevent_clear_screen():
+    with mock.patch('detect_secrets.audit.io.clear_screen'):
+        yield

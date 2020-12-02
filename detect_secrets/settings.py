@@ -60,7 +60,6 @@ def cache_bust() -> None:
 
 class Settings:
     DEFAULT_FILTERS = {
-        'detect_secrets.filters.allowlist.is_line_allowlisted',
         'detect_secrets.filters.common.is_invalid_file',
         'detect_secrets.filters.heuristic.is_non_text_file',
     }
@@ -77,6 +76,7 @@ class Settings:
             path: {}
             for path in {
                 *self.DEFAULT_FILTERS,
+                'detect_secrets.filters.allowlist.is_line_allowlisted',
                 'detect_secrets.filters.heuristic.is_sequential_string',
                 'detect_secrets.filters.heuristic.is_potential_uuid',
                 'detect_secrets.filters.heuristic.is_likely_id_string',

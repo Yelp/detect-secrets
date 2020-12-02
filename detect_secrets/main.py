@@ -8,8 +8,11 @@ from . import audit
 from .core import baseline
 from .core import plugins
 from .core.log import log
+from .core.scan import get_files_to_scan
 from .core.scan import get_plugins
+from .core.scan import scan_for_allowlisted_secrets_in_file
 from .core.scan import scan_line
+from .core.secrets_collection import SecretsCollection
 from .core.usage import ParserBuilder
 from .exceptions import InvalidBaselineError
 
@@ -42,6 +45,15 @@ def handle_scan_action(args: argparse.Namespace) -> None:
             line = sys.stdin.read().splitlines()[0]
 
         print(scan_adhoc_string(line))
+        return
+
+    if args.only_allowlisted:
+        secrets = SecretsCollection()
+        for filename in get_files_to_scan(*args.path, should_scan_all_files=args.all_files):
+            for secret in scan_for_allowlisted_secrets_in_file(filename):
+                secrets[secret.filename].add(secret)
+
+        print(json.dumps(baseline.format_for_output(secrets), indent=2))
         return
 
     secrets = baseline.create(*args.path, should_scan_all_files=args.all_files)

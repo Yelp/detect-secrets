@@ -1,5 +1,3 @@
-from unittest import mock
-
 import pytest
 
 from detect_secrets import main as main_module
@@ -19,9 +17,3 @@ def printer():
     printer = PrinterShim()
     with mock_printer(main_module, shim=printer), mock_printer(io, shim=printer):
         yield printer
-
-
-@pytest.fixture(autouse=True)
-def prevent_clear_screen():
-    with mock.patch('detect_secrets.audit.io.clear_screen'):
-        yield
