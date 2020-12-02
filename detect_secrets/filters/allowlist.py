@@ -35,8 +35,7 @@ def _get_allowlist_regexes() -> List[Pattern]:
     return [
         re.compile(r)
         for r in [
-            # Note: Always use allowlist, whitelist will be deprecated in the future
-            r'[ \t]+{} *pragma: ?(allow|white)list[ -]secret.*?{}[ \t]*$'.format(start, end)
+            r'[ \t]+{} *pragma: allowlist secret.*?{}[ \t]*$'.format(start, end)
             for start, end in (
                 ('#', ''),                    # e.g. python or yaml
                 ('//', ''),                   # e.g. golang
