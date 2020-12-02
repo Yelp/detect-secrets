@@ -1,5 +1,9 @@
+import os
 from typing import Any
 from typing import Dict
+
+from ...exceptions import InvalidFile
+from ..plugins.util import get_plugins_from_file
 
 
 def upgrade(baseline: Dict[str, Any]) -> None:
@@ -79,5 +83,24 @@ def _rename_high_entropy_string_arguments(baseline: Dict[str, Any]) -> None:
 
 
 def _migrate_custom_plugins(baseline: Dict[str, Any]) -> None:
-    # TODO
-    pass
+    if 'custom_plugin_paths' not in baseline:
+        return
+
+    for path in baseline['custom_plugin_paths']:
+        try:
+            # NOTE: We don't want to use `detect_secrets.core.plugins.initialize.from_file`
+            # since we don't want to *initialize* these plugins. That will pollute our global
+            # settings object. Instead, we're merely "parsing" this file, and applying changes
+            # as necessary.
+            custom_plugins = get_plugins_from_file(path)
+        except InvalidFile:
+            # Best effort upgrade. Don't break if invalid file.
+            continue
+
+        for plugin in custom_plugins:
+            baseline['plugins_used'].append({
+                'name': plugin.__name__,
+                'path': f'file://{os.path.abspath(path)}',
+            })
+
+    del baseline['custom_plugin_paths']

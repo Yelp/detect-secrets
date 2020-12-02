@@ -1,6 +1,7 @@
 import pytest
 
 from detect_secrets.core.plugins import initialize
+from detect_secrets.exceptions import InvalidFile
 from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
 from detect_secrets.plugins.private_key import PrivateKeyDetector
 from detect_secrets.settings import get_settings
@@ -66,3 +67,26 @@ class TestFromPluginClassName:
     def test_no_such_plugin():
         with pytest.raises(TypeError):
             initialize.from_plugin_classname('NotAPlugin')
+
+
+class TestFromFile:
+    @staticmethod
+    def test_success():
+        plugins = initialize.from_file('testing/plugins.py')
+        assert len(plugins) == 1
+        assert plugins[0].secret_type == 'Hippo'
+        assert initialize.from_secret_type('Hippo') == plugins[0]()
+
+    @staticmethod
+    def test_no_such_file():
+        with pytest.raises(FileNotFoundError):
+            initialize.from_file('does-not-exist')
+
+    @staticmethod
+    def test_non_python_file():
+        with pytest.raises(InvalidFile):
+            initialize.from_file('test_data/config.env')
+
+    @staticmethod
+    def test_no_compatible_plugins():
+        assert not initialize.from_file('testing/mocks.py')

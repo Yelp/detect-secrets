@@ -8,12 +8,18 @@ import responses
 import detect_secrets
 from detect_secrets import filters
 from detect_secrets import settings
+from detect_secrets.core.plugins.util import get_mapping_from_secret_type_to_class
 from detect_secrets.util.importlib import get_modules_from_package
 from testing.mocks import MockLogWrapper
 
 
 @pytest.fixture(autouse=True)
 def clear_cache():
+    # This is also probably too aggressive, but test pollution is tough to debug.
+    # So let's just trade off slightly longer test runs for shorter developer time to debug
+    # test pollution issues.
+    get_mapping_from_secret_type_to_class.cache_clear()
+
     settings.get_settings().clear()
     settings.cache_bust()
 
