@@ -28,6 +28,16 @@ def configure_settings_from_baseline(baseline: Dict[str, Any], filename: str = '
     if 'filters_used' in baseline:
         settings.configure_filters(baseline['filters_used'])
 
+        if 'detect_secrets.filters.wordlist.should_exclude_secret' in settings.filters:
+            config = settings.filters['detect_secrets.filters.wordlist.should_exclude_secret']
+
+            from detect_secrets import filters
+            filters.wordlist.initialize(
+                wordlist_filename=config['file_name'],
+                min_length=config['min_length'],
+                file_hash=config['file_hash'],
+            )
+
     if filename:
         settings.filters['detect_secrets.filters.common.is_baseline_file'] = {
             'filename': filename,
