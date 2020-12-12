@@ -31,7 +31,6 @@ def test_quit_early_if_bad_baseline():
         main(['test_data/files/file_with_secrets.py', '--baseline', 'does-not-exist'])
 
 
-@pytest.mark.xfail(reason='TODO: We need to recreate our baseline once it\'s all over.')
 def test_quit_if_baseline_is_changed_but_not_staged():
     with mock.patch(
         'detect_secrets.pre_commit_hook.raise_exception_if_baseline_file_is_unstaged',

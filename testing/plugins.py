@@ -15,6 +15,10 @@ def register_plugin(plugin: Plugin) -> Generator[None, None, None]:
         # to the classname. However, we already have an instance, so it doesn't matter.
         return plugin
 
+    # NOTE: This hack is needed so that when we dynamically populate the default settings with
+    # registered plugins, this shimmed function will be known as the underlying plugin class.
+    get_instance.__name__ = plugin.__class__.__name__
+
     try:
         get_mapping_from_secret_type_to_class()[plugin.secret_type] = get_instance  # type: ignore
         yield

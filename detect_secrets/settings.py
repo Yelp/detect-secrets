@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 from copy import deepcopy
 from functools import lru_cache
+from importlib import import_module
 from typing import Any
 from typing import Dict
 from typing import Generator
@@ -50,9 +51,6 @@ def transient_settings(config: Dict[str, Any]) -> Generator['Settings', None, No
 
 
 def cache_bust() -> None:
-    from detect_secrets.core.scan import get_filters
-    from detect_secrets.core.scan import get_plugins
-
     get_settings.cache_clear()
     get_filters.cache_clear()
     get_plugins.cache_clear()
@@ -138,20 +136,72 @@ class Settings:
         return self
 
     def json(self) -> Dict[str, Any]:
+        plugins_used = []
+        for plugin in get_plugins():
+            # NOTE: We use the initialized plugin's JSON representation (rather than using
+            # the configured settings) to deal with cases where plugins define their own
+            # default variables, that is not necessarily carried through through the
+            # settings object.
+            serialized_plugin = plugin.json()
+
+            plugins_used.append({
+                # NOTE: We still need to use the saved settings configuration though, since
+                # there are keys specifically in the settings object that we need to carry over
+                # (e.g. `path` for custom plugins).
+                **self.plugins[serialized_plugin['name']],
+                **serialized_plugin,
+            })
+
         return {
-            'plugins_used': [
-                {
-                    'name': name,
-                    **config,
-                }
-                for name, config in self.plugins.items()
-            ],
-            'filters_used': [
-                {
-                    'path': path,
-                    **config,
-                }
-                for path, config in self.filters.items()
-                if path not in self.DEFAULT_FILTERS
-            ],
+            'plugins_used': sorted(
+                plugins_used,
+                key=lambda x: str(x['name'].lower()),
+            ),
+            'filters_used': sorted(
+                [
+                    {
+                        'path': path,
+                        **config,
+                    }
+                    for path, config in self.filters.items()
+                    if path not in self.DEFAULT_FILTERS
+                ],
+                key=lambda x: str(x['path'].lower()),
+            ),
         }
+
+
+@lru_cache(maxsize=1)
+def get_plugins() -> List:
+    # We need to import this here, otherwise it will result in a circular dependency.
+    from .core import plugins
+
+    return [
+        plugins.initialize.from_plugin_classname(classname)
+        for classname in get_settings().plugins
+    ]
+
+
+@lru_cache(maxsize=1)
+def get_filters() -> List:
+    from .core.log import log
+    from .util.inject import get_injectable_variables
+
+    output = []
+    for path, config in get_settings().filters.items():
+        module_path, function_name = path.rsplit('.', 1)
+        try:
+            function = getattr(import_module(module_path), function_name)
+        except (ModuleNotFoundError, AttributeError):
+            log.warning(f'Invalid filter: {path}')
+            continue
+
+        # We attach this metadata to the function itself, so that we don't need to
+        # compute it everytime. This will allow for dependency injection for filters.
+        function.injectable_variables = set(get_injectable_variables(function))
+        output.append(function)
+
+        # This is for better logging.
+        function.path = path
+
+    return output

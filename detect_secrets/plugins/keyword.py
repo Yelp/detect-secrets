@@ -324,7 +324,7 @@ class KeywordDetector(BasePlugin):
             'keyword_exclude': (
                 self.keyword_exclude.pattern
                 if self.keyword_exclude
-                else '',
+                else ''
             ),
             **super().json(),
         }
