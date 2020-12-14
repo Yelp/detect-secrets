@@ -161,13 +161,6 @@ class SecretsCollection:
         for filename, secret in self:
             output[filename].append(secret.json())
 
-        # Ensure stable sort
-        for key, value in output.items():
-            output[key] = sorted(
-                value,
-                key=lambda x: (x['line_number'], x['hashed_secret'], x['type']),
-            )
-
         return dict(output)
 
     def exactly_equals(self, other: Any) -> bool:
@@ -184,7 +177,7 @@ class SecretsCollection:
             secrets = self[filename]
 
             # TODO: Handle cases when line numbers are not supplied
-            for secret in sorted(secrets, key=lambda x: (x.line_number, x.secret_hash)):
+            for secret in sorted(secrets, key=lambda x: (x.line_number, x.secret_hash, x.type)):
                 yield filename, secret
 
     def __bool__(self) -> bool:
