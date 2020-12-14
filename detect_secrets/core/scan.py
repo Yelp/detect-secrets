@@ -4,17 +4,14 @@ from functools import lru_cache
 from importlib import import_module
 from typing import cast
 from typing import Generator
-from typing import IO
 from typing import Iterable
 from typing import List
-from typing import Optional
 from typing import Tuple
 
 from . import plugins
 from ..filters.allowlist import is_line_allowlisted
 from ..settings import get_settings
-from ..transformers import get_transformers
-from ..transformers import ParsingError
+from ..transformers import get_transformed_file
 from ..types import SelfAwareCallable
 from ..util import git
 from ..util.code_snippet import get_code_snippet
@@ -205,7 +202,7 @@ def _get_lines_from_file(filename: str) -> Generator[List[str], None, None]:
         log.info(f'Checking file: {filename}')
 
         try:
-            lines = _get_transformed_file(f)
+            lines = get_transformed_file(f)
             if not lines:
                 lines = f.readlines()
         except UnicodeDecodeError:
@@ -216,7 +213,7 @@ def _get_lines_from_file(filename: str) -> Generator[List[str], None, None]:
 
         # If the above lines don't prove to be useful to the caller, try using eager transformers.
         f.seek(0)
-        lines = _get_transformed_file(f, use_eager_transformers=True)
+        lines = get_transformed_file(f, use_eager_transformers=True)
         if not lines:
             return
 
@@ -257,24 +254,6 @@ def _filter_files(filename: str) -> bool:
             return True
 
     return False
-
-
-def _get_transformed_file(file: IO, use_eager_transformers: bool = False) -> Optional[List[str]]:
-    for transformer in get_transformers():
-        if not transformer.should_parse_file(file.name):
-            continue
-
-        if use_eager_transformers != transformer.is_eager:
-            continue
-
-        try:
-            return transformer.parse_file(file)
-        except ParsingError:
-            pass
-        finally:
-            file.seek(0)
-
-    return None
 
 
 def _process_line_based_plugins(

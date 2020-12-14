@@ -2,6 +2,7 @@ import json
 from functools import lru_cache
 from typing import cast
 from typing import List
+from typing import Optional
 
 from . import io
 from ..core import baseline
@@ -11,6 +12,7 @@ from ..core.secrets_collection import SecretsCollection
 from ..exceptions import InvalidBaselineError
 from ..exceptions import SecretNotFoundOnSpecifiedLineError
 from ..plugins.base import BasePlugin
+from ..transformers import get_transformed_file
 from ..types import SelfAwareCallable
 from ..util.inject import get_injectable_variables
 from ..util.inject import inject_variables_into_function
@@ -41,41 +43,120 @@ def get_raw_secret_from_file(secret: PotentialSecret) -> str:
     :raises: SecretNotFoundOnSpecifiedLineError
     """
     plugin = cast(BasePlugin, plugins.initialize.from_secret_type(secret.type))
-    try:
-        target_line = open_file(secret.filename)[secret.line_number - 1]
-    except IndexError:
-        raise SecretNotFoundOnSpecifiedLineError(secret.line_number)
 
-    function = plugin.__class__.analyze_line
-    if not hasattr(function, 'injectable_variables'):
-        function.injectable_variables = set(        # type: ignore
-            get_injectable_variables(plugin.analyze_line),
+    line_getter = open_file(secret.filename)
+    is_first_time_opening_file = not line_getter.has_cached_lines
+    while True:
+        try:
+            target_line = line_getter.lines[secret.line_number - 1]
+        except IndexError:
+            raise SecretNotFoundOnSpecifiedLineError(secret.line_number)
+
+        function = plugin.__class__.analyze_line
+        if not hasattr(function, 'injectable_variables'):
+            function.injectable_variables = set(        # type: ignore
+                get_injectable_variables(plugin.analyze_line),
+            )
+            function.path = f'{plugin.__class__.__name__}.analyze_line'  # type: ignore
+
+        identified_secrets = inject_variables_into_function(
+            cast(SelfAwareCallable, function),
+            self=plugin,
+            filename=secret.filename,
+            line=target_line,
+            line_number=secret.line_number,     # TODO: this will be optional
+
+            # We enable eager search, because we *know* there's a secret here -- the baseline
+            # flagged it after all.
+            enable_eager_search=True,
         )
-        function.path = f'{plugin.__class__.__name__}.analyze_line'  # type: ignore
 
-    identified_secrets = inject_variables_into_function(
-        cast(SelfAwareCallable, function),
-        self=plugin,
-        filename=secret.filename,
-        line=target_line,
-        line_number=secret.line_number,     # TODO: this will be optional
-        enable_eager_search=True,
-    )
+        for identified_secret in (identified_secrets or []):
+            if identified_secret == secret:
+                return cast(str, identified_secret.secret_value)
 
-    for identified_secret in (identified_secrets or []):
-        if identified_secret == secret:
-            return cast(str, identified_secret.secret_value)
+        # No secret found -- maybe it's due to invalid file transformation.
+        # However, this only applies to the first execution of the file, since we want a
+        # consistent transformed file.
+        #
+        # NOTE: This is defensive coding. If we assume that this is only run on valid baselines,
+        # then the baseline wouldn't record secrets that were both found with and without an eager
+        # transformer, in the same file.
+        if is_first_time_opening_file and not line_getter.use_eager_transformers:
+            line_getter.use_eager_transformers = True
+        else:
+            break
 
     raise SecretNotFoundOnSpecifiedLineError(secret.line_number)
 
 
 @lru_cache(maxsize=1)
-def open_file(filename: str) -> List[str]:
-    """
-    Caches the open input file. This ensures that the audit functionality doesn't
-    unnecessarily re-open the same file.
+def open_file(filename: str) -> 'LineGetter':
+    return LineGetter(filename)
 
-    :raises: FileNotFoundError
+
+class LineGetter:
     """
-    with open(filename) as f:
-        return [line.rstrip() for line in f.readlines()]
+    The problem we try to address with this class is to cache the lines of a transformed file,
+    without knowing beforehand what type of transformation that file needs to undergo.
+
+    When we scan the file, we iterate through the transformed lines, in hopes of finding a
+    secret. If we do find something, we can break out of that iterator, and move on to the next
+    file.
+
+    However, when we audit the file, we *know* that we've found a secret in this location before
+    -- we just don't know what type of transformation the file had underwent to get there. As
+    such, we need to try all transformations until we find the secret that the scan told us about.
+    Once we find it, we should cache the results of that transformation so other audits of the
+    same file will be smoother.
+
+    We do this through a self-invalidating cache (self.lines), when we change the mode to using
+    eager transformers.
+    """
+
+    def __init__(self, filename: str) -> None:
+        self.filename = filename
+
+        self._lines: Optional[List[str]] = None
+        self._raw_lines: Optional[List[str]] = None
+        self._use_eager_transformers = False
+
+    @property
+    def lines(self) -> List[str]:
+        if self._lines:
+            return self._lines
+
+        with open(self.filename) as f:
+            if self.use_eager_transformers:
+                self._lines = get_transformed_file(f, use_eager_transformers=True)
+            else:
+                lines = get_transformed_file(f)
+                self._lines = self.raw_lines if not lines else lines
+
+        return cast(List[str], self._lines)
+
+    @property
+    def raw_lines(self) -> List[str]:
+        if self._raw_lines:
+            return self._raw_lines
+
+        with open(self.filename) as f:
+            self._raw_lines = [line.rstrip() for line in f.readlines()]
+
+        return self._raw_lines
+
+    @property
+    def has_cached_lines(self) -> bool:
+        return bool(self._lines)
+
+    @property
+    def use_eager_transformers(self) -> bool:
+        return self._use_eager_transformers
+
+    @use_eager_transformers.setter
+    def use_eager_transformers(self, status: bool) -> None:
+        if status == self.use_eager_transformers:
+            return
+
+        self._use_eager_transformers = status
+        self._lines = None              # invalidate cache

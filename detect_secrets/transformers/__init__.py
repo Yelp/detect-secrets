@@ -2,15 +2,36 @@ import inspect
 import sys
 from functools import lru_cache
 from typing import Any
+from typing import IO
 from typing import Iterable
+from typing import List
+from typing import Optional
 from typing import TypeVar
 
 from ..util.importlib import import_types_from_package
 from .base import BaseTransformer
-from .exceptions import ParsingError    # noqa: F401
+from .exceptions import ParsingError
 
 
 Transformer = TypeVar('Transformer', bound=BaseTransformer)
+
+
+def get_transformed_file(file: IO, use_eager_transformers: bool = False) -> Optional[List[str]]:
+    for transformer in get_transformers():
+        if not transformer.should_parse_file(file.name):
+            continue
+
+        if use_eager_transformers != transformer.is_eager:
+            continue
+
+        try:
+            return transformer.parse_file(file)
+        except ParsingError:
+            pass
+        finally:
+            file.seek(0)
+
+    return None
 
 
 @lru_cache(maxsize=1)

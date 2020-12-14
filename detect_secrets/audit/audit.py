@@ -44,7 +44,7 @@ def _classify_secrets(iterator: BidirectionalIterator) -> bool:
                     num_total_secrets=len(iterator.collection),
                     secret=secret,
                     snippet=get_code_snippet(
-                        lines=open_file(secret.filename),
+                        lines=open_file(secret.filename).raw_lines,
                         line_number=secret.line_number,
                     ),
                 ),

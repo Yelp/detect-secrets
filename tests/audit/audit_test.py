@@ -112,6 +112,33 @@ def test_start_halfway(test_baseline, start_state, input_order, expected_order):
     assert_labels(run_logic(test_baseline, input_order), expected_order)
 
 
+def test_ensure_file_transformers_are_used(printer):
+    """
+    In this tests, we construct a situation where detect-secrets scan leverages special
+    file transformers in order to find a secret, that wouldn't otherwise be found with
+    normal line-by-line reading. In doing so, if audit is able to find this secret, it
+    can be inferred that it too knows how to use file transformers.
+    """
+    with transient_settings({
+        'plugins_used': [
+            {'name': 'Base64HighEntropyString'},
+        ],
+    }):
+        secrets = SecretsCollection()
+        secrets.scan_file('test_data/config.env')
+        assert bool(secrets)
+
+    with open('test_data/config.env') as f:
+        lines = [line.rstrip() for line in f.readlines()]
+
+    with mock.patch('detect_secrets.audit.io.print_secret_not_found') as m:
+        run_logic(secrets, 'y')
+        assert not m.called
+
+    line_number = list(secrets['test_data/config.env'])[0].line_number
+    assert lines[line_number - 1] in printer.message
+
+
 def run_logic(
     secrets: SecretsCollection,
     input: Optional[str] = None,
