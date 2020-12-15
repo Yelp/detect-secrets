@@ -1,3 +1,4 @@
+from functools import lru_cache
 from typing import cast
 from typing import Union
 
@@ -34,6 +35,7 @@ class IbmCloudIamDetector(RegexBasedDetector):
             else VerifiedResult.VERIFIED_FALSE
 
 
+@lru_cache()
 def verify_cloud_iam_api_key(apikey: Union[str, bytes]) -> requests.Response:  # pragma: no cover
     if type(apikey) == bytes:
         apikey = cast(bytes, apikey).decode('UTF-8')
