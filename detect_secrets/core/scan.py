@@ -12,6 +12,7 @@ from . import plugins
 from ..filters.allowlist import is_line_allowlisted
 from ..settings import get_settings
 from ..transformers import get_transformed_file
+from ..types import NamedIO
 from ..types import SelfAwareCallable
 from ..util import git
 from ..util.code_snippet import get_code_snippet
@@ -202,7 +203,7 @@ def _get_lines_from_file(filename: str) -> Generator[List[str], None, None]:
         log.info(f'Checking file: {filename}')
 
         try:
-            lines = get_transformed_file(f)
+            lines = get_transformed_file(cast(NamedIO, f))
             if not lines:
                 lines = f.readlines()
         except UnicodeDecodeError:
@@ -213,7 +214,7 @@ def _get_lines_from_file(filename: str) -> Generator[List[str], None, None]:
 
         # If the above lines don't prove to be useful to the caller, try using eager transformers.
         f.seek(0)
-        lines = get_transformed_file(f, use_eager_transformers=True)
+        lines = get_transformed_file(cast(NamedIO, f), use_eager_transformers=True)
         if not lines:
             return
 

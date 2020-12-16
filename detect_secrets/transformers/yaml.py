@@ -4,8 +4,7 @@ from functools import lru_cache
 from typing import Any
 from typing import cast
 from typing import Dict
-from typing import Generator
-from typing import IO
+from typing import Iterator
 from typing import List
 from typing import NamedTuple
 from typing import Optional
@@ -16,6 +15,7 @@ from typing import Union
 import yaml
 
 from ..core.log import log
+from ..types import NamedIO
 from ..util.filetype import determine_file_type
 from ..util.filetype import FileType
 from .base import BaseTransformer
@@ -26,7 +26,7 @@ class YAMLTransformer(BaseTransformer):
     def should_parse_file(self, filename: str) -> bool:
         return determine_file_type(filename) == FileType.YAML
 
-    def parse_file(self, file: IO) -> List[str]:
+    def parse_file(self, file: NamedIO) -> List[str]:
         """
         :raises: ParsingError
         """
@@ -139,7 +139,7 @@ class YAMLFileParser:
     This parsing method is inspired by https://stackoverflow.com/a/13319530.
     """
 
-    def __init__(self, file: IO):
+    def __init__(self, file: NamedIO):
         self.content = file.read()
 
         self.loader = yaml.SafeLoader(self.content)
@@ -148,7 +148,7 @@ class YAMLFileParser:
     def json(self) -> Dict[str, Any]:
         return cast(Dict[str, Any], self.loader.get_single_data())
 
-    def __iter__(self) -> Generator[YAMLValue, None, None]:
+    def __iter__(self) -> Iterator[YAMLValue]:
         """
         :returns: (value, line_number)
         """

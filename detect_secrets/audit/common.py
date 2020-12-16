@@ -1,6 +1,9 @@
 import json
+from contextlib import contextmanager
 from functools import lru_cache
+from typing import Callable
 from typing import cast
+from typing import Iterator
 from typing import List
 from typing import Optional
 
@@ -13,6 +16,7 @@ from ..exceptions import InvalidBaselineError
 from ..exceptions import SecretNotFoundOnSpecifiedLineError
 from ..plugins.base import BasePlugin
 from ..transformers import get_transformed_file
+from ..types import NamedIO
 from ..types import SelfAwareCallable
 from ..util.inject import get_injectable_variables
 from ..util.inject import inject_variables_into_function
@@ -34,7 +38,15 @@ def get_baseline_from_file(filename: str) -> SecretsCollection:
         raise InvalidBaselineError
 
 
-def get_raw_secret_from_file(secret: PotentialSecret) -> str:
+@lru_cache(maxsize=1)
+def open_file(filename: str) -> 'LineGetter':
+    return LineGetter(filename)
+
+
+def get_raw_secret_from_file(
+    secret: PotentialSecret,
+    line_getter_factory: Callable[[str], 'LineGetter'] = open_file,
+) -> str:
     """
     We're analyzing the contents straight from the baseline, and therefore, we don't know
     the secret value (by design). However, we have line numbers, filenames, and how we detected
@@ -44,7 +56,7 @@ def get_raw_secret_from_file(secret: PotentialSecret) -> str:
     """
     plugin = cast(BasePlugin, plugins.initialize.from_secret_type(secret.type))
 
-    line_getter = open_file(secret.filename)
+    line_getter = line_getter_factory(secret.filename)
     is_first_time_opening_file = not line_getter.has_cached_lines
     while True:
         try:
@@ -90,11 +102,6 @@ def get_raw_secret_from_file(secret: PotentialSecret) -> str:
     raise SecretNotFoundOnSpecifiedLineError(secret.line_number)
 
 
-@lru_cache(maxsize=1)
-def open_file(filename: str) -> 'LineGetter':
-    return LineGetter(filename)
-
-
 class LineGetter:
     """
     The problem we try to address with this class is to cache the lines of a transformed file,
@@ -121,26 +128,29 @@ class LineGetter:
         self._raw_lines: Optional[List[str]] = None
         self._use_eager_transformers = False
 
+    @contextmanager
+    def open_file(self) -> Iterator[NamedIO]:
+        """This is split up into a different function, so it can be overridden if necessary."""
+        with open(self.filename) as f:
+            yield cast(NamedIO, f)
+
     @property
     def lines(self) -> List[str]:
         if self._lines:
             return self._lines
 
-        with open(self.filename) as f:
-            if self.use_eager_transformers:
-                self._lines = get_transformed_file(f, use_eager_transformers=True)
-            else:
-                lines = get_transformed_file(f)
-                self._lines = self.raw_lines if not lines else lines
+        with self.open_file() as f:
+            lines = get_transformed_file(f, use_eager_transformers=self.use_eager_transformers)
+            self._lines = self.raw_lines if not lines else lines
 
-        return cast(List[str], self._lines)
+        return self._lines
 
     @property
     def raw_lines(self) -> List[str]:
         if self._raw_lines:
             return self._raw_lines
 
-        with open(self.filename) as f:
+        with self.open_file() as f:
             self._raw_lines = [line.rstrip() for line in f.readlines()]
 
         return self._raw_lines

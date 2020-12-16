@@ -2,12 +2,12 @@ import inspect
 import sys
 from functools import lru_cache
 from typing import Any
-from typing import IO
 from typing import Iterable
 from typing import List
 from typing import Optional
 from typing import TypeVar
 
+from ..types import NamedIO
 from ..util.importlib import import_types_from_package
 from .base import BaseTransformer
 from .exceptions import ParsingError
@@ -16,7 +16,10 @@ from .exceptions import ParsingError
 Transformer = TypeVar('Transformer', bound=BaseTransformer)
 
 
-def get_transformed_file(file: IO, use_eager_transformers: bool = False) -> Optional[List[str]]:
+def get_transformed_file(
+    file: NamedIO,
+    use_eager_transformers: bool = False,
+) -> Optional[List[str]]:
     for transformer in get_transformers():
         if not transformer.should_parse_file(file.name):
             continue
