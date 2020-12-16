@@ -2,6 +2,7 @@ import os
 import subprocess
 from functools import lru_cache
 from importlib import import_module
+from typing import Any
 from typing import cast
 from typing import Generator
 from typing import IO
@@ -72,6 +73,7 @@ def scan_line(line: str) -> Generator[PotentialSecret, None, None]:
             filename='adhoc-string-scan',
             line=line,
             line_number=0,
+            enable_eager_search=True,
         ):
             for filter_fn in get_filters_with_parameter('context'):
                 if inject_variables_into_function(
@@ -326,14 +328,28 @@ def _scan_line(
     filename: str,
     line: str,
     line_number: int,
+    **kwargs: Any,
 ) -> Generator[PotentialSecret, None, None]:
     # NOTE: We don't apply filter functions here yet, because we don't have any filters
     # that operate on (filename, line, plugin) without `secret`
     try:
-        secrets = plugin.analyze_line(filename=filename, line=line, line_number=line_number)
+        analyze_line = plugin.__class__.analyze_line
+        if not hasattr(analyze_line, 'injectable_variables'):
+            analyze_line.injectable_variables = set(        # type: ignore
+                get_injectable_variables(plugin.analyze_line),
+            )
+            analyze_line.path = f'{plugin.__class__.__name__}.analyze_line'     # type: ignore
     except AttributeError:
         return
 
+    secrets = inject_variables_into_function(
+        cast(SelfAwareCallable, analyze_line),
+        self=plugin,
+        filename=filename,
+        line=line,
+        line_number=line_number,
+        **kwargs,
+    )
     if not secrets:
         return
 

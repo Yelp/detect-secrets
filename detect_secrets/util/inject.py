@@ -13,10 +13,11 @@ def inject_variables_into_function(func: SelfAwareCallable, **kwargs: Any) -> Op
         for key in (variables_to_inject & func.injectable_variables)
     }
 
-    if set(values.keys()) != func.injectable_variables:
+    try:
+        return func(**values)
+    except TypeError:
+        # When parameters are required (and not supplied), it raises a TypeError.
         return None
-
-    return func(**values)
 
 
 def get_injectable_variables(func: Callable) -> Tuple[str, ...]:

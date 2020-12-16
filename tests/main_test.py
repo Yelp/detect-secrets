@@ -3,8 +3,6 @@ import tempfile
 from contextlib import contextmanager
 from unittest import mock
 
-import pytest
-
 from detect_secrets import main as main_module
 from detect_secrets.core import baseline
 from detect_secrets.core.secrets_collection import SecretsCollection
@@ -75,7 +73,6 @@ class TestScanString:
             ]
 
     @staticmethod
-    @pytest.mark.xfail(reason='TODO')
     def test_failed_high_entropy_string():
         with transient_settings({
             'plugins_used': [

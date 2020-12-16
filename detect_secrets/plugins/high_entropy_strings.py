@@ -4,9 +4,9 @@ import string
 from abc import ABCMeta
 from contextlib import contextmanager
 from typing import Any
+from typing import cast
 from typing import Dict
 from typing import Generator
-from typing import Optional
 from typing import Set
 
 from ..core.potential_secret import PotentialSecret
@@ -35,9 +35,7 @@ class HighEntropyStringsPlugin(BasePlugin, metaclass=ABCMeta):
                 # This occurs on the default regex, but not on the eager regex.
                 result = result[1]
 
-            entropy_value = self.calculate_shannon_entropy(result)
-            if entropy_value > self.entropy_limit:
-                yield result
+            yield result
 
     def analyze_line(
         self,
@@ -49,11 +47,25 @@ class HighEntropyStringsPlugin(BasePlugin, metaclass=ABCMeta):
     ) -> Set[PotentialSecret]:
         output = super().analyze_line(filename=filename, line=line, line_number=line_number)
         if output or not enable_eager_search:
-            return output
+            # NOTE: We perform the limit filter at this layer (rather than analyze_string) so
+            # that we can surface secrets that do not meet the limit criteria when
+            # enable_eager_search=True.
+            return {
+                secret
+                for secret in (output or set([]))
+                if (
+                    self.calculate_shannon_entropy(cast(str, secret.secret_value)) >
+                    self.entropy_limit
+                )
+            }
 
         # This is mainly used for adhoc string scanning. As such, it's just bad UX to require
         # quotes around the expected secret. In these cases, we only try to search it without
         # requiring quotes when we can't find any results *with* quotes.
+        #
+        # NOTE: Since we currently assume this is only used for adhoc string scanning, we
+        # perform the limit filtering outside this function. This allows us to see *why* secrets
+        # have failed to be caught with our configured limit.
         with self.non_quoted_string_regex(is_exact_match=False):
             return super().analyze_line(filename=filename, line=line, line_number=line_number)
 
@@ -73,17 +85,15 @@ class HighEntropyStringsPlugin(BasePlugin, metaclass=ABCMeta):
 
         return entropy
 
-    def format_scan_result(self, secret: Optional[PotentialSecret]) -> str:
-        # TODO: In this current iteration, this is less useful because it doesn't show
-        # the entropy score for strings that are skipped due to low entropy scores.
-        if not secret:
-            return 'False'
-
+    def format_scan_result(self, secret: PotentialSecret) -> str:
         if not secret.secret_value:
             # This is the best we can do, since we don't have the raw value to process.
             return 'True'
 
         entropy = round(self.calculate_shannon_entropy(secret.secret_value), 3)
+        if entropy < self.entropy_limit:
+            return f'False ({entropy})'
+
         return f'True  ({entropy})'
 
     def json(self) -> Dict[str, Any]:

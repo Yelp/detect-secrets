@@ -38,7 +38,15 @@ class TestHighEntropyString:
         ),
     )
     def test_basic(plugin, non_secret, secret, format, should_be_caught):
-        results = list(plugin().analyze_string(format.format(non_secret=non_secret, secret=secret)))
+        # NOTE: We need to use analyze_line (rather than analyze_string) since the entropy
+        # limit check lives in this function.
+        results = list(
+            plugin().analyze_line(
+                filename='does not matter',
+                line=format.format(non_secret=non_secret, secret=secret),
+                line_number=0,
+            ),
+        )
         assert bool(results) == should_be_caught
 
     @staticmethod
@@ -58,7 +66,13 @@ class TestHighEntropyString:
         ),
     )
     def test_multiple_strings_same_line(plugin, non_secret, secret, format, num_results):
-        results = list(plugin().analyze_string(format.format(non_secret=non_secret, secret=secret)))
+        results = list(
+            plugin().analyze_line(
+                filename='does not matter',
+                line=format.format(non_secret=non_secret, secret=secret),
+                line_number=0,
+            ),
+        )
         assert len(results) == num_results
 
     @staticmethod
