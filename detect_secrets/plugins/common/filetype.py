@@ -14,7 +14,15 @@ class FileType(Enum):
     SWIFT = 8
     TERRAFORM = 9
     YAML = 10
-    OTHER = 11
+    INI = 11
+    PROPERTIES = 12
+    XML = 13
+    C = 14
+    CPP = 15
+    CSHARP = 16
+    BASH = 17
+    POWERSHELL = 18
+    OTHER = 19
 
 
 EXTENSION_TO_FILETYPE = {
@@ -24,6 +32,7 @@ EXTENSION_TO_FILETYPE = {
     '.go': FileType.GO,
     '.java': FileType.JAVA,
     '.js': FileType.JAVASCRIPT,
+    '.jsx': FileType.JAVASCRIPT,
     '.m': FileType.OBJECTIVE_C,
     '.php': FileType.PHP,
     '.py': FileType.PYTHON,
@@ -32,6 +41,14 @@ EXTENSION_TO_FILETYPE = {
     '.tf': FileType.TERRAFORM,
     '.yaml': FileType.YAML,
     '.yml': FileType.YAML,
+    '.ini': FileType.INI,
+    '.properties': FileType.PROPERTIES,
+    '.xml': FileType.XML,
+    '.c': FileType.C,
+    '.cpp': FileType.CPP,
+    '.cs': FileType.CSHARP,
+    '.sh': FileType.BASH,
+    '.ps1': FileType.POWERSHELL,
 }
 
 
