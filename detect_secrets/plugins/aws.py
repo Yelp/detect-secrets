@@ -21,6 +21,7 @@ class AWSKeyDetector(RegexBasedDetector):
 
     denylist = (
         re.compile(r'AKIA[0-9A-Z]{16}'),
+        re.compile(r'aws(.{0,20})?[\'\"][0-9a-zA-Z/+]{40}[\'\"]')
     )
 
     @classproperty
