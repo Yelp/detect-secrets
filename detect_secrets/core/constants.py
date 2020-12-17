@@ -1,5 +1,7 @@
 from enum import Enum
 
+from detect_secrets.core import private_corporation as corp
+
 
 # We don't scan files with these extensions.
 # Note: We might be able to do this better with
@@ -10,22 +12,35 @@ from enum import Enum
 IGNORED_FILE_EXTENSIONS = set(
     (
         '.7z',
+        '.bin',
         '.bmp',
         '.bz2',
+        '.class',
+        '.css',
         '.dmg',
+        '.doc',
         '.eot',
         '.exe',
         '.gif',
         '.gz',
         '.ico',
+        '.iml',
+        '.ipr',
+        '.iws',
         '.jar',
         '.jpg',
         '.jpeg',
+        '.lock',
+        '.map',
         '.mo',
+        '.pdf',
         '.png',
+		'.prefs',
+        '.psd',
         '.rar',
         '.realm',
         '.s7z',
+		'.sum',
         '.svg',
         '.tar',
         '.tif',
@@ -38,6 +53,59 @@ IGNORED_FILE_EXTENSIONS = set(
         '.zip',
     ),
 )
+
+IGNORED_FILE_NAMES = set(
+    (
+        'package.json',
+        'package-lock.json',
+        'mock.properties',
+		'checkstyle-java-google-style.xml',
+        '.settings',
+        'netbeans.conf',
+        '.secret.baseline',
+    ),
+)
+IGNORED_FILE_NAMES.update(corp.IGNORED_FILE_NAMES)
+
+IGNORED_FILE_NAMES_REGEX = set(
+	(	
+		re.compile(file_name)
+		for file_name in [
+			r'((m|M)essages|storetext)(_[a-z]{2}(_[A-Z]{2})?)?\.properties',
+			r'.*swagger.*'
+			r'.*ckeditor.*'
+		]
+	),
+)
+IGNORED_FILE_NAMES_REGEX.update(corp.IGNORED_FILE_NAMES_REGEX)
+
+IGNORED_FILE_PATHS = set(
+    (
+        '.git',
+        '.svn',
+        '.idea',
+        '.vscode',
+        'node_modules',
+        'site-packages',
+        'target',
+        'translations',
+        'traducciones',
+        'i18n',
+        'l10n',
+        'espanol',
+        'english',
+        'portugues',
+        'francais',
+        'deutsch',
+        'italiano',
+        'polski',
+        'locale',
+        '.settings',
+        'netbeans.conf',
+        '.netbeans',
+    ),
+)
+IGNORED_FILE_PATHS.update(corp.IGNORED_FILE_PATHS)
 
 
 class VerifiedResult(Enum):

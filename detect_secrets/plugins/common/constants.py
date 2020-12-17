@@ -1,5 +1,7 @@
 import re
 
+from detect_secrets.core import private_corporation as corp
+
 
 ALLOWLIST_REGEXES = [
     re.compile(r)
@@ -22,6 +24,7 @@ ALLOWLIST_REGEXES = [
         )
     ]
 ]
+ALLOWLIST_REGEXES.extend(corp.ALLOWLIST_REGEXES)
 
 # Add to this mapping (and ALLOWLIST_REGEXES if applicable) lazily,
 # as more language specific file parsers are implemented.

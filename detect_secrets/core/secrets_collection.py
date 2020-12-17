@@ -6,7 +6,7 @@ from time import gmtime
 from time import strftime
 
 from detect_secrets import VERSION
-from detect_secrets.core.constants import IGNORED_FILE_EXTENSIONS
+from detect_secrets.core.constants import IGNORED_FILE_EXTENSIONS, IGNORED_FILE_NAMES, IGNORED_FILE_NAMES_REGEX, IGNORED_FILE_PATHS
 from detect_secrets.core.log import log
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.common import initialize
@@ -226,8 +226,20 @@ class SecretsCollection:
         """
         if os.path.islink(filename):
             return False
+        # Filter by file extension
         if os.path.splitext(filename)[1] in IGNORED_FILE_EXTENSIONS:
             return False
+        # Filter by filename
+        if os.path.basename(filename) in IGNORED_FILE_NAMES:
+            return False
+        # Filter by filename using regexes
+        for allow_regex in IGNORED_FILE_NAMES_REGEX:
+            if allow_regex.match(os.path.basename(filename)) != None:
+                return False
+        # Filter by file paths
+        for allow_path in IGNORED_FILE_PATHS:
+            if allow_path.lower() in filename.split(os.path.sep):
+                return False
         try:
             with codecs.open(filename, encoding='utf-8') as f:
                 self._extract_secrets_from_file(f, filename)
