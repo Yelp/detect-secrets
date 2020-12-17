@@ -295,7 +295,7 @@ def determine_audit_results(baseline, baseline_path):
             float(audit_results['stats']['true-positives']['count'])
             /
             total
-        ) * 100,
+        ) * 100 if total > 0 else 0.00,
     )
 
     for plugin_config in baseline['plugins_used']:
