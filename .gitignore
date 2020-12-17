@@ -12,3 +12,6 @@
 !.gitignore
 .python-version
 .vscode
+
+/build
+/dist

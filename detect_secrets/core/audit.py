@@ -2,7 +2,7 @@ import codecs
 import io
 import json
 import os
-import subprocess
+import platform
 import sys
 from builtins import input
 from collections import defaultdict
@@ -477,7 +477,13 @@ def _comparison_generator(old_list, new_list, compare_fn):
 
 
 def _clear_screen():  # pragma: no cover
-    subprocess.call(['clear'])
+    try:
+        command = 'clear'
+        if platform.system() == 'Windows':
+            command = 'cls'
+        os.system(command)
+    except:
+        pass
 
 
 def _print_context(  # pragma: no cover
