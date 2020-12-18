@@ -134,7 +134,11 @@ class BasePlugin:
                 continue
 
             if not self.should_verify:
-                potential_secrets.update(results)
+                for result in results:
+                    if result in potential_secrets:
+                        result.add_line_numbers(potential_secrets[result].line_numbers)
+                        potential_secrets.pop(result)
+                    potential_secrets[result] = result 
                 continue
 
             filtered_results = {}
@@ -152,7 +156,11 @@ class BasePlugin:
                 if is_verified != VerifiedResult.VERIFIED_FALSE:
                     filtered_results[result] = result
 
-            potential_secrets.update(filtered_results)
+            for result in filtered_results:
+                if result in potential_secrets:
+                    result.add_line_numbers(potential_secrets[result].line_numbers)
+                    potential_secrets.pop(result)
+                potential_secrets[result] = result
 
         return potential_secrets
 

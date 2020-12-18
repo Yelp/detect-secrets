@@ -55,11 +55,17 @@ class PotentialSecret:
 
         self.hidden_secret = hidden_secret
         self.hidden_line = hidden_line
+        self.line_numbers = [
+            self.lineno
+        ]
 
         # If two PotentialSecrets have the same values for these fields,
         # they are considered equal. Note that line numbers aren't included
         # in this, because line numbers are subject to change.
         self.fields_to_compare = ['filename', 'secret_hash', 'type']
+
+    def add_line_numbers(self, lines):
+        self.line_numbers.extend(lines)
 
     def set_secret(self, secret):
         self.secret_hash = self.hash_secret(secret)

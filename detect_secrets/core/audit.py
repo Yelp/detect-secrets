@@ -284,6 +284,8 @@ def determine_audit_results(baseline, baseline_path, hide=False):
             )
             secret_info['plaintext'] = potential_secret.secret_value
             secret_info['identifier'] = hashlib.sha512((secret_info['plaintext'] + filename).encode('utf-8')).hexdigest()
+            potential_secret.line_numbers.reverse()
+            secret_info['line_numbers'] = potential_secret.line_numbers
             if hide:
                 if potential_secret.hidden_secret == None or potential_secret.hidden_line == None:
                     potential_secret.hidden_secret = hide_secret(potential_secret.secret_value)
@@ -298,9 +300,9 @@ def determine_audit_results(baseline, baseline_path, hide=False):
         audit_result = AUDIT_RESULT_TO_STRING[secret.get('is_secret')]
         audit_results['plugins'][plugin_name]['results'][audit_result][filename].append(secret_info)
 
-        audit_results['stats'][audit_result]['count'] += 1
-        audit_results['stats'][audit_result]['files'][filename] += 1
-        total += 1
+        audit_results['stats'][audit_result]['count'] += len(secret_info['line_numbers'])
+        audit_results['stats'][audit_result]['files'][filename] += len(secret_info['line_numbers'])
+        total += len(secret_info['line_numbers'])
     audit_results['stats']['signal'] = '{:.2f}%'.format(
         (
             float(audit_results['stats']['true-positives']['count'])
