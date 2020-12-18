@@ -1,4 +1,5 @@
 from enum import Enum
+import re
 
 from detect_secrets.core import private_corporation as corp
 
