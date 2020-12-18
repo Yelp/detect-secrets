@@ -27,6 +27,7 @@ THE SOFTWARE.
 import re
 
 from detect_secrets.core.potential_secret import PotentialSecret
+from detect_secrets.core.protection import hide_secret, hide_line
 from detect_secrets.plugins.base import BasePlugin
 from detect_secrets.plugins.base import classproperty
 from detect_secrets.plugins.common.filetype import determine_file_type
@@ -34,34 +35,53 @@ from detect_secrets.plugins.common.filetype import FileType
 from detect_secrets.plugins.common.filters import get_aho_corasick_helper
 from detect_secrets.plugins.common.filters import is_sequential_string
 
-
 # Note: All values here should be lowercase
 DENYLIST = (
     'apikey',
     'api_key',
+    'appkey',
+    'app_key',
+    'authkey',
+    'auth_key',
+    'servicekey',
+    'service_key',
+    'applicationkey',
+    'application_key',
+    'accountkey',
+    'account_key',
+    'dbkey',
+    'db_key',
+    'databasekey',
+    'database_key',
+    'clientkey',
+    'client_key',
     'aws_secret_access_key',
-    'db_pass',
     'password',
     'passwd',
+    'pass',
+    'pwd',
     'private_key',
+    'privatekey',
+    'priv_key',
+    'privkey',
     'secret',
     'secrete',
+	'secreto',
+    'keypass',
+	'token',
+    'contrasena',
+    'contraseña',
 )
 FALSE_POSITIVES = {
-    '""',
     '""):',
     '"\'',
-    '")',
-    '"dummy',
     '"replace',
     '"this',
-    '#pass',
-    '#password',
+    'passes',
+    'passing',
     '$(shell',
     "'\"",
-    "''",
     "''):",
-    "')",
     "'dummy",
     "'replace",
     "'this",
@@ -69,13 +89,11 @@ FALSE_POSITIVES = {
     '-default}',
     '::',
     '<%=',
-    '<?php',
-    '<a',
+    'secretName',
     '<aws_secret_access_key>',
     '<input',
     '<password>',
     '<redacted>',
-    '<secret',
     '>',
     '=',
     '\\"$(shell',
@@ -85,7 +103,7 @@ FALSE_POSITIVES = {
     '`grep',
     '`sudo',
     'account_password',
-    'api_key',
+    'commit',
     'disable',
     'dummy_secret',
     'dummy_value',
@@ -105,16 +123,13 @@ FALSE_POSITIVES = {
     'null.*"',
     "null.*'",
     'null;',
-    'pass',
     'pass)',
-    'password',
     'password)',
     'password))',
     'password,',
     'password},',
     'prompt',
     'redacted',
-    'secret',
     'some_key',
     'str',
     'str_to_sign',
@@ -126,7 +141,6 @@ FALSE_POSITIVES = {
     'string?)',
     'string}',
     'string}}',
-    'test',
     'test-access-key',
     'thisisnottherealsecret',
     'todo',
@@ -141,17 +155,20 @@ FALSE_POSITIVES = {
 }
 # Includes ], ', " as closing
 CLOSING = r'[]\'"]{0,2}'
-DENYLIST_REGEX = r'|'.join(DENYLIST)
+VARIABLE_REGEX = r'[a-zA-Z0-9_-]*'
+DENYLIST_REGEX = r'(' + r'|'.join(DENYLIST) + r')({variable})?'.format(variable=VARIABLE_REGEX)
+DENYLIST_REGEX_WITH_PREV = r'({variable})('.format(variable=VARIABLE_REGEX) + r'|'.join(DENYLIST) + r')({variable})'.format(variable=VARIABLE_REGEX)
 # Non-greedy match
 OPTIONAL_WHITESPACE = r'\s*?'
 OPTIONAL_NON_WHITESPACE = r'[^\s]*?'
 QUOTE = r'[\'"]'
-SECRET = r'[^\s]+'
+SECRET = r'""|\'\'|[^\'"\s]+'
 SQUARE_BRACKETS = r'(\[\])'
 
+# Pascal | GOLANG
 FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
-    # e.g. my_password := "bar" or my_password := bar
-    r'({denylist})({closing})?{whitespace}:=?{whitespace}({quote}?)({secret})(\3)'.format(
+    # e.g. my_password := "bar"
+    r'({denylist})({closing})?{whitespace}:=?{whitespace}({quote})({secret})({quote})'.format(
         denylist=DENYLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
@@ -159,9 +176,11 @@ FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
         secret=SECRET,
     ),
 )
+
+# YAML y .ini
 FOLLOWED_BY_COLON_REGEX = re.compile(
     # e.g. api_key: foo
-    r'({denylist})({closing})?:{whitespace}({quote}?)({secret})(\3)'.format(
+    r'({denylist})({closing})?:{whitespace}({secret})'.format(
         denylist=DENYLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
@@ -169,9 +188,11 @@ FOLLOWED_BY_COLON_REGEX = re.compile(
         secret=SECRET,
     ),
 )
+
+# YAML y .ini
 FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX = re.compile(
     # e.g. api_key: "foo"
-    r'({denylist})({closing})?:({whitespace})({quote})({secret})(\4)'.format(
+    r'({denylist})({closing})?:({whitespace})({quote})({secret})({quote})'.format(
         denylist=DENYLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
@@ -179,20 +200,24 @@ FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX = re.compile(
         secret=SECRET,
     ),
 )
+
+# Objective-C
 FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX = re.compile(
     # e.g. my_password = "bar"
     # e.g. my_password = @"bar"
     # e.g. my_password[] = "bar";
-    r'({denylist})({square_brackets})?{optional_whitespace}={optional_whitespace}(@)?(")({secret})(\5)'.format(  # noqa: E501
+    r'({denylist})({square_brackets})?{optional_whitespace}={optional_whitespace}(@)?(")({secret})(")'.format(  # noqa: E501
         denylist=DENYLIST_REGEX,
         square_brackets=SQUARE_BRACKETS,
         optional_whitespace=OPTIONAL_WHITESPACE,
         secret=SECRET,
     ),
 )
+
+# Properties y .ini
 FOLLOWED_BY_EQUAL_SIGNS_REGEX = re.compile(
     # e.g. my_password = bar
-    r'({denylist})({closing})?{whitespace}={whitespace}({quote}?)({secret})(\3)'.format(
+    r'({denylist})({closing})?{whitespace}={whitespace}({quote}?)({secret})'.format(
         denylist=DENYLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
@@ -200,9 +225,12 @@ FOLLOWED_BY_EQUAL_SIGNS_REGEX = re.compile(
         secret=SECRET,
     ),
 )
+
+# Properties y .ini | C/C++/C# | Java | Bash | Powershell | Python | Swift | JS | TERRAFORM
 FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
     # e.g. my_password = "bar"
-    r'({denylist})({closing})?{whitespace}={whitespace}({quote})({secret})(\3)'.format(
+    # e.g. my_password = 'bar'
+    r'({denylist})({closing})?{whitespace}={whitespace}({quote})({secret})({quote})'.format(
         denylist=DENYLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
@@ -210,9 +238,34 @@ FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
         secret=SECRET,
     ),
 )
+
+FOLLOWED_BY_COMPARATION_QUOTES_REQUIRED_REGEX = re.compile(
+    # e.g. my_password == "bar" or my_password != "bar" or my_password === "bar" or my_password !== "bar"
+    # e.g. my_password == 'bar' or my_password != 'bar' or my_password === 'bar' or my_password !== 'bar'
+    r'({denylist})({closing})?{whitespace}[!=]{{2,3}}{whitespace}({quote})({secret})({quote})'.format(
+        denylist=DENYLIST_REGEX,
+        closing=CLOSING,
+        quote=QUOTE,
+        whitespace=OPTIONAL_WHITESPACE,
+        secret=SECRET,
+    ),
+)
+
+FOLLOWED_BY_REV_COMPARATION_QUOTES_REQUIRED_REGEX = re.compile(
+    # e.g. "bar" == my_password or "bar" != my_password or "bar" === my_password or "bar" !== my_password
+    # e.g. 'bar' == my_password or 'bar' != my_password or 'bar' === my_password or 'bar' !== my_password
+    r'({quote})({secret})({quote}){whitespace}[!=]{{2,3}}{whitespace}({denylist})'.format(
+        denylist=DENYLIST_REGEX_WITH_PREV,
+        quote=QUOTE,
+        whitespace=OPTIONAL_WHITESPACE,
+        secret=SECRET,
+    ),
+)
+
+# General
 FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX = re.compile(
     # e.g. private_key "something";
-    r'({denylist}){nonWhitespace}{whitespace}({quote})({secret})(\2);'.format(
+    r'({denylist}){nonWhitespace}{whitespace}({quote})({secret})({quote});'.format(
         denylist=DENYLIST_REGEX,
         nonWhitespace=OPTIONAL_NON_WHITESPACE,
         quote=QUOTE,
@@ -220,31 +273,58 @@ FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX = re.compile(
         secret=SECRET,
     ),
 )
+
 DENYLIST_REGEX_TO_GROUP = {
-    FOLLOWED_BY_COLON_REGEX: 4,
-    FOLLOWED_BY_EQUAL_SIGNS_REGEX: 4,
-    FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
+    FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX: 7,
+    FOLLOWED_BY_COLON_REGEX: 5,
+    FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 6,
+    FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 5,
+    FOLLOWED_BY_EQUAL_SIGNS_REGEX: 6,
 }
 GOLANG_DENYLIST_REGEX_TO_GROUP = {
-    FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX: 4,
-    FOLLOWED_BY_EQUAL_SIGNS_REGEX: 4,
-    FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
+    FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX: 6,
+    FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 6,
+    FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 5,
+    FOLLOWED_BY_COMPARATION_QUOTES_REQUIRED_REGEX: 6,
+    FOLLOWED_BY_REV_COMPARATION_QUOTES_REQUIRED_REGEX: 2,
 }
 OBJECTIVE_C_DENYLIST_REGEX_TO_GROUP = {
-    FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX: 6,
+    FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX: 8,
+    FOLLOWED_BY_COMPARATION_QUOTES_REQUIRED_REGEX: 6,
+    FOLLOWED_BY_REV_COMPARATION_QUOTES_REQUIRED_REGEX: 2,
+}
+YML_DENYLIST_REGEX_TO_GROUP = {
+    FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX: 7,
+    FOLLOWED_BY_COLON_REGEX: 5,
+    FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 6,
+    FOLLOWED_BY_EQUAL_SIGNS_REGEX: 6,
+    FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 5,
+}
+PROPERTIES_DENYLIST_REGEX_TO_GROUP = {
+    FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 6,
+    FOLLOWED_BY_EQUAL_SIGNS_REGEX: 6,
+    FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 5,
 }
 QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP = {
-    FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX: 5,
-    FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 4,
-    FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
+    FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 6,
+    FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 5,
+    FOLLOWED_BY_COMPARATION_QUOTES_REQUIRED_REGEX: 6,
+    FOLLOWED_BY_REV_COMPARATION_QUOTES_REQUIRED_REGEX: 2,
 }
+
 QUOTES_REQUIRED_FILETYPES = {
     FileType.CLS,
     FileType.JAVA,
     FileType.JAVASCRIPT,
+    FileType.PHP,
     FileType.PYTHON,
     FileType.SWIFT,
     FileType.TERRAFORM,
+    FileType.C,
+    FileType.CPP,
+    FileType.CSHARP,
+    FileType.BASH,
+    FileType.POWERSHELL,
 }
 
 
@@ -299,17 +379,19 @@ class KeywordDetector(BasePlugin):
             and self.keyword_exclude.search(string)
         ):
             return output
-        for identifier in self.secret_generator(
+        for plain_secret, hidden_secret, hidden_line in self.secret_generator(
             string,
             filetype=determine_file_type(filename),
         ):
-            if self.is_secret_false_positive(identifier):
+            if self.is_secret_false_positive(plain_secret):
                 continue
             secret = PotentialSecret(
                 self.secret_type,
                 filename,
-                identifier,
+                plain_secret,
                 line_num,
+                hidden_secret,
+                hidden_line
             )
             output[secret] = secret
 
@@ -321,23 +403,32 @@ class KeywordDetector(BasePlugin):
         if filetype in QUOTES_REQUIRED_FILETYPES:
             denylist_regex_to_group = QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP
         elif filetype == FileType.GO:
-            denylist_regex_to_group = GOLANG_DENYLIST_REGEX_TO_GROUP
+             denylist_regex_to_group = GOLANG_DENYLIST_REGEX_TO_GROUP
         elif filetype == FileType.OBJECTIVE_C:
             denylist_regex_to_group = OBJECTIVE_C_DENYLIST_REGEX_TO_GROUP
+        elif filetype == FileType.YAML or filetype == FileType.INI:
+            denylist_regex_to_group = YML_DENYLIST_REGEX_TO_GROUP
+        elif filetype == FileType.PROPERTIES or filetype == FileType.INI:
+            denylist_regex_to_group = PROPERTIES_DENYLIST_REGEX_TO_GROUP
         else:
             denylist_regex_to_group = DENYLIST_REGEX_TO_GROUP
 
-        for denylist_regex, group_number in denylist_regex_to_group.items():
-            match = denylist_regex.search(lowered_string)
-            if match:
-                lowered_secret = match.group(group_number)
+        if filetype != FileType.XML:
+            for denylist_regex, group_number in denylist_regex_to_group.items():
+                match = denylist_regex.search(lowered_string)
+                if match:
+                    lowered_secret = match.group(group_number)
 
-                # ([^\s]+) guarantees lowered_secret is not ''
-                if not probably_false_positive(
-                    lowered_secret,
-                    filetype=filetype,
-                ):
-                    yield lowered_secret
+                    index = match.start(group_number)
+                    hidden_secret = hide_secret(string[index:index + len(lowered_secret)])
+                    hidden_line = hide_line(hidden_secret, string, index)
+                    
+                    # ([^\s]+) guarantees lowered_secret is not ''
+                    if lowered_secret and not probably_false_positive(
+                        lowered_secret,
+                        filetype=filetype,
+                    ):
+                        yield lowered_secret, hidden_secret, hidden_line
 
 
 def probably_false_positive(lowered_secret, filetype):
