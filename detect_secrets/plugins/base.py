@@ -6,6 +6,7 @@ from abc import abstractproperty
 from detect_secrets.core.code_snippet import CodeSnippetHighlighter
 from detect_secrets.core.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
+from detect_secrets.core.protection import hide_secret
 from detect_secrets.plugins.common.constants import ALLOWLIST_REGEXES
 
 
@@ -290,6 +291,7 @@ class RegexBasedDetector(BasePlugin):
         )
     """
     __metaclass__ = ABCMeta
+    protection = True
 
     @abstractproperty
     def denylist(self):
@@ -331,18 +333,28 @@ class RegexBasedDetector(BasePlugin):
     def analyze_string_content(self, string, line_num, filename):
         output = {}
 
-        for identifier in self.secret_generator(string):
+        for plain_secret, hidden_secret, hidden_line in self.secret_generator(string):
             secret = PotentialSecret(
                 self.secret_type,
                 filename,
-                identifier,
+                plain_secret,
                 line_num,
+                hidden_secret,
+                hidden_line
             )
             output[secret] = secret
 
         return output
 
     def secret_generator(self, string, *args, **kwargs):
+        hidden_line = string
+        secrets = []
         for regex in self.denylist:
             for match in regex.findall(string):
-                yield match
+                hidden_secret = match
+                if self.protection:
+                    hidden_secret = hide_secret(match)
+                    hidden_line = hidden_line.replace(match, hidden_secret)
+                secrets.append((match, hidden_secret))
+        for plain, hidden in secrets:
+            yield plain, hidden, hidden_line

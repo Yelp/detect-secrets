@@ -20,7 +20,9 @@ class PotentialSecret:
         filename,
         secret,
         lineno=0,
-        is_secret=None,
+        hidden_secret=None,
+        hidden_line=None,
+        is_secret=None
     ):
         """
         :type typ: str
@@ -50,6 +52,9 @@ class PotentialSecret:
         self.set_secret(secret)
         self.is_secret = is_secret
         self.is_verified = False
+
+        self.hidden_secret = hidden_secret
+        self.hidden_line = hidden_line
 
         # If two PotentialSecrets have the same values for these fields,
         # they are considered equal. Note that line numbers aren't included

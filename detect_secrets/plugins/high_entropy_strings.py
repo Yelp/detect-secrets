@@ -10,6 +10,7 @@ from contextlib import contextmanager
 import yaml
 
 from detect_secrets.core.potential_secret import PotentialSecret
+from detect_secrets.core.protection import hide_secret
 from detect_secrets.plugins.base import BasePlugin
 from detect_secrets.plugins.base import classproperty
 from detect_secrets.plugins.common.filetype import determine_file_type
@@ -115,11 +116,18 @@ class HighEntropyStringsPlugin(BasePlugin):
         """
         output = {}
 
-        for result in self.secret_generator(string):
-            if self.is_secret_false_positive(result):
+        for plain_secret, hidden_secret, hidden_line in self.secret_generator(string):
+            if self.is_secret_false_positive(plain_secret):
                 continue
 
-            secret = PotentialSecret(self.secret_type, filename, result, line_num)
+            secret = PotentialSecret(
+                self.secret_type, 
+                filename, 
+                plain_secret, 
+                line_num,
+                hidden_secret,
+                hidden_line
+            )
             output[secret] = secret
 
         return output
@@ -127,6 +135,8 @@ class HighEntropyStringsPlugin(BasePlugin):
     def secret_generator(self, string, *args, **kwargs):
         # There may be multiple strings on the same line
         results = self.regex.findall(string)
+        hidden_line = string
+        secrets = []
         for result in results:
             # To accommodate changing self.regex, due to different filetypes
             if isinstance(result, tuple):
@@ -134,7 +144,11 @@ class HighEntropyStringsPlugin(BasePlugin):
 
             entropy_value = self.calculate_shannon_entropy(result)
             if entropy_value > self.entropy_limit:
-                yield result
+                hidden_secret = hide_secret(result)
+                secrets.append((result, hidden_secret))
+                hidden_line = hidden_line.replace(result, hidden_secret)
+        for plain, hidden in secrets:
+            yield plain, hidden, hidden_line
 
     def adhoc_scan(self, string):
         # Since it's an individual string, it's just bad UX to require quotes

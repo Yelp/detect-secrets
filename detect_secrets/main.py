@@ -74,7 +74,7 @@ def main(argv=sys.argv[1:]):
             return 0
 
         if args.display_results:
-            audit.print_audit_results(args.filename[0])
+            audit.print_audit_results(args.filename[0], True if args.hide else False)
             return 0
 
         if len(args.filename) != 2:

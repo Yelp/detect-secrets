@@ -16,6 +16,7 @@ from detect_secrets.core.code_snippet import CodeSnippetHighlighter
 from detect_secrets.core.color import AnsiColor
 from detect_secrets.core.color import colorize
 from detect_secrets.core.common import write_baseline_to_file
+from detect_secrets.core.protection import hide_secret
 from detect_secrets.plugins.common import initialize
 from detect_secrets.plugins.common.util import get_mapping_from_secret_type_to_class_name
 from detect_secrets.util import get_git_remotes
@@ -216,7 +217,7 @@ def compare_baselines(old_baseline_filename, new_baseline_filename):
             secret_iterator.step_back_on_next_iteration()
 
 
-def determine_audit_results(baseline, baseline_path):
+def determine_audit_results(baseline, baseline_path, hide=False):
     """
     Given a baseline which has been audited, returns
     a dictionary describing the results of each plugin in the following form:
@@ -274,14 +275,21 @@ def determine_audit_results(baseline, baseline_path):
         secret_info = {}
         secret_info['line'] = _get_file_line(filename, secret['line_number'])
         try:
-            secret_info['plaintext'] = get_raw_secret_value(
+            potential_secret = get_raw_secret_value(
                 secret=secret,
                 plugins_used=baseline['plugins_used'],
                 custom_plugin_paths=baseline['custom_plugin_paths'],
                 file_handle=io.StringIO(file_contents),
                 filename=filename,
             )
+            secret_info['plaintext'] = potential_secret.secret_value
             secret_info['identifier'] = hashlib.sha512((secret_info['plaintext'] + filename).encode('utf-8')).hexdigest()
+            if hide:
+                if potential_secret.hidden_secret == None or potential_secret.hidden_line == None:
+                    potential_secret.hidden_secret = hide_secret(potential_secret.secret_value)
+                    potential_secret.hidden_line = secret_info['line'].replace(potential_secret.secret_value, potential_secret.hidden_secret)
+                secret_info['plaintext'] = potential_secret.hidden_secret
+                secret_info['line'] = potential_secret.hidden_line
         except SecretNotFoundOnSpecifiedLineError:
             secret_info['plaintext'] = None
             secret_info['identifier'] = None
@@ -321,7 +329,7 @@ def determine_audit_results(baseline, baseline_path):
     return audit_results
 
 
-def print_audit_results(baseline_filename):
+def print_audit_results(baseline_filename, hide=False):
     baseline = _get_baseline_from_file(baseline_filename)
     if not baseline:
         print('Failed to retrieve baseline from {filename}'.format(filename=baseline_filename))
@@ -332,6 +340,7 @@ def print_audit_results(baseline_filename):
             determine_audit_results(
                 baseline,
                 baseline_filename,
+                hide
             ),
             indent=2,
             sort_keys=True,
@@ -690,13 +699,14 @@ def _get_secret_with_context(
             lines_of_context=lines_of_context,
         )
 
-        raw_secret_value = get_raw_secret_value(
+        potential_secret = get_raw_secret_value(
             secret=secret,
             plugins_used=plugins_used,
             custom_plugin_paths=custom_plugin_paths,
             file_handle=io.StringIO(file_content),
             filename=filename,
         )
+        raw_secret_value = potential_secret.secret_value
 
         try:
             snippet.highlight_line(raw_secret_value)
@@ -755,6 +765,6 @@ def get_raw_secret_value(
     # Return value of matching secret
     for plugin_secret in plugin_secrets:
         if plugin_secret.secret_hash == secret['hashed_secret']:
-            return plugin_secret.secret_value
+            return plugin_secret
 
     raise SecretNotFoundOnSpecifiedLineError(secret['line_number'])

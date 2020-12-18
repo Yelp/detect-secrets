@@ -108,6 +108,15 @@ IGNORED_FILE_PATHS = set(
 )
 IGNORED_FILE_PATHS.update(corp.IGNORED_FILE_PATHS)
 
+COMMON_PASSWORDS = set(
+    (
+        'password',
+        'secret',
+        'admin',
+        'prueba',
+    )
+)
+COMMON_PASSWORDS.update(corp.COMMON_PASSWORDS)
 
 class VerifiedResult(Enum):
     UNVERIFIED = 1

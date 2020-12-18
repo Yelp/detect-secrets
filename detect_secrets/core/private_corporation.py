@@ -9,5 +9,7 @@ IGNORED_FILE_NAMES_REGEX = set()
 
 IGNORED_FILE_PATHS = set()
 
+COMMON_PASSWORDS = set()
+
 # This data will be added to the lists of plugins/common/constants
 ALLOWLIST_REGEXES = []

@@ -21,10 +21,9 @@ class JwtTokenDetector(RegexBasedDetector):
         return 'no-jwt-scan'
 
     def secret_generator(self, string, *args, **kwargs):
-        return filter(
-            self.is_formally_valid,
-            super(JwtTokenDetector, self).secret_generator(string, *args, **kwargs),
-        )
+        for plain_secret, hidden_secret, hidden_line in super(JwtTokenDetector, self).secret_generator(string, *args, **kwargs):
+            if self.is_formally_valid(plain_secret):
+                yield plain_secret, hidden_secret, hidden_line
 
     @staticmethod
     def is_formally_valid(token):

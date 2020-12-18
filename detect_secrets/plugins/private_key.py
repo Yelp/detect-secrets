@@ -52,3 +52,5 @@ class PrivateKeyDetector(RegexBasedDetector):
             r'PuTTY-User-Key-File-2',
         )
     ]
+
+    protection = False
