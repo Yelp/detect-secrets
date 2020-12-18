@@ -67,14 +67,17 @@ DENYLIST = (
     'secret',
     'secrete',
 	'secreto',
-    'keypass',
 	'token',
     'contrasena',
     'contraseña',
+    'cred',
+    'credential',
+    'credentials',
 )
 FALSE_POSITIVES = {
     '""):',
     '"\'',
+    '")',
     '"replace',
     '"this',
     'passes',
@@ -82,28 +85,24 @@ FALSE_POSITIVES = {
     '$(shell',
     "'\"",
     "''):",
+    "')",
     "'dummy",
     "'replace",
     "'this",
     '(nsstring',
     '-default}',
     '::',
-    '<%=',
-    'secretName',
-    '<aws_secret_access_key>',
-    '<input',
-    '<password>',
-    '<redacted>',
-    '>',
     '=',
+    '<keyalg>',
     '\\"$(shell',
+    '${',
     '\\k.*"',
     "\\k.*'",
     '`cat',
     '`grep',
     '`sudo',
     'account_password',
-    'commit',
+    'api_key',
     'disable',
     'dummy_secret',
     'dummy_value',
@@ -153,80 +152,71 @@ FALSE_POSITIVES = {
     '{',
     '{{',
 }
-# Includes ], ', " as closing
-CLOSING = r'[]\'"]{0,2}'
-VARIABLE_REGEX = r'[a-zA-Z0-9_-]*'
-DENYLIST_REGEX = r'(' + r'|'.join(DENYLIST) + r')({variable})?'.format(variable=VARIABLE_REGEX)
-DENYLIST_REGEX_WITH_PREV = r'({variable})('.format(variable=VARIABLE_REGEX) + r'|'.join(DENYLIST) + r')({variable})'.format(variable=VARIABLE_REGEX)
+VARIABLE_REGEX = r'[a-zA-Z0-9._-]*'
+DENYLIST_REGEX = r'({variable})('.format(variable=VARIABLE_REGEX) + r'|'.join(DENYLIST) + r')({variable})'.format(variable=VARIABLE_REGEX)
 # Non-greedy match
 OPTIONAL_WHITESPACE = r'\s*?'
 OPTIONAL_NON_WHITESPACE = r'[^\s]*?'
-QUOTE = r'[\'"]'
+QUOTE = r'[\"]'
 SECRET = r'""|\'\'|[^\'"\s]+'
-SQUARE_BRACKETS = r'(\[\])'
+SECRET_INTO_TAG = r'[^<]+'
+# Includes ], ', " as closing
+CLOSING = r'[]\'"]{0,2}'
 
-# Pascal | GOLANG
-FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
-    # e.g. my_password := "bar"
-    r'({denylist})({closing})?{whitespace}:=?{whitespace}({quote})({secret})({quote})'.format(
+# XML credentials keyword in tag
+XML_KEYWORD_IN_TAG_REGEX = re.compile(
+    # e.g. <password>foo</password>
+    r'<({denylist})>{whitespace}({secret})'.format(
         denylist=DENYLIST_REGEX,
-        closing=CLOSING,
-        quote=QUOTE,
         whitespace=OPTIONAL_WHITESPACE,
-        secret=SECRET,
+        secret=SECRET_INTO_TAG,
     ),
 )
 
-# YAML y .ini
-FOLLOWED_BY_COLON_REGEX = re.compile(
-    # e.g. api_key: foo
-    r'({denylist})({closing})?:{whitespace}({secret})'.format(
+# XML credentials keyword in name prop
+XML_KEYWORD_IN_NAME_PROP_REGEX = re.compile(
+    # e.g. <tag name="password" value="foo" />
+    r'<[^>]+ name=({quote}){whitespace}({denylist}){whitespace}({quote}) value=({quote}){whitespace}({secret}){whitespace}({quote})'.format(
         denylist=DENYLIST_REGEX,
-        closing=CLOSING,
         quote=QUOTE,
-        whitespace=OPTIONAL_WHITESPACE,
+		whitespace=OPTIONAL_WHITESPACE,
         secret=SECRET,
     ),
 )
 
-# YAML y .ini
-FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX = re.compile(
-    # e.g. api_key: "foo"
-    r'({denylist})({closing})?:({whitespace})({quote})({secret})({quote})'.format(
+# XML credentials keyword
+XML_KEYWORD_VALUE_REGEX = re.compile(
+    # e.g. <tag name="password">foo</tag>
+    r'<[^>]+ name=({quote}){whitespace}({denylist}){whitespace}({quote}){whitespace}>({secret})'.format(
         denylist=DENYLIST_REGEX,
-        closing=CLOSING,
         quote=QUOTE,
-        whitespace=OPTIONAL_WHITESPACE,
-        secret=SECRET,
+		whitespace=OPTIONAL_WHITESPACE,
+        secret=SECRET_INTO_TAG,
     ),
 )
 
-# Objective-C
-FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX = re.compile(
-    # e.g. my_password = "bar"
-    # e.g. my_password = @"bar"
-    # e.g. my_password[] = "bar";
-    r'({denylist})({square_brackets})?{optional_whitespace}={optional_whitespace}(@)?(")({secret})(")'.format(  # noqa: E501
+# XML credentials keyword in name prop
+XML_KEYWORD_IN_NAME_PROP_REV_REGEX = re.compile(
+    # e.g. <tag value="foo" name="password" />
+    r'<[^>]+ value=({quote}){whitespace}({secret}){whitespace}({quote}) name=({quote}){whitespace}({denylist}){whitespace}({quote})'.format(
         denylist=DENYLIST_REGEX,
-        square_brackets=SQUARE_BRACKETS,
-        optional_whitespace=OPTIONAL_WHITESPACE,
-        secret=SECRET,
-    ),
-)
-
-# Properties y .ini
-FOLLOWED_BY_EQUAL_SIGNS_REGEX = re.compile(
-    # e.g. my_password = bar
-    r'({denylist})({closing})?{whitespace}={whitespace}({quote}?)({secret})'.format(
-        denylist=DENYLIST_REGEX,
-        closing=CLOSING,
         quote=QUOTE,
-        whitespace=OPTIONAL_WHITESPACE,
+		whitespace=OPTIONAL_WHITESPACE,
         secret=SECRET,
     ),
 )
 
-# Properties y .ini | C/C++/C# | Java | Bash | Powershell | Python | Swift | JS | TERRAFORM
+# tag=password value=foo
+XML_KEYWORD_VALUE_IN_PROP_REGEX = re.compile(
+    # e.g. <password value="foo" />
+    r'<({denylist}) value=({quote}){whitespace}({secret}){whitespace}({quote})'.format(
+        denylist=DENYLIST_REGEX,
+        quote=QUOTE,
+		whitespace=OPTIONAL_WHITESPACE,
+        secret=SECRET,
+    ),
+)
+
 FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
     # e.g. my_password = "bar"
     # e.g. my_password = 'bar'
@@ -239,107 +229,30 @@ FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
     ),
 )
 
-FOLLOWED_BY_COMPARATION_QUOTES_REQUIRED_REGEX = re.compile(
-    # e.g. my_password == "bar" or my_password != "bar" or my_password === "bar" or my_password !== "bar"
-    # e.g. my_password == 'bar' or my_password != 'bar' or my_password === 'bar' or my_password !== 'bar'
-    r'({denylist})({closing})?{whitespace}[!=]{{2,3}}{whitespace}({quote})({secret})({quote})'.format(
-        denylist=DENYLIST_REGEX,
-        closing=CLOSING,
-        quote=QUOTE,
-        whitespace=OPTIONAL_WHITESPACE,
-        secret=SECRET,
-    ),
-)
-
-FOLLOWED_BY_REV_COMPARATION_QUOTES_REQUIRED_REGEX = re.compile(
-    # e.g. "bar" == my_password or "bar" != my_password or "bar" === my_password or "bar" !== my_password
-    # e.g. 'bar' == my_password or 'bar' != my_password or 'bar' === my_password or 'bar' !== my_password
-    r'({quote})({secret})({quote}){whitespace}[!=]{{2,3}}{whitespace}({denylist})'.format(
-        denylist=DENYLIST_REGEX_WITH_PREV,
-        quote=QUOTE,
-        whitespace=OPTIONAL_WHITESPACE,
-        secret=SECRET,
-    ),
-)
-
-# General
-FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX = re.compile(
-    # e.g. private_key "something";
-    r'({denylist}){nonWhitespace}{whitespace}({quote})({secret})({quote});'.format(
-        denylist=DENYLIST_REGEX,
-        nonWhitespace=OPTIONAL_NON_WHITESPACE,
-        quote=QUOTE,
-        whitespace=OPTIONAL_WHITESPACE,
-        secret=SECRET,
-    ),
-)
 
 DENYLIST_REGEX_TO_GROUP = {
-    FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX: 7,
-    FOLLOWED_BY_COLON_REGEX: 5,
-    FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 6,
-    FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 5,
-    FOLLOWED_BY_EQUAL_SIGNS_REGEX: 6,
-}
-GOLANG_DENYLIST_REGEX_TO_GROUP = {
-    FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX: 6,
-    FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 6,
-    FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 5,
-    FOLLOWED_BY_COMPARATION_QUOTES_REQUIRED_REGEX: 6,
-    FOLLOWED_BY_REV_COMPARATION_QUOTES_REQUIRED_REGEX: 2,
-}
-OBJECTIVE_C_DENYLIST_REGEX_TO_GROUP = {
-    FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX: 8,
-    FOLLOWED_BY_COMPARATION_QUOTES_REQUIRED_REGEX: 6,
-    FOLLOWED_BY_REV_COMPARATION_QUOTES_REQUIRED_REGEX: 2,
-}
-YML_DENYLIST_REGEX_TO_GROUP = {
-    FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX: 7,
-    FOLLOWED_BY_COLON_REGEX: 5,
-    FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 6,
-    FOLLOWED_BY_EQUAL_SIGNS_REGEX: 6,
-    FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 5,
-}
-PROPERTIES_DENYLIST_REGEX_TO_GROUP = {
-    FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 6,
-    FOLLOWED_BY_EQUAL_SIGNS_REGEX: 6,
-    FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 5,
-}
-QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP = {
-    FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 6,
-    FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 5,
-    FOLLOWED_BY_COMPARATION_QUOTES_REQUIRED_REGEX: 6,
-    FOLLOWED_BY_REV_COMPARATION_QUOTES_REQUIRED_REGEX: 2,
-}
-
-QUOTES_REQUIRED_FILETYPES = {
-    FileType.CLS,
-    FileType.JAVA,
-    FileType.JAVASCRIPT,
-    FileType.PHP,
-    FileType.PYTHON,
-    FileType.SWIFT,
-    FileType.TERRAFORM,
-    FileType.C,
-    FileType.CPP,
-    FileType.CSHARP,
-    FileType.BASH,
-    FileType.POWERSHELL,
+    XML_KEYWORD_IN_TAG_REGEX: 5,
+    XML_KEYWORD_IN_NAME_PROP_REGEX: 8,
+    XML_KEYWORD_VALUE_REGEX: 7,
+    XML_KEYWORD_IN_NAME_PROP_REV_REGEX: 2,
+    XML_KEYWORD_VALUE_IN_PROP_REGEX: 6,
+	FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 7, 
 }
 
 
-class KeywordDetector(BasePlugin):
+
+class KeywordXMLDetector(BasePlugin):
     """
     Scans for secret-sounding variable names.
 
     This checks if denylisted keywords are present in the analyzed string.
     """
-    secret_type = 'Secret Keyword'
+    secret_type = 'Secret XML Keyword'
 
     @classproperty
     def default_options(cls):
         return {
-            'keyword_exclude': None,
+            #'keyword_exclude': None,
         }
 
     @property
@@ -347,7 +260,7 @@ class KeywordDetector(BasePlugin):
         output = {
             'keyword_exclude': self.keyword_exclude,
         }
-        output.update(super(KeywordDetector, self).__dict__)
+        output.update(super(KeywordXMLDetector, self).__dict__)
 
         return output
 
@@ -357,7 +270,7 @@ class KeywordDetector(BasePlugin):
             is_sequential_string,
         ]
 
-        super(KeywordDetector, self).__init__(
+        super(KeywordXMLDetector, self).__init__(
             exclude_lines_regex=exclude_lines_regex,
             false_positive_heuristics=false_positive_heuristics,
             **kwargs
@@ -400,20 +313,9 @@ class KeywordDetector(BasePlugin):
     def secret_generator(self, string, filetype):
         lowered_string = string.lower()
 
-        if filetype in QUOTES_REQUIRED_FILETYPES:
-            denylist_regex_to_group = QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP
-        elif filetype == FileType.GO:
-             denylist_regex_to_group = GOLANG_DENYLIST_REGEX_TO_GROUP
-        elif filetype == FileType.OBJECTIVE_C:
-            denylist_regex_to_group = OBJECTIVE_C_DENYLIST_REGEX_TO_GROUP
-        elif filetype == FileType.YAML or filetype == FileType.INI:
-            denylist_regex_to_group = YML_DENYLIST_REGEX_TO_GROUP
-        elif filetype == FileType.PROPERTIES or filetype == FileType.INI:
-            denylist_regex_to_group = PROPERTIES_DENYLIST_REGEX_TO_GROUP
-        else:
+        if filetype == FileType.XML:
             denylist_regex_to_group = DENYLIST_REGEX_TO_GROUP
 
-        if filetype != FileType.XML:
             for denylist_regex, group_number in denylist_regex_to_group.items():
                 match = denylist_regex.search(lowered_string)
                 if match:
@@ -422,9 +324,9 @@ class KeywordDetector(BasePlugin):
                     index = match.start(group_number)
                     hidden_secret = hide_secret(string[index:index + len(lowered_secret)])
                     hidden_line = hide_line(hidden_secret, string, index)
-                    
+
                     # ([^\s]+) guarantees lowered_secret is not ''
-                    if lowered_secret and not probably_false_positive(
+                    if not probably_false_positive(
                         lowered_secret,
                         filetype=filetype,
                     ):
@@ -432,6 +334,9 @@ class KeywordDetector(BasePlugin):
 
 
 def probably_false_positive(lowered_secret, filetype):
+    if not lowered_secret:
+        return False
+
     if (
         any(
             false_positive in lowered_secret
@@ -447,14 +352,7 @@ def probably_false_positive(lowered_secret, filetype):
         or (
             lowered_secret[0] == '{'
             and lowered_secret[-1] == '}'
-        ) or (
-            filetype not in QUOTES_REQUIRED_FILETYPES
-            and lowered_secret[0] == '$'
-        ) or (
-            filetype == FileType.EXAMPLE
-            and lowered_secret[0] == '<'
-            and lowered_secret[-1] == '>'
-        )
+        ) 
     ):
         return True
 
