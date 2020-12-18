@@ -4,6 +4,7 @@ import json
 import os
 import platform
 import sys
+import hashlib
 from builtins import input
 from collections import defaultdict
 from copy import deepcopy
@@ -280,8 +281,10 @@ def determine_audit_results(baseline, baseline_path):
                 file_handle=io.StringIO(file_contents),
                 filename=filename,
             )
+            secret_info['identifier'] = hashlib.sha512((secret_info['plaintext'] + filename).encode('utf-8')).hexdigest()
         except SecretNotFoundOnSpecifiedLineError:
             secret_info['plaintext'] = None
+            secret_info['identifier'] = None
 
         plugin_name = secret_type_to_plugin_name[secret['type']]
         audit_result = AUDIT_RESULT_TO_STRING[secret.get('is_secret')]
