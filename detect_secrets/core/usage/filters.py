@@ -31,11 +31,13 @@ def add_filter_options(parent: argparse.ArgumentParser) -> None:
     parser.add_argument(
         '--exclude-lines',
         type=str,
+        action='append',
         help='If lines match this regex, it will be ignored.',
     )
     parser.add_argument(
         '--exclude-files',
         type=str,
+        action='append',
         help='If filenames match this regex, it will be ignored.',
     )
     parser.add_argument(

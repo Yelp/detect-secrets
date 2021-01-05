@@ -8,25 +8,31 @@ from .util import get_caller_path
 
 
 def should_exclude_line(line: str) -> bool:
-    regex = _get_line_exclusion_regex()
-    return bool(regex.search(line))
+    regexes = _get_line_exclusion_regex()
+    for regex in regexes:
+        if regex.search(line):
+            return True
+    return False
 
 
 @lru_cache(maxsize=1)
-def _get_line_exclusion_regex() -> Pattern:
+def _get_line_exclusion_regex() -> List[Pattern]:
     path = get_caller_path(offset=1)
-    return re.compile(get_settings().filters[path]['pattern'])
+    return [re.compile(regex) for regex in get_settings().filters[path]['pattern']]
 
 
 def should_exclude_file(filename: str) -> bool:
-    regex = _get_file_exclusion_regex()
-    return bool(regex.search(filename))
+    regexes = _get_file_exclusion_regex()
+    for regex in regexes:
+        if regex.search(filename):
+            return True
+    return False
 
 
 @lru_cache(maxsize=1)
-def _get_file_exclusion_regex() -> Pattern:
+def _get_file_exclusion_regex() -> List[Pattern]:
     path = get_caller_path(offset=1)
-    return re.compile(get_settings().filters[path]['pattern'])
+    return [re.compile(regex) for regex in get_settings().filters[path]['pattern']]
 
 
 def should_exclude_secret(secret: str) -> bool:

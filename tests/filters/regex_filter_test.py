@@ -14,9 +14,14 @@ def parser():
 
 
 def test_should_exclude_line(parser):
-    parser.parse_args(['--exclude-lines', 'canarytoken'])
+    parser.parse_args([
+        '--exclude-lines', 'canarytoken',
+        '--exclude-lines', '^not-real-secret = .*$',
+    ])
     assert filters.regex.should_exclude_line('password = "canarytoken"') is True
     assert filters.regex.should_exclude_line('password = "hunter2"') is False
+    assert filters.regex.should_exclude_line('not-real-secret = value') is True
+    assert filters.regex.should_exclude_line('maybe-not-real-secret = value') is False
 
     assert [
         item
@@ -25,15 +30,23 @@ def test_should_exclude_line(parser):
     ] == [
         {
             'path': 'detect_secrets.filters.regex.should_exclude_line',
-            'pattern': 'canarytoken',
+            'pattern': [
+                'canarytoken',
+                '^not-real-secret = .*$',
+            ],
         },
     ]
 
 
 def test_should_exclude_file(parser):
-    parser.parse_args(['--exclude-files', '^tests/.*'])
+    parser.parse_args([
+        '--exclude-files', '^tests/.*',
+        '--exclude-files', '.*/i18/.*',
+    ])
     assert filters.regex.should_exclude_file('tests/blah.py') is True
     assert filters.regex.should_exclude_file('detect_secrets/tests/blah.py') is False
+    assert filters.regex.should_exclude_file('app/messages/i18/en.properties') is True
+    assert filters.regex.should_exclude_file('app/i18secrets/secrets.yaml') is False
 
     assert [
         item
@@ -42,7 +55,10 @@ def test_should_exclude_file(parser):
     ] == [
         {
             'path': 'detect_secrets.filters.regex.should_exclude_file',
-            'pattern': '^tests/.*',
+            'pattern': [
+                '^tests/.*',
+                '.*/i18/.*',
+            ],
         },
     ]
 

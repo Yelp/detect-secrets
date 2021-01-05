@@ -55,7 +55,9 @@ class TestScanFile:
             # This gets rid of the aws keys with `EXAMPLE` in them.
             {
                 'path': 'detect_secrets.filters.regex.should_exclude_line',
-                'pattern': 'EXAMPLE',
+                'pattern': [
+                    'EXAMPLE',
+                ],
             },
         ])
 
@@ -135,7 +137,9 @@ class TestScanDiff:
         get_settings().configure_filters([
             {
                 'path': 'detect_secrets.filters.regex.should_exclude_file',
-                'pattern': 'test|baseline',
+                'pattern': [
+                    'test|baseline',
+                ],
             },
         ])
 
@@ -335,7 +339,9 @@ def test_subtraction(configure_plugins):
         'filters_used': [
             {
                 'path': 'detect_secrets.filters.regex.should_exclude_line',
-                'pattern': 'EXAMPLE',
+                'pattern': [
+                    'EXAMPLE',
+                ],
             },
         ],
     }):
