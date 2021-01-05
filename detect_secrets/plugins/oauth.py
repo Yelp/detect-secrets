@@ -8,5 +8,5 @@ class BasicOAuthDetector(RegexBasedDetector):
     secret_type = 'Square OAuth Secret'
 
     denylist = [
-        re.compile(r'sq0csp-[0-9A-Za-z\\-_]{43}'),
+        re.compile(r'sq0csp-[0-9A-Za-z\\\-_]{43}'),
     ]
