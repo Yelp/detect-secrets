@@ -45,3 +45,28 @@ def test_should_exclude_file(parser):
             'pattern': '^tests/.*',
         },
     ]
+
+
+def test_should_exclude_secret(parser):
+    parser.parse_args([
+        '--exclude-secrets', '^[Pp]assword[0-9]{0,3}$',
+        '--exclude-secrets', 'my-first-password',
+    ])
+    assert filters.regex.should_exclude_secret('Password123') is True
+    assert filters.regex.should_exclude_secret('MyRealPassword') is False
+    assert filters.regex.should_exclude_secret('1-my-first-password-for-database') is True
+    assert filters.regex.should_exclude_secret('my-password') is False
+
+    assert [
+        item
+        for item in get_settings().json()['filters_used']
+        if item['path'] == 'detect_secrets.filters.regex.should_exclude_secret'
+    ] == [
+        {
+            'path': 'detect_secrets.filters.regex.should_exclude_secret',
+            'pattern': [
+                '^[Pp]assword[0-9]{0,3}$',
+                'my-first-password',
+            ],
+        },
+    ]
