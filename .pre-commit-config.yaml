@@ -16,7 +16,7 @@ repos:
         exclude: ^test_data/|bumpity.py$
     -   id: trailing-whitespace
 -   repo: https://github.com/asottile/reorder_python_imports
-    rev: v1.6.1
+    rev: v2.3.6
     hooks:
     -   id: reorder-python-imports
         language_version: python3
