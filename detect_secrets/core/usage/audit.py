@@ -53,16 +53,16 @@ def _add_report_parser(parser: argparse.ArgumentParser) -> None:
         action='store_true',
         help=(
             'Displays a report with the secrets detected'
-        )        
+        ),
     )
-    
+
     report_parser = parser.add_mutually_exclusive_group()
     report_parser.add_argument(
         '--only-real',
         action='store_true',
         help=(
             'Only includes real secrets in the report'
-        )
+        ),
     )
 
     report_parser.add_argument(
@@ -70,10 +70,8 @@ def _add_report_parser(parser: argparse.ArgumentParser) -> None:
         action='store_true',
         help=(
             'Only includes false positives in the report'
-        )
+        ),
     )
-
-
 
 
 def _add_statistics_module(parent: argparse.ArgumentParser) -> None:
