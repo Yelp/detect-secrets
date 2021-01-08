@@ -143,6 +143,12 @@ QUOTES_REQUIRED_FILE_EXTENSIONS = (
     '.js',
     '.py',
     '.swift',
+    '.tf',
+    '.c',
+    '.cpp',
+    '.cs',
+    '.sh',
+    '.ps1',
 )
 
 STANDARD_NEGATIVES = []
@@ -226,6 +232,40 @@ class TestKeywordDetector:
 
         assert len(secrets) == 1
         assert list(secrets)[0].secret_value == 'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'
+
+    @pytest.mark.parametrize(
+        'file_content',
+        FOLLOWED_BY_EQUAL_SIGNS_RE.get('positives').get('quotes_required')
+        + FOLLOWED_BY_EQUAL_SIGNS_RE.get('positives').get('quotes_not_required'),
+    )
+    def test_analyze_properties_positives(self, file_content):
+        secrets = list(
+            KeywordDetector().analyze_line(
+                filename='mock_filename.properties',
+                line=file_content,
+            ),
+        )
+
+        assert len(secrets) == 1
+        assert secrets[0].secret_value == 'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'
+
+    @pytest.mark.parametrize(
+        'file_content',
+        FOLLOWED_BY_EQUAL_SIGNS_RE.get('positives').get('quotes_required')
+        + FOLLOWED_BY_EQUAL_SIGNS_RE.get('positives').get('quotes_not_required')
+        + FOLLOWED_BY_COLON_RE.get('positives').get('quotes_required')
+        + FOLLOWED_BY_COLON_RE.get('positives').get('quotes_not_required'),
+    )
+    def test_analyze_yaml_positives(self, file_content):
+        secrets = list(
+            KeywordDetector().analyze_line(
+                filename='mock_filename.yml',
+                line=file_content,
+            ),
+        )
+
+        assert len(secrets) == 1
+        assert secrets[0].secret_value == 'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'
 
     @pytest.mark.skip(
         reason='TODO: false positive heuristics need to be migrated over to filters/*',
@@ -325,6 +365,22 @@ class TestKeywordDetector:
     def test_analyze_example_negatives(self, file_content):
         assert not KeywordDetector().analyze_line(
             filename='mock_filename.example',
+
+            # Make it start with `<`, (and end with `>`) so it hits our false-positive check
+            line=file_content.replace('m{', '<').replace('}', '>'),
+        )
+
+    @pytest.mark.skip(
+        reason='TODO: false positive heuristics need to be migrated over to filters/*',
+    )
+    @pytest.mark.parametrize(
+        'file_content',
+        FOLLOWED_BY_EQUAL_SIGNS_RE.get('negatives').get('quotes_required')
+        + FOLLOWED_BY_EQUAL_SIGNS_RE.get('negatives').get('quotes_not_required'),
+    )
+    def test_analyze_properties_negatives(self, file_content):
+        assert not KeywordDetector().analyze_line(
+            filename='mock_filename.properties',
 
             # Make it start with `<`, (and end with `>`) so it hits our false-positive check
             line=file_content.replace('m{', '<').replace('}', '>'),
