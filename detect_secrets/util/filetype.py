@@ -14,7 +14,15 @@ class FileType(Enum):
     SWIFT = 8
     TERRAFORM = 9
     YAML = 10
-    OTHER = 11
+    INI = 11
+    PROPERTIES = 12
+    XML = 13
+    C = 14
+    CPP = 15
+    CSHARP = 16
+    BASH = 17
+    POWERSHELL = 18
+    OTHER = 19
 
 
 def determine_file_type(filename: str) -> FileType:
@@ -34,4 +42,12 @@ def determine_file_type(filename: str) -> FileType:
         '.tf': FileType.TERRAFORM,
         '.yaml': FileType.YAML,
         '.yml': FileType.YAML,
+        '.ini': FileType.INI,
+        '.properties': FileType.PROPERTIES,
+        '.xml': FileType.XML,
+        '.c': FileType.C,
+        '.cpp': FileType.CPP,
+        '.cs': FileType.CSHARP,
+        '.sh': FileType.BASH,
+        '.ps1': FileType.POWERSHELL,
     }.get(file_extension, FileType.OTHER)
