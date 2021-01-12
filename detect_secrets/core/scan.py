@@ -1,7 +1,5 @@
 import os
 import subprocess
-from functools import lru_cache
-from importlib import import_module
 from typing import cast
 from typing import Generator
 from typing import IO
@@ -10,15 +8,15 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
-from . import plugins
 from ..filters.allowlist import is_line_allowlisted
+from ..settings import get_filters
+from ..settings import get_plugins
 from ..settings import get_settings
 from ..transformers import get_transformers
 from ..transformers import ParsingError
 from ..types import SelfAwareCallable
 from ..util import git
 from ..util.code_snippet import get_code_snippet
-from ..util.inject import get_injectable_variables
 from ..util.inject import inject_variables_into_function
 from ..util.path import get_relative_path_if_in_cwd
 from .log import log
@@ -352,14 +350,6 @@ def _scan_line(
             yield secret
 
 
-@lru_cache(maxsize=1)
-def get_plugins() -> List[Plugin]:
-    return [
-        plugins.initialize.from_plugin_classname(classname)
-        for classname in get_settings().plugins
-    ]
-
-
 def get_filters_with_parameter(*parameters: str) -> List[SelfAwareCallable]:
     """
     The issue of our method of dependency injection is that functions will be called multiple
@@ -385,25 +375,3 @@ def get_filters_with_parameter(*parameters: str) -> List[SelfAwareCallable]:
         for filter in get_filters()
         if minimum_parameters <= filter.injectable_variables
     ]
-
-
-@lru_cache(maxsize=1)
-def get_filters() -> List[SelfAwareCallable]:
-    output = []
-    for path, config in get_settings().filters.items():
-        module_path, function_name = path.rsplit('.', 1)
-        try:
-            function = getattr(import_module(module_path), function_name)
-        except (ModuleNotFoundError, AttributeError):
-            log.warning(f'Invalid filter: {path}')
-            continue
-
-        # We attach this metadata to the function itself, so that we don't need to
-        # compute it everytime. This will allow for dependency injection for filters.
-        function.injectable_variables = set(get_injectable_variables(function))
-        output.append(function)
-
-        # This is for better logging.
-        function.path = path
-
-    return output
