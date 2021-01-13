@@ -1,7 +1,8 @@
 """
 Responsible for input/output for audit related functions.
 """
-import subprocess
+import os
+import platform
 import sys
 from enum import Enum
 
@@ -19,7 +20,10 @@ def print_error(message: str) -> None:
 
 
 def clear_screen() -> None:     # pragma: no cover
-    subprocess.call(['clear'])
+    command = 'clear'
+    if platform.system() == 'Windows':
+        command = 'cls'
+    os.system(command)
 
 
 def print_context(context: SecretContext) -> None:

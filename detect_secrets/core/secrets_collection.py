@@ -177,7 +177,7 @@ class SecretsCollection:
             secrets = self[filename]
 
             # TODO: Handle cases when line numbers are not supplied
-            for secret in sorted(secrets, key=lambda x: (x.line_number, x.secret_hash)):
+            for secret in sorted(secrets, key=lambda x: (x.line_number, x.secret_hash, x.type)):
                 yield filename, secret
 
     def __bool__(self) -> bool:
