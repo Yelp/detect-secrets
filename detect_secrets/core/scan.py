@@ -67,30 +67,28 @@ def scan_line(line: str) -> Generator[PotentialSecret, None, None]:
     )
     get_filters.cache_clear()
 
-    for plugin in get_plugins():
+    yield from (
+        secret
+        for plugin in get_plugins()
         for secret in _scan_line(
             plugin=plugin,
             filename='adhoc-string-scan',
             line=line,
             line_number=0,
             enable_eager_search=True,
-        ):
-            for filter_fn in get_filters_with_parameter('context'):
-                if call_function_with_arguments(
-                    filter_fn,
-                    filename=secret.filename,
-                    secret=secret.secret_value,
-                    plugin=plugin,
-                    line=line,
-                    context=get_code_snippet(
-                        lines=[line],
-                        line_number=1,
-                    ),
-                ):
-                    log.debug(f'Skipping "{secret.secret_value}" due to `{filter_fn.path}`.')
-                    break
-            else:
-                yield secret
+        )
+        if not _is_filtered_out(
+            required_filter_parameters=['context'],
+            filename=secret.filename,
+            secret=secret.secret_value,
+            plugin=plugin,
+            line=line,
+            context=get_code_snippet(
+                lines=[line],
+                line_number=1,
+            ),
+        )
+    )
 
 
 def scan_file(filename: str) -> Generator[PotentialSecret, None, None]:
@@ -98,7 +96,7 @@ def scan_file(filename: str) -> Generator[PotentialSecret, None, None]:
         log.warning('No plugins to scan with!')
         return
 
-    if _filter_files(filename):
+    if _is_filtered_out(required_filter_parameters=['filename'], filename=filename):
         return
 
     try:
@@ -143,7 +141,10 @@ def scan_for_allowlisted_secrets_in_file(filename: str) -> Generator[PotentialSe
         log.warning('No plugins to scan with!')
         return
 
-    if _filter_files(filename):
+    if _is_filtered_out(
+        required_filter_parameters=['filename'],
+        filename=filename,
+    ):
         return
 
     # NOTE: Unlike `scan_file`, we don't ever have to use eager file transfomers, since we already
@@ -185,10 +186,7 @@ def _scan_for_allowlisted_secrets_in_lines(
         ):
             continue
 
-        if any([
-            call_function_with_arguments(filter_fn, filename=filename, line=line)
-            for filter_fn in get_filters_with_parameter('line')
-        ]):
+        if _is_filtered_out(required_filter_parameters=['line'], filename=filename, line=line):
             continue
 
         for plugin in get_plugins():
@@ -236,7 +234,7 @@ def _get_lines_from_diff(diff: str) -> Generator[Tuple[str, List[Tuple[int, str]
     patch_set = PatchSet.from_string(diff)
     for patch_file in patch_set:
         filename = patch_file.path
-        if _filter_files(filename):
+        if _is_filtered_out(required_filter_parameters=['filename'], filename=filename):
             continue
 
         yield (
@@ -249,16 +247,6 @@ def _get_lines_from_diff(diff: str) -> Generator[Tuple[str, List[Tuple[int, str]
                 if line.is_added
             ],
         )
-
-
-def _filter_files(filename: str) -> bool:
-    """Returns True if successfully filtered."""
-    for filter_fn in get_filters():
-        if call_function_with_arguments(filter_fn, filename=filename):
-            log.info(f'Skipping "{filename}" due to "{filter_fn.path}"')
-            return True
-
-    return False
 
 
 def _get_transformed_file(file: IO, use_eager_transformers: bool = False) -> Optional[List[str]]:
@@ -295,32 +283,27 @@ def _process_line_based_plugins(
         )
 
         # We apply line-specific filters, and see whether that allows us to quit early.
-        if any([
-            call_function_with_arguments(
-                filter_fn,
-                filename=filename,
+        if _is_filtered_out(
+            required_filter_parameters=['line'],
+            filename=filename,
+            line=line,
+            context=code_snippet,
+        ):
+            continue
+
+        yield from (
+            secret
+            for plugin in get_plugins()
+            for secret in _scan_line(plugin, filename, line, line_number)
+            if not _is_filtered_out(
+                required_filter_parameters=['context'],
+                filename=secret.filename,
+                secret=secret.secret_value,
+                plugin=plugin,
                 line=line,
                 context=code_snippet,
             )
-            for filter_fn in get_filters_with_parameter('line')
-        ]):
-            continue
-
-        for plugin in get_plugins():
-            for secret in _scan_line(plugin, filename, line, line_number):
-                for filter_fn in get_filters_with_parameter('context'):
-                    if call_function_with_arguments(
-                        filter_fn,
-                        filename=secret.filename,
-                        secret=secret.secret_value,
-                        plugin=plugin,
-                        line=line,
-                        context=code_snippet,
-                    ):
-                        log.debug(f'Skipping "{secret.secret_value}" due to `{filter_fn.path}`.')
-                        break
-                else:
-                    yield secret
+        )
 
 
 def _scan_line(
@@ -342,19 +325,17 @@ def _scan_line(
     if not secrets:
         return
 
-    for secret in secrets:
-        for filter_fn in get_filters_with_parameter('secret'):
-            if call_function_with_arguments(
-                filter_fn,
-                filename=secret.filename,
-                secret=secret.secret_value,
-                plugin=plugin,
-                line=line,
-            ):
-                log.debug(f'Skipping "{secret.secret_value}" due to `{filter_fn.path}`.')
-                break
-        else:
-            yield secret
+    yield from (
+        secret
+        for secret in secrets
+        if not _is_filtered_out(
+            required_filter_parameters=['secret'],
+            filename=secret.filename,
+            secret=secret.secret_value,
+            plugin=plugin,
+            line=line,
+        )
+    )
 
 
 @lru_cache(maxsize=1)
@@ -363,6 +344,28 @@ def get_plugins() -> List[Plugin]:
         plugins.initialize.from_plugin_classname(classname)
         for classname in get_settings().plugins
     ]
+
+
+def _is_filtered_out(required_filter_parameters: Iterable[str], **kwargs: Any) -> bool:
+    for filter_fn in get_filters_with_parameter(*required_filter_parameters):
+        try:
+            if call_function_with_arguments(filter_fn, **kwargs):
+                if 'secret' in kwargs:
+                    debug_msg = f'Skipping "{kwargs["secret"]}" due to `{filter_fn.path}`.'
+                elif list(kwargs.keys()) == ['filename']:
+                    # We want to make sure this is only run if we're skipping files (as compared
+                    # to other filters that may include `filename` as a parameter).
+                    debug_msg = f'Skipping "{kwargs["filename"]}" due to `{filter_fn.path}`'
+                else:
+                    debug_msg = f'Skipping secret due to `{filter_fn.path}`.'
+
+                log.debug(debug_msg)
+                return True
+        except TypeError:
+            # Skipping non-compatible filters
+            pass
+
+    return False
 
 
 def get_filters_with_parameter(*parameters: str) -> List[SelfAwareCallable]:

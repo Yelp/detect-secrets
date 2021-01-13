@@ -31,8 +31,8 @@ class TestScanFile:
         SecretsCollection().scan_file('test_data')
 
         assert (
-            'Skipping "test_data" due to "detect_secrets.filters.common.is_invalid_file"'
-            in mock_log.info_messages
+            'Skipping "test_data" due to `detect_secrets.filters.common.is_invalid_file`'
+            in mock_log.debug_messages
         )
 
     @staticmethod
