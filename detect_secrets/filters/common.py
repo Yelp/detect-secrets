@@ -8,7 +8,7 @@ from ..constants import VerifiedResult
 from ..core.plugins import Plugin
 from ..settings import get_settings
 from ..util.code_snippet import CodeSnippet
-from ..util.inject import inject_variables_into_function
+from ..util.inject import call_function_with_arguments
 from .util import get_caller_path
 
 
@@ -41,7 +41,7 @@ def is_ignored_due_to_verification_policies(
     something, and it's verified false, why are you still including it as a valid secret?
     """
     try:
-        verify_result = inject_variables_into_function(
+        verify_result = call_function_with_arguments(
             plugin.verify,
             secret=secret,
             context=context,

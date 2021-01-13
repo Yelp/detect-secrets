@@ -19,8 +19,8 @@ from ..transformers import ParsingError
 from ..types import SelfAwareCallable
 from ..util import git
 from ..util.code_snippet import get_code_snippet
+from ..util.inject import call_function_with_arguments
 from ..util.inject import get_injectable_variables
-from ..util.inject import inject_variables_into_function
 from ..util.path import get_relative_path_if_in_cwd
 from .log import log
 from .plugins import Plugin
@@ -76,7 +76,7 @@ def scan_line(line: str) -> Generator[PotentialSecret, None, None]:
             enable_eager_search=True,
         ):
             for filter_fn in get_filters_with_parameter('context'):
-                if inject_variables_into_function(
+                if call_function_with_arguments(
                     filter_fn,
                     filename=secret.filename,
                     secret=secret.secret_value,
@@ -186,7 +186,7 @@ def _scan_for_allowlisted_secrets_in_lines(
             continue
 
         if any([
-            inject_variables_into_function(filter_fn, filename=filename, line=line)
+            call_function_with_arguments(filter_fn, filename=filename, line=line)
             for filter_fn in get_filters_with_parameter('line')
         ]):
             continue
@@ -254,7 +254,7 @@ def _get_lines_from_diff(diff: str) -> Generator[Tuple[str, List[Tuple[int, str]
 def _filter_files(filename: str) -> bool:
     """Returns True if successfully filtered."""
     for filter_fn in get_filters():
-        if inject_variables_into_function(filter_fn, filename=filename):
+        if call_function_with_arguments(filter_fn, filename=filename):
             log.info(f'Skipping "{filename}" due to "{filter_fn.path}"')
             return True
 
@@ -296,7 +296,7 @@ def _process_line_based_plugins(
 
         # We apply line-specific filters, and see whether that allows us to quit early.
         if any([
-            inject_variables_into_function(
+            call_function_with_arguments(
                 filter_fn,
                 filename=filename,
                 line=line,
@@ -309,7 +309,7 @@ def _process_line_based_plugins(
         for plugin in get_plugins():
             for secret in _scan_line(plugin, filename, line, line_number):
                 for filter_fn in get_filters_with_parameter('context'):
-                    if inject_variables_into_function(
+                    if call_function_with_arguments(
                         filter_fn,
                         filename=secret.filename,
                         secret=secret.secret_value,
@@ -332,7 +332,7 @@ def _scan_line(
 ) -> Generator[PotentialSecret, None, None]:
     # NOTE: We don't apply filter functions here yet, because we don't have any filters
     # that operate on (filename, line, plugin) without `secret`
-    secrets = inject_variables_into_function(
+    secrets = call_function_with_arguments(
         plugin.analyze_line,
         filename=filename,
         line=line,
@@ -344,7 +344,7 @@ def _scan_line(
 
     for secret in secrets:
         for filter_fn in get_filters_with_parameter('secret'):
-            if inject_variables_into_function(
+            if call_function_with_arguments(
                 filter_fn,
                 filename=secret.filename,
                 secret=secret.secret_value,
@@ -373,7 +373,7 @@ def get_filters_with_parameter(*parameters: str) -> List[SelfAwareCallable]:
     >>> def foo(filename: str): ...
     >>> def bar(filename: str, secret: str): ...
 
-    our invocation of `inject_variables_into_function(filename=filename, secret=secret)`
+    our invocation of `call_function_with_arguments(filename=filename, secret=secret)`
     will run both of these functions. While expected, this results in multiple invocations of
     the same function, which can be less than ideal (especially if we have a heavy duty filter).
 

@@ -11,7 +11,7 @@ from ..core.secrets_collection import SecretsCollection
 from ..exceptions import InvalidBaselineError
 from ..exceptions import SecretNotFoundOnSpecifiedLineError
 from ..plugins.base import BasePlugin
-from ..util.inject import inject_variables_into_function
+from ..util.inject import call_function_with_arguments
 
 
 def get_baseline_from_file(filename: str) -> SecretsCollection:
@@ -44,7 +44,7 @@ def get_raw_secret_from_file(secret: PotentialSecret) -> str:
     except IndexError:
         raise SecretNotFoundOnSpecifiedLineError(secret.line_number)
 
-    identified_secrets = inject_variables_into_function(
+    identified_secrets = call_function_with_arguments(
         plugin.analyze_line,
         filename=secret.filename,
         line=target_line,

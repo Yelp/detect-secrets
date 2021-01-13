@@ -9,7 +9,7 @@ from typing import Union
 from ..types import SelfAwareCallable
 
 
-def inject_variables_into_function(
+def call_function_with_arguments(
     func: Union[Callable, SelfAwareCallable],
     **kwargs: Any,
 ) -> Optional[Any]:
