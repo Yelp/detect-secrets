@@ -332,19 +332,8 @@ def _scan_line(
 ) -> Generator[PotentialSecret, None, None]:
     # NOTE: We don't apply filter functions here yet, because we don't have any filters
     # that operate on (filename, line, plugin) without `secret`
-    try:
-        analyze_line = plugin.__class__.analyze_line
-        if not hasattr(analyze_line, 'injectable_variables'):
-            analyze_line.injectable_variables = set(        # type: ignore
-                get_injectable_variables(plugin.analyze_line),
-            )
-            analyze_line.path = f'{plugin.__class__.__name__}.analyze_line'     # type: ignore
-    except AttributeError:
-        return
-
     secrets = inject_variables_into_function(
-        cast(SelfAwareCallable, analyze_line),
-        self=plugin,
+        plugin.analyze_line,
         filename=filename,
         line=line,
         line_number=line_number,

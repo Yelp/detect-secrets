@@ -7,9 +7,7 @@ import requests
 from ..constants import VerifiedResult
 from ..core.plugins import Plugin
 from ..settings import get_settings
-from ..types import SelfAwareCallable
 from ..util.code_snippet import CodeSnippet
-from ..util.inject import get_injectable_variables
 from ..util.inject import inject_variables_into_function
 from .util import get_caller_path
 
@@ -42,15 +40,9 @@ def is_ignored_due_to_verification_policies(
     There's no such thing as "only verified false", because if you're going to verify
     something, and it's verified false, why are you still including it as a valid secret?
     """
-    function = plugin.__class__.verify
-    if not hasattr(function, 'injectable_variables'):
-        function.injectable_variables = set(get_injectable_variables(plugin.verify))  # type: ignore
-        function.path = f'{plugin.__class__.__name__}.verify'   # type: ignore
-
     try:
         verify_result = inject_variables_into_function(
-            cast(SelfAwareCallable, function),
-            self=plugin,
+            plugin.verify,
             secret=secret,
             context=context,
         )

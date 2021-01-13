@@ -11,8 +11,6 @@ from ..core.secrets_collection import SecretsCollection
 from ..exceptions import InvalidBaselineError
 from ..exceptions import SecretNotFoundOnSpecifiedLineError
 from ..plugins.base import BasePlugin
-from ..types import SelfAwareCallable
-from ..util.inject import get_injectable_variables
 from ..util.inject import inject_variables_into_function
 
 
@@ -46,16 +44,8 @@ def get_raw_secret_from_file(secret: PotentialSecret) -> str:
     except IndexError:
         raise SecretNotFoundOnSpecifiedLineError(secret.line_number)
 
-    function = plugin.__class__.analyze_line
-    if not hasattr(function, 'injectable_variables'):
-        function.injectable_variables = set(        # type: ignore
-            get_injectable_variables(plugin.analyze_line),
-        )
-        function.path = f'{plugin.__class__.__name__}.analyze_line'  # type: ignore
-
     identified_secrets = inject_variables_into_function(
-        cast(SelfAwareCallable, function),
-        self=plugin,
+        plugin.analyze_line,
         filename=secret.filename,
         line=target_line,
         line_number=secret.line_number,     # TODO: this will be optional

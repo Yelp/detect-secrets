@@ -1,12 +1,31 @@
+import inspect
 from typing import Any
 from typing import Callable
+from typing import cast
 from typing import Optional
 from typing import Tuple
+from typing import Union
 
 from ..types import SelfAwareCallable
 
 
-def inject_variables_into_function(func: SelfAwareCallable, **kwargs: Any) -> Optional[Any]:
+def inject_variables_into_function(
+    func: Union[Callable, SelfAwareCallable],
+    **kwargs: Any,
+) -> Optional[Any]:
+    # First, we ensure that the function we're going to inject values into is self-aware.
+    function = func
+    if not isinstance(func, SelfAwareCallable):
+        function = make_function_self_aware(func)
+
+    # If `function` is derived from a method, we add the instance of the class by default.
+    # However, if `function` is a method itself, it will already carry the reference of the
+    # instance, so we don't need to explicitly include it.
+    if inspect.ismethod(func) and not inspect.ismethod(function):
+        # We also use get_injectable_variables (instead of hardcoding "self") to make sure that
+        # this also handles cases where the developer doesn't name the first parameter `self`.
+        kwargs[get_injectable_variables(func)[0]] = func.__self__
+
     variables_to_inject = set(kwargs.keys())
     values = {
         key: kwargs[key]
@@ -14,10 +33,33 @@ def inject_variables_into_function(func: SelfAwareCallable, **kwargs: Any) -> Op
     }
 
     try:
-        return func(**values)
+        return function(**values)
     except TypeError:
         # When parameters are required (and not supplied), it raises a TypeError.
         return None
+
+
+def make_function_self_aware(func: Callable) -> SelfAwareCallable:
+    """
+    A SelfAwareCallable is one that is aware of its own injectable variables, through the
+    `func.injectable_variables` attribute.
+    """
+    if hasattr(func, 'injectable_variables'):
+        return cast(SelfAwareCallable, func)
+
+    # We can't add arbitrary attributes to methods, but we can to functions. Therefore,
+    # we need to reference the underlying function itself.
+    if inspect.ismethod(func):
+        klass = func.__self__.__class__
+        function = getattr(klass, func.__name__)
+        function.injectable_variables = set(get_injectable_variables(func))  # type: ignore
+
+        function.path = f'{klass}.{func.__name__}'        # type: ignore
+    else:
+        function = func
+        function.path = func.__name__   # type: ignore
+
+    return cast(SelfAwareCallable, function)
 
 
 def get_injectable_variables(func: Callable) -> Tuple[str, ...]:
