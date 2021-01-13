@@ -53,10 +53,13 @@ def get_files_to_scan(
 
     See test cases for more details.
     """
+    # First, we determine the appropriate filtering mode to be used.
     # If this is True, then it will consider everything to be valid.
     # Otherwise, it will only list the files that are valid.
     valid_paths: Union[bool, Set[str]] = True
     for path in paths:
+        # Since this is not a directory, we assume that it is a file proper, and automatically
+        # consider it valid.
         if not os.path.isdir(path):
             continue
 
@@ -67,6 +70,8 @@ def get_files_to_scan(
                 log.warning('Did not detect git repository. Try scanning all files instead.')
                 valid_paths = False
 
+        # Since valid_paths attempts to get *all* tracked files in the repository, we just need
+        # to initialize it once.
         break
 
     if not valid_paths:

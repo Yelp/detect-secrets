@@ -38,6 +38,28 @@ class TestGetFilesToScan:
         )
 
     @staticmethod
+    def test_handles_each_path_separately(non_tracked_file):
+        results = list(
+            scan.get_files_to_scan(
+                non_tracked_file.name,
+                'test_data/short_files',
+            ),
+        )
+
+        # This implies that the test_data/short_files directory is scanned, because otherwise,
+        # it would only be one file. However, at the same time, this test case isn't fragile to
+        # additions to this directory.
+        assert len(results) > 2
+
+    @staticmethod
+    def test_handles_multiple_directories():
+        directories = ['test_data/short_files', 'test_data/files']
+        results = list(scan.get_files_to_scan(*directories))
+
+        for prefix in directories:
+            assert len(list(filter(lambda x: x.startswith(prefix), results))) > 1
+
+    @staticmethod
     @pytest.fixture(autouse=True, scope='class')
     def non_tracked_file():
         with tempfile.NamedTemporaryFile(
