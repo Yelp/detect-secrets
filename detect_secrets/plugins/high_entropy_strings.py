@@ -35,6 +35,9 @@ class HighEntropyStringsPlugin(BasePlugin, metaclass=ABCMeta):
                 # This occurs on the default regex, but not on the eager regex.
                 result = result[1]
 
+            # We perform the shannon entropy check in `analyze_line` instead, so that we have
+            # more control over **when** we display the results of this plugin. Specifically,
+            # this allows us to show the computed entropy values during adhoc string scans.
             yield result
 
     def analyze_line(
@@ -52,7 +55,7 @@ class HighEntropyStringsPlugin(BasePlugin, metaclass=ABCMeta):
             # enable_eager_search=True.
             return {
                 secret
-                for secret in (output or set([]))
+                for secret in (output or set())
                 if (
                     self.calculate_shannon_entropy(cast(str, secret.secret_value)) >
                     self.entropy_limit
