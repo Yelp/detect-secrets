@@ -7,7 +7,9 @@ from typing import IO
 from typing import Iterable
 from typing import List
 from typing import Optional
+from typing import Set
 from typing import Tuple
+from typing import Union
 
 from ..filters.allowlist import is_line_allowlisted
 from ..settings import get_filters
@@ -25,14 +27,55 @@ from .plugins import Plugin
 from .potential_secret import PotentialSecret
 
 
-def get_files_to_scan(*paths: str, should_scan_all_files: bool) -> Generator[str, None, None]:
-    if not should_scan_all_files:
-        try:
-            valid_paths = git.get_tracked_files(git.get_root_directory())
-        except subprocess.CalledProcessError:
-            log.warning('Did not detect git repository. Try scanning all files instead.')
-            yield from []
-            return
+def get_files_to_scan(
+    *paths: str,
+    should_scan_all_files: bool = False
+) -> Generator[str, None, None]:
+    """
+    If we specify specific files, we should be able to scan them. This abides by the
+    Principle of Least Surprise -- so users don't have to do:
+
+        $ detect-secrets scan test_data/config.env --all-files
+
+    to scan the specific file.
+
+        >>> list(get_files_to_scan('test_data/config.env')) == ['test_data/config.env']
+
+    In a similar way,
+
+        >>> list(get_files_to_scan('test_data/config.env', '.secrets.baseline')) == \
+        ...     ['test_data/config.env', '.secrets.baseline']
+
+    If we specify directories, then we should use git tracked files when possible. To
+    override this behavior, we can specify `should_scan_all_files=True`, which will force
+    the scan for all files.
+
+    See test cases for more details.
+    """
+    # First, we determine the appropriate filtering mode to be used.
+    # If this is True, then it will consider everything to be valid.
+    # Otherwise, it will only list the files that are valid.
+    valid_paths: Union[bool, Set[str]] = True
+    for path in paths:
+        # Since this is not a directory, we assume that it is a file proper, and automatically
+        # consider it valid.
+        if not os.path.isdir(path):
+            continue
+
+        if not should_scan_all_files:
+            try:
+                valid_paths = git.get_tracked_files(git.get_root_directory())
+            except subprocess.CalledProcessError:
+                log.warning('Did not detect git repository. Try scanning all files instead.')
+                valid_paths = False
+
+        # Since valid_paths attempts to get *all* tracked files in the repository, we just need
+        # to initialize it once.
+        break
+
+    if not valid_paths:
+        yield from []
+        return
 
     for path in paths:
         iterator = (
@@ -40,6 +83,7 @@ def get_files_to_scan(*paths: str, should_scan_all_files: bool) -> Generator[str
             if os.path.isfile(path)
             else os.walk(path)
         )
+
         for path_root, _, filenames in iterator:
             for filename in filenames:
                 relative_path = get_relative_path_if_in_cwd(os.path.join(path_root, filename))
@@ -48,13 +92,10 @@ def get_files_to_scan(*paths: str, should_scan_all_files: bool) -> Generator[str
                     continue
 
                 if (
-                    not should_scan_all_files
-                    and relative_path not in valid_paths
+                    valid_paths is True
+                    or relative_path in cast(Set[str], valid_paths)
                 ):
-                    # Not a git-tracked file
-                    continue
-
-                yield relative_path
+                    yield relative_path
 
 
 def scan_line(line: str) -> Generator[PotentialSecret, None, None]:
