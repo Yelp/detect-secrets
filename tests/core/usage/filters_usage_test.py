@@ -43,6 +43,78 @@ def test_only_verified_overrides_baseline_settings(parser):
         ]['min_level'] == VerifiedResult.VERIFIED_TRUE.value
 
 
+class TestCustomFilters:
+    @staticmethod
+    @pytest.mark.parametrize(
+        'scheme',
+        (
+            '',
+            'file://',
+        ),
+    )
+    @pytest.mark.parametrize(
+        'filepath',
+        (
+            # No function
+            'testing/custom_filters.py',
+
+            # Invalid file
+            'testing/invalid_file.py::function_name',
+
+            # Invalid function
+            'file://testing/custom_filters.py::function_name',
+        ),
+    )
+    def test_local_file_failure(scheme, filepath, parser):
+        with pytest.raises(SystemExit):
+            parser.parse_args(['scan', '--filter', scheme + filepath])
+
+    @staticmethod
+    @pytest.mark.parametrize(
+        'scheme',
+        (
+            '',
+            'file://',
+        ),
+    )
+    def test_local_file_success(scheme, parser):
+        secrets = SecretsCollection()
+        with transient_settings({
+            'plugins_used': [{
+                'name': 'Base64HighEntropyString',
+            }],
+        }):
+            parser.parse_args([
+                'scan',
+                '--filter',
+                scheme + 'testing/custom_filters.py::is_invalid_secret',
+            ])
+            secrets.scan_file('test_data/config.env')
+
+        assert not secrets
+
+    @staticmethod
+    @pytest.mark.parametrize(
+        'filepath',
+        (
+            # Invalid module path
+            'detect_secrets.asdf',
+
+            # Not a function
+            'detect_secrets.filters.common',
+
+            # Invalid function name
+            'detect_secrets.filters.heuristic.IGNORED_FILE_EXTENSIONS',
+
+            # Not a module path.
+            'blah',
+        ),
+    )
+    def test_module_failure(parser, filepath):
+        with pytest.raises(SystemExit):
+            parser.parse_args(['scan', '--filter', filepath])
+
+
 @pytest.fixture
 def parser():
     return ParserBuilder().add_console_use_arguments()

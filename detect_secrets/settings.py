@@ -6,6 +6,10 @@ from typing import Any
 from typing import Dict
 from typing import Generator
 from typing import List
+from urllib.parse import urlparse
+
+from .exceptions import InvalidFile
+from .util.importlib import import_file_as_module
 
 
 @lru_cache(maxsize=1)
@@ -199,10 +203,25 @@ def get_filters() -> List:
 
     output = []
     for path, config in get_settings().filters.items():
-        module_path, function_name = path.rsplit('.', 1)
-        try:
-            function = getattr(import_module(module_path), function_name)
-        except (ModuleNotFoundError, AttributeError):
+        parts = urlparse(path)
+        if not parts.scheme:
+            module_path, function_name = path.rsplit('.', 1)
+            try:
+                function = getattr(import_module(module_path), function_name)
+            except (ModuleNotFoundError, AttributeError):
+                log.warning(f'Invalid filter: {path}')
+                continue
+
+        elif parts.scheme == 'file':
+            file_path, function_name = path[len('file://'):].split('::')
+
+            try:
+                function = getattr(import_file_as_module(file_path), function_name)
+            except (FileNotFoundError, InvalidFile, AttributeError):
+                log.warning(f'Invalid filter: {path}')
+                continue
+
+        else:
             log.warning(f'Invalid filter: {path}')
             continue
 
