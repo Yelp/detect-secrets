@@ -130,7 +130,7 @@ def scan_line(line: str) -> Generator[PotentialSecret, None, None]:
 
 def scan_file(filename: str) -> Generator[PotentialSecret, None, None]:
     if not get_plugins():   # pragma: no cover
-        log.warning('No plugins to scan with!')
+        log.error('No plugins to scan with!')
         return
 
     if _is_filtered_out(required_filter_parameters=['filename'], filename=filename):
@@ -158,7 +158,7 @@ def scan_diff(diff: str) -> Generator[PotentialSecret, None, None]:
     :raises: ImportError
     """
     if not get_plugins():   # pragma: no cover
-        log.warning('No plugins to scan with!')
+        log.error('No plugins to scan with!')
         return
 
     for filename, lines in _get_lines_from_diff(diff):
@@ -175,7 +175,7 @@ def scan_for_allowlisted_secrets_in_file(filename: str) -> Generator[PotentialSe
     This scans specifically for these lines, and ignores everything else.
     """
     if not get_plugins():   # pragma: no cover
-        log.warning('No plugins to scan with!')
+        log.error('No plugins to scan with!')
         return
 
     if _is_filtered_out(
@@ -197,7 +197,7 @@ def scan_for_allowlisted_secrets_in_file(filename: str) -> Generator[PotentialSe
 
 def scan_for_allowlisted_secrets_in_diff(diff: str) -> Generator[PotentialSecret, None, None]:
     if not get_plugins():   # pragma: no cover
-        log.warning('No plugins to scan with!')
+        log.error('No plugins to scan with!')
         return
 
     for filename, lines in _get_lines_from_diff(diff):
