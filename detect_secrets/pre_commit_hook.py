@@ -210,11 +210,12 @@ def _print_mitigation_suggestions():
         'in #security',
     )
     suggestions = [
-        'For information about putting your secrets in a safer place, ' +
-        'please ask ' + security_team,
-        'Mark false positives with an inline ' +
-        '`pragma: allowlist secret` comment',
-        'Commit with `--no-verify` if this is a one-time false positive',
+        'Scan again your repository.',
+        'Audit the potential secrets stored in the' +
+        ' baseline and correct the true positives.' +
+        'If any secret had already been commited you' +
+        ' must remove and change it.',
+        'Try the commit again.'
     ]
 
     wrapper = textwrap.TextWrapper(
