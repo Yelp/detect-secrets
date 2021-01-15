@@ -35,12 +35,31 @@ This above example is another example of a filter. Unlike the former example, th
 to make sure that UUIDs aren't classified as secrets by returning `True` (hence, skipping)
 if the raw secret value looks like a UUID.
 
+## Built-in Filters
+
+This is a current list of filters that ship with `detect-secrets`. All filters are found under
+the `detect_secrets.filters` namespace.
+
+| Name                                             | Description                                                                         |
+|--------------------------------------------------|-------------------------------------------------------------------------------------|
+| `allowlist.is_line_allowlisted`                  | Powers the [inline allowlisting](../README.md#Inline-Allowlisting) functionality.   |
+| `common.is_invalid_file`                         | Ignores files that are not files (e.g. links).                                      |
+| `common.is_baseline_file`                        | Ignores the baseline file itself.                                                   |
+| `common.is_ignored_due_to_verification_policies` | Powers secret verification functionality.                                           |
+| `heuristic.is_sequential_string`                 | Ignores secrets like `abcdefg`.                                                     |
+| `heuristic.is_potential_uuid`                    | Ignores uuid looking secret values.                                                 |
+| `heuristic.is_likely_id_string`                  | Ignores secret values prefixed with `id`.                                           |
+| `heuristic.is_non_text_file`                     | Ignores non-text files (e.g. archives, images).                                     |
+| `regex.should_exclude_line`                      | Powers the [`--exclude-lines` functionality](../README.md#--exclude-lines).         |
+| `regex.should_exclude_file`                      | Powers the [`--exclude-files` functionality](../README.md#--exclude-files).         |
+| `wordlist.should_exclude_secret`                 | Powers the [`--word-list` functionality](../README.md#--word-list).                 |
+
 ## Configuring Filters
 
 As of version 1.0, all built-in filters are included in every scan. A list of these can be
 found in the baseline produced:
 
-```
+```bash
 $ detect-secrets scan test_data
 {
     "generated_at": "2020-11-13T19:05:03Z",
@@ -64,7 +83,7 @@ This `path` value specifies the import path for the filter function to be used. 
 any additional values that are needed for filter configuration (e.g. `min_level` in
 `is_ignored_due_to_verification_policies`), they will also be listed within the same dictionary.
 
-There are also a set of **default filters** that are added to every scan, that cannot be disabled.
+There are also a set of **default filters** that are added to every scan.
 These can be found in
 [`detect_secrets.settings.Settings.DEFAULT_FILTERS`](../detect_secrets/settings.py)
 and power global exclusion policies (e.g. inline allowlisting via `pragma: allowlist secret`).
@@ -72,7 +91,11 @@ For the sake of brevity, these default filters are not included in the baseline 
 
 ### Disabling Filters
 
-TODO: command-line disablement is not a written feature yet.
+You can disable any filters with the `--disable-filter` flag. For example:
+
+```bash
+$ detect-secrets scan test_data --disable-filter detect_secrets.filters.heuristic.is_prefixed_with_dollar_sign
+```
 
 If you're running `detect-secrets` as a package, you can specify the filters you want by
 customizing your own settings object. e.g.
@@ -94,7 +117,23 @@ with transient_settings(config):
 
 ### Using Your Own Filters
 
-TODO: This is not a written feature yet.
+You can provide your own filters with the `--filter` flag. For example, if you wanted to [provide
+a custom file](#Writing-Your-Own-Filter), you can provide it in the format:
+`/path/to/file::function_name`. For example:
+
+```bash
+$ cat custom_filter.py
+def is_invalid_secret(secret: str) -> bool:
+    return secret == 'invalid'
+
+$ detect-secrets scan --filter custom_filter.py::is_invalid_secret
+```
+
+You can also provide an import path to the filter function you desire:
+
+```
+$ detect-secrets scan --filter detect_secrets.filters.heuristic.is_md5_string
+```
 
 ## Writing Your Own Filter
 
