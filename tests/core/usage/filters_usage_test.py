@@ -1,4 +1,5 @@
 import tempfile
+import uuid
 
 import pytest
 
@@ -6,6 +7,7 @@ from detect_secrets.constants import VerifiedResult
 from detect_secrets.core import baseline
 from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.core.usage import ParserBuilder
+from detect_secrets.settings import default_settings
 from detect_secrets.settings import get_settings
 from detect_secrets.settings import transient_settings
 
@@ -113,6 +115,38 @@ class TestCustomFilters:
     def test_module_failure(parser, filepath):
         with pytest.raises(SystemExit):
             parser.parse_args(['scan', '--filter', filepath])
+
+
+def test_disable_filter(parser):
+    with tempfile.NamedTemporaryFile() as f:
+        f.write(f'secret = "{uuid.uuid4()}"'.encode())
+
+        # First, make sure that we actually catch it.
+        f.seek(0)
+        with transient_settings({
+            'plugins_used': [{
+                'name': 'KeywordDetector',
+            }],
+        }):
+            secrets = SecretsCollection()
+            secrets.scan_file(f.name)
+
+            assert not secrets
+
+        f.seek(0)
+        with default_settings():
+            parser.parse_args([
+                'scan',
+                '--disable-filter', 'detect_secrets.filters.heuristic.is_potential_uuid',
+
+                # invalid filter
+                '--disable-filter', 'blah',
+            ])
+
+            secrets = SecretsCollection()
+            secrets.scan_file(f.name)
+
+            assert secrets
 
 
 @pytest.fixture
