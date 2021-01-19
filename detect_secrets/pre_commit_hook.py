@@ -213,8 +213,9 @@ def _print_mitigation_suggestions():
         'Scan again your repository.',
         'Audit the potential secrets stored in the' +
         ' baseline and correct the true positives.' +
-        'If any secret had already been commited you' +
+        ' If any secret had already been committed you' +
         ' must remove and change it.',
+        'Stage the baseline for the commit.',
         'Try the commit again.'
     ]
 
