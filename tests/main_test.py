@@ -54,6 +54,14 @@ class TestScan:
             assert not printer.message
 
 
+def test_slim_scan():
+    with mock_printer(main_module) as printer:
+        main_module.main(['scan', '--slim', 'test_data'])
+
+        assert 'generated_at' not in printer.message
+        assert 'line_number' not in printer.message
+
+
 class TestScanString:
     @staticmethod
     def test_basic():
