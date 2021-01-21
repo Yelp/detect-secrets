@@ -120,6 +120,7 @@ def get_secrets_not_in_baseline(results, baseline):
             secret: secret
             for secret in results.data[filename]
             if secret not in baseline.data[filename]
+            or baseline.data[filename].get(secret).is_secret is None
         }
 
         if filtered_results:
