@@ -227,6 +227,12 @@ class SecretsCollection:
                 valuesB = vars(secretB)
                 valuesB.pop('secret_value')
 
+                if valuesA['line_number'] == 0 or valuesB['line_number'] == 0:
+                    # If line numbers are not provided (for either one), then don't compare
+                    # line numbers.
+                    valuesA.pop('line_number')
+                    valuesB.pop('line_number')
+
                 if valuesA != valuesB:
                     return False
 
