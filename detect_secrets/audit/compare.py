@@ -17,7 +17,7 @@ compared to the old one).
 """
 from typing import Any
 from typing import Dict
-from typing import Generator
+from typing import Iterator
 from typing import Optional
 from typing import Tuple
 from typing import Type
@@ -27,6 +27,7 @@ from . import io
 from ..core import baseline
 from ..core.potential_secret import PotentialSecret
 from ..core.secrets_collection import SecretsCollection
+from ..exceptions import NoLineNumberError
 from ..exceptions import SecretNotFoundOnSpecifiedLineError
 from ..settings import transient_settings
 from ..types import SecretContext
@@ -50,7 +51,10 @@ def compare_baselines(old_baseline_filename: str, new_baseline_filename: str) ->
     old_baseline.trim()
     new_baseline.trim()
 
-    _display_difference_to_user((old_baseline, old_config), (new_baseline, new_config))
+    try:
+        _display_difference_to_user((old_baseline, old_config), (new_baseline, new_config))
+    except NoLineNumberError as e:
+        io.print_error(str(e))
 
 
 def _get_baseline_from_file(filename: str) -> Tuple[SecretsCollection, Dict[str, Any]]:
@@ -66,7 +70,7 @@ def _get_baseline_from_file(filename: str) -> Tuple[SecretsCollection, Dict[str,
 def _compare_baselines(
     old_baseline: SecretsCollection,
     new_baseline: SecretsCollection,
-) -> Generator[Tuple[str, Optional[PotentialSecret], Optional[PotentialSecret]], None, None]:
+) -> Iterator[Tuple[str, Optional[PotentialSecret], Optional[PotentialSecret]]]:
     """
     :returns: (filename, left_secret, right_secret)
         `filename` is needed to know which file to display;
@@ -92,11 +96,15 @@ def _compare_baselines(
             exception: Optional[Union[Type[LeftSecret], Type[RightSecret]]] = None
             try:
                 left_secret = left_secrets[left_index]
+                if not left_secret.line_number:
+                    raise NoLineNumberError
             except IndexError:
                 exception = RightSecret
 
             try:
                 right_secret = right_secrets[right_index]
+                if not right_secret.line_number:
+                    raise NoLineNumberError
             except IndexError:
                 exception = LeftSecret
 

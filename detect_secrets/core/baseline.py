@@ -27,7 +27,7 @@ def create(*paths: str, should_scan_all_files: bool = False) -> SecretsCollectio
     return secrets
 
 
-def load(baseline: Dict[str, Any], filename: str) -> SecretsCollection:
+def load(baseline: Dict[str, Any], filename: str = '') -> SecretsCollection:
     """
     With a given baseline file, load all settings and discovered secrets from it.
 

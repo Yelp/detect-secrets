@@ -128,6 +128,16 @@ def test_file_no_longer_exists(printer, mock_user_decision):
     assert not mock_user_decision.called
 
 
+def test_fails_when_no_line_number(printer):
+    secretsA = get_secrets(potential_secret_factory('a', line_number=0))
+    secretsB = get_secrets(potential_secret_factory('b'))
+
+    with allow_fake_files():
+        run_logic(secretsA, secretsB)
+
+    assert 'ERROR: No line numbers found' in printer.message
+
+
 def run_logic(secretsA: SecretsCollection, secretsB: SecretsCollection):
     with tempfile.NamedTemporaryFile() as f, tempfile.NamedTemporaryFile() as g:
         baseline.save_to_file(secretsA, f.name)

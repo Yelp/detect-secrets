@@ -188,7 +188,7 @@ class SecretsCollection:
         for filename in sorted(self.files):
             secrets = self[filename]
 
-            # TODO: Handle cases when line numbers are not supplied
+            # NOTE: If line numbers aren't supplied, they will default to 0.
             for secret in sorted(secrets, key=lambda x: (x.line_number, x.secret_hash, x.type)):
                 yield filename, secret
 

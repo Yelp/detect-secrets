@@ -13,6 +13,7 @@ from ..core import plugins
 from ..core.potential_secret import PotentialSecret
 from ..core.secrets_collection import SecretsCollection
 from ..exceptions import InvalidBaselineError
+from ..exceptions import NoLineNumberError
 from ..exceptions import SecretNotFoundOnSpecifiedLineError
 from ..plugins.base import BasePlugin
 from ..transformers import get_transformed_file
@@ -25,7 +26,6 @@ def get_baseline_from_file(filename: str) -> SecretsCollection:
     :raises: InvalidBaselineError
     """
     try:
-        # TODO: how to quit early if no line numbers provided?
         # TODO: Should we upgrade this?
         return baseline.load(baseline.load_from_file(filename), filename)
     except (IOError, json.decoder.JSONDecodeError):
@@ -51,11 +51,15 @@ def get_raw_secret_from_file(
     it was a secret in the first place, so we can reverse-engineer it.
 
     :raises: SecretNotFoundOnSpecifiedLineError
+    :raises: NoLineNumberError
     """
     plugin = cast(BasePlugin, plugins.initialize.from_secret_type(secret.type))
     line_getter = line_getter_factory(secret.filename)
     is_first_time_opening_file = not line_getter.has_cached_lines
     while True:
+        if not secret.line_number:
+            raise NoLineNumberError
+
         try:
             target_line = line_getter.lines[secret.line_number - 1]
         except IndexError:
@@ -65,7 +69,7 @@ def get_raw_secret_from_file(
             plugin.analyze_line,
             filename=secret.filename,
             line=target_line,
-            line_number=secret.line_number,     # TODO: this will be optional
+            line_number=secret.line_number,
 
             # We enable eager search, because we *know* there's a secret here -- the baseline
             # flagged it after all.
