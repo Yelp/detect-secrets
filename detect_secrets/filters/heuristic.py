@@ -119,14 +119,16 @@ def is_templated_secret(secret: str) -> bool:
     """
     Filters secrets that are shaped like: {secret}, <secret>, or ${secret}.
     """
-    if secret[0] == '$':
-        return True
-
-    if (
-        (secret[0] == '{' and secret[-1] == '}')
-        or (secret[0] == '<' and secret[-1] == '>')
-        or (secret[0] == '$' and secret[1] == '{' and secret[-1] == '}')
-    ):
+    try:
+        if (
+            (secret[0] == '{' and secret[-1] == '}')
+            or (secret[0] == '<' and secret[-1] == '>')
+            or (secret[0] == '$' and secret[1] == '{' and secret[-1] == '}')
+        ):
+            return True
+    except IndexError:
+        # Any one character secret (that causes this to raise an IndexError) is highly
+        # likely to be a false positive (or if a true positive, INCREDIBLY weak password).
         return True
 
     return False

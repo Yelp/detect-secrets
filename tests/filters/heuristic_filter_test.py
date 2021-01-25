@@ -86,10 +86,10 @@ class TestIsLikelyIdString:
 @pytest.mark.parametrize(
     'line, result',
     (
-        ('secret = $hunter2', False),
         ('secret = {hunter2}', False),
         ('secret = <hunter2>', False),
         ('secret = hunter2', True),
+        ('secret= ${hunter2}', False),
     ),
 )
 def test_is_templated_secret(line, result):
