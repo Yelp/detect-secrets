@@ -113,3 +113,55 @@ IGNORED_FILE_EXTENSIONS = set(
         '.zip',
     ),
 )
+
+
+def is_templated_secret(secret: str) -> bool:
+    """
+    Filters secrets that are shaped like: {secret}, <secret>, or ${secret}.
+    """
+    try:
+        if (
+            (secret[0] == '{' and secret[-1] == '}')
+            or (secret[0] == '<' and secret[-1] == '>')
+            or (secret[0] == '$' and secret[1] == '{' and secret[-1] == '}')
+        ):
+            return True
+    except IndexError:
+        # Any one character secret (that causes this to raise an IndexError) is highly
+        # likely to be a false positive (or if a true positive, INCREDIBLY weak password).
+        return True
+
+    return False
+
+
+def is_prefixed_with_dollar_sign(secret: str) -> bool:
+    # NOTE: This is broken out into its own function since it has more chance of increasing
+    # false negatives than `is_templated_secret` (e.g. secrets that actually start with a $).
+    # This is best used with files that actually use this as a means of referencing variables.
+    # TODO: More intelligent filetype handling?
+    return secret[0] == '$'
+
+
+def is_indirect_reference(secret: str) -> bool:
+    """
+    Filters secrets that take the form of:
+
+        secret = get_secret_key()
+
+    or
+
+        secret = request.headers['apikey']
+    """
+    output = False
+    for start, end in (
+        list('()'),
+        list('[]'),
+    ):
+        try:
+            output = secret.index(start) < secret.index(end)
+            if output:
+                return output
+        except ValueError:
+            continue
+
+    return output
