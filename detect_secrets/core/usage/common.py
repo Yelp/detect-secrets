@@ -1,8 +1,8 @@
 import argparse
 import os
 
+from ...settings import default_settings
 from ...settings import get_settings
-from ..plugins.util import get_mapping_from_secret_type_to_class
 
 
 def valid_path(path: str) -> str:
@@ -24,9 +24,10 @@ def initialize_plugin_settings(args: argparse.Namespace) -> None:
     if get_settings().plugins:
         return
 
-    # TODO: This should take cli args (e.g. --base64-limit)
+    # We initialize the `settings` variable here, but we can't save it to the global object
+    # yet, since the contextmanager will revert those changes. As such, we quit the context
+    # first, then set it to the global namespace.
+    with default_settings() as settings:
+        pass
 
-    get_settings().configure_plugins([
-        {'name': plugin_type.__name__}
-        for plugin_type in get_mapping_from_secret_type_to_class().values()
-    ])
+    get_settings().set(settings)

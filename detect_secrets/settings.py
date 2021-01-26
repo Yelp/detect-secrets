@@ -52,6 +52,20 @@ def configure_settings_from_baseline(baseline: Dict[str, Any], filename: str = '
 
 
 @contextmanager
+def default_settings() -> Generator['Settings', None, None]:
+    """Convenience function to enable all plugins and default filters."""
+    from .core.plugins.util import get_mapping_from_secret_type_to_class
+
+    with transient_settings({
+        'plugins_used': [
+            {'name': plugin_type.__name__}
+            for plugin_type in get_mapping_from_secret_type_to_class().values()
+        ],
+    }) as settings:
+        yield settings
+
+
+@contextmanager
 def transient_settings(config: Dict[str, Any]) -> Generator['Settings', None, None]:
     """Allows the customizability of non-global settings per invocation."""
     original_settings = get_settings().json()
@@ -94,6 +108,10 @@ class Settings:
                 'detect_secrets.filters.heuristic.is_likely_id_string',
             }
         }
+
+    def set(self, other: 'Settings') -> None:
+        self.plugins = other.plugins
+        self.filters = other.filters
 
     def configure_plugins(self, config: List[Dict[str, Any]]) -> 'Settings':
         """
