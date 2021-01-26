@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 
 from ... import filters
 from ...constants import VerifiedResult
+from ...core.log import log
 from ...exceptions import InvalidFile
 from ...settings import get_settings
 from ...util.importlib import import_file_as_module
@@ -57,6 +58,7 @@ def add_filter_options(parent: argparse.ArgumentParser) -> None:
         )
 
     _add_custom_filters(parser)
+    _add_disable_flag(parser)
 
 
 def _add_custom_filters(parser: argparse._ArgumentGroup) -> None:
@@ -103,6 +105,16 @@ def _add_custom_filters(parser: argparse._ArgumentGroup) -> None:
     )
 
 
+def _add_disable_flag(parser: argparse._ArgumentGroup) -> None:
+    parser.add_argument(
+        '--disable-filter',
+        type=str,
+        nargs=1,
+        action='append',        # so we can support multiple flags with same value
+        help='Specify filter to disable. e.g. detect_secrets.filters.common.is_invalid_file',
+    )
+
+
 def parse_args(args: argparse.Namespace) -> None:
     if args.exclude_lines:
         get_settings().filters['detect_secrets.filters.regex.should_exclude_line'] = {
@@ -134,6 +146,16 @@ def parse_args(args: argparse.Namespace) -> None:
         get_settings().disable_filters(
             'detect_secrets.filters.common.is_ignored_due_to_verification_policies',
         )
+
+    if args.disable_filter:
+        # Flatten entry for easier parsing.
+        args.disable_filter = [entry for item in args.disable_filter for entry in item]
+
+        redundant_disabled_filters = set(args.disable_filter) - set(get_settings().filters)
+        for name in redundant_disabled_filters:
+            log.warning(f'Redundant --disable-filter "{name}"')
+
+        get_settings().disable_filters(*args.disable_filter)
 
     if args.filter:
         # Flatten entry for easier parsing.

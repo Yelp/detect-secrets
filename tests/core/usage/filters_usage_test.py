@@ -1,4 +1,5 @@
 import tempfile
+import uuid
 
 import pytest
 
@@ -6,6 +7,7 @@ from detect_secrets.constants import VerifiedResult
 from detect_secrets.core import baseline
 from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.core.usage import ParserBuilder
+from detect_secrets.settings import default_settings
 from detect_secrets.settings import get_settings
 from detect_secrets.settings import transient_settings
 
@@ -94,6 +96,22 @@ class TestCustomFilters:
         assert not secrets
 
     @staticmethod
+    def test_module_success(parser):
+        config = {
+            # Remove all filters, so we can test adding things back in.
+            'filters_used': [],
+        }
+
+        with transient_settings(config):
+            default_filters = set(get_settings().filters.keys())
+
+        module_path = 'detect_secrets.filters.heuristic.is_sequential_string'
+        assert module_path not in default_filters
+        with transient_settings(config):
+            parser.parse_args(['scan', '--filter', module_path])
+            assert module_path in get_settings().filters
+
+    @staticmethod
     @pytest.mark.parametrize(
         'filepath',
         (
@@ -113,6 +131,38 @@ class TestCustomFilters:
     def test_module_failure(parser, filepath):
         with pytest.raises(SystemExit):
             parser.parse_args(['scan', '--filter', filepath])
+
+
+def test_disable_filter(parser):
+    with tempfile.NamedTemporaryFile() as f:
+        f.write(f'secret = "{uuid.uuid4()}"'.encode())
+
+        # First, make sure that we actually catch it.
+        f.seek(0)
+        with transient_settings({
+            'plugins_used': [{
+                'name': 'KeywordDetector',
+            }],
+        }):
+            secrets = SecretsCollection()
+            secrets.scan_file(f.name)
+
+            assert not secrets
+
+        f.seek(0)
+        with default_settings():
+            parser.parse_args([
+                'scan',
+                '--disable-filter', 'detect_secrets.filters.heuristic.is_potential_uuid',
+
+                # invalid filter
+                '--disable-filter', 'blah',
+            ])
+
+            secrets = SecretsCollection()
+            secrets.scan_file(f.name)
+
+            assert secrets
 
 
 @pytest.fixture
