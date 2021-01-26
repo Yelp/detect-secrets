@@ -149,7 +149,7 @@ class TestScanOnlyAllowlisted:
             main_module.main([
                 'scan',
                 '--only-allowlisted',
-                '--disabled-plugins', 'KeywordDetector',
+                '--disable-plugin', 'KeywordDetector',
                 'test_data/config.ini',
             ])
 
