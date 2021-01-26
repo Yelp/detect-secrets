@@ -96,6 +96,22 @@ class TestCustomFilters:
         assert not secrets
 
     @staticmethod
+    def test_module_success(parser):
+        config = {
+            # Remove all filters, so we can test adding things back in.
+            'filters_used': [],
+        }
+
+        with transient_settings(config):
+            default_filters = set(get_settings().filters.keys())
+
+        module_path = 'detect_secrets.filters.heuristic.is_sequential_string'
+        assert module_path not in default_filters
+        with transient_settings(config):
+            parser.parse_args(['scan', '--filter', module_path])
+            assert module_path in get_settings().filters
+
+    @staticmethod
     @pytest.mark.parametrize(
         'filepath',
         (
