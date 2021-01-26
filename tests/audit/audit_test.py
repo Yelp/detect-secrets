@@ -139,6 +139,25 @@ def test_ensure_file_transformers_are_used(printer):
     assert lines[line_number - 1] in printer.message
 
 
+def test_fails_if_no_line_numbers_found(printer):
+    with transient_settings({
+        'plugins_used': [
+            {'name': 'Base64HighEntropyString'},
+        ],
+    }):
+        secrets = SecretsCollection()
+        secrets.scan_file('test_data/config.env')
+
+    # Remove line numbers
+    secrets = baseline.load(baseline.format_for_output(secrets, is_slim_mode=True))
+
+    with mock.patch('detect_secrets.audit.io.clear_screen') as m:
+        run_logic(secrets)
+        assert not m.called
+
+    assert 'No line numbers found in baseline' in printer.message
+
+
 def run_logic(
     secrets: SecretsCollection,
     input: Optional[str] = None,

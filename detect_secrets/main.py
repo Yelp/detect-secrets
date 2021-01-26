@@ -77,7 +77,7 @@ def handle_scan_action(args: argparse.Namespace) -> None:
 
         baseline.save_to_file(secrets, args.baseline_filename)
     else:
-        print(json.dumps(baseline.format_for_output(secrets), indent=2))
+        print(json.dumps(baseline.format_for_output(secrets, is_slim_mode=args.slim), indent=2))
 
 
 def scan_adhoc_string(line: str) -> str:
