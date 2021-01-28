@@ -137,13 +137,8 @@ def baseline_has_true_secrets (baseline):
     :rtype: Boolean
     :returns: Boolean that returns True if exists some true secret in the baseline 
     """
-    exclude_files_regex = None
-    if baseline.exclude_files:
-        exclude_files_regex = re.compile(baseline.exclude_files, re.IGNORECASE)
 
     for filename in baseline.data:
-        if exclude_files_regex and exclude_files_regex.search(filename):
-            continue
 
         for secret in baseline.data[filename]:
             if baseline.data[filename].get(secret).is_secret is True:
