@@ -1,9 +1,9 @@
 import pytest
 
-from detect_secrets.plugins.oauth import BasicOAuthDetector
+from detect_secrets.plugins.square_oauth import SquareOAuthDetector
 
 
-class TestBasicOauthDetector:
+class TestSquareOauthDetector:
 
     @pytest.mark.parametrize(
         'payload',
@@ -12,5 +12,5 @@ class TestBasicOauthDetector:
         ),
     )
     def test_analyze(self, payload):
-        logic = BasicOAuthDetector()
+        logic = SquareOAuthDetector()
         assert logic.analyze_line(filename='mock_filename', line=payload)

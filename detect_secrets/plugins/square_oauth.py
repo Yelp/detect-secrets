@@ -3,7 +3,7 @@ import re
 from .base import RegexBasedDetector
 
 
-class BasicOAuthDetector(RegexBasedDetector):
+class SquareOAuthDetector(RegexBasedDetector):
     """Scans for Square OAuth Secrets"""
     secret_type = 'Square OAuth Secret'
 
