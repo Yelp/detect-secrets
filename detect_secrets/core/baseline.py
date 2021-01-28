@@ -128,6 +128,24 @@ def get_secrets_not_in_baseline(results, baseline):
 
     return new_secrets
 
+def baseline_has_true_secrets (baseline):
+    """
+    :type baseline: SecretsCollection
+    :param baseline: SecretsCollection of baseline results.
+                     This will be updated accordingly (by reference)
+
+    :rtype: Boolean
+    :returns: Boolean that returns True if exists some true secret in the baseline 
+    """
+
+    for filename in baseline.data:
+
+        for secret in baseline.data[filename]:
+            if baseline.data[filename].get(secret).is_secret is True:
+                return True
+
+    return False
+
 
 def trim_baseline_of_removed_secrets(results, baseline, filelist):
     """

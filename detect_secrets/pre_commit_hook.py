@@ -5,6 +5,7 @@ import textwrap
 from detect_secrets import VERSION
 from detect_secrets.core.baseline import get_secrets_not_in_baseline
 from detect_secrets.core.baseline import trim_baseline_of_removed_secrets
+from detect_secrets.core.baseline import baseline_has_true_secrets
 from detect_secrets.core.common import write_baseline_to_file
 from detect_secrets.core.log import get_logger
 from detect_secrets.core.secrets_collection import SecretsCollection
@@ -67,7 +68,7 @@ def main(argv=sys.argv[1:]):
         )
 
     if len(results.data) > 0:
-        pretty_print_diagnostics(results)
+        pretty_print_diagnostics(results, baseline_collection)
         return 1
 
     if not baseline_collection:
@@ -177,20 +178,21 @@ def find_secrets_in_files(args, plugins):
     return collection
 
 
-def pretty_print_diagnostics(secrets):
+def pretty_print_diagnostics(secrets, baseline):
     """Prints a helpful error message, for better usability.
 
     :type secrets: SecretsCollection
     """
     _print_warning_header()
     _print_secrets_found(secrets)
+    if baseline_has_true_secrets(baseline):
+        _print_warning_real_secrets()
     _print_mitigation_suggestions()
 
 
 def _print_warning_header():
     message = (
-        'Potential secrets about to be committed to git repo! Please rectify '
-        'or explicitly ignore with an inline `pragma: allowlist secret` comment.'
+        'Potential secrets about to be committed to git repo!'
     )
 
     log.error(textwrap.fill(message))
@@ -232,6 +234,15 @@ def _print_mitigation_suggestions():
             'https://help.github.com/articles/removing-sensitive-data-from-a-repository',
         ),
     )
+
+def _print_warning_real_secrets():
+    message = (
+        'WARNING: There are some real secrets in the baseline.'
+        'You should correct them as soon as possible.'
+    )
+
+    log.error(textwrap.fill(message))
+    log.error('')
 
 
 if __name__ == '__main__':
