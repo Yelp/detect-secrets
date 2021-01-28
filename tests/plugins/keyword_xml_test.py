@@ -119,7 +119,7 @@ XML_POSITIVES.extend(
 )
 
 
-class TestKeywordDetector:
+class TestKeywordXMLDetector:
 
     @pytest.mark.parametrize(
         'file_content',

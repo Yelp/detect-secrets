@@ -40,6 +40,10 @@
       "name": "KeywordDetector"
     },
     {
+      "keyword_exclude": null,
+      "name": "KeywordXMLDetector"
+    },
+    {
       "name": "MailchimpDetector"
     },
     {
