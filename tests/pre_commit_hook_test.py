@@ -1,4 +1,7 @@
+import json
 import tempfile
+from contextlib import contextmanager
+from functools import partial
 from typing import List
 from unittest import mock
 
@@ -31,7 +34,6 @@ def test_quit_early_if_bad_baseline():
         main(['test_data/files/file_with_secrets.py', '--baseline', 'does-not-exist'])
 
 
-@pytest.mark.xfail(reason='TODO: We need to recreate our baseline once it\'s all over.')
 def test_quit_if_baseline_is_changed_but_not_staged():
     with mock.patch(
         'detect_secrets.pre_commit_hook.raise_exception_if_baseline_file_is_unstaged',
@@ -75,39 +77,99 @@ def test_baseline_filters_out_known_secrets():
         ])
 
 
-def test_modifies_baseline_from_version_change():
-    secrets = SecretsCollection()
-    secrets.scan_file('test_data/files/file_with_secrets.py')
+class TestModifiesBaselineFromVersionChange:
+    FILENAME = 'test_data/files/file_with_secrets.py'
 
-    with tempfile.NamedTemporaryFile() as f:
-        with mock.patch('detect_secrets.core.baseline.VERSION', '0.0.1'):
-            data = baseline.format_for_output(secrets)
+    def test_success(self):
+        with self.get_baseline_file() as f:
+            assert_commit_blocked_with_diff_exit_code([
+                # We use file_with_no_secrets so that we can be certain that the commit is blocked
+                # due to the version change only.
+                'test_data/files/file_with_no_secrets.py',
+                '--baseline',
+                f.name,
+            ])
 
-        # Simulating old version
-        data['plugins_used'][0]['base64_limit'] = data['plugins_used'][0].pop('limit')
-        baseline.save_to_file(data, f.name)
+    def test_maintains_labelled_data(self):
+        def label_secret(secrets):
+            list(secrets[self.FILENAME])[0].is_secret = True
+            return baseline.format_for_output(secrets)
 
-        assert_commit_blocked_with_diff_exit_code([
-            'test_data/files/file_with_no_secrets.py',
-            '--baseline',
-            f.name,
-        ])
+        with self.get_baseline_file(formatter=label_secret) as f:
+            assert_commit_blocked_with_diff_exit_code([
+                'test_data/files/file_with_no_secrets.py',
+                '--baseline',
+                f.name,
+            ])
+
+            f.seek(0)
+            data = json.loads(f.read())
+
+            assert data['results'][self.FILENAME][0]['is_secret']
+
+    def test_maintains_slim_mode(self):
+        with self.get_baseline_file(
+            formatter=partial(baseline.format_for_output, is_slim_mode=True),
+        ) as f:
+            assert_commit_blocked_with_diff_exit_code([
+                'test_data/files/file_with_no_secrets.py',
+                '--baseline',
+                f.name,
+            ])
+
+            f.seek(0)
+            assert b'line_number' not in f.read()
+
+    @contextmanager
+    def get_baseline_file(self, formatter=baseline.format_for_output):
+        secrets = SecretsCollection()
+        secrets.scan_file(self.FILENAME)
+
+        with tempfile.NamedTemporaryFile() as f:
+            with mock.patch('detect_secrets.core.baseline.VERSION', '0.0.1'):
+                data = formatter(secrets)
+
+            # Simulating old version
+            data['plugins_used'][0]['base64_limit'] = data['plugins_used'][0].pop('limit')
+            baseline.save_to_file(data, f.name)
+
+            yield f
 
 
-def test_modifies_baseline_from_line_number_change():
-    secrets = SecretsCollection()
-    secrets.scan_file('test_data/files/file_with_secrets.py')
-    for _, secret in secrets:
-        secret.line_number += 1
+class TestLineNumberChanges:
+    FILENAME = 'test_data/files/file_with_secrets.py'
 
-    with tempfile.NamedTemporaryFile() as f:
-        baseline.save_to_file(secrets, f.name)
+    def test_modifies_baseline(self, modified_baseline):
+        with tempfile.NamedTemporaryFile() as f:
+            baseline.save_to_file(modified_baseline, f.name)
 
-        assert_commit_blocked_with_diff_exit_code([
-            'test_data/files/file_with_secrets.py',
-            '--baseline',
-            f.name,
-        ])
+            assert_commit_blocked_with_diff_exit_code([
+                self.FILENAME,
+                '--baseline',
+                f.name,
+            ])
+
+    def test_does_not_modify_slim_baseline(self, modified_baseline):
+        with tempfile.NamedTemporaryFile() as f:
+            baseline.save_to_file(
+                baseline.format_for_output(modified_baseline, is_slim_mode=True),
+                f.name,
+            )
+
+            assert_commit_succeeds([
+                self.FILENAME,
+                '--baseline',
+                f.name,
+            ])
+
+    @pytest.fixture
+    def modified_baseline(self):
+        secrets = SecretsCollection()
+        secrets.scan_file(self.FILENAME)
+        for _, secret in secrets:
+            secret.line_number += 1
+
+        yield secrets
 
 
 def assert_commit_succeeds(command: List[str]):

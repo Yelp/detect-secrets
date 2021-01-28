@@ -2,7 +2,6 @@ import argparse
 import os
 from typing import cast
 from typing import Iterable
-from typing import Set
 
 from .. import plugins
 from ...exceptions import InvalidFile
@@ -87,35 +86,31 @@ def _add_custom_limits(parser: argparse._ArgumentGroup) -> None:
 
 
 def _add_disable_flag(parser: argparse._ArgumentGroup) -> None:
-    def csv_plugin_names_type(string: str) -> Set[str]:
-        plugin_names = set(string.split(','))
+    def valid_plugin_name(string: str) -> str:
         valid_plugin_names = {
             item.__name__
             for item in get_mapping_from_secret_type_to_class().values()
         }
 
-        invalid_plugin_names = plugin_names - valid_plugin_names
-        if invalid_plugin_names:
-            raise argparse.ArgumentTypeError(
-                f'Invalid plugin classnames: {", ".join(sorted(invalid_plugin_names))}',
-            )
+        if string not in valid_plugin_names:
+            raise argparse.ArgumentTypeError(f'Invalid plugin classname: {string}')
 
-        return plugin_names
+        return string
 
     parser.add_argument(
-        '--disabled-plugins',
-        type=csv_plugin_names_type,
+        '--disable-plugin',
+        type=valid_plugin_name,
         nargs=1,
-        default=[set([])],
-        help=(
-            'Comma-delimited plugin class names to disable. e.g. Base64HighEntropyString'
-        ),
+        action='append',        # so we can support multiple flags with the same value
+        help='Plugin class names to disable. e.g. Base64HighEntropyString',
     )
 
 
 def parse_args(args: argparse.Namespace) -> None:
-    args.disabled_plugins = args.disabled_plugins[0]
-    get_settings().disable_plugins(*args.disabled_plugins)
+    if args.disable_plugin:
+        # Flatten entry for easier parsing.
+        args.disable_plugin = set([entry for item in args.disable_plugin for entry in item])
+        get_settings().disable_plugins(*args.disable_plugin)
 
     # By the time the code reaches here, the baseline logic will have populated an initial
     # state for settings. Therefore, this will override whatever state that is currently registered.

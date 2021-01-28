@@ -3,11 +3,11 @@ This handles `.ini` files, or more generally known as `config` files.
 """
 import configparser
 import re
-from typing import Generator
-from typing import IO
+from typing import Iterator
 from typing import List
 from typing import Tuple
 
+from ..types import NamedIO
 from ..util.filetype import determine_file_type
 from ..util.filetype import FileType
 from .base import BaseTransformer
@@ -18,7 +18,7 @@ class ConfigFileTransformer(BaseTransformer):
     def should_parse_file(self, filename: str) -> bool:
         return True
 
-    def parse_file(self, file: IO) -> List[str]:
+    def parse_file(self, file: NamedIO) -> List[str]:
         try:
             return _parse_file(file)
         except configparser.Error:
@@ -32,14 +32,14 @@ class EagerConfigFileTransformer(BaseTransformer):
     def should_parse_file(self, filename: str) -> bool:
         return determine_file_type(filename) == FileType.OTHER
 
-    def parse_file(self, file: IO) -> List[str]:
+    def parse_file(self, file: NamedIO) -> List[str]:
         try:
             return _parse_file(file, add_header=True)
         except configparser.Error:
             raise ParsingError
 
 
-def _parse_file(file: IO, add_header: bool = False) -> List[str]:
+def _parse_file(file: NamedIO, add_header: bool = False) -> List[str]:
     """
     :raises: configparser.Error
     :raises: UnicodeDecodeError
@@ -81,7 +81,7 @@ class IniFileParser:
 
     _comment_regex = re.compile(r'\s*[;#]')
 
-    def __init__(self, file: IO, add_header: bool = False) -> None:
+    def __init__(self, file: NamedIO, add_header: bool = False) -> None:
         """
         :param add_header: whether or not to add a top-level [global] header.
         """
@@ -101,7 +101,7 @@ class IniFileParser:
         self.lines = [line.strip() for line in file.readlines()]
         self.line_offset = 0
 
-    def __iter__(self) -> Generator[Tuple[str, str, int], None, None]:
+    def __iter__(self) -> Iterator[Tuple[str, str, int]]:
         if not self.parser.sections():
             # To prevent cases where it's not an ini file, but the parser
             # helpfully attempts to parse everything to a DEFAULT section,

@@ -1,39 +1,79 @@
 import os
 import subprocess
-from functools import lru_cache
-from importlib import import_module
+from typing import Any
 from typing import cast
 from typing import Generator
-from typing import IO
 from typing import Iterable
 from typing import List
-from typing import Optional
+from typing import Set
 from typing import Tuple
+from typing import Union
 
-from . import plugins
 from ..filters.allowlist import is_line_allowlisted
+from ..settings import get_filters
+from ..settings import get_plugins
 from ..settings import get_settings
-from ..transformers import get_transformers
-from ..transformers import ParsingError
+from ..transformers import get_transformed_file
+from ..types import NamedIO
 from ..types import SelfAwareCallable
 from ..util import git
 from ..util.code_snippet import get_code_snippet
-from ..util.inject import get_injectable_variables
-from ..util.inject import inject_variables_into_function
+from ..util.inject import call_function_with_arguments
 from ..util.path import get_relative_path_if_in_cwd
 from .log import log
 from .plugins import Plugin
 from .potential_secret import PotentialSecret
 
 
-def get_files_to_scan(*paths: str, should_scan_all_files: bool) -> Generator[str, None, None]:
-    if not should_scan_all_files:
-        try:
-            valid_paths = git.get_tracked_files(git.get_root_directory())
-        except subprocess.CalledProcessError:
-            log.warning('Did not detect git repository. Try scanning all files instead.')
-            yield from []
-            return
+def get_files_to_scan(
+    *paths: str,
+    should_scan_all_files: bool = False
+) -> Generator[str, None, None]:
+    """
+    If we specify specific files, we should be able to scan them. This abides by the
+    Principle of Least Surprise -- so users don't have to do:
+
+        $ detect-secrets scan test_data/config.env --all-files
+
+    to scan the specific file.
+
+        >>> list(get_files_to_scan('test_data/config.env')) == ['test_data/config.env']
+
+    In a similar way,
+
+        >>> list(get_files_to_scan('test_data/config.env', '.secrets.baseline')) == \
+        ...     ['test_data/config.env', '.secrets.baseline']
+
+    If we specify directories, then we should use git tracked files when possible. To
+    override this behavior, we can specify `should_scan_all_files=True`, which will force
+    the scan for all files.
+
+    See test cases for more details.
+    """
+    # First, we determine the appropriate filtering mode to be used.
+    # If this is True, then it will consider everything to be valid.
+    # Otherwise, it will only list the files that are valid.
+    valid_paths: Union[bool, Set[str]] = True
+    for path in paths:
+        # Since this is not a directory, we assume that it is a file proper, and automatically
+        # consider it valid.
+        if not os.path.isdir(path):
+            continue
+
+        if not should_scan_all_files:
+            try:
+                valid_paths = git.get_tracked_files(git.get_root_directory())
+            except subprocess.CalledProcessError:
+                log.warning('Did not detect git repository. Try scanning all files instead.')
+                valid_paths = False
+
+        # Since valid_paths attempts to get *all* tracked files in the repository, we just need
+        # to initialize it once.
+        break
+
+    if not valid_paths:
+        yield from []
+        return
 
     for path in paths:
         iterator = (
@@ -41,6 +81,7 @@ def get_files_to_scan(*paths: str, should_scan_all_files: bool) -> Generator[str
             if os.path.isfile(path)
             else os.walk(path)
         )
+
         for path_root, _, filenames in iterator:
             for filename in filenames:
                 relative_path = get_relative_path_if_in_cwd(os.path.join(path_root, filename))
@@ -49,13 +90,10 @@ def get_files_to_scan(*paths: str, should_scan_all_files: bool) -> Generator[str
                     continue
 
                 if (
-                    not should_scan_all_files
-                    and relative_path not in valid_paths
+                    valid_paths is True
+                    or relative_path in cast(Set[str], valid_paths)
                 ):
-                    # Not a git-tracked file
-                    continue
-
-                yield relative_path
+                    yield relative_path
 
 
 def scan_line(line: str) -> Generator[PotentialSecret, None, None]:
@@ -66,37 +104,36 @@ def scan_line(line: str) -> Generator[PotentialSecret, None, None]:
     )
     get_filters.cache_clear()
 
-    for plugin in get_plugins():
+    yield from (
+        secret
+        for plugin in get_plugins()
         for secret in _scan_line(
             plugin=plugin,
             filename='adhoc-string-scan',
             line=line,
             line_number=0,
-        ):
-            for filter_fn in get_filters_with_parameter('context'):
-                if inject_variables_into_function(
-                    filter_fn,
-                    filename=secret.filename,
-                    secret=secret.secret_value,
-                    plugin=plugin,
-                    line=line,
-                    context=get_code_snippet(
-                        lines=[line],
-                        line_number=1,
-                    ),
-                ):
-                    log.debug(f'Skipping "{secret.secret_value}" due to `{filter_fn.path}`.')
-                    break
-            else:
-                yield secret
+            enable_eager_search=True,
+        )
+        if not _is_filtered_out(
+            required_filter_parameters=['context'],
+            filename=secret.filename,
+            secret=secret.secret_value,
+            plugin=plugin,
+            line=line,
+            context=get_code_snippet(
+                lines=[line],
+                line_number=1,
+            ),
+        )
+    )
 
 
 def scan_file(filename: str) -> Generator[PotentialSecret, None, None]:
     if not get_plugins():   # pragma: no cover
-        log.warning('No plugins to scan with!')
+        log.error('No plugins to scan with!')
         return
 
-    if _filter_files(filename):
+    if _is_filtered_out(required_filter_parameters=['filename'], filename=filename):
         return
 
     try:
@@ -121,7 +158,7 @@ def scan_diff(diff: str) -> Generator[PotentialSecret, None, None]:
     :raises: ImportError
     """
     if not get_plugins():   # pragma: no cover
-        log.warning('No plugins to scan with!')
+        log.error('No plugins to scan with!')
         return
 
     for filename, lines in _get_lines_from_diff(diff):
@@ -138,10 +175,13 @@ def scan_for_allowlisted_secrets_in_file(filename: str) -> Generator[PotentialSe
     This scans specifically for these lines, and ignores everything else.
     """
     if not get_plugins():   # pragma: no cover
-        log.warning('No plugins to scan with!')
+        log.error('No plugins to scan with!')
         return
 
-    if _filter_files(filename):
+    if _is_filtered_out(
+        required_filter_parameters=['filename'],
+        filename=filename,
+    ):
         return
 
     # NOTE: Unlike `scan_file`, we don't ever have to use eager file transfomers, since we already
@@ -157,7 +197,7 @@ def scan_for_allowlisted_secrets_in_file(filename: str) -> Generator[PotentialSe
 
 def scan_for_allowlisted_secrets_in_diff(diff: str) -> Generator[PotentialSecret, None, None]:
     if not get_plugins():   # pragma: no cover
-        log.warning('No plugins to scan with!')
+        log.error('No plugins to scan with!')
         return
 
     for filename, lines in _get_lines_from_diff(diff):
@@ -183,10 +223,7 @@ def _scan_for_allowlisted_secrets_in_lines(
         ):
             continue
 
-        if any([
-            inject_variables_into_function(filter_fn, filename=filename, line=line)
-            for filter_fn in get_filters_with_parameter('line')
-        ]):
+        if _is_filtered_out(required_filter_parameters=['line'], filename=filename, line=line):
             continue
 
         for plugin in get_plugins():
@@ -205,7 +242,7 @@ def _get_lines_from_file(filename: str) -> Generator[List[str], None, None]:
         log.info(f'Checking file: {filename}')
 
         try:
-            lines = _get_transformed_file(f)
+            lines = get_transformed_file(cast(NamedIO, f))
             if not lines:
                 lines = f.readlines()
         except UnicodeDecodeError:
@@ -216,7 +253,7 @@ def _get_lines_from_file(filename: str) -> Generator[List[str], None, None]:
 
         # If the above lines don't prove to be useful to the caller, try using eager transformers.
         f.seek(0)
-        lines = _get_transformed_file(f, use_eager_transformers=True)
+        lines = get_transformed_file(cast(NamedIO, f), use_eager_transformers=True)
         if not lines:
             return
 
@@ -234,7 +271,7 @@ def _get_lines_from_diff(diff: str) -> Generator[Tuple[str, List[Tuple[int, str]
     patch_set = PatchSet.from_string(diff)
     for patch_file in patch_set:
         filename = patch_file.path
-        if _filter_files(filename):
+        if _is_filtered_out(required_filter_parameters=['filename'], filename=filename):
             continue
 
         yield (
@@ -247,34 +284,6 @@ def _get_lines_from_diff(diff: str) -> Generator[Tuple[str, List[Tuple[int, str]
                 if line.is_added
             ],
         )
-
-
-def _filter_files(filename: str) -> bool:
-    """Returns True if successfully filtered."""
-    for filter_fn in get_filters():
-        if inject_variables_into_function(filter_fn, filename=filename):
-            log.info(f'Skipping "{filename}" due to "{filter_fn.path}"')
-            return True
-
-    return False
-
-
-def _get_transformed_file(file: IO, use_eager_transformers: bool = False) -> Optional[List[str]]:
-    for transformer in get_transformers():
-        if not transformer.should_parse_file(file.name):
-            continue
-
-        if use_eager_transformers != transformer.is_eager:
-            continue
-
-        try:
-            return transformer.parse_file(file)
-        except ParsingError:
-            pass
-        finally:
-            file.seek(0)
-
-    return None
 
 
 def _process_line_based_plugins(
@@ -293,32 +302,27 @@ def _process_line_based_plugins(
         )
 
         # We apply line-specific filters, and see whether that allows us to quit early.
-        if any([
-            inject_variables_into_function(
-                filter_fn,
-                filename=filename,
+        if _is_filtered_out(
+            required_filter_parameters=['line'],
+            filename=filename,
+            line=line,
+            context=code_snippet,
+        ):
+            continue
+
+        yield from (
+            secret
+            for plugin in get_plugins()
+            for secret in _scan_line(plugin, filename, line, line_number)
+            if not _is_filtered_out(
+                required_filter_parameters=['context'],
+                filename=secret.filename,
+                secret=secret.secret_value,
+                plugin=plugin,
                 line=line,
                 context=code_snippet,
             )
-            for filter_fn in get_filters_with_parameter('line')
-        ]):
-            continue
-
-        for plugin in get_plugins():
-            for secret in _scan_line(plugin, filename, line, line_number):
-                for filter_fn in get_filters_with_parameter('context'):
-                    if inject_variables_into_function(
-                        filter_fn,
-                        filename=secret.filename,
-                        secret=secret.secret_value,
-                        plugin=plugin,
-                        line=line,
-                        context=code_snippet,
-                    ):
-                        log.debug(f'Skipping "{secret.secret_value}" due to `{filter_fn.path}`.')
-                        break
-                else:
-                    yield secret
+        )
 
 
 def _scan_line(
@@ -326,38 +330,53 @@ def _scan_line(
     filename: str,
     line: str,
     line_number: int,
+    **kwargs: Any,
 ) -> Generator[PotentialSecret, None, None]:
     # NOTE: We don't apply filter functions here yet, because we don't have any filters
     # that operate on (filename, line, plugin) without `secret`
-    try:
-        secrets = plugin.analyze_line(filename=filename, line=line, line_number=line_number)
-    except AttributeError:
-        return
-
+    secrets = call_function_with_arguments(
+        plugin.analyze_line,
+        filename=filename,
+        line=line,
+        line_number=line_number,
+        **kwargs,
+    )
     if not secrets:
         return
 
-    for secret in secrets:
-        for filter_fn in get_filters_with_parameter('secret'):
-            if inject_variables_into_function(
-                filter_fn,
-                filename=secret.filename,
-                secret=secret.secret_value,
-                plugin=plugin,
-                line=line,
-            ):
-                log.debug(f'Skipping "{secret.secret_value}" due to `{filter_fn.path}`.')
-                break
-        else:
-            yield secret
+    yield from (
+        secret
+        for secret in secrets
+        if not _is_filtered_out(
+            required_filter_parameters=['secret'],
+            filename=secret.filename,
+            secret=secret.secret_value,
+            plugin=plugin,
+            line=line,
+        )
+    )
 
 
-@lru_cache(maxsize=1)
-def get_plugins() -> List[Plugin]:
-    return [
-        plugins.initialize.from_plugin_classname(classname)
-        for classname in get_settings().plugins
-    ]
+def _is_filtered_out(required_filter_parameters: Iterable[str], **kwargs: Any) -> bool:
+    for filter_fn in get_filters_with_parameter(*required_filter_parameters):
+        try:
+            if call_function_with_arguments(filter_fn, **kwargs):
+                if 'secret' in kwargs:
+                    debug_msg = f'Skipping "{kwargs["secret"]}" due to `{filter_fn.path}`.'
+                elif list(kwargs.keys()) == ['filename']:
+                    # We want to make sure this is only run if we're skipping files (as compared
+                    # to other filters that may include `filename` as a parameter).
+                    debug_msg = f'Skipping "{kwargs["filename"]}" due to `{filter_fn.path}`'
+                else:
+                    debug_msg = f'Skipping secret due to `{filter_fn.path}`.'
+
+                log.debug(debug_msg)
+                return True
+        except TypeError:
+            # Skipping non-compatible filters
+            pass
+
+    return False
 
 
 def get_filters_with_parameter(*parameters: str) -> List[SelfAwareCallable]:
@@ -368,7 +387,7 @@ def get_filters_with_parameter(*parameters: str) -> List[SelfAwareCallable]:
     >>> def foo(filename: str): ...
     >>> def bar(filename: str, secret: str): ...
 
-    our invocation of `inject_variables_into_function(filename=filename, secret=secret)`
+    our invocation of `call_function_with_arguments(filename=filename, secret=secret)`
     will run both of these functions. While expected, this results in multiple invocations of
     the same function, which can be less than ideal (especially if we have a heavy duty filter).
 
@@ -385,25 +404,3 @@ def get_filters_with_parameter(*parameters: str) -> List[SelfAwareCallable]:
         for filter in get_filters()
         if minimum_parameters <= filter.injectable_variables
     ]
-
-
-@lru_cache(maxsize=1)
-def get_filters() -> List[SelfAwareCallable]:
-    output = []
-    for path, config in get_settings().filters.items():
-        module_path, function_name = path.rsplit('.', 1)
-        try:
-            function = getattr(import_module(module_path), function_name)
-        except (ModuleNotFoundError, AttributeError):
-            log.warning(f'Invalid filter: {path}')
-            continue
-
-        # We attach this metadata to the function itself, so that we don't need to
-        # compute it everytime. This will allow for dependency injection for filters.
-        function.injectable_variables = set(get_injectable_variables(function))
-        output.append(function)
-
-        # This is for better logging.
-        function.path = path
-
-    return output

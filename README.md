@@ -115,7 +115,7 @@ If you want to **only** run a specific plugin, you can do:
 ```bash
 $ detect-secrets scan --list-all-plugins | \
     grep -v 'BasicAuthDetector' | \
-    sed "s#^#--disable-plugin #g | \
+    sed "s#^#--disable-plugin #g" | \
     xargs detect-secrets scan test_data
 ```
 
@@ -127,6 +127,66 @@ ratio.
 
 ```bash
 $ detect-secrets audit .secrets.baseline
+```
+
+### Usage in Other Python Scripts
+
+**Basic Use:**
+
+```python
+from detect_secrets import SecretsCollection
+from detect_secrets.settings import default_settings
+
+secrets = SecretsCollection()
+with default_settings():
+    secrets.scan_file('test_data/config.ini')
+
+
+import json
+print(json.dumps(secrets.json(), indent=2))
+```
+
+**More Advanced Configuration:**
+
+```python
+from detect_secrets import SecretsCollection
+from detect_secrets.settings import transient_settings
+
+secrets = SecretsCollection()
+with transient_settings({
+    # Only run scans with only these plugins.
+    # This format is the same as the one that is saved in the generated baseline.
+    'plugins_used': [
+        # Example of configuring a built-in plugin
+        {
+            'name': 'Base64HighEntropyString',
+            'limit': 5.0,
+        },
+
+        # Example of using a custom plugin
+        {
+            'name': 'HippoDetector',
+            'path': 'file:///Users/aaronloo/Documents/github/detect-secrets/testing/plugins.py',
+        },
+    ],
+
+    # We can also specify whichever additional filters we want.
+    # This is an example of using the function `is_identified_by_ML_model` within the
+    # local file `./private-filters/example.py`.
+    'filters_used': [
+        {
+            'path': 'file://private-filters/example.py::is_identified_by_ML_model',
+        },
+    ]
+}) as settings:
+    # If we want to make any further adjustments to the created settings object (e.g.
+    # disabling default filters), we can do so as such.
+    settings.disable_filters(
+        'detect_secrets.filters.heuristic.is_prefixed_with_dollar_sign',
+        'detect_secrets.filters.heuristic.is_likely_id_string',
+    )
+
+    secrets.scan_file('test_data/config.ini')
 ```
 
 ## Installation

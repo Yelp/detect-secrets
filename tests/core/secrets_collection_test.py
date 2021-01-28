@@ -31,8 +31,8 @@ class TestScanFile:
         SecretsCollection().scan_file('test_data')
 
         assert (
-            'Skipping "test_data" due to "detect_secrets.filters.common.is_invalid_file"'
-            in mock_log.info_messages
+            'Skipping "test_data" due to `detect_secrets.filters.common.is_invalid_file`'
+            in mock_log.debug_messages
         )
 
     @staticmethod
@@ -286,6 +286,21 @@ class TestTrim:
         secrets.trim()
 
         assert not bool(secrets)
+
+    @staticmethod
+    def test_maintains_labels():
+        labelled_secrets = SecretsCollection()
+        labelled_secrets.scan_file('test_data/each_secret.py')
+        for _, secret in labelled_secrets:
+            secret.is_secret = True
+            break
+
+        secrets = SecretsCollection()
+        secrets.scan_file('test_data/each_secret.py')
+
+        labelled_secrets.trim(scanned_results=secrets)
+
+        assert any([secret.is_secret for _, secret in labelled_secrets])
 
 
 def test_bool():
