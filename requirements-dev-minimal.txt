@@ -7,7 +7,7 @@ mypy
 pre-commit
 pyahocorasick
 pytest
-pyyaml>=3.4.0
+pyyaml>=5.4.0
 responses
 tox-pip-extensions
 tox
