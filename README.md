@@ -266,6 +266,8 @@ filter options:
                         If lines match this regex, it will be ignored.
   --exclude-files EXCLUDE_FILES
                         If filenames match this regex, it will be ignored.
+  --exclude-secrets EXCLUDE_SECRETS
+                        If secrets match this regex, it will be ignored.
   --word-list WORD_LIST_FILE
                         Text file with a list of words, if a secret contains a
                         word in the list we ignore it.
@@ -318,6 +320,8 @@ filter options:
                         If lines match this regex, it will be ignored.
   --exclude-files EXCLUDE_FILES
                         If filenames match this regex, it will be ignored.
+  --exclude-secrets EXCLUDE_SECRETS
+                        If secrets match this regex, it will be ignored.
   --word-list WORD_LIST_FILE
                         Text file with a list of words, if a secret contains a
                         word in the list we ignore it.
@@ -430,6 +434,12 @@ specific pattern. You can specify a regex rule as such:
 $ detect-secrets scan --exclude-lines 'password = (blah|fake)'
 ```
 
+Or you can specify multiple regex rules as such:
+
+```bash
+$ detect-secrets scan --exclude-lines 'password = blah' --exclude-lines 'password = fake'
+```
+
 #### --exclude-files
 
 Sometimes, you want to be able to ignore certain files in your scan. You can specify a regex
@@ -437,6 +447,27 @@ pattern to do so, and if the filename meets this regex pattern, it will not be s
 
 ```bash
 $ detect-secrets scan --exclude-files '.*\.signature$'
+```
+
+Or you can specify multiple regex patterns as such:
+
+```bash
+$ detect-secrets scan --exclude-files '.*\.signature$' --exclude-files '.*/i18n/.*'
+```
+
+#### --exclude-secrets
+
+Sometimes, you want to be able to ignore certain secret values in your scan. You can specify
+a regex rule as such:
+
+```bash
+$ detect-secrets scan --exclude-secrets '(fakesecret|\${.*})'
+```
+
+Or you can specify multiple regex rules as such:
+
+```bash
+$ detect-secrets scan --exclude-secrets 'fakesecret' --exclude-secrets '\${.*})'
 ```
 
 #### --word-list
