@@ -24,7 +24,7 @@ class AWSKeyDetector(RegexBasedDetector):
 
     denylist = (
         re.compile(r'AKIA[0-9A-Z]{16}'),
-        re.compile(r'aws(.{0,20})?[\'\"][0-9a-zA-Z/+]{40}[\'\"]'),
+        re.compile(r'aws.{0,20}?[\'\"]([0-9a-zA-Z/+]{40})[\'\"]'),
     )
 
     def verify(       # type: ignore[override]  # noqa: F821
@@ -32,6 +32,8 @@ class AWSKeyDetector(RegexBasedDetector):
         secret: str,
         context: CodeSnippet,
     ) -> VerifiedResult:
+        if not self.denylist[0].match(secret):
+            return VerifiedResult.UNVERIFIED
         secret_access_key_candidates = get_secret_access_keys(context)
         if not secret_access_key_candidates:
             return VerifiedResult.UNVERIFIED
