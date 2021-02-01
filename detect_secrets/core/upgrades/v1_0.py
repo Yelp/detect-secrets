@@ -58,13 +58,17 @@ def _migrate_filters(baseline: Dict[str, Any]) -> None:
         if baseline['exclude'].get('files'):
             baseline['filters_used'].append({
                 'path': 'detect_secrets.filters.regex.should_exclude_file',
-                'pattern': baseline['exclude']['files'],
+                'pattern': [
+                    baseline['exclude']['files'],
+                ],
             })
 
         if baseline['exclude'].get('lines'):
             baseline['filters_used'].append({
                 'path': 'detect_secrets.filters.regex.should_exclude_line',
-                'pattern': baseline['exclude']['lines'],
+                'pattern': [
+                    baseline['exclude']['lines'],
+                ],
             })
 
         baseline.pop('exclude')
