@@ -7,7 +7,7 @@ monotonic
 pre-commit==1.11.2
 pyahocorasick
 pytest
-pyyaml
+pyyaml==5.4.1
 responses
 tox-pip-extensions
 tox>=3.8
