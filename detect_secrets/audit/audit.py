@@ -4,6 +4,7 @@ the secrets flagged are actually secrets.
 """
 from . import io
 from ..core import baseline
+from ..exceptions import NoLineNumberError
 from ..exceptions import SecretNotFoundOnSpecifiedLineError
 from ..types import SecretContext
 from ..util.code_snippet import get_code_snippet
@@ -35,16 +36,16 @@ def _classify_secrets(iterator: BidirectionalIterator) -> bool:
     has_changes = False
 
     for secret in iterator:
-        io.clear_screen()
         try:
             secret.secret_value = get_raw_secret_from_file(secret)
+            io.clear_screen()
             io.print_context(
                 SecretContext(
                     current_index=iterator.index + 1,
                     num_total_secrets=len(iterator.collection),
                     secret=secret,
                     snippet=get_code_snippet(
-                        lines=open_file(secret.filename),
+                        lines=open_file(secret.filename).raw_lines,
                         line_number=secret.line_number,
                     ),
                 ),
@@ -52,6 +53,7 @@ def _classify_secrets(iterator: BidirectionalIterator) -> bool:
 
             decision = io.get_user_decision(can_step_back=iterator.can_step_back())
         except SecretNotFoundOnSpecifiedLineError as e:
+            io.clear_screen()
             io.print_secret_not_found(
                 SecretContext(
                     current_index=iterator.index + 1,
@@ -65,6 +67,9 @@ def _classify_secrets(iterator: BidirectionalIterator) -> bool:
                 prompt_secret_decision=False,
                 can_step_back=iterator.can_step_back(),
             )
+        except NoLineNumberError as e:
+            io.print_error(str(e))
+            break
 
         if decision == io.InputOptions.QUIT:
             io.print_message('Quitting...')

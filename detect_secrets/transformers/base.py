@@ -1,7 +1,8 @@
 from abc import ABCMeta
 from abc import abstractmethod
-from typing import IO
 from typing import List
+
+from ..types import NamedIO
 
 
 class BaseTransformer(metaclass=ABCMeta):
@@ -31,7 +32,7 @@ class BaseTransformer(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def parse_file(self, file: IO) -> List[str]:
+    def parse_file(self, file: NamedIO) -> List[str]:
         """
         :raises: ParsingError
         """

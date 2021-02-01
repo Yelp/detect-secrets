@@ -1,3 +1,4 @@
+from io import TextIOBase
 from typing import Any
 from typing import NamedTuple
 from typing import NoReturn
@@ -59,3 +60,7 @@ class SecretContext(NamedTuple):
 
     # ...or error information. But it has an XOR relationship.
     error: Optional[SecretNotFoundOnSpecifiedLineError] = None
+
+
+class NamedIO(TextIOBase):
+    name: str

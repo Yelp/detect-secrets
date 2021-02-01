@@ -22,11 +22,18 @@ def is_feature_enabled() -> bool:
         return False
 
 
-def initialize(wordlist_filename: str, min_length: int = 3) -> Automaton:
+def initialize(wordlist_filename: str, min_length: int = 3, file_hash: str = '') -> Automaton:
     """
     :param min_length: if words are too small, the automaton will flag too many
         words. As a result, our recall will decrease without a precision boost.
         Tweak this value to customize it based on your own findings.
+
+    :param file_hash: this is currently used for baseline reporting purposes only, rather than
+        engine's functionality. One can imagine a future where this automaton model is
+        cached and keyed off the hash, and thus, this file_hash can be used to see if the
+        cache needs to be invalidated.
+
+        But alas, this functionality has yet to be implemented.
     """
     # See https://pyahocorasick.readthedocs.io/en/latest/ for more information.
     automaton = get_automaton()
@@ -66,6 +73,13 @@ def get_automaton() -> Automaton:
 
 
 def _compute_wordlist_hash(filename: str, buffer_size: int = 64 * 1024) -> str:
+    """
+    We compute the hash based on the file contents, rather than the filename itself, since we
+    want to know if the underlying contents of the file changes.
+
+    This is akin to:
+        $ sha1sum <filename>
+    """
     sha1 = hashlib.sha1()
     with open(filename, 'rb') as f:
         data = f.read(buffer_size)

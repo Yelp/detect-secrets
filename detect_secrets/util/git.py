@@ -25,11 +25,6 @@ def get_tracked_files(root: str) -> Set[str]:
 
     :raises: CalledProcessError
     """
-    files = subprocess.check_output(
-        ['git', '-C', root, 'ls-files'],
-        stderr=subprocess.DEVNULL,
-    )
-
     output = set([])
     try:
         files = subprocess.check_output(
@@ -37,7 +32,7 @@ def get_tracked_files(root: str) -> Set[str]:
             stderr=subprocess.DEVNULL,
         )
 
-        for filename in files.decode('utf-8').split():
+        for filename in files.decode('utf-8').splitlines():
             path = get_relative_path_if_in_cwd(os.path.join(root, filename))
             if path:
                 output.add(path)
@@ -52,7 +47,7 @@ def get_tracked_files(root: str) -> Set[str]:
 
 def get_changed_but_unstaged_files() -> Set[str]:
     try:
-        files = subprocess.check_output('git diff --name-only'.split()).decode().split()
+        files = subprocess.check_output('git diff --name-only'.split()).decode().splitlines()
     except subprocess.CalledProcessError:   # pragma: no cover
         # Since we don't pipe stderr, we get free logging through git.
         raise ValueError

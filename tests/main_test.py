@@ -1,9 +1,8 @@
 import json
 import tempfile
 from contextlib import contextmanager
+from contextlib import redirect_stdout
 from unittest import mock
-
-import pytest
 
 from detect_secrets import main as main_module
 from detect_secrets.core import baseline
@@ -56,6 +55,39 @@ class TestScan:
             assert not printer.message
 
 
+class TestSlimScan:
+    @staticmethod
+    def test_basic():
+        with mock_printer(main_module) as printer:
+            main_module.main(['scan', '--slim', 'test_data'])
+
+            assert 'generated_at' not in printer.message
+            assert 'line_number' not in printer.message
+
+    @staticmethod
+    def test_restores_line_numbers():
+        with tempfile.NamedTemporaryFile('w+') as f:
+            with redirect_stdout(f):
+                main_module.main(['scan', '--slim', 'test_data/config.env'])
+
+            f.seek(0)
+            main_module.main([
+                'scan',
+                '--slim', 'test_data/config.md', 'test_data/config.env',
+                '--baseline', f.name,
+            ])
+
+            f.seek(0)
+            secrets = baseline.load(baseline.load_from_file(f.name))
+
+        # Make sure both old and new files exist
+        assert secrets.files == {'test_data/config.env', 'test_data/config.md'}
+
+        # Make sure they both have line numbers
+        assert list(secrets['test_data/config.env'])[0].line_number
+        assert list(secrets['test_data/config.md'])[0].line_number
+
+
 class TestScanString:
     @staticmethod
     def test_basic():
@@ -75,7 +107,6 @@ class TestScanString:
             ]
 
     @staticmethod
-    @pytest.mark.xfail(reason='TODO')
     def test_failed_high_entropy_string():
         with transient_settings({
             'plugins_used': [
@@ -152,7 +183,7 @@ class TestScanOnlyAllowlisted:
             main_module.main([
                 'scan',
                 '--only-allowlisted',
-                '--disabled-plugins', 'KeywordDetector',
+                '--disable-plugin', 'KeywordDetector',
                 'test_data/config.ini',
             ])
 

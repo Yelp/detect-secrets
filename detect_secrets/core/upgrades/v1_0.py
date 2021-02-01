@@ -37,6 +37,15 @@ def _migrate_filters(baseline: Dict[str, Any]) -> None:
             'path': 'detect_secrets.filters.heuristic.is_likely_id_string',
         },
         {
+            'path': 'detect_secrets.filters.heuristic.is_templated_secret',
+        },
+        {
+            'path': 'detect_secrets.filters.heuristic.is_prefixed_with_dollar_sign',
+        },
+        {
+            'path': 'detect_secrets.filters.heuristic.is_indirect_reference',
+        },
+        {
             'path': 'detect_secrets.filters.common.is_ignored_due_to_verification_policies',
 
             # Hard-code this, just in case VerifiedResult enum values changes.
