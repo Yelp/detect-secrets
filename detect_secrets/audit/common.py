@@ -126,7 +126,7 @@ def get_all_secrets_from_file(
                 if identified_secret == secret:
                     all_secrets.append(identified_secret)
 
-        if len(all_secrets) == 0 and is_first_time_opening_file and not line_getter.use_eager_transformers:
+        if len(all_secrets) == 0 and is_first_time_opening_file and not line_getter.use_eager_transformers:   # noqa: E501
             line_getter.use_eager_transformers = True
         else:
             return all_secrets
