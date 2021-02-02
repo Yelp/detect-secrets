@@ -1,13 +1,7 @@
-import codecs
 import hashlib
 from enum import Enum
 
 from ..constants import VerifiedResult
-from ..core.plugins.util import get_mapping_from_secret_type_to_class
-from ..core.plugins.util import Plugin
-from ..core.potential_secret import PotentialSecret
-from ..core.scan import _get_lines_from_file
-from ..core.scan import _scan_line
 from .common import get_all_raw_secrets_from_file
 from .common import get_baseline_from_file
 from .common import get_raw_secret_line_from_file
@@ -37,7 +31,7 @@ def generate_report(
         identifier = hashlib.sha512((secret.secret_hash + filename).encode('utf-8')).hexdigest()
         for detection in detections:
             if identifier in secrets:
-                secrets[identifier]['lines'][detection.line_number] = get_raw_secret_line_from_file(detection)
+                secrets[identifier]['lines'][detection.line_number] = get_raw_secret_line_from_file(detection)  # noqa: E501
                 if secret.type not in secrets[identifier]['types']:
                     secrets[identifier]['types'].append(secret.type)
                 secrets[identifier]['category'] = get_prioritary_verified_result(
