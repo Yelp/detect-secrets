@@ -1,6 +1,8 @@
 import pytest
 
 from detect_secrets import filters
+from detect_secrets.core.scan import scan_line
+from detect_secrets.settings import transient_settings
 
 
 class TestIsSequentialString:
@@ -79,3 +81,49 @@ class TestIsLikelyIdString:
     )
     def test_failure(self, secret, line):
         assert not filters.heuristic.is_likely_id_string(secret, line)
+
+
+@pytest.mark.parametrize(
+    'line, result',
+    (
+        ('secret = {hunter2}', False),
+        ('secret = <hunter2>', False),
+        ('secret = hunter2', True),
+        ('secret= ${hunter2}', False),
+    ),
+)
+def test_is_templated_secret(line, result):
+    with transient_settings({
+        'plugins_used': [{
+            'name': 'KeywordDetector',
+        }],
+        'filters_used': [{
+            'path': 'detect_secrets.filters.heuristic.is_templated_secret',
+        }],
+    }):
+        assert bool(list(scan_line(line))) is result
+
+
+def test_is_prefixed_with_dollar_sign():
+    assert filters.heuristic.is_prefixed_with_dollar_sign('$secret')
+    assert not filters.heuristic.is_prefixed_with_dollar_sign('secret')
+
+
+@pytest.mark.parametrize(
+    'line, result',
+    (
+        ('secret = get_secret_key()', False),
+        ('secret = request.headers["apikey"]', False),
+        ('secret = hunter2', True),
+    ),
+)
+def test_is_indirect_reference(line, result):
+    with transient_settings({
+        'plugins_used': [{
+            'name': 'KeywordDetector',
+        }],
+        'filters_used': [{
+            'path': 'detect_secrets.filters.heuristic.is_indirect_reference',
+        }],
+    }):
+        assert bool(list(scan_line(line))) is result

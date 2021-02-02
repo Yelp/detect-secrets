@@ -9,12 +9,12 @@ from .core import baseline
 from .core import plugins
 from .core.log import log
 from .core.scan import get_files_to_scan
-from .core.scan import get_plugins
 from .core.scan import scan_for_allowlisted_secrets_in_file
 from .core.scan import scan_line
 from .core.secrets_collection import SecretsCollection
 from .core.usage import ParserBuilder
 from .exceptions import InvalidBaselineError
+from .settings import get_plugins
 from .settings import get_settings
 
 
@@ -77,7 +77,7 @@ def handle_scan_action(args: argparse.Namespace) -> None:
 
         baseline.save_to_file(secrets, args.baseline_filename)
     else:
-        print(json.dumps(baseline.format_for_output(secrets), indent=2))
+        print(json.dumps(baseline.format_for_output(secrets, is_slim_mode=args.slim), indent=2))
 
 
 def scan_adhoc_string(line: str) -> str:
@@ -104,7 +104,7 @@ def scan_adhoc_string(line: str) -> str:
             plugin.__class__.__name__,
             results[plugin.secret_type],
         )
-        for plugin in sorted(registered_plugins, key=lambda x: x.__class__.__name__)
+        for plugin in sorted(registered_plugins, key=lambda x: str(x.__class__.__name__))
     ])
 
 

@@ -92,9 +92,12 @@ class TestAddCustomLimits:
 class TestAddDisableFlag:
     @staticmethod
     def test_success(parser):
-        args = parser.parse_args(['--disabled-plugins', 'Base64HighEntropyString,AWSKeyDetector'])
+        args = parser.parse_args([
+            '--disable-plugin', 'Base64HighEntropyString',
+            '--disable-plugin', 'AWSKeyDetector',
+        ])
 
-        assert args.disabled_plugins == {'AWSKeyDetector', 'Base64HighEntropyString'}
+        assert args.disable_plugin == {'AWSKeyDetector', 'Base64HighEntropyString'}
         assert 'AWSKeyDetector' not in get_settings().plugins
         assert 'Base64HighEntropyString' not in get_settings().plugins
         assert get_settings().plugins
@@ -103,12 +106,12 @@ class TestAddDisableFlag:
     def test_not_supplied(parser):
         args = parser.parse_args([])
 
-        assert args.disabled_plugins == set([])
+        assert not args.disable_plugin
 
     @staticmethod
     def test_invalid_classname(parser):
         with pytest.raises(SystemExit):
-            parser.parse_args(['--disabled-plugins', 'InvalidClassName'])
+            parser.parse_args(['--disable-plugin', 'InvalidClassName'])
 
     @staticmethod
     def test_precedence_with_baseline(parser):
@@ -132,7 +135,7 @@ class TestAddDisableFlag:
 
             parser.parse_args([
                 '--baseline', f.name,
-                '--disabled-plugins', 'Base64HighEntropyString',
+                '--disable-plugin', 'Base64HighEntropyString',
             ])
 
         assert len(get_settings().plugins) == 1

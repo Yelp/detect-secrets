@@ -27,7 +27,7 @@ def create(*paths: str, should_scan_all_files: bool = False) -> SecretsCollectio
     return secrets
 
 
-def load(baseline: Dict[str, Any], filename: str) -> SecretsCollection:
+def load(baseline: Dict[str, Any], filename: str = '') -> SecretsCollection:
     """
     With a given baseline file, load all settings and discovered secrets from it.
 
@@ -52,9 +52,8 @@ def load_from_file(filename: str) -> Dict[str, Any]:
         raise UnableToReadBaselineError from e
 
 
-def format_for_output(secrets: SecretsCollection) -> Dict[str, Any]:
-    return {
-        'generated_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+def format_for_output(secrets: SecretsCollection, is_slim_mode: bool = False) -> Dict[str, Any]:
+    output = {
         'version': VERSION,
 
         # This will populate settings of filters and plugins,
@@ -62,6 +61,17 @@ def format_for_output(secrets: SecretsCollection) -> Dict[str, Any]:
 
         'results': secrets.json(),
     }
+
+    if not is_slim_mode:
+        output['generated_at'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+    else:
+        # NOTE: This has a nice little side effect of keeping it ordered by line number,
+        # even though we don't output it.
+        for filename, secrets in output['results'].items():
+            for secret_dict in secrets:
+                secret_dict.pop('line_number')
+
+    return output
 
 
 def save_to_file(
