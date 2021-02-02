@@ -357,31 +357,31 @@ const secret = "hunter2";
 
 ```bash
 $ detect-secrets audit --help
-usage: detect-secrets audit [-h] [--diff] [--stats] 
-                      [--report] [--only-real | --only-false] 
-                      [--json] 
+usage: detect-secrets audit [-h] [--diff] [--stats]
+                      [--report] [--only-real | --only-false]
+                      [--json]
                       filename [filename ...]
 
 Auditing a baseline allows analysts to label results, and optimize plugins for
 the highest signal-to-noise ratio for their environment.
 
 positional arguments:
-  filename      Audit a given baseline file to distinguish the difference 
+  filename      Audit a given baseline file to distinguish the difference
                 between false and true positives.
 
 optional arguments:
   -h, --help    show this help message and exit
-  --diff        Allows the comparison of two baseline files, in order to 
-                effectively distinguish the difference between various plugin 
+  --diff        Allows the comparison of two baseline files, in order to
+                effectively distinguish the difference between various plugin
                 configurations.
-  --stats       Displays the results of an interactive auditing session which 
+  --stats       Displays the results of an interactive auditing session which
                 have been saved to a baseline file.
   --report      Displays a report with the secrets detected
   --only-real   Only includes real secrets in the report
   --only-false  Only includes false positives in the report
 
 analytics:
-  Quantify the success of your plugins based on the labelled results in your 
+  Quantify the success of your plugins based on the labelled results in your
   baseline. To be used with the statisitcs mode (--stats).
 
   --json        Outputs results in a machine-readable format.
