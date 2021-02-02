@@ -8,7 +8,9 @@ from ..core.plugins.util import Plugin
 from ..core.potential_secret import PotentialSecret
 from ..core.scan import _get_lines_from_file
 from ..core.scan import _scan_line
+from .common import get_all_raw_secrets_from_file
 from .common import get_baseline_from_file
+from .common import get_raw_secret_line_from_file
 
 
 class SecretClassToPrint(Enum):
@@ -26,20 +28,16 @@ def generate_report(
     baseline_file: str,
     class_to_print: SecretClassToPrint = None,
 ) -> None:
-    plugins = get_mapping_from_secret_type_to_class()
     secrets = {}
     for filename, secret in get_baseline_from_file(baseline_file):
         verified_result = get_verified_result_from_boolean(secret.is_secret)
         if class_to_print is not None and SecretClassToPrint.from_class(verified_result) != class_to_print:  # noqa: E501
             continue
-        try:
-            detections = get_potential_secrets(filename, plugins[secret.type](), secret.secret_hash)
-        except Exception:
-            continue
+        detections = get_all_raw_secrets_from_file(secret)
         identifier = hashlib.sha512((secret.secret_hash + filename).encode('utf-8')).hexdigest()
         for detection in detections:
             if identifier in secrets:
-                secrets[identifier]['lines'][detection.line_number] = get_line_content(filename, detection.line_number)  # noqa: E501
+                secrets[identifier]['lines'][detection.line_number] = get_raw_secret_line_from_file(detection)
                 if secret.type not in secrets[identifier]['types']:
                     secrets[identifier]['types'].append(secret.type)
                 secrets[identifier]['category'] = get_prioritary_verified_result(
@@ -51,7 +49,7 @@ def generate_report(
                     'secrets': detection.secret_value,
                     'filename': filename,
                     'lines': {
-                        detection.line_number: get_line_content(filename, detection.line_number),
+                        detection.line_number: get_raw_secret_line_from_file(detection),
                     },
                     'types': [
                         secret.type,
@@ -85,32 +83,3 @@ def get_verified_result_from_boolean(
         return VerifiedResult.VERIFIED_TRUE
     else:
         return VerifiedResult.VERIFIED_FALSE
-
-
-def get_potential_secrets(
-    filename: str,
-    plugin: Plugin,
-    secret_to_find: str,
-) -> [PotentialSecret]:
-    """
-    :returns: List of PotentialSecrets detected by a specific plugin in a file.
-    """
-    for lines in _get_lines_from_file(filename):
-        for line_number, line in list(enumerate(lines, 1)):
-            secrets = _scan_line(plugin, filename, line, line_number)
-            for secret in secrets:
-                if secret.secret_hash == secret_to_find:
-                    yield secret
-
-
-def get_line_content(
-    filename: str,
-    line_number: int,
-) -> str:
-    """
-    :returns: Line content from filename by line number.
-    """
-    content = codecs.open(filename, encoding='utf-8').read()
-    if not content:
-        return None
-    return content.splitlines()[line_number - 1]

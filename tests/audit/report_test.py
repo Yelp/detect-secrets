@@ -66,18 +66,21 @@ def baseline_file():
             secret=first_secret,
             is_secret=True,
             line_number=1,
+            filename=first_file,
         ),
         original_potential_secret_factory(
             type=BasicAuthDetector.secret_type,
             secret=random_secret,
             is_secret=False,
             line_number=2,
+            filename=first_file,
         ),
         original_potential_secret_factory(
             type=BasicAuthDetector.secret_type,
             secret=first_secret,
             is_secret=True,
             line_number=3,
+            filename=first_file,
         ),
     }
     secrets[second_file] = {
@@ -86,18 +89,21 @@ def baseline_file():
             secret=second_secret,
             is_secret=True,
             line_number=1,
+            filename=second_file,
         ),
         original_potential_secret_factory(
             type=BasicAuthDetector.secret_type,
             secret=second_secret,
             is_secret=False,
             line_number=1,
+            filename=second_file,
         ),
         original_potential_secret_factory(
             type=BasicAuthDetector.secret_type,
             secret=random_secret,
             is_secret=False,
             line_number=2,
+            filename=second_file,
         ),
     }
 
