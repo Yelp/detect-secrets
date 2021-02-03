@@ -52,6 +52,7 @@ the `detect_secrets.filters` namespace.
 | `heuristic.is_non_text_file`                     | Ignores non-text files (e.g. archives, images).                                     |
 | `regex.should_exclude_line`                      | Powers the [`--exclude-lines` functionality](../README.md#--exclude-lines).         |
 | `regex.should_exclude_file`                      | Powers the [`--exclude-files` functionality](../README.md#--exclude-files).         |
+| `regex.should_exclude_secret`                    | Powers the [`--exclude-secrets` functionality](../README.md#--exclude-secrets).     |
 | `wordlist.should_exclude_secret`                 | Powers the [`--word-list` functionality](../README.md#--word-list).                 |
 
 ## Configuring Filters
