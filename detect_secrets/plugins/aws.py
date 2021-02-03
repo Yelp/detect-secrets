@@ -24,6 +24,11 @@ class AWSKeyDetector(RegexBasedDetector):
 
     denylist = (
         re.compile(r'AKIA[0-9A-Z]{16}'),
+
+        # This examines the variable name to identify AWS secret tokens.
+        # The order is important since we want to prefer finding `AKIA`-based
+        # keys (since they can be verified), rather than the secret tokens.
+        re.compile(r'aws.{0,20}?[\'\"]([0-9a-zA-Z/+]{40})[\'\"]'),
     )
 
     def verify(       # type: ignore[override]  # noqa: F821
@@ -31,6 +36,11 @@ class AWSKeyDetector(RegexBasedDetector):
         secret: str,
         context: CodeSnippet,
     ) -> VerifiedResult:
+        # As this verification process looks for multi-factor secrets, by assuming that
+        # the identified secret token is the key ID (then looking for the corresponding secret).
+        # we quit early if it fails our assumptions.
+        if not self.denylist[0].match(secret):
+            return VerifiedResult.UNVERIFIED
         secret_access_key_candidates = get_secret_access_keys(context)
         if not secret_access_key_candidates:
             return VerifiedResult.UNVERIFIED
