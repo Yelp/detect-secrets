@@ -174,7 +174,7 @@ FALSE_POSITIVES = {
 CLOSING = r'[]\'"]{0,2}'
 AFFIX_REGEX = r'[a-zA-Z0-9_-]*'
 DENYLIST_REGEX = r'(' + r'|'.join(DENYLIST) + r')({suffix})?'.format(suffix=AFFIX_REGEX)
-DENYLIST_REGEX_WITH_PREV = r'({prefix})('.format(prefix=AFFIX_REGEX) \
+DENYLIST_REGEX_WITH_PREFIX = r'({prefix})('.format(prefix=AFFIX_REGEX) \
     + r'|'.join(DENYLIST) + r')({suffix})'.format(suffix=AFFIX_REGEX)
 # Non-greedy match
 OPTIONAL_WHITESPACE = r'\s*?'
@@ -262,7 +262,7 @@ FOLLOWED_BY_REV_COMPARATION_QUOTES_REQUIRED_REGEX = re.compile(
     # e.g. 'bar' == my_password or 'bar' != my_password or 'bar' === my_password
     # or 'bar' !== my_password
     r'({quote})({secret})({quote}){whitespace}[!=]{{2,3}}{whitespace}({denylist})'.format(
-        denylist=DENYLIST_REGEX_WITH_PREV,
+        denylist=DENYLIST_REGEX_WITH_PREFIX,
         quote=QUOTE,
         whitespace=OPTIONAL_WHITESPACE,
         secret=SECRET,
