@@ -46,10 +46,13 @@ the `detect_secrets.filters` namespace.
 | `common.is_invalid_file`                         | Ignores files that are not files (e.g. links).                                      |
 | `common.is_baseline_file`                        | Ignores the baseline file itself.                                                   |
 | `common.is_ignored_due_to_verification_policies` | Powers secret verification functionality.                                           |
-| `heuristic.is_sequential_string`                 | Ignores secrets like `abcdefg`.                                                     |
-| `heuristic.is_potential_uuid`                    | Ignores uuid looking secret values.                                                 |
+| `heuristic.is_indirect_reference`                | Primarily for `KeywordDetector`, filters secrets like `secret = get_secret_key()`.  |
 | `heuristic.is_likely_id_string`                  | Ignores secret values prefixed with `id`.                                           |
 | `heuristic.is_non_text_file`                     | Ignores non-text files (e.g. archives, images).                                     |
+| `heuristic.is_potential_uuid`                    | Ignores uuid looking secret values.                                                 |
+| `heuristic.is_prefixed_with_dollar_sign`         | Primarily for `KeywordDetector`, filters secrets like `secret = $variableName;`.    |
+| `heuristic.is_sequential_string`                 | Ignores secrets like `abcdefg`.                                                     |
+| `heuristic.is_templated_secret`                  | Ignores secrets like `secret = <key>`, `secret = {{key}}` and `secret = ${key}`.    |
 | `regex.should_exclude_line`                      | Powers the [`--exclude-lines` functionality](../README.md#--exclude-lines).         |
 | `regex.should_exclude_file`                      | Powers the [`--exclude-files` functionality](../README.md#--exclude-files).         |
 | `wordlist.should_exclude_secret`                 | Powers the [`--word-list` functionality](../README.md#--word-list).                 |
