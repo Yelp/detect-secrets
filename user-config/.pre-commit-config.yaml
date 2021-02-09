@@ -12,10 +12,10 @@
   # Running "pre-commit autoupdate" would automatically updates rev to latest tag
   rev: master
   hooks:
-    -   id: detect-secrets # pragma: whitelist secret
-        # Add options for detect-secrets-hook binary. You can run `detect-secrets-hook --help` to list out all possible options.
-        # You may also run `pre-commit run detect-secrets` to preview the scan result.
-        # when "--baseline" without "--use-all-plugins", pre-commit scan with just plugins in baseline file
-        # when "--baseline" with "--use-all-plugins", pre-commit scan with all available plugins
-        # add "--fail-on-non-audited" to fail pre-commit for unaudited potential secrets
-        args: [--baseline, .secrets.baseline, --use-all-plugins ]
+    - id: detect-secrets # pragma: whitelist secret
+      # Add options for detect-secrets-hook binary. You can run `detect-secrets-hook --help` to list out all possible options.
+      # You may also run `pre-commit run detect-secrets` to preview the scan result.
+      # when "--baseline" without "--use-all-plugins", pre-commit scan with just plugins in baseline file
+      # when "--baseline" with "--use-all-plugins", pre-commit scan with all available plugins
+      # add "--fail-on-non-audited" to fail pre-commit for unaudited potential secrets
+      args: [--baseline, .secrets.baseline, --use-all-plugins ]
