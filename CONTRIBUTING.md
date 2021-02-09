@@ -125,6 +125,44 @@ installed `detect-secrets` package instead of from within the repo where you're
 developing. To avoid this, ensure `PYTHONPATH` is set in your developer
 environment and includes the path to the whitewater-detect-secrets repo.
 
+## Debugging with VSCode
+To execute the code locally with VSCode's debugger enabled, one option is to create a file at the root of the repository and then invoke the `main` function:
+
+```python
+# your_custom_main.py
+import detect_secrets.main
+
+print('starting')
+# provide cli args as an array here
+detect_secrets.main.main(['audit', '.secrets.baseline'])
+```
+
+Create the following launch settings and replace `your_custom_main.py` with the appropriate values:
+```jsonc
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    // ${workspaceFolder} is a built-in VSCode environment variable and will automatically refer to the location of your codebase
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/your_custom_main.py",
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
+            // if you want to test the `audit` function against a different codebase,
+            // uncomment the following line and provide the path to the codebase below:
+            // "cwd": "directory/you/want/to/run/detect/secrets/against"
+        }
+    ]
+}
+```
+Then start the debugger from your root-level main file.
 
 ## Running Tests
 
