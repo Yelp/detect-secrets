@@ -166,6 +166,9 @@ def verify_db2_credentials(
         if 'invalid' in str(e).lower():
             # Only return for true negative
             return VerifiedResult.VERIFIED_FALSE
+        elif 'SQLSTATE=08001' in str(e):
+            # The connection was unable to be established to the application server or other server.
+            return VerifiedResult.VERIFIED_FALSE
         else:
             return VerifiedResult.UNVERIFIED
 
