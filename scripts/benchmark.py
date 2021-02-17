@@ -33,9 +33,9 @@ def main():
     flag_list = {}
     for info in PluginOptions.all_plugins:
         if info.classname in args.plugin:
-            flag_list[info.disable_flag_text] = info.classname
+            flag_list[info.flag_text] = info.classname
         else:
-            always_disabled_plugins.append(info.disable_flag_text)
+            always_disabled_plugins.append(info.flag_text)
 
     # Then, iterate through each disabled flag, toggling them off
     # individually.

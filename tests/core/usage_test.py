@@ -46,11 +46,17 @@ class TestPluginOptions:
 
         assert 'PrivateKeyDetector' not in args.plugins
 
-    def test_consolidates_removes_disabled_db2_plugin(self):
-        args = self.parse_args('--no-db2-scan')
+    def test_db2_plugin_disabled_by_default(self):
+        args = self.parse_args('')
 
         assert 'Db2Detector' not in args.plugins
         assert 'db2' not in args.plugin_filenames
+
+    def test_consolidates_enable_db2_plugin(self):
+        args = self.parse_args('--db2-scan')
+
+        assert 'Db2Detector' in args.plugins
+        assert 'db2' in args.plugin_filenames
 
     @pytest.mark.parametrize(
         'argument_string,expected_value',

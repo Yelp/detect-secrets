@@ -17,7 +17,7 @@ class JwtTokenDetector(RegexBasedDetector):
     ]
 
     @classproperty
-    def disable_flag_text(cls):
+    def flag_text(cls):
         return 'no-jwt-scan'
 
     def secret_generator(self, string, *args, **kwargs):

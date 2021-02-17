@@ -24,7 +24,7 @@ class AWSKeyDetector(RegexBasedDetector):
     )
 
     @classproperty
-    def disable_flag_text(cls):
+    def flag_text(cls):
         return 'no-aws-scan'
 
     def verify(self, token, content, potential_secret=None):

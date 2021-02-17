@@ -51,9 +51,10 @@ def get_list_of_plugins(include=None, exclude=None):
     return sorted(output, key=lambda x: x['name'])
 
 
-def get_plugin_report(extra=None):
+def get_plugin_report(extra=None, exclude=[]):
     """
     :type extra: Dict[str, str]
+    :type exclude: Iterable[str]
     """
     if not extra:       # pragma: no cover
         extra = {}
@@ -69,7 +70,7 @@ def get_plugin_report(extra=None):
                 name=name + ' ' * (longest_name_length - len(name)),
                 result='False' if name not in extra else extra[name],
             )
-            for name in import_plugins()
+            for name in import_plugins() if name not in exclude
         ]),
     ) + '\n'
 
@@ -162,10 +163,12 @@ class TestMain:
             main_module,
         ) as printer_shim:
             assert main('scan --string'.split()) == 0
-            assert uncolor(printer_shim.message) == get_plugin_report({
-                'Base64HighEntropyString': expected_base64_result,
-                'HexHighEntropyString': expected_hex_result,
-            })
+            assert uncolor(printer_shim.message) == get_plugin_report(
+                {
+                    'Base64HighEntropyString': expected_base64_result,
+                    'HexHighEntropyString': expected_hex_result,
+                }, exclude=['Db2Detector'],
+            )
 
         mock_baseline_initialize.assert_not_called()
 
@@ -176,6 +179,20 @@ class TestMain:
             main_module,
         ) as printer_shim:
             assert main('scan --string 012345'.split()) == 0
+            assert uncolor(printer_shim.message) == get_plugin_report(
+                {
+                    'Base64HighEntropyString': 'False (2.585)',
+                    'HexHighEntropyString': 'False (2.121)',
+                }, exclude=['Db2Detector'],
+            )
+
+    def test_scan_string_cli_overrides_stdin_db2_enabled(self):
+        with mock_stdin(
+            '012345678ab',
+        ), mock_printer(
+            main_module,
+        ) as printer_shim:
+            assert main('scan --db2-scan --string 012345'.split()) == 0
             assert uncolor(printer_shim.message) == get_plugin_report({
                 'Base64HighEntropyString': 'False (2.585)',
                 'HexHighEntropyString': 'False (2.121)',
@@ -344,6 +361,9 @@ class TestMain:
                             'name': 'Base64HighEntropyString',
                         },
                     ],
+                    exclude=(
+                        'Db2Detector',
+                    ),
                 ),
             ),
             (  # Remove some plugins from all plugins
@@ -359,6 +379,7 @@ class TestMain:
                     exclude=(
                         'Base64HighEntropyString',
                         'PrivateKeyDetector',
+                        'Db2Detector',
                     ),
                 ),
             ),
@@ -437,6 +458,7 @@ class TestMain:
                     exclude=(
                         'HexHighEntropyString',
                         'KeywordDetector',
+                        'Db2Detector',
                     ),
                 ),
             ),
@@ -461,6 +483,7 @@ class TestMain:
                     exclude=(
                         'HexHighEntropyString',
                         'KeywordDetector',
+                        'Db2Detector',
                     ),
                 ),
             ),

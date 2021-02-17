@@ -341,7 +341,7 @@ class HexHighEntropyString(HighEntropyStringsPlugin):
         )
 
     @classproperty
-    def disable_flag_text(cls):
+    def flag_text(cls):
         return 'no-hex-string-scan'
 
     @classproperty
@@ -417,7 +417,7 @@ class Base64HighEntropyString(HighEntropyStringsPlugin):
         )
 
     @classproperty
-    def disable_flag_text(cls):
+    def flag_text(cls):
         return 'no-base64-string-scan'
 
     @classproperty

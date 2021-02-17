@@ -25,11 +25,13 @@ setup(
     install_requires=[
         'pyyaml',
         'requests',
-        'ibm_db',
         'boxsdk[jwt]',
         'packaging',
         'pyahocorasick',
     ],
+    extras_require={
+        'db2': 'ibm_db',
+    },
     entry_points={
         'console_scripts': [
             'detect-secrets = detect_secrets.main:main',

@@ -17,7 +17,7 @@ from testing.mocks import mock_file_object
         ('PrivateKeyDetector', 'no-private-key-scan'),
     ),
 )
-def test_disable_flag_text(name, expected):
+def test_flag_text(name, expected):
     class MockPlugin(BasePlugin):
         @property
         def secret_type(self):      # pragma: no cover
@@ -25,7 +25,7 @@ def test_disable_flag_text(name, expected):
 
     MockPlugin.__name__ = str(name)
 
-    assert MockPlugin.disable_flag_text == expected
+    assert MockPlugin.flag_text == expected
 
 
 class TestVerify:

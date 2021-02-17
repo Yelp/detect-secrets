@@ -87,8 +87,8 @@ class Db2Detector(RegexBasedDetector):
     )
 
     @classproperty
-    def disable_flag_text(cls):
-        return 'no-db2-scan'
+    def flag_text(cls):
+        return 'db2-scan'
 
     def verify(self, token, content, potential_secret, timeout=5):
 

@@ -40,8 +40,8 @@ class BasePlugin:
         the hashed_secret uses this value to calculate a unique hash (and the baselines
         will no longer match).
 
-    :type disable_flag_text: str
-    :param disable_flag_text: text used as an command line argument flag to disable
+    :type flag_text: str
+    :param flag_text: text used as an command line argument flag to disable
         this specific plugin scan. does not include the `--` prefix.
 
     :type default_options: Dict[str, Any]
@@ -85,7 +85,7 @@ class BasePlugin:
         )
 
     @classproperty
-    def disable_flag_text(cls):
+    def flag_text(cls):
         name = cls.__name__
         if name.endswith('Detector'):
             name = name[:-len('Detector')]
