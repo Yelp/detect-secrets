@@ -4,14 +4,17 @@ from setuptools import setup
 from detect_secrets.__version__ import VERSION
 
 
+with open('README.md') as f:
+    long_description = f.read()
+
+
 setup(
     name='detect_secrets',
     packages=find_packages(exclude=(['test*', 'tmp*'])),
     version=VERSION,
     description='Tool for detecting secrets in the codebase',
-    long_description=(
-        'Check out detect-secrets on `GitHub <https://github.com/Yelp/detect-secrets>`_!'
-    ),
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     license='Copyright Yelp, Inc. 2020',
     author='Aaron Loo',
     author_email='aaronloo@yelp.com',
