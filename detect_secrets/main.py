@@ -1,236 +1,132 @@
+import argparse
 import json
 import sys
+from typing import List
+from typing import Optional
 
-from detect_secrets.core import audit
-from detect_secrets.core import baseline
-from detect_secrets.core.common import write_baseline_to_file
-from detect_secrets.core.log import log
-from detect_secrets.core.secrets_collection import SecretsCollection
-from detect_secrets.core.usage import ParserBuilder
-from detect_secrets.plugins.common import initialize
-from detect_secrets.util import build_automaton
+from . import audit
+from .core import baseline
+from .core import plugins
+from .core.log import log
+from .core.scan import get_files_to_scan
+from .core.scan import scan_for_allowlisted_secrets_in_file
+from .core.scan import scan_line
+from .core.secrets_collection import SecretsCollection
+from .core.usage import ParserBuilder
+from .exceptions import InvalidBaselineError
+from .settings import get_plugins
+from .settings import get_settings
 
 
-def parse_args(argv):
-    return ParserBuilder()\
-        .add_console_use_arguments()\
-        .parse_args(argv)
-
-
-def main(argv=sys.argv[1:]):
-    if len(sys.argv) == 1:  # pragma: no cover
-        sys.argv.append('--help')
+def main(argv: Optional[List[str]] = None) -> int:
+    if not argv and len(sys.argv) == 1:     # pragma: no cover
+        argv = ['--help']
 
     args = parse_args(argv)
-    if args.verbose:  # pragma: no cover
+    if args.verbose:    # pragma: no cover
         log.set_debug_level(args.verbose)
 
     if args.action == 'scan':
-        automaton = None
-        word_list_hash = None
-        if args.word_list_file:
-            automaton, word_list_hash = build_automaton(args.word_list_file)
-
-        # Plugins are *always* rescanned with fresh settings, because
-        # we want to get the latest updates.
-        plugins = initialize.from_parser_builder(
-            plugins_dict=args.plugins,
-            custom_plugin_paths=args.custom_plugin_paths,
-            exclude_lines_regex=args.exclude_lines,
-            automaton=automaton,
-            should_verify_secrets=not args.no_verify,
-        )
-        if args.string:
-            line = args.string
-
-            if isinstance(args.string, bool):
-                line = sys.stdin.read().splitlines()[0]
-
-            _scan_string(line, plugins)
-
-        else:
-            baseline_dict = _perform_scan(
-                args,
-                plugins,
-                automaton,
-                word_list_hash,
-            )
-
-            if args.import_filename:
-                write_baseline_to_file(
-                    filename=args.import_filename[0],
-                    data=baseline_dict,
-                )
-            else:
-                print(
-                    baseline.format_baseline_for_output(
-                        baseline_dict,
-                    ),
-                )
-
+        handle_scan_action(args)
     elif args.action == 'audit':
-        if not args.diff and not args.display_results:
-            audit.audit_baseline(args.filename[0])
-            return 0
-
-        if args.display_results:
-            audit.print_audit_results(args.filename[0])
-            return 0
-
-        if len(args.filename) != 2:
-            print(
-                'Must specify two files to compare!',
-                file=sys.stderr,
-            )
-            return 1
-
-        try:
-            audit.compare_baselines(args.filename[0], args.filename[1])
-        except audit.RedundantComparisonError:
-            print(
-                'No difference, because it\'s the same file!',
-                file=sys.stderr,
-            )
+        handle_audit_action(args)
 
     return 0
 
 
-def _get_plugins_from_baseline(old_baseline):
-    plugins = []
-    if old_baseline and 'plugins_used' in old_baseline:
-        secrets_collection = SecretsCollection.load_baseline_from_dict(old_baseline)
-        plugins = secrets_collection.plugins
-    return plugins
+def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
+    return ParserBuilder().add_console_use_arguments().parse_args(argv)
 
 
-def _scan_string(line, plugins):
-    longest_plugin_name_length = max(
-        map(
-            lambda x: len(x.__class__.__name__),
-            plugins,
-        ),
-    )
+def handle_scan_action(args: argparse.Namespace) -> None:
+    if args.list_all_plugins:
+        # NOTE: If there was a baseline provided, it would already have been parsed and
+        # settings populated by the time it reaches here.
+        print('\n'.join(get_settings().plugins))
+        return
 
-    output = [
+    if args.string:
+        line = args.string
+        if isinstance(args.string, bool):
+            # Support stdin usage, rather than specifying on CLI.
+            line = sys.stdin.read().splitlines()[0]
+
+        print(scan_adhoc_string(line))
+        return
+
+    if args.only_allowlisted:
+        secrets = SecretsCollection()
+        for filename in get_files_to_scan(*args.path, should_scan_all_files=args.all_files):
+            for secret in scan_for_allowlisted_secrets_in_file(filename):
+                secrets[secret.filename].add(secret)
+
+        print(json.dumps(baseline.format_for_output(secrets), indent=2))
+        return
+
+    secrets = baseline.create(*args.path, should_scan_all_files=args.all_files)
+    if args.baseline is not None:
+        # The pre-commit hook's baseline upgrade is to trim the supplied baseline for non-existent
+        # secrets, and to upgrade the format to the latest version. This is because the pre-commit
+        # hook is not supposed to allow any new secrets to enter commit history.
+        #
+        # Unlike that, this scan's intention is to re-catalog the secrets in the repository. This
+        # means that we should favor (and allow) the newly found secrets, and create a baseline
+        # with them. It should also upgrade the format to the latest version, which is done by
+        # default.
+        secrets.merge(args.baseline)
+
+        baseline.save_to_file(secrets, args.baseline_filename)
+    else:
+        print(json.dumps(baseline.format_for_output(secrets, is_slim_mode=args.slim), indent=2))
+
+
+def scan_adhoc_string(line: str) -> str:
+    registered_plugins = get_plugins()
+
+    results = {
+        plugin.secret_type: 'False'
+        for plugin in registered_plugins
+    }
+
+    for secret in scan_line(line):
+        results[secret.type] = (
+            plugins.initialize.from_secret_type(secret.type)    # type: ignore
+            .format_scan_result(secret)
+        )
+
+    # Pretty formatting
+    longest_plugin_name_length = max([
+        len(plugin.__class__.__name__)
+        for plugin in registered_plugins
+    ])
+    return '\n'.join([
         ('{:%d}: {}' % longest_plugin_name_length).format(
             plugin.__class__.__name__,
-            plugin.adhoc_scan(line),
+            results[plugin.secret_type],
         )
-        for plugin in plugins
-    ]
-
-    print('\n'.join(sorted(output)))
+        for plugin in sorted(registered_plugins, key=lambda x: str(x.__class__.__name__))
+    ])
 
 
-def _perform_scan(args, plugins, automaton, word_list_hash):
-    """
-    :param args: output of `argparse.ArgumentParser.parse_args`
-    :param plugins: tuple of initialized plugins
+def handle_audit_action(args: argparse.Namespace) -> None:
+    try:
+        if args.stats:
+            stats = audit.analytics.calculate_statistics_for_baseline(args.filename[0])
+            if args.diff:
+                # TODO
+                raise NotImplementedError
 
-    :type automaton: ahocorasick.Automaton|None
-    :param automaton: optional automaton for ignoring certain words.
-
-    :type word_list_hash: str|None
-    :param word_list_hash: optional iterated sha1 hash of the words in the word list.
-
-    :rtype: dict
-    """
-    old_baseline = _get_existing_baseline(args.import_filename)
-    if old_baseline:
-        plugins = initialize.merge_plugins_from_baseline(
-            _get_plugins_from_baseline(old_baseline),
-            args,
-            automaton=automaton,
-        )
-
-    # Favors CLI arguments over existing baseline configuration
-    if old_baseline:
-        if not args.exclude_files:
-            args.exclude_files = _get_exclude_files(old_baseline)
-
-        if (
-            not args.exclude_lines
-            and old_baseline.get('exclude')
-        ):
-            args.exclude_lines = old_baseline['exclude']['lines']
-
-        if (
-            not args.word_list_file
-            and old_baseline.get('word_list')
-        ):
-            args.word_list_file = old_baseline['word_list']['file']
-
-        if (
-            not args.custom_plugin_paths
-            and old_baseline.get('custom_plugin_paths')
-        ):
-            args.custom_plugin_paths = old_baseline['custom_plugin_paths']
-
-    # If we have knowledge of an existing baseline file, we should use
-    # that knowledge and add it to our exclude_files regex.
-    if args.import_filename:
-        _add_baseline_to_exclude_files(args)
-
-    new_baseline = baseline.initialize(
-        path=args.path,
-        plugins=plugins,
-        custom_plugin_paths=args.custom_plugin_paths,
-        exclude_files_regex=args.exclude_files,
-        exclude_lines_regex=args.exclude_lines,
-        word_list_file=args.word_list_file,
-        word_list_hash=word_list_hash,
-        should_scan_all_files=args.all_files,
-    ).format_for_baseline_output()
-
-    if old_baseline:
-        new_baseline = baseline.merge_baseline(
-            old_baseline,
-            new_baseline,
-        )
-
-    return new_baseline
-
-
-def _get_existing_baseline(import_filename):
-    # Favors --update argument over stdin.
-    if import_filename:
-        return _read_from_file(import_filename[0])
-    if not sys.stdin.isatty():
-        stdin = sys.stdin.read().strip()
-        if stdin:
-            return json.loads(stdin)
-
-
-def _read_from_file(filename):  # pragma: no cover
-    """Used for mocking."""
-    with open(filename) as f:
-        return json.loads(f.read())
-
-
-def _get_exclude_files(old_baseline):
-    """
-    Older versions of detect-secrets always had an `exclude_regex` key,
-    this was replaced by the `files` key under an `exclude` key in v0.12.0
-
-    :rtype: str|None
-    """
-    if old_baseline.get('exclude'):
-        return old_baseline['exclude']['files']
-    if old_baseline.get('exclude_regex'):
-        return old_baseline['exclude_regex']
-
-
-def _add_baseline_to_exclude_files(args):
-    """
-    Modifies args.exclude_files in-place.
-    """
-    baseline_name_regex = r'^{}$'.format(args.import_filename[0])
-
-    if not args.exclude_files:
-        args.exclude_files = baseline_name_regex
-    elif baseline_name_regex not in args.exclude_files:
-        args.exclude_files += r'|{}'.format(baseline_name_regex)
-
-
-if __name__ == '__main__':
-    sys.exit(main())
+            if args.json:
+                print(json.dumps(stats.json(), indent=2))
+            else:
+                print(str(stats))
+        else:
+            # Starts interactive session.
+            if args.diff:
+                # Show changes
+                audit.compare_baselines(args.filename[0], args.filename[1])
+            else:
+                # Label secrets
+                audit.audit_baseline(args.filename[0])
+    except InvalidBaselineError:
+        pass

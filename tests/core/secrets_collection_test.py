@@ -1,505 +1,373 @@
-import hashlib
-import json
-from contextlib import contextmanager
-from time import gmtime
-from time import strftime
+from unittest import mock
 
-import mock
 import pytest
 
-from detect_secrets import VERSION
-from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.core.secrets_collection import SecretsCollection
-from detect_secrets.plugins.base import BasePlugin
-from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
-from detect_secrets.plugins.private_key import PrivateKeyDetector
-from testing.factories import secrets_collection_factory
-from testing.mocks import mock_log as mock_log_base
-from testing.mocks import mock_open as mock_open_base
+from detect_secrets.settings import get_settings
+from detect_secrets.settings import transient_settings
+from testing.factories import potential_secret_factory
 
 
-@pytest.fixture
-def mock_log():
-    with mock_log_base('detect_secrets.core.secrets_collection.log') as m:
-        yield m
-
-
-def mock_open(data):
-    return mock_open_base(data, 'detect_secrets.core.secrets_collection.codecs.open')
-
-
-@pytest.fixture
-def mock_gmtime():
-    """One coherent time value for the duration of the test."""
-    current_time = gmtime()
-    with mock.patch(
-            'detect_secrets.core.secrets_collection.gmtime',
-            return_value=current_time,
-    ):
-        yield current_time
+@pytest.fixture(autouse=True)
+def configure_plugins():
+    config = {
+        'plugins_used': [
+            {'name': 'AWSKeyDetector'},
+            {
+                'name': 'Base64HighEntropyString',
+                'limit': 4.5,
+            },
+        ],
+    }
+    with transient_settings(config):
+        yield config
 
 
 class TestScanFile:
-    """Testing file scanning, and interactions with different plugins."""
+    @staticmethod
+    def test_filename_filters_are_invoked_first(mock_log):
+        # This is a directory, which should be ignored via
+        # detect_secrets.filters.common.is_invalid_file
+        SecretsCollection().scan_file('test_data')
 
-    def test_file_is_symbolic_link(self):
-        logic = secrets_collection_factory()
+        assert (
+            'Skipping "test_data" due to `detect_secrets.filters.common.is_invalid_file`'
+            in mock_log.debug_messages
+        )
 
+    @staticmethod
+    def test_error_reading_file(mock_log_warning):
         with mock.patch(
-            'detect_secrets.core.secrets_collection.os.path',
-            autospec=True,
-        ) as mock_path:
-            mock_path.islink.return_value = True
+            'detect_secrets.core.scan.open',
+            side_effect=IOError,
+        ):
+            SecretsCollection().scan_file('test_data/config.env')
 
-            assert not logic.scan_file('does_not_matter')
+        assert 'Unable to open file: test_data/config.env' in mock_log_warning.warning_messages
 
-    def test_skip_ignored_file_extensions(self):
-        logic = secrets_collection_factory(
-            plugins=(MockPluginFixedValue(),),
-        )
-        with mock_open('junk text here, as it does not matter'):
-            skipped_extension = '.svg'
-            assert not logic.scan_file('some' + skipped_extension)
+    @staticmethod
+    def test_line_based_success():
+        # Explicitly configure filters, so that additions to filters won't affect this test.
+        get_settings().configure_filters([
+            # This will remove the `id` string
+            {'path': 'detect_secrets.filters.heuristic.is_likely_id_string'},
 
-    def test_error_reading_file(self, mock_log):
-        logic = secrets_collection_factory()
+            # This gets rid of the aws keys with `EXAMPLE` in them.
+            {
+                'path': 'detect_secrets.filters.regex.should_exclude_line',
+                'pattern': [
+                    'EXAMPLE',
+                ],
+            },
+        ])
 
-        assert not logic.scan_file('non_existent_file')
-        mock_log.warning_messages == 'Unable to open file: non_existent_file'
+        secrets = SecretsCollection()
+        secrets.scan_file('test_data/each_secret.py')
 
-    def test_success_single_plugin(self):
-        logic = secrets_collection_factory(
-            plugins=(MockPluginFixedValue(),),
-        )
+        secret = next(iter(secrets['test_data/each_secret.py']))
+        assert secret.secret_value.startswith('c2VjcmV0IG1lc')
+        assert len(secrets['test_data/each_secret.py']) == 1
 
-        with mock_open('junk text here, as it does not matter'):
-            assert logic.scan_file('filename')
-            assert 'filename' in logic.data
-            assert next(iter(logic.data['filename'])).type == 'mock fixed value type'
+    @staticmethod
+    def test_file_based_success_config():
+        get_settings().configure_plugins([
+            {
+                'name': 'Base64HighEntropyString',
+                'limit': 3.0,
+            },
+        ])
+        secrets = SecretsCollection()
+        secrets.scan_file('test_data/config.ini')
 
-    def test_success_multiple_plugins(self):
-        logic = secrets_collection_factory(
-            secrets=[
-                {
-                    'filename': 'filename',
-                    'lineno': 3,
-                },
-            ],
-            plugins=(
-                MockPluginFixedValue(),
-                MockPluginFileValue(),
-            ),
-        )
+        assert [str(secret).splitlines()[1] for _, secret in secrets] == [
+            'Location:    test_data/config.ini:2',
+            'Location:    test_data/config.ini:6',
+            'Location:    test_data/config.ini:10',
+            'Location:    test_data/config.ini:15',
+            'Location:    test_data/config.ini:21',
+            'Location:    test_data/config.ini:22',
+            'Location:    test_data/config.ini:32',
+        ]
 
-        with mock_open('junk text here'):
-            logic.scan_file('filename')
+    @staticmethod
+    def test_file_based_success_yaml():
+        get_settings().configure_plugins([
+            {
+                'name': 'HexHighEntropyString',
+                'limit': 3.0,
+            },
+        ])
+        secrets = SecretsCollection()
+        secrets.scan_file('test_data/config.yaml')
 
-        # One from each plugin, and one from existing secret
-        assert len(logic.data['filename']) == 3
+        assert [str(secret).splitlines()[1] for _, secret in secrets] == [
+            'Location:    test_data/config.yaml:3',
+            'Location:    test_data/config.yaml:5',
+        ]
 
-        line_numbers = [entry.lineno for entry in logic.data['filename']]
-        assert set(line_numbers) == set([1, 2, 3])
+    @staticmethod
+    def test_file_based_yaml_only_comments():
+        secrets = SecretsCollection()
+        secrets.scan_file('test_data/only_comments.yaml')
 
-    def test_reporting_of_password_plugin_secrets_if_reported_already(self):
-        logic = secrets_collection_factory(
-            secrets=[
-                {
-                    'filename': 'filename',
-                    'lineno': 3,
-                },
-            ],
-            plugins=(
-                MockPasswordPluginValue(),
-                MockPluginFileValue(),
-            ),
-        )
+        assert not secrets
 
-        with mock_open('junk text here'):
-            logic.scan_file('filename')
+    @staticmethod
+    @pytest.mark.parametrize(
+        'filename',
+        (
+            'test_data/config.env',
 
-        assert len(logic.data['filename']) == 3
+            # Markdown files with colons and unicode characters preceding the colon on the line
+            # would have caused the scanner to fail and exit on python2.7.
+            # This test case ensures scanning can complete and still find high entropy strings.
+            'test_data/config.md',
+        ),
+    )
+    def test_file_based_success_unexpected_config_file(filename):
+        secrets = SecretsCollection()
+        secrets.scan_file(filename)
 
-        line_numbers = [entry.lineno for entry in logic.data['filename']]
-        assert set(line_numbers) == set([2, 3])
-
-    def test_unicode_decode_error(self, mock_log):
-        logic = secrets_collection_factory(
-            plugins=(MockPluginFileValue(),),
-        )
-
-        with mock_open('junk text here') as m:
-            m().read.side_effect = MockUnicodeDecodeError
-
-            logic.scan_file('filename')
-
-        assert mock_log.info_messages == 'Checking file: filename\n'
-        assert mock_log.warning_messages == 'filename failed to load.\n'
-
-        # If the file read was successful, secret would have been caught and added.
-        assert len(logic.data) == 0
+        assert bool(secrets)
 
 
 class TestScanDiff:
-
-    def test_success(self):
-        secrets = self.load_from_diff().format_for_baseline_output()['results']
-
-        filename_to_number_of_secrets_detected_in_it = {
-            'detect_secrets/core/baseline.py': 2,
-            'tests/core/secrets_collection_test.py': 1,
-            '.secrets.baseline': 1,
-        }
-
-        for filename in filename_to_number_of_secrets_detected_in_it:
-            assert len(secrets[filename]) == \
-                filename_to_number_of_secrets_detected_in_it[filename]
-
-    def test_ignores_baseline_file(self):
-        secrets = self.load_from_diff(
-            baseline_filename='.secrets.baseline',
-        ).format_for_baseline_output()['results']
-
-        assert len(secrets) == 2
-        assert '.secrets.baseline' not in secrets
-
-    def test_updates_existing_record(self):
-        secrets = self.load_from_diff(
-            existing_secrets=[
-                {
-                    'filename': 'tests/core/secrets_collection_test.py',
-                    'secret': 'not the secret you are looking for',
-                },
-            ],
-        ).format_for_baseline_output()['results']
-
-        assert len(secrets) == 3
-        assert len(secrets['tests/core/secrets_collection_test.py']) == 2
-
-    def test_exclude_regex_skips_files_appropriately(self):
-        secrets = self.load_from_diff(
-            exclude_files_regex='tests/*',
-        ).format_for_baseline_output()['results']
-
-        assert len(secrets) == 2
-        assert 'tests/core/secrets_collection_test.py' not in secrets
-
-    def load_from_diff(self, existing_secrets=None, baseline_filename='', exclude_files_regex=''):
-        collection = secrets_collection_factory(
-            secrets=existing_secrets,
-            plugins=(
-                HexHighEntropyString(hex_limit=3),
-            ),
-            exclude_files_regex=exclude_files_regex,
-        )
-
-        with open('test_data/sample.diff') as f:
-            collection.scan_diff(f.read(), baseline_filename=baseline_filename)
-
-        return collection
-
-
-class TestGetSecret:
-    """Testing retrieval of PotentialSecret from SecretsCollection"""
-
-    @pytest.mark.parametrize(
-        'filename,secret_hash,expected_value',
-        [
-            ('filename', 'secret_hash', True),
-            ('filename', 'not_a_secret_hash', False),
-            ('diff_filename', 'secret_hash', False),
-        ],
-    )
-    def test_optional_type(self, filename, secret_hash, expected_value):
-        with self._mock_secret_hash():
-            logic = secrets_collection_factory([
-                {
-                    'filename': 'filename',
-                    'lineno': 1,
-                },
-            ])
-
-        result = logic.get_secret(filename, secret_hash)
-        if expected_value:
-            assert result
-            assert result.lineno == 1  # make sure lineno is the same
-        else:
-            assert not result
-
-    @pytest.mark.parametrize(
-        'type_,is_none',
-        [
-            ('type', False),
-            ('wrong_type', True),
-        ],
-    )
-    def test_explicit_type_for_optimization(self, type_, is_none):
-        with self._mock_secret_hash():
-            logic = secrets_collection_factory(
-                secrets=[
-                    {
-                        'filename': 'filename',
-                        'type_': 'type',
-                    },
+    @staticmethod
+    def test_filename_filters_are_invoked_first():
+        get_settings().configure_filters([
+            {
+                'path': 'detect_secrets.filters.regex.should_exclude_file',
+                'pattern': [
+                    'test|baseline',
                 ],
-            )
+            },
+        ])
 
-        assert (logic.get_secret('filename', 'secret_hash', type_) is None) == is_none
+        secrets = SecretsCollection()
+        with open('test_data/sample.diff') as f:
+            secrets.scan_diff(f.read())
 
-    @contextmanager
-    def _mock_secret_hash(self, secret_hash='secret_hash'):
-        """Mocking, for the sole purpose of easier discovery for tests."""
-        with mock.patch.object(
-            PotentialSecret,
-            'hash_secret',
-            return_value=secret_hash,
-        ):
-            yield
+        assert len(secrets.files) == 0
 
-
-class TestBaselineInputOutput:
-    """A critical part of the SecretsCollection is the ability to write a baseline, then
-    read from that same baseline to recreate state. This test suite checks the functions
-    related to that ability.
-    """
-
-    def setup(self):
-        self.logic = secrets_collection_factory(
-            secrets=[
-                {
-                    'type_': 'A',
-                    'lineno': 3,
-                    'filename': 'fileA',
-                },
-                {
-                    'type_': 'B',
-                    'lineno': 2,
-                    'filename': 'fileA',
-                },
-                {
-                    'type_': 'C',
-                    'lineno': 1,
-                    'filename': 'fileB',
-                },
-            ],
-            plugins=(
-                HexHighEntropyString(3),
-                PrivateKeyDetector(),
-            ),
-            exclude_files_regex='foo',
-            word_list_file='will_be_mocked.txt',
-            word_list_hash='5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8',
-        )
-
-    def test_output(self, mock_gmtime):
-        assert (
-            self.logic.format_for_baseline_output()
-            == self.get_point_fourteen_point_zero_and_later_baseline_dict(mock_gmtime)
-        )
-
-    def test_load_baseline_from_string_with_pre_point_twelve_string(self, mock_gmtime):
-        """
-        We use load_baseline_from_string as a proxy to testing load_baseline_from_dict,
-        because it's the most entry into the private function.
-        """
-        old_original = self.get_pre_point_twelve_old_baseline_dict(mock_gmtime)
-
-        secrets = SecretsCollection.load_baseline_from_string(
-            json.dumps(old_original),
-        ).format_for_baseline_output()
-
-        # exclude_regex got updated to exclude: files
-        assert old_original['exclude_regex'] == secrets['exclude']['files']
-        assert secrets['exclude']['lines'] is None
-        assert old_original['results'] == secrets['results']
-
-    def test_load_baseline_from_string_with_point_twelve_to_twelve_six_string(self, mock_gmtime):
-        """
-        We use load_baseline_from_string as a proxy to testing load_baseline_from_dict,
-        because it's the most entry into the private function.
-        """
-        original = self.get_point_twelve_and_later_baseline_dict(mock_gmtime)
-
-        secrets = SecretsCollection.load_baseline_from_string(
-            json.dumps(original),
-        ).format_for_baseline_output()
-
-        assert original['exclude']['files'] == secrets['exclude']['files']
-        assert secrets['exclude']['lines'] is None
-        assert original['results'] == secrets['results']
-
-    def test_load_baseline_from_string_with_point_twelve_point_seven_and_later_string(
-        self,
-        mock_gmtime,
-    ):
-        """
-        We use load_baseline_from_string as a proxy to testing load_baseline_from_dict,
-        because it's the most entry into the private function.
-        """
-        original = self.get_point_twelve_point_seven_and_later_baseline_dict(mock_gmtime)
-
-        word_list = """
-            roller\n
-        """
-        with mock_open_base(
-            data=word_list,
-            namespace='detect_secrets.util.open',
-        ):
-            secrets = SecretsCollection.load_baseline_from_string(
-                json.dumps(original),
-            ).format_for_baseline_output()
-
-        # v0.14.0+ assertions
-        assert 'custom_plugin_paths' not in original
-        assert secrets['custom_plugin_paths'] == ()
-
-        # v0.12.7+ assertions
-        assert original['word_list']['file'] == secrets['word_list']['file']
-        # Original hash is thrown out and replaced with new word list hash
-        assert (
-            secrets['word_list']['hash']
-            ==
-            hashlib.sha1('roller'.encode('utf-8')).hexdigest()
-            !=
-            original['word_list']['hash']
-        )
-
-        # Regular assertions
-        assert original['exclude']['files'] == secrets['exclude']['files']
-        assert secrets['exclude']['lines'] is None
-        assert original['results'] == secrets['results']
-
-    def test_load_baseline_without_any_valid_fields(self, mock_log):
-        with pytest.raises(IOError):
-            SecretsCollection.load_baseline_from_string(
-                json.dumps({
-                    'junk': 'dictionary',
-                }),
-            )
-        assert mock_log.error_messages == 'Incorrectly formatted baseline!\n'
-
-    def test_load_baseline_without_exclude(self, mock_log):
-        with pytest.raises(IOError):
-            SecretsCollection.load_baseline_from_string(
-                json.dumps({
-                    'plugins_used': (),
-                    'results': {},
-                }),
-            )
-        assert mock_log.error_messages == 'Incorrectly formatted baseline!\n'
-
-    def get_point_fourteen_point_zero_and_later_baseline_dict(self, gmtime):
-        # In v0.14.0 --custom-plugins got added
-        baseline = self.get_point_twelve_point_seven_and_later_baseline_dict(gmtime)
-        baseline['custom_plugin_paths'] = ()
-        return baseline
-
-    def get_point_twelve_point_seven_and_later_baseline_dict(self, gmtime):
-        # In v0.12.7 --word-list got added
-        baseline = self.get_point_twelve_and_later_baseline_dict(gmtime)
-        baseline['word_list'] = {}
-        baseline['word_list']['file'] = 'will_be_mocked.txt'
-        baseline['word_list']['hash'] = '5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8'
-        return baseline
-
-    def get_point_twelve_and_later_baseline_dict(self, gmtime):
-        # In v0.12.0 `exclude_regex` got replaced by `exclude`
-        baseline = self._get_baseline_dict(gmtime)
-        baseline['exclude'] = {}
-        baseline['exclude']['files'] = 'foo'
-        baseline['exclude']['lines'] = None
-        return baseline
-
-    def get_pre_point_twelve_old_baseline_dict(self, gmtime):
-        baseline = self._get_baseline_dict(gmtime)
-        # In v0.12.0 `exclude_regex` got replaced by `exclude`
-        baseline['exclude_regex'] = 'foo'
-        return baseline
-
-    def _get_baseline_dict(self, gmtime):
-        # They are all the same secret, so they should all have the same secret hash.
-        secret_hash = PotentialSecret.hash_secret('secret')
-
-        return {
-            'generated_at': strftime('%Y-%m-%dT%H:%M:%SZ', gmtime),
+    @staticmethod
+    def test_success():
+        with transient_settings({
             'plugins_used': [
                 {
                     'name': 'HexHighEntropyString',
-                    'hex_limit': 3,
-                },
-                {
-                    'name': 'PrivateKeyDetector',
+                    'limit': 3,
                 },
             ],
-            'results': {
-                'fileA': [
-                    # Line numbers should be sorted, for better readability
-                    {
-                        'type': 'B',
-                        'is_verified': False,
-                        'line_number': 2,
-                        'hashed_secret': secret_hash,
-                    },
-                    {
-                        'type': 'A',
-                        'is_verified': False,
-                        'line_number': 3,
-                        'hashed_secret': secret_hash,
-                    },
-                ],
-                'fileB': [
-                    {
-                        'type': 'C',
-                        'is_verified': False,
-                        'line_number': 1,
-                        'hashed_secret': secret_hash,
-                    },
+            'filters_used': [],
+        }):
+            secrets = SecretsCollection()
+            with open('test_data/sample.diff') as f:
+                secrets.scan_diff(f.read())
+
+        assert secrets.files == {
+            'detect_secrets/core/baseline.py',
+            'tests/core/secrets_collection_test.py',
+            '.secrets.baseline',
+        }
+
+
+def test_merge():
+    old_secrets = SecretsCollection()
+    old_secrets.scan_file('test_data/each_secret.py')
+    assert len(list(old_secrets)) >= 3      # otherwise, this test won't work.
+
+    index = 0
+    for _, secret in old_secrets:
+        if index == 0:
+            secret.is_secret = False
+        elif index == 1:
+            secret.is_secret = True
+        elif index == 2:
+            secret.is_verified = True
+
+        index += 1
+
+    new_secrets = SecretsCollection()
+    new_secrets.scan_file('test_data/each_secret.py')
+    list(new_secrets)[-1][1].is_secret = True
+
+    new_secrets.merge(old_secrets)
+
+    index = 0
+    for _, secret in new_secrets:
+        if index == 0:
+            assert secret.is_secret is False
+            assert secret.is_verified is False
+        elif index == 1:
+            assert secret.is_secret is True
+            assert secret.is_verified is False
+        elif index == 2:
+            assert secret.is_secret is True
+            assert secret.is_verified is True
+
+        index += 1
+
+
+class TestTrim:
+    @staticmethod
+    def test_deleted_secret():
+        secrets = SecretsCollection()
+        secrets.scan_file('test_data/each_secret.py')
+
+        results = SecretsCollection.load_from_baseline({'results': secrets.json()})
+        results.data['test_data/each_secret.py'].pop()
+
+        original_size = len(secrets['test_data/each_secret.py'])
+        secrets.trim(results)
+
+        assert len(secrets['test_data/each_secret.py']) < original_size
+
+    @staticmethod
+    def test_deleted_secret_file():
+        secrets = SecretsCollection()
+        secrets.scan_file('test_data/each_secret.py')
+
+        secrets.trim(SecretsCollection())
+        assert secrets
+
+        secrets.trim(SecretsCollection(), filelist=['test_data/each_secret.py'])
+        assert not secrets
+
+    @staticmethod
+    def test_same_secret_new_location():
+        old_secret = potential_secret_factory()
+        new_secret = potential_secret_factory(line_number=2)
+
+        secrets = SecretsCollection.load_from_baseline({'results': {'blah': [old_secret.json()]}})
+        results = SecretsCollection.load_from_baseline({'results': {'blah': [new_secret.json()]}})
+
+        secrets.trim(results)
+
+        count = 0
+        for filename, secret in secrets:
+            assert secret.line_number == 2
+            count += 1
+
+        assert count == 1
+
+    @staticmethod
+    @pytest.mark.parametrize(
+        'base_state, scanned_results',
+        (
+            (
+                {
+                    'blah': [potential_secret_factory().json()],
+                },
+                {},
+            ),
+
+            # Exact same secret, so no modifications necessary
+            (
+                {
+                    'blah': [potential_secret_factory().json()],
+                },
+                {
+                    'blah': [potential_secret_factory().json()],
+                },
+            ),
+        ),
+    )
+    def test_no_modifications(base_state, scanned_results):
+        secrets = SecretsCollection.load_from_baseline({'results': base_state})
+        results = SecretsCollection.load_from_baseline({'results': scanned_results})
+
+        secrets.trim(results)
+
+        assert secrets.json() == base_state
+
+    @staticmethod
+    def test_remove_non_existent_files():
+        secrets = SecretsCollection()
+        secrets.scan_file('test_data/each_secret.py')
+        assert bool(secrets)
+
+        secrets.data['does-not-exist'] = secrets.data.pop('test_data/each_secret.py')
+        secrets.trim()
+
+        assert not bool(secrets)
+
+    @staticmethod
+    def test_maintains_labels():
+        labelled_secrets = SecretsCollection()
+        labelled_secrets.scan_file('test_data/each_secret.py')
+        for _, secret in labelled_secrets:
+            secret.is_secret = True
+            break
+
+        secrets = SecretsCollection()
+        secrets.scan_file('test_data/each_secret.py')
+
+        labelled_secrets.trim(scanned_results=secrets)
+
+        assert any([secret.is_secret for _, secret in labelled_secrets])
+
+
+def test_bool():
+    secrets = SecretsCollection()
+    assert not secrets
+
+    secrets.scan_file('test_data/each_secret.py')
+    assert secrets
+
+    secrets['test_data/each_secret.py'].clear()
+    assert not secrets
+
+
+class TestEqual:
+    @staticmethod
+    def test_mismatch_files():
+        secretsA = SecretsCollection()
+        secretsA.scan_file('test_data/each_secret.py')
+
+        secretsB = SecretsCollection()
+        secretsB.scan_file('test_data/files/file_with_secrets.py')
+
+        assert secretsA != secretsB
+
+    @staticmethod
+    def test_strict_equality():
+        secret = potential_secret_factory()
+        secretsA = SecretsCollection()
+        secretsA[secret.filename].add(secret)
+
+        secret = potential_secret_factory(line_number=2)
+        secretsB = SecretsCollection()
+        secretsB[secret.filename].add(secret)
+
+        assert secretsA == secretsB
+        assert not secretsA.exactly_equals(secretsB)
+
+
+def test_subtraction(configure_plugins):
+    with transient_settings({**configure_plugins, 'filters_used': []}):
+        secrets = SecretsCollection()
+        secrets.scan_file('test_data/each_secret.py')
+
+    # This baseline will have less secrets, since it filtered out some.
+    with transient_settings({
+        **configure_plugins,
+        'filters_used': [
+            {
+                'path': 'detect_secrets.filters.regex.should_exclude_line',
+                'pattern': [
+                    'EXAMPLE',
                 ],
             },
-            'version': VERSION,
-        }
+        ],
+    }):
+        baseline = SecretsCollection()
+        baseline.scan_file('test_data/each_secret.py')
 
+    # This tests the != operator for same file, different number of secrets.
+    # It's hidden in a different test, but I didn't want to set up the boilerplate
+    # again.
+    assert secrets != baseline
 
-class MockBasePlugin(BasePlugin):  # pragma: no cover
-    """Abstract testing class, to implement abstract methods."""
-
-    def analyze_string_content(self, value):
-        pass
-
-    def secret_generator(self, string):
-        pass
-
-
-class MockPluginFixedValue(MockBasePlugin):
-
-    secret_type = 'mock_plugin_fixed_value'
-
-    def analyze(self, f, filename):
-        # We're not testing the plugin's ability to analyze secrets, so
-        # it doesn't matter what we return
-        secret = PotentialSecret('mock fixed value type', filename, 'asdf', 1)
-        return {secret: secret}
-
-
-class MockPluginFileValue(MockBasePlugin):
-
-    secret_type = 'mock_plugin_file_value'
-
-    def analyze(self, f, filename):
-        # We're not testing the plugin's ability to analyze secrets, so
-        # it doesn't matter what we return
-        secret = PotentialSecret('mock file value type', filename, f.read().strip(), 2)
-        return {secret: secret}
-
-
-class MockPasswordPluginValue(MockBasePlugin):
-
-    secret_type = 'mock_plugin_file_value'
-
-    def analyze(self, f, filename):
-        password_secret = PotentialSecret('Password', filename, f.read().strip(), 2)
-        return {
-            password_secret: password_secret,
-        }
-
-
-MockUnicodeDecodeError = UnicodeDecodeError('encoding type', b'subject', 0, 1, 'exception message')
+    result = secrets - baseline
+    assert len(result['test_data/each_secret.py']) == 2
+    assert len(secrets['test_data/each_secret.py']) == 4

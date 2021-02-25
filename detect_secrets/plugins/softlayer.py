@@ -1,9 +1,11 @@
 import re
+from typing import List
 
 import requests
 
-from detect_secrets.core.constants import VerifiedResult
-from detect_secrets.plugins.base import RegexBasedDetector
+from ..constants import VerifiedResult
+from ..util.code_snippet import CodeSnippet
+from .base import RegexBasedDetector
 
 
 class SoftlayerDetector(RegexBasedDetector):
@@ -16,7 +18,7 @@ class SoftlayerDetector(RegexBasedDetector):
     key_or_pass = r'(?:key|pwd|password|pass|token)'
     secret = r'([a-z0-9]{64})'
     denylist = [
-        RegexBasedDetector.assign_regex_generator(
+        RegexBasedDetector.build_assignment_regex(
             prefix_regex=sl,
             secret_keyword_regex=key_or_pass,
             secret_regex=secret,
@@ -28,18 +30,22 @@ class SoftlayerDetector(RegexBasedDetector):
         ),
     ]
 
-    def verify(self, token, context):
+    def verify(       # type: ignore[override]  # noqa: F821
+        self,
+        secret: str,
+        context: CodeSnippet,
+    ) -> VerifiedResult:
         usernames = find_username(context)
         if not usernames:
             return VerifiedResult.UNVERIFIED
 
         for username in usernames:
-            return verify_softlayer_key(username, token)
+            return verify_softlayer_key(username, secret)
 
         return VerifiedResult.VERIFIED_FALSE
 
 
-def find_username(context):
+def find_username(context: CodeSnippet) -> List[str]:
     # opt means optional
     username_keyword = (
         r'(?:'
@@ -49,7 +55,7 @@ def find_username(context):
     )
     username = r'(\w(?:\w|_|@|\.|-)+)'
     regex = re.compile(
-        RegexBasedDetector.assign_regex_generator(
+        RegexBasedDetector.build_assignment_regex(
             prefix_regex=SoftlayerDetector.sl,
             secret_keyword_regex=username_keyword,
             secret_regex=username,
@@ -58,12 +64,12 @@ def find_username(context):
 
     return [
         match
-        for line in context.splitlines()
+        for line in context
         for match in regex.findall(line)
     ]
 
 
-def verify_softlayer_key(username, token):
+def verify_softlayer_key(username: str, token: str) -> VerifiedResult:
     headers = {'Content-type': 'application/json'}
     try:
         response = requests.get(

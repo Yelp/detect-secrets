@@ -1,12 +1,12 @@
 import textwrap
+from unittest import mock
 
-import mock
 import pytest
 
-from detect_secrets.core.constants import VerifiedResult
+from detect_secrets.constants import VerifiedResult
 from detect_secrets.plugins.aws import AWSKeyDetector
 from detect_secrets.plugins.aws import get_secret_access_keys
-from testing.mocks import mock_file_object
+from detect_secrets.util.code_snippet import get_code_snippet
 
 
 EXAMPLE_SECRET = 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'
@@ -18,7 +18,7 @@ class TestAWSKeyDetector:
         self.example_key = 'AKIAZZZZZZZZZZZZZZZZ'
 
     @pytest.mark.parametrize(
-        'file_content,should_flag',
+        'line,should_flag',
         [
             (
                 'AKIAZZZZZZZZZZZZZZZZ',
@@ -32,21 +32,38 @@ class TestAWSKeyDetector:
                 'AKIAZZZ',
                 False,
             ),
+            (
+                'aws_access_key = "{}"'.format(EXAMPLE_SECRET),
+                True,
+            ),
+            (
+                'aws_access_key = "{}"'.format(EXAMPLE_SECRET + 'a'),
+                False,
+            ),
+            (
+                'aws_access_key = "{}"'.format(EXAMPLE_SECRET[0:39]),
+                False,
+            ),
         ],
     )
-    def test_analyze(self, file_content, should_flag):
+    def test_analyze(self, line, should_flag):
         logic = AWSKeyDetector()
 
-        f = mock_file_object(file_content)
-        output = logic.analyze(f, 'mock_filename')
+        output = logic.analyze_line(filename='mock_filename', line=line)
         assert len(output) == (1 if should_flag else 0)
-        for potential_secret in output:
-            assert 'mock_filename' == potential_secret.filename
 
     def test_verify_no_secret(self):
         logic = AWSKeyDetector()
 
-        assert logic.verify(self.example_key, '') == VerifiedResult.UNVERIFIED
+        assert logic.verify(
+            self.example_key,
+            get_code_snippet([], 1),
+        ) == VerifiedResult.UNVERIFIED
+
+        assert logic.verify(
+            EXAMPLE_SECRET,
+            get_code_snippet([], 1),
+        ) == VerifiedResult.UNVERIFIED
 
     def test_verify_valid_secret(self):
         with mock.patch(
@@ -55,7 +72,7 @@ class TestAWSKeyDetector:
         ):
             assert AWSKeyDetector().verify(
                 self.example_key,
-                '={}'.format(EXAMPLE_SECRET),
+                get_code_snippet(['={}'.format(EXAMPLE_SECRET)], 1),
             ) == VerifiedResult.VERIFIED_TRUE
 
     def test_verify_invalid_secret(self):
@@ -65,7 +82,7 @@ class TestAWSKeyDetector:
         ):
             assert AWSKeyDetector().verify(
                 self.example_key,
-                '={}'.format(EXAMPLE_SECRET),
+                get_code_snippet(['={}'.format(EXAMPLE_SECRET)], 1),
             ) == VerifiedResult.VERIFIED_FALSE
 
     def test_verify_keep_trying_until_found_something(self):
@@ -83,12 +100,12 @@ class TestAWSKeyDetector:
         ):
             assert AWSKeyDetector().verify(
                 self.example_key,
-                textwrap.dedent("""
-                    false_secret = {}
-                    real_secret = {}
-                """)[1:-1].format(
-                    'TEST' * 10,
-                    EXAMPLE_SECRET,
+                get_code_snippet(
+                    [
+                        f'false_secret = {"TEST" * 10}',
+                        f'real_secret = {EXAMPLE_SECRET}',
+                    ],
+                    1,
                 ),
             ) == VerifiedResult.VERIFIED_TRUE
 
@@ -179,4 +196,6 @@ class TestAWSKeyDetector:
     ),
 )
 def test_get_secret_access_key(content, expected_output):
-    assert get_secret_access_keys(content) == expected_output
+    assert get_secret_access_keys(
+        get_code_snippet(content.splitlines(), 1),
+    ) == expected_output

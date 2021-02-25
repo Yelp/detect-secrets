@@ -1,396 +1,258 @@
-import codecs
-import json
 import os
-import re
-from time import gmtime
-from time import strftime
+from collections import defaultdict
+from typing import Any
+from typing import Dict
+from typing import Generator
+from typing import List
+from typing import Optional
+from typing import Set
+from typing import Tuple
 
-from detect_secrets import VERSION
-from detect_secrets.core.constants import IGNORED_FILE_EXTENSIONS
-from detect_secrets.core.log import log
-from detect_secrets.core.potential_secret import PotentialSecret
-from detect_secrets.plugins.common import initialize
-from detect_secrets.util import build_automaton
+from . import scan
+from .potential_secret import PotentialSecret
+
+
+class PatchedFile:
+    """This exists so that we can do typecasting, without importing unidiff."""
+    path: str
+
+    def __iter__(self) -> Generator:
+        pass
 
 
 class SecretsCollection:
-
-    def __init__(
-        self,
-        plugins=(),
-        custom_plugin_paths=None,
-        exclude_files=None,
-        exclude_lines=None,
-        word_list_file=None,
-        word_list_hash=None,
-    ):
-        """
-        :type plugins: tuple of detect_secrets.plugins.base.BasePlugin
-        :param plugins: rules to determine whether a string is a secret
-
-        :type custom_plugin_paths: Tuple[str]|None
-        :param custom_plugin_paths: possibly empty tuple of paths that have custom plugins.
-
-        :type exclude_files: str|None
-        :param exclude_files: optional regex for ignored paths.
-
-        :type exclude_lines: str|None
-        :param exclude_lines: optional regex for ignored lines.
-
-        :type word_list_file: str|None
-        :param word_list_file: optional word list file for ignoring certain words.
-
-        :type word_list_hash: str|None
-        :param word_list_hash: optional iterated sha1 hash of the words in the word list.
-        """
-        self.data = {}
-        self.version = VERSION
-
-        self.plugins = plugins
-        self.custom_plugin_paths = custom_plugin_paths or ()
-        self.exclude_files = exclude_files
-        self.exclude_lines = exclude_lines
-        self.word_list_file = word_list_file
-        self.word_list_hash = word_list_hash
+    def __init__(self) -> None:
+        self.data: Dict[str, Set[PotentialSecret]] = defaultdict(set)
 
     @classmethod
-    def load_baseline_from_string(cls, string):
-        """Initializes a SecretsCollection object from string.
+    def load_from_baseline(cls, baseline: Dict[str, Any]) -> 'SecretsCollection':
+        output = cls()
+        for filename in baseline['results']:
+            for item in baseline['results'][filename]:
+                secret = PotentialSecret.load_secret_from_dict({'filename': filename, **item})
+                output[filename].add(secret)
 
-        :type string: str
-        :param string: string to load SecretsCollection from.
+        return output
 
-        :rtype: SecretsCollection
-        :raises: IOError
+    @property
+    def files(self) -> Set[str]:
+        return set(self.data.keys())
+
+    def scan_file(self, filename: str) -> None:
+        for secret in scan.scan_file(filename):
+            self[secret.filename].add(secret)
+
+    def scan_diff(self, diff: str) -> None:
+        """
+        :raises: UnidiffParseError
         """
         try:
-            return cls.load_baseline_from_dict(json.loads(string))
-        except (IOError, ValueError):
-            log.error('Incorrectly formatted baseline!')
-            raise
-
-    @classmethod
-    def load_baseline_from_dict(cls, data):
-        """Initializes a SecretsCollection object from dictionary.
-
-        :type data: dict
-        :param data: properly formatted dictionary to load SecretsCollection from.
-
-        :rtype: SecretsCollection
-        :raises: IOError
-        """
-        result = SecretsCollection()
-
-        if not all(
-            key in data for key in (
-                'plugins_used',
-                'results',
+            for secret in scan.scan_diff(diff):
+                self[secret.filename].add(secret)
+        except ImportError:     # pragma: no cover
+            raise NotImplementedError(
+                'SecretsCollection.scan_diff requires `unidiff` to work. Try pip '
+                'installing that package, and try again.',
             )
-        ):
-            raise IOError
 
-        # In v0.12.0 `exclude_regex` got replaced by `exclude`
-        if not any(
-            key in data for key in (
-                'exclude',
-                'exclude_regex',
-            )
-        ):
-            raise IOError
-
-        if 'exclude_regex' in data:
-            result.exclude_files = data['exclude_regex']
-        else:
-            result.exclude_files = data['exclude']['files']
-            result.exclude_lines = data['exclude']['lines']
-
-        # In v0.12.7 the `--word-list` option got added
-        automaton = None
-        if 'word_list' in data:
-            result.word_list_file = data['word_list']['file']
-            result.word_list_hash = data['word_list']['hash']
-
-            if result.word_list_file:
-                # Always ignore the existing `data['word_list']['hash']`
-                # The difference will show whenever the word list changes
-                automaton, result.word_list_hash = build_automaton(result.word_list_file)
-
-        # In v0.14.0 the `--custom-plugins` option got added
-        result.custom_plugin_paths = tuple(data.get('custom_plugin_paths', ()))
-
-        result.plugins = tuple(
-            initialize.from_plugin_classname(
-                plugin_classname=plugin.pop('name'),
-                custom_plugin_paths=result.custom_plugin_paths,
-                exclude_lines_regex=result.exclude_lines,
-                automaton=automaton,
-                should_verify_secrets=False,
-                **plugin
-            ) for plugin in data['plugins_used']
-        )
-
-        for filename in data['results']:
-            result.data[filename] = {}
-
-            for item in data['results'][filename]:
-                secret = PotentialSecret(
-                    item['type'],
-                    filename,
-                    secret='will be replaced',
-                    lineno=item['line_number'],
-                    is_secret=item.get('is_secret'),
-                )
-                secret.secret_hash = item['hashed_secret']
-                result.data[filename][secret] = secret
-
-        result.version = (
-            data['version']
-            if 'version' in data
-            else '0.0.0'
-        )
-
-        return result
-
-    def scan_diff(
-        self,
-        diff,
-        baseline_filename='',
-        last_commit_hash='',
-        repo_name='',
-    ):
-        """For optimization purposes, our scanning strategy focuses on looking
-        at incremental differences, rather than re-scanning the codebase every time.
-        This function supports this, and adds information to self.data.
-
-        Note that this is only called by detect-secrets-server.
-
-        :type diff: str
-        :param diff: diff string.
-                     e.g. The output of `git diff <fileA> <fileB>`
-
-        :type baseline_filename: str
-        :param baseline_filename: if there are any baseline secrets, then the baseline
-                                  file will have hashes in them. By specifying it, we
-                                  can skip this clear exception.
-
-        :type last_commit_hash: str
-        :param last_commit_hash: used for logging only -- the last commit hash we saved
-
-        :type repo_name: str
-        :param repo_name: used for logging only -- the name of the repo
+    def merge(self, old_results: 'SecretsCollection') -> None:
         """
-        # Local imports, so that we don't need to require unidiff for versions of
-        # detect-secrets that don't use it.
-        from unidiff import PatchSet
-        from unidiff.errors import UnidiffParseError
+        We operate under an assumption that the latest results are always more accurate,
+        assuming that the baseline is created on the same repository. However, we cannot
+        merely discard the old results in favor of the new, since there is valuable information
+        that ought to be preserved: verification of secrets, both automated and manual.
 
-        try:
-            patch_set = PatchSet.from_string(diff)
-        except UnidiffParseError:  # pragma: no cover
-            alert = {
-                'alert': 'UnidiffParseError',
-                'hash': last_commit_hash,
-                'repo_name': repo_name,
+        Therefore, this function serves to extract this information from the old results,
+        and amend the new results with it.
+        """
+        for filename in old_results.files:
+            if filename not in self.files:
+                continue
+
+            # This allows us to obtain the same secret, by accessing the hash.
+            mapping = {
+                secret: secret
+                for secret in self.data[filename]
             }
-            log.error(alert)
-            raise
 
-        if self.exclude_files:
-            regex = re.compile(self.exclude_files, re.IGNORECASE)
+            for old_secret in old_results.data[filename]:
+                if old_secret not in mapping:
+                    continue
 
-        for patch_file in patch_set:
-            filename = patch_file.path
-            # If the file matches the exclude_files, we skip it
-            if self.exclude_files and regex.search(filename):
-                continue
+                # Only override if there's no newer value.
+                if mapping[old_secret].is_secret is None:
+                    mapping[old_secret].is_secret = old_secret.is_secret
 
-            if filename == baseline_filename:
-                continue
+                # If the old value is false, it won't make a difference.
+                if not mapping[old_secret].is_verified:
+                    mapping[old_secret].is_verified = old_secret.is_verified
 
-            for results, plugin in self._results_accumulator(filename):
-                results.update(
-                    self._extract_secrets_from_patch(
-                        patch_file,
-                        plugin,
-                        filename,
-                    ),
-                )
-
-    def scan_file(self, filename):
-        """Scans a specified file, and adds information to self.data
-
-        :type filename: str
-        :param filename: full path to file to scan.
-
-        :returns: boolean; though this value is only used for testing
+    def trim(
+        self,
+        scanned_results: Optional['SecretsCollection'] = None,
+        filelist: Optional[List[str]] = None,
+    ) -> None:
         """
-        if os.path.islink(filename):
-            return False
-        if os.path.splitext(filename)[1] in IGNORED_FILE_EXTENSIONS:
-            return False
-        try:
-            with codecs.open(filename, encoding='utf-8') as f:
-                self._extract_secrets_from_file(f, filename)
+        Removes invalid entries in the current SecretsCollection.
 
-            return True
-        except IOError:
-            log.warning('Unable to open file: %s', filename)
-            return False
+        This behaves *kinda* like set intersection and left-join. That is, for matching files,
+        a set intersection is performed. For non-matching files, only the files in `self` will
+        be kept.
 
-    def get_secret(self, filename, secret, type_=None):
-        """Checks to see whether a secret is found in the collection.
+        This is because we may not be constructing the other SecretsCollection with the same
+        information as we are with the current SecretsCollection, and we cannot infer based on
+        incomplete information. As such, we will keep the status quo.
 
-        :type filename: str
-        :param filename: the file to search in.
+        Assumptions:
+            1. Both `scanned_results` and the current SecretsCollection are constructed using
+               the same settings (otherwise, we can't determine whether a missing secret is due
+               to newly filtered secrets, or actually removed).
 
-        :type secret: str
-        :param secret: secret hash of secret to search for.
-
-        :type type_: str
-        :param type_: type of secret, if known.
-
-        :rtype: PotentialSecret|None
+        :param scanned_results: if None, will just clear out non-existent files.
+        :param filelist: files without secrets are not present in `scanned_results`. Therefore,
+            by supplying this additional filelist, we can assert that if an entry is missing in
+            `scanned_results`, it must not have secrets in it.
         """
-        if filename not in self.data:
-            return None
+        if scanned_results is None:
+            scanned_results = SecretsCollection()
+            filelist = [
+                filename
+                for filename in self.files
+                if not os.path.exists(filename)
+            ]
 
-        if type_:
-            # Optimized lookup, because we know the type of secret
-            # (and therefore, its hash)
-            tmp_secret = PotentialSecret(type_, filename, secret='will be overriden')
-            tmp_secret.secret_hash = secret
-
-            if tmp_secret in self.data[filename]:
-                return self.data[filename][tmp_secret]
-
-            return None
-
-        # Note: We can only optimize this, if we knew the type of secret.
-        # Otherwise, we need to iterate through the set and find out.
-        for obj in self.data[filename]:
-            if obj.secret_hash == secret:
-                return obj
-
-        return None
-
-    def format_for_baseline_output(self):
-        """
-        :rtype: dict
-        """
-        results = self.json()
-        for key in results:
-            results[key] = sorted(results[key], key=lambda x: x['line_number'])
-
-        plugins_used = list(
-            map(
-                lambda x: x.__dict__,
-                self.plugins,
-            ),
-        )
-        plugins_used = sorted(plugins_used, key=lambda x: x['name'])
-
-        return {
-            'generated_at': strftime('%Y-%m-%dT%H:%M:%SZ', gmtime()),
-            'exclude': {
-                'files': self.exclude_files,
-                'lines': self.exclude_lines,
-            },
-            'word_list': {
-                'file': self.word_list_file,
-                'hash': self.word_list_hash,
-            },
-            'custom_plugin_paths': self.custom_plugin_paths,
-            'plugins_used': plugins_used,
-            'results': results,
-            'version': self.version,
-        }
-
-    def _results_accumulator(self, filename):
-        """
-        :type filename: str
-        :param filename: name of file, used as a key to store in self.data
-
-        :yields: (dict, detect_secrets.plugins.base.BasePlugin)
-                 Caller is responsible for updating the dictionary with
-                 results of plugin analysis.
-        """
-        file_results = {}
-
-        for plugin in self.plugins:
-            yield file_results, plugin
-
-        if not file_results:
-            return
-
-        if filename not in self.data:
-            self.data[filename] = file_results
+        if not filelist:
+            fileset = set([])
         else:
-            self.data[filename].update(file_results)
+            fileset = set(filelist)
 
-    def _extract_secrets_from_file(self, f, filename):
-        """Extract secrets from a given file object.
+        # Unfortunately, we can't merely do a set intersection since we want to update the line
+        # numbers (if applicable). Therefore, this does it manually.
+        result: Dict[str, Set[PotentialSecret]] = defaultdict(set)
 
-        :type f:        File object
-        :type filename: string
-        """
-        try:
-            log.info('Checking file: %s', filename)
+        for filename in scanned_results.files:
+            if filename not in self.files:
+                continue
 
-            for results, plugin in self._results_accumulator(filename):
-                results.update(plugin.analyze(f, filename))
-                f.seek(0)
+            # We construct this so we can get O(1) retrieval of secrets.
+            existing_secret_map = {secret: secret for secret in self[filename]}
+            for secret in scanned_results[filename]:
+                if secret not in existing_secret_map:
+                    continue
 
-        except UnicodeDecodeError:
-            log.warning('%s failed to load.', filename)
+                # Currently, we assume that the `scanned_results` have no labelled data, so
+                # we only want to obtain the latest line number from it.
+                existing_secret = existing_secret_map[secret]
+                if existing_secret.line_number:
+                    # Only update line numbers if we're tracking them.
+                    existing_secret.line_number = secret.line_number
 
-    def _extract_secrets_from_patch(self, f, plugin, filename):
-        """Extract secrets from a given patch file object.
+                result[filename].add(existing_secret)
 
-        Note that we only want to capture incoming secrets (so added lines).
-        Note that this is only called by detect-secrets-server.
+        for filename in self.files:
+            # If this is already populated by scanned_results, then the set intersection
+            # is already completed.
+            if filename in result:
+                continue
 
-        :type f: unidiff.patch.PatchedFile
-        :type plugin: detect_secrets.plugins.base.BasePlugin
-        :type filename: str
-        """
-        output = {}
-        for chunk in f:
-            # target_lines refers to incoming (new) changes
-            for line in chunk.target_lines():
-                if line.is_added:
-                    output.update(
-                        plugin.analyze_line(
-                            line.value,
-                            line.target_line_no,
-                            filename,
-                        ),
-                    )
+            # All secrets relating to that file was removed.
+            # We know this because:
+            #   1. It's a file that was scanned (in filelist)
+            #   2. It would have been in the baseline, if there were secrets...
+            #   3. ...but it isn't.
+            if filename in fileset:
+                continue
 
-        return output
+            result[filename] = self[filename]
 
-    def json(self):
+        self.data = result
+
+    def json(self) -> Dict[str, Any]:
         """Custom JSON encoder"""
-        output = {}
-        for filename in self.data:
-            output[filename] = []
+        output = defaultdict(list)
+        for filename, secret in self:
+            output[filename].append(secret.json())
 
-            for secret_hash in self.data[filename]:
-                tmp = self.data[filename][secret_hash].json()
-                del tmp['filename']  # Because filename will map to the secrets
+        return dict(output)
 
-                output[filename].append(tmp)
+    def exactly_equals(self, other: Any) -> bool:
+        return self.__eq__(other, strict=True)      # type: ignore
+
+    def __getitem__(self, filename: str) -> Set[PotentialSecret]:
+        return self.data[filename]
+
+    def __setitem__(self, filename: str, value: Set[PotentialSecret]) -> None:
+        self.data[filename] = value
+
+    def __iter__(self) -> Generator[Tuple[str, PotentialSecret], None, None]:
+        for filename in sorted(self.files):
+            secrets = self[filename]
+
+            # NOTE: If line numbers aren't supplied, they will default to 0.
+            for secret in sorted(secrets, key=lambda x: (x.line_number, x.secret_hash, x.type)):
+                yield filename, secret
+
+    def __bool__(self) -> bool:
+        # This checks whether there are secrets, rather than just empty files.
+        # Empty files can occur with SecretsCollection subtraction.
+        return bool(list(self))
+
+    def __eq__(self, other: Any, strict: bool = False) -> bool:
+        """
+        :param strict: if strict, will return False even if secrets match
+            (e.g. if line numbers are different)
+        """
+        if not isinstance(other, SecretsCollection):
+            raise NotImplementedError
+
+        if self.files != other.files:
+            return False
+
+        for filename in self.files:
+            self_mapping = {secret.secret_hash: secret for secret in self[filename]}
+            other_mapping = {secret.secret_hash: secret for secret in other[filename]}
+
+            # Since PotentialSecret is hashable, we compare their identities through this.
+            if set(self_mapping.values()) != set(other_mapping.values()):
+                return False
+
+            if not strict:
+                continue
+
+            for secretA in self_mapping.values():
+                secretB = other_mapping[secretA.secret_hash]
+
+                valuesA = vars(secretA)
+                valuesA.pop('secret_value')
+                valuesB = vars(secretB)
+                valuesB.pop('secret_value')
+
+                if valuesA['line_number'] == 0 or valuesB['line_number'] == 0:
+                    # If line numbers are not provided (for either one), then don't compare
+                    # line numbers.
+                    valuesA.pop('line_number')
+                    valuesB.pop('line_number')
+
+                if valuesA != valuesB:
+                    return False
+
+        return True
+
+    def __ne__(self, other: Any) -> bool:
+        return not self.__eq__(other)
+
+    def __sub__(self, other: Any) -> 'SecretsCollection':
+        """This behaves like set subtraction."""
+        if not isinstance(other, SecretsCollection):
+            raise NotImplementedError
+
+        # We want to create a copy to follow convention and adhere to the principle
+        # of least surprise.
+        output = SecretsCollection()
+        for filename in other.files:
+            if filename not in self.files:
+                continue
+
+            output[filename] = self[filename] - other[filename]
 
         return output
-
-    def __str__(self):  # pragma: no cover
-        return json.dumps(
-            self.json(),
-            indent=2,
-            sort_keys=True,
-        )
-
-    def __getitem__(self, key):  # pragma: no cover
-        return self.data[key]
-
-    def __setitem__(self, key, value):
-        self.data[key] = value

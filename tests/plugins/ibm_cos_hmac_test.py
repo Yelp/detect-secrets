@@ -1,14 +1,15 @@
 import textwrap
+from unittest.mock import patch
 
 import pytest
 import requests
 import responses
-from mock import patch
 
-from detect_secrets.core.constants import VerifiedResult
+from detect_secrets.constants import VerifiedResult
 from detect_secrets.plugins.ibm_cos_hmac import find_access_key_id
 from detect_secrets.plugins.ibm_cos_hmac import IbmCosHmacDetector
 from detect_secrets.plugins.ibm_cos_hmac import verify_ibm_cos_hmac_credentials
+from detect_secrets.util.code_snippet import get_code_snippet
 
 
 ACCESS_KEY_ID = '1234567890abcdef1234567890abcdef'
@@ -95,10 +96,10 @@ class TestIbmCosHmacDetector:
     def test_analyze_string(self, payload, should_flag):
         logic = IbmCosHmacDetector()
 
-        output = logic.analyze_line(payload, 1, 'mock_filename')
+        output = logic.analyze_line(filename='mock_filename', line=payload)
         assert len(output) == int(should_flag)
         if should_flag:
-            assert list(output.values())[0].secret_value == SECRET_ACCESS_KEY
+            assert list(output)[0].secret_value == SECRET_ACCESS_KEY
 
     @patch('detect_secrets.plugins.ibm_cos_hmac.verify_ibm_cos_hmac_credentials')
     def test_verify_invalid_secret(self, mock_hmac_verify):
@@ -106,7 +107,7 @@ class TestIbmCosHmacDetector:
 
         assert IbmCosHmacDetector().verify(
             SECRET_ACCESS_KEY,
-            '''access_key_id={}'''.format(ACCESS_KEY_ID),
+            get_code_snippet(['access_key_id={}'.format(ACCESS_KEY_ID)], 1),
         ) == VerifiedResult.VERIFIED_FALSE
 
         mock_hmac_verify.assert_called_with(ACCESS_KEY_ID, SECRET_ACCESS_KEY)
@@ -117,7 +118,7 @@ class TestIbmCosHmacDetector:
 
         assert IbmCosHmacDetector().verify(
             SECRET_ACCESS_KEY,
-            '''access_key_id={}'''.format(ACCESS_KEY_ID),
+            get_code_snippet(['access_key_id={}'.format(ACCESS_KEY_ID)], 1),
         ) == VerifiedResult.VERIFIED_TRUE
 
         mock_hmac_verify.assert_called_with(ACCESS_KEY_ID, SECRET_ACCESS_KEY)
@@ -128,7 +129,7 @@ class TestIbmCosHmacDetector:
 
         assert IbmCosHmacDetector().verify(
             SECRET_ACCESS_KEY,
-            '''access_key_id={}'''.format(ACCESS_KEY_ID),
+            get_code_snippet(['access_key_id={}'.format(ACCESS_KEY_ID)], 1),
         ) == VerifiedResult.UNVERIFIED
 
         mock_hmac_verify.assert_called_with(ACCESS_KEY_ID, SECRET_ACCESS_KEY)
@@ -139,7 +140,7 @@ class TestIbmCosHmacDetector:
 
         assert IbmCosHmacDetector().verify(
             SECRET_ACCESS_KEY,
-            '''something={}'''.format(ACCESS_KEY_ID),
+            get_code_snippet(['something={}'.format(ACCESS_KEY_ID)], 1),
         ) == VerifiedResult.UNVERIFIED
 
         mock_hmac_verify.assert_not_called()
@@ -190,7 +191,7 @@ class TestIbmCosHmacDetector:
         ),
     )
     def test_find_access_key_id(self, content, expected_output):
-        assert find_access_key_id(content) == expected_output
+        assert find_access_key_id(get_code_snippet(content.splitlines(), 1)) == expected_output
 
 
 @pytest.mark.parametrize(

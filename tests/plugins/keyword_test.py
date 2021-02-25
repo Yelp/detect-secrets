@@ -1,9 +1,11 @@
-import ahocorasick
+import tempfile
+
 import pytest
 
-from detect_secrets.core.potential_secret import PotentialSecret
+from detect_secrets.core.scan import scan_file
+from detect_secrets.core.scan import scan_line
 from detect_secrets.plugins.keyword import KeywordDetector
-from testing.mocks import mock_file_object
+from detect_secrets.settings import transient_settings
 
 
 FOLLOWED_BY_COLON_EQUAL_SIGNS_RE = {
@@ -148,21 +150,7 @@ QUOTES_REQUIRED_FILE_EXTENSIONS = (
     '.swift',
 )
 
-STANDARD_NEGATIVES = []
 STANDARD_POSITIVES = []
-
-STANDARD_NEGATIVES.extend(
-    FOLLOWED_BY_COLON_EQUAL_SIGNS_RE.get('negatives').get('quotes_required')
-    + FOLLOWED_BY_COLON_EQUAL_SIGNS_RE.get('negatives').get('quotes_not_required')
-    + FOLLOWED_BY_COLON_RE.get('negatives').get('quotes_required')
-    + FOLLOWED_BY_COLON_RE.get('negatives').get('quotes_not_required')
-    + FOLLOWED_BY_EQUAL_SIGNS_RE.get('negatives').get('quotes_required')
-    + FOLLOWED_BY_EQUAL_SIGNS_RE.get('negatives').get('quotes_not_required')
-    + FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE.get('negatives').get('quotes_required')
-    + FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX.get(
-        'negatives',
-    ).get('quotes_required'),
-)
 STANDARD_POSITIVES.extend(
     FOLLOWED_BY_COLON_RE.get('positives').get('quotes_required')
     + FOLLOWED_BY_COLON_RE.get('positives').get('quotes_not_required')
@@ -179,47 +167,10 @@ class TestKeywordDetector:
         STANDARD_POSITIVES,
     )
     def test_analyze_standard_positives(self, file_content):
-        logic = KeywordDetector()
+        secrets = list(KeywordDetector().analyze_string(file_content))
 
-        f = mock_file_object(file_content)
-        output = logic.analyze(f, 'mock_filename')
-        assert len(output) == 1
-        for potential_secret in output:
-            assert 'mock_filename' == potential_secret.filename
-            assert (
-                potential_secret.secret_hash
-                == PotentialSecret.hash_secret('m{{h}o)p${e]nob(ody[finds>-_$#thisone}}')
-            )
-
-    @pytest.mark.parametrize(
-        'file_content',
-        STANDARD_POSITIVES,
-    )
-    def test_analyze_standard_positives_with_automaton(self, file_content):
-        automaton = ahocorasick.Automaton()
-
-        word = 'thisone'
-        automaton.add_word(word, word)
-
-        automaton.make_automaton()
-
-        logic = KeywordDetector(automaton=automaton)
-
-        f = mock_file_object(file_content)
-        output = logic.analyze(f, 'mock_filename')
-        # All skipped due to automaton
-        assert len(output) == 0
-
-    @pytest.mark.parametrize(
-        'file_content',
-        STANDARD_POSITIVES,
-    )
-    def test_analyze_with_line_exclude(self, file_content):
-        logic = KeywordDetector(keyword_exclude='thisone')
-
-        f = mock_file_object(file_content)
-        output = logic.analyze(f, 'mock_filename.foo')
-        assert len(output) == 0
+        assert len(secrets) == 1
+        assert secrets[0] == 'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'
 
     @pytest.mark.parametrize(
         'file_content, file_extension',
@@ -233,18 +184,13 @@ class TestKeywordDetector:
         ),
     )
     def test_analyze_quotes_required_positives(self, file_content, file_extension):
-        logic = KeywordDetector()
+        secrets = KeywordDetector().analyze_line(
+            filename='mock_filename{}'.format(file_extension),
+            line=file_content,
+        )
 
-        f = mock_file_object(file_content)
-        mock_filename = 'mock_filename{}'.format(file_extension)
-        output = logic.analyze(f, mock_filename)
-        assert len(output) == 1
-        for potential_secret in output:
-            assert mock_filename == potential_secret.filename
-            assert (
-                potential_secret.secret_hash
-                == PotentialSecret.hash_secret('m{{h}o)p${e]nob(ody[finds>-_$#thisone}}')
-            )
+        assert len(secrets) == 1
+        assert list(secrets)[0].secret_value == 'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'
 
     @pytest.mark.parametrize(
         'file_content',
@@ -255,17 +201,10 @@ class TestKeywordDetector:
         + FOLLOWED_BY_COLON_EQUAL_SIGNS_RE.get('positives').get('quotes_not_required'),
     )
     def test_analyze_go_positives(self, file_content):
-        logic = KeywordDetector()
+        secrets = KeywordDetector().analyze_line(filename='mock_filename.go', line=file_content)
 
-        f = mock_file_object(file_content)
-        output = logic.analyze(f, 'mock_filename.go')
-        assert len(output) == 1
-        for potential_secret in output:
-            assert 'mock_filename.go' == potential_secret.filename
-            assert (
-                potential_secret.secret_hash ==
-                PotentialSecret.hash_secret('m{{h}o)p${e]nob(ody[finds>-_$#thisone}}')
-            )
+        assert len(secrets) == 1
+        assert list(secrets)[0].secret_value == 'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'
 
     @pytest.mark.parametrize(
         'file_content',
@@ -274,125 +213,29 @@ class TestKeywordDetector:
         ).get('quotes_required'),
     )
     def test_analyze_objective_c_positives(self, file_content):
-        logic = KeywordDetector()
+        secrets = KeywordDetector().analyze_line(filename='mock_filename.m', line=file_content)
 
-        f = mock_file_object(file_content)
-        output = logic.analyze(f, 'mock_filename.m')
-        assert len(output) == 1
-        for potential_secret in output:
-            assert 'mock_filename.m' == potential_secret.filename
-            assert (
-                potential_secret.secret_hash ==
-                PotentialSecret.hash_secret('m{{h}o)p${e]nob(ody[finds>-_$#thisone}}')
-            )
+        assert len(secrets) == 1
+        assert list(secrets)[0].secret_value == 'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'
 
+    @staticmethod
     @pytest.mark.parametrize(
-        'file_content',
-        STANDARD_NEGATIVES,
-    )
-    def test_analyze_standard_negatives(self, file_content):
-        logic = KeywordDetector()
-
-        f = mock_file_object(file_content)
-        output = logic.analyze(f, 'mock_filename.foo')
-        assert len(output) == 0
-
-    @pytest.mark.parametrize(
-        'file_content',
-        STANDARD_NEGATIVES + [
-            # FOLLOWED_BY_COLON_RE
+        'line',
+        (
             'apiKey: this.apiKey,',
             "apiKey: fs.readFileSync('foo',",
-        ],
-    )
-    def test_analyze_javascript_negatives(self, file_content):
-        logic = KeywordDetector()
-
-        f = mock_file_object(file_content)
-        output = logic.analyze(f, 'mock_filename.js')
-        assert len(output) == 0
-
-    @pytest.mark.parametrize(
-        'file_content',
-        STANDARD_NEGATIVES + [
-            # FOLLOWED_BY_EQUAL_SIGNS_RE
-            '$password = $input;',
-        ],
-    )
-    def test_analyze_php_negatives(self, file_content):
-        logic = KeywordDetector()
-
-        f = mock_file_object(file_content)
-        output = logic.analyze(f, 'mock_filename.php')
-        assert len(output) == 0
-
-    @pytest.mark.parametrize(
-        'file_content, file_extension',
-        (
-            (negative, file_extension)
-            for negative in (
-                STANDARD_NEGATIVES + [
-                    # FOLLOWED_BY_COLON_QUOTES_REQUIRED_RE
-                    'apikey: hope]nobody[finds>-_$#thisone',
-                    'apikey:hope]nobody[finds>-_$#thisone',
-                    'theapikey:hope]nobody[finds>-_$#thisone',
-                    # FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_RE
-                    "some_dict['secret'] = hope]nobody[finds>-_$#thisone",
-                    'my_password=hope]nobody[finds>-_$#thisone',
-                    'my_password= hope]nobody[finds>-_$#thisone',
-                    'my_password =hope]nobody[finds>-_$#thisone',
-                    'my_password = hope]nobody[finds>-_$#thisone',
-                    'my_password =hope]nobody[finds>-_$#thisone',
-                    'the_password=hope]nobody[finds>-_$#thisone\n',
-                ]
-            ) for file_extension in QUOTES_REQUIRED_FILE_EXTENSIONS
         ),
     )
-    def test_analyze_quotes_required_negatives(self, file_content, file_extension):
-        logic = KeywordDetector()
+    def test_analyze_javascript_negatives(line):
+        with transient_settings({
+            'plugins_used': [{
+                'name': 'KeywordDetector',
+            }],
+        }):
+            assert not list(scan_line(line))
 
-        f = mock_file_object(file_content)
-        output = logic.analyze(
-            f,
-            'mock_filename{}'.format(file_extension),
-        )
-        assert len(output) == 0
+            with tempfile.NamedTemporaryFile(suffix='.js') as f:
+                f.write(line.encode('utf-8'))
+                f.seek(0)
 
-    @pytest.mark.parametrize(
-        'file_content, file_extension',
-        (
-            (standard_positive, file_extension)
-            for standard_positive in STANDARD_POSITIVES
-            for file_extension in (
-                '.yaml',
-                '.yml',
-            )
-        ),
-    )
-    def test_analyze_yaml_negatives(self, file_content, file_extension):
-        logic = KeywordDetector()
-
-        # Make it start with `{{`, (and end with `}}`) so it hits our false-positive check
-        f = mock_file_object(file_content.replace('m{', '{'))
-        output = logic.analyze(
-            f,
-            'mock_filename{}'.format(file_extension),
-        )
-        assert len(output) == 0
-
-    @pytest.mark.parametrize(
-        'file_content',
-        STANDARD_POSITIVES,
-    )
-    def test_analyze_example_negatives(self, file_content):
-        logic = KeywordDetector()
-
-        # Make it start with `<`, (and end with `>`) so it hits our false-positive check
-        f = mock_file_object(
-            file_content.replace('m{', '<').replace('}', '>'),
-        )
-        output = logic.analyze(
-            f,
-            'mock_filename.example',
-        )
-        assert len(output) == 0
+                assert not list(scan_file(f.name))

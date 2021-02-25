@@ -1,1 +1,1 @@
-VERSION = '0.14.3'
+from .core.secrets_collection import SecretsCollection  # noqa: F401

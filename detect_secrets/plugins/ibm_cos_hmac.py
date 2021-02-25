@@ -1,11 +1,13 @@
 import datetime
 import hashlib
 import hmac
+from typing import List
 
 import requests
 
-from detect_secrets.core.constants import VerifiedResult
-from detect_secrets.plugins.base import RegexBasedDetector
+from ..constants import VerifiedResult
+from ..util.code_snippet import CodeSnippet
+from .base import RegexBasedDetector
 
 
 class IbmCosHmacDetector(RegexBasedDetector):
@@ -22,14 +24,18 @@ class IbmCosHmacDetector(RegexBasedDetector):
     password_keyword = r'(?:secret[-_]?(?:access)?[-_]?key)'
     password = r'([a-f0-9]{48}(?![a-f0-9]))'
     denylist = (
-        RegexBasedDetector.assign_regex_generator(
+        RegexBasedDetector.build_assignment_regex(
             prefix_regex=token_prefix,
             secret_keyword_regex=password_keyword,
             secret_regex=password,
         ),
     )
 
-    def verify(self, token, context):
+    def verify(       # type: ignore[override]  # noqa: F821
+        self,
+        secret: str,
+        context: CodeSnippet,
+    ) -> VerifiedResult:
         key_id_matches = find_access_key_id(context)
 
         if not key_id_matches:
@@ -37,9 +43,7 @@ class IbmCosHmacDetector(RegexBasedDetector):
 
         try:
             for key_id in key_id_matches:
-                verify_result = verify_ibm_cos_hmac_credentials(
-                    key_id, token,
-                )
+                verify_result = verify_ibm_cos_hmac_credentials(key_id, secret)
                 if verify_result:
                     return VerifiedResult.VERIFIED_TRUE
         except requests.exceptions.RequestException:
@@ -48,11 +52,11 @@ class IbmCosHmacDetector(RegexBasedDetector):
         return VerifiedResult.VERIFIED_FALSE
 
 
-def find_access_key_id(context):
+def find_access_key_id(context: CodeSnippet) -> List[str]:
     key_id_keyword_regex = r'(?:access[-_]?(?:key)?[-_]?(?:id)?|key[-_]?id)'
     key_id_regex = r'([a-f0-9]{32})'
 
-    regex = RegexBasedDetector.assign_regex_generator(
+    regex = RegexBasedDetector.build_assignment_regex(
         prefix_regex=IbmCosHmacDetector.token_prefix,
         secret_keyword_regex=key_id_keyword_regex,
         secret_regex=key_id_regex,
@@ -60,17 +64,16 @@ def find_access_key_id(context):
 
     return [
         match
-        for line in context.splitlines()
+        for line in context
         for match in regex.findall(line)
     ]
 
 
-def hash(key, msg):
+def hash(key: bytes, msg: str) -> bytes:
     return hmac.new(key, msg.encode('utf-8'), hashlib.sha256).digest()
 
 
-def createSignatureKey(key, datestamp, region, service):
-
+def createSignatureKey(key: str, datestamp: str, region: str, service: str) -> bytes:
     keyDate = hash(('AWS4' + key).encode('utf-8'), datestamp)
     keyString = hash(keyDate, region)
     keyService = hash(keyString, service)
@@ -79,19 +82,19 @@ def createSignatureKey(key, datestamp, region, service):
 
 
 def verify_ibm_cos_hmac_credentials(
-    access_key,
-    secret_key,
-    host='s3.us.cloud-object-storage.appdomain.cloud',
-):
+    access_key: str,
+    secret_key: str,
+    host: str = 's3.us.cloud-object-storage.appdomain.cloud',
+) -> bool:
     response = query_ibm_cos_hmac(access_key, secret_key, host)
     return response.status_code == 200
 
 
 def query_ibm_cos_hmac(
-    access_key,
-    secret_key,
-    host='s3.us.cloud-object-storage.appdomain.cloud',
-):
+    access_key: str,
+    secret_key: str,
+    host: str = 's3.us.cloud-object-storage.appdomain.cloud',
+) -> requests.Response:
     # Sample code referenced from link below
     # https://cloud.ibm.com/docs/services/cloud-object-storage/api-reference?topic=cloud-object-storage-hmac-signature  # noqa: E501
 

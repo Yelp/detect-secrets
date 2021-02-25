@@ -7,12 +7,15 @@ import re
 import string
 import textwrap
 from datetime import datetime
+from typing import cast
+from typing import List
+from typing import Union
 
 import requests
 
-from detect_secrets.core.constants import VerifiedResult
-from detect_secrets.plugins.base import classproperty
-from detect_secrets.plugins.base import RegexBasedDetector
+from ..constants import VerifiedResult
+from ..util.code_snippet import CodeSnippet
+from .base import RegexBasedDetector
 
 
 class AWSKeyDetector(RegexBasedDetector):
@@ -21,25 +24,35 @@ class AWSKeyDetector(RegexBasedDetector):
 
     denylist = (
         re.compile(r'AKIA[0-9A-Z]{16}'),
+
+        # This examines the variable name to identify AWS secret tokens.
+        # The order is important since we want to prefer finding `AKIA`-based
+        # keys (since they can be verified), rather than the secret tokens.
+        re.compile(r'aws.{0,20}?[\'\"]([0-9a-zA-Z/+]{40})[\'\"]'),
     )
 
-    @classproperty
-    def disable_flag_text(cls):
-        return 'no-aws-key-scan'
-
-    def verify(self, token, context):
+    def verify(       # type: ignore[override]  # noqa: F821
+        self,
+        secret: str,
+        context: CodeSnippet,
+    ) -> VerifiedResult:
+        # As this verification process looks for multi-factor secrets, by assuming that
+        # the identified secret token is the key ID (then looking for the corresponding secret).
+        # we quit early if it fails our assumptions.
+        if not self.denylist[0].match(secret):
+            return VerifiedResult.UNVERIFIED
         secret_access_key_candidates = get_secret_access_keys(context)
         if not secret_access_key_candidates:
             return VerifiedResult.UNVERIFIED
 
         for candidate in secret_access_key_candidates:
-            if verify_aws_secret_access_key(token, candidate):
+            if verify_aws_secret_access_key(secret, candidate):
                 return VerifiedResult.VERIFIED_TRUE
 
         return VerifiedResult.VERIFIED_FALSE
 
 
-def get_secret_access_keys(content):
+def get_secret_access_keys(content: CodeSnippet) -> List[str]:
     # AWS secret access keys are 40 characters long.
     # e.g. some_function('AKIA...', '[secret key]')
     # e.g. secret_access_key = '[secret key]'
@@ -51,21 +64,18 @@ def get_secret_access_keys(content):
 
     return [
         match[2]
-        for line in content.splitlines()
+        for line in content
         for match in regex.findall(line)
     ]
 
 
-def verify_aws_secret_access_key(key, secret):  # pragma: no cover
+def verify_aws_secret_access_key(key: str, secret: str) -> bool:  # pragma: no cover
     """
     Using requests, because we don't want to require boto3 for this one
     optional verification step.
 
     Loosely based off:
     https://docs.aws.amazon.com/general/latest/gr/sigv4-signed-request-examples.html
-
-    :type key: str
-    :type secret: str
     """
     now = datetime.utcnow()
     amazon_datetime = now.strftime('%Y%m%dT%H%M%SZ')
@@ -136,21 +146,27 @@ def verify_aws_secret_access_key(key, secret):  # pragma: no cover
 
     # Step #3: Calculate signature
     signing_key = _sign(
-        _sign(
-            _sign(
-                _sign(
-                    'AWS4{}'.format(secret).encode('utf-8'),
-                    now.strftime('%Y%m%d'),
+        cast(
+            bytes, _sign(
+                cast(
+                    bytes, _sign(
+                        cast(
+                            bytes, _sign(
+                                'AWS4{}'.format(secret).encode('utf-8'),
+                                now.strftime('%Y%m%d'),
+                            ),
+                        ),
+                        region,
+                    ),
                 ),
-                region,
+                'sts',
             ),
-            'sts',
         ),
         'aws4_request',
     )
 
     signature = _sign(
-        signing_key,
+        cast(bytes, signing_key),
         string_to_sign,
         hex=True,
     )
@@ -158,14 +174,9 @@ def verify_aws_secret_access_key(key, secret):  # pragma: no cover
     # Step #4: Add to request headers
     headers['Authorization'] = (
         'AWS4-HMAC-SHA256 '
-        'Credential={access_key}/{scope}, '
-        'SignedHeaders={signed_headers}, '
-        'Signature={signature}'
-    ).format(
-        access_key=key,
-        scope=scope,
-        signed_headers=signed_headers,
-        signature=signature,
+        f'Credential={key}/{scope}, '
+        f'SignedHeaders={signed_headers}, '
+        f'Signature={cast(str, signature)}'
     )
 
     # Step #5: Finally send the request
@@ -181,7 +192,7 @@ def verify_aws_secret_access_key(key, secret):  # pragma: no cover
     return True
 
 
-def _sign(key, message, hex=False):  # pragma: no cover
+def _sign(key: bytes, message: str, hex: bool = False) -> Union[str, bytes]:  # pragma: no cover
     value = hmac.new(key, message.encode('utf-8'), hashlib.sha256)
     if not hex:
         return value.digest()

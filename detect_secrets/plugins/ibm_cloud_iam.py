@@ -1,7 +1,10 @@
+from typing import cast
+from typing import Union
+
 import requests
 
-from detect_secrets.core.constants import VerifiedResult
-from detect_secrets.plugins.base import RegexBasedDetector
+from ..constants import VerifiedResult
+from .base import RegexBasedDetector
 
 
 class IbmCloudIamDetector(RegexBasedDetector):
@@ -17,23 +20,24 @@ class IbmCloudIamDetector(RegexBasedDetector):
     key_or_pass = r'(?:key|pwd|password|pass|token)'
     secret = r'([a-zA-Z0-9_\-]{44}(?![a-zA-Z0-9_\-]))'
     denylist = [
-        RegexBasedDetector.assign_regex_generator(
+        RegexBasedDetector.build_assignment_regex(
             prefix_regex=opt_ibm_cloud_iam + opt_dash_undrscr + opt_api,
             secret_keyword_regex=key_or_pass,
             secret_regex=secret,
         ),
     ]
 
-    def verify(self, token, **kwargs):
-        response = verify_cloud_iam_api_key(token)
+    def verify(self, secret: str) -> VerifiedResult:
+        response = verify_cloud_iam_api_key(secret)
 
         return VerifiedResult.VERIFIED_TRUE if response.status_code == 200 \
             else VerifiedResult.VERIFIED_FALSE
 
 
-def verify_cloud_iam_api_key(apikey):  # pragma: no cover
+def verify_cloud_iam_api_key(apikey: Union[str, bytes]) -> requests.Response:  # pragma: no cover
     if type(apikey) == bytes:
-        apikey = apikey.decode('UTF-8')
+        apikey = cast(bytes, apikey).decode('UTF-8')
+
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Accept': 'application/json',

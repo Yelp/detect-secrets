@@ -3,9 +3,10 @@ import textwrap
 import pytest
 import responses
 
-from detect_secrets.core.constants import VerifiedResult
+from detect_secrets.constants import VerifiedResult
 from detect_secrets.plugins.softlayer import find_username
 from detect_secrets.plugins.softlayer import SoftlayerDetector
+from detect_secrets.util.code_snippet import get_code_snippet
 
 SL_USERNAME = 'test@testy.test'
 SL_TOKEN = 'abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234'
@@ -78,7 +79,7 @@ class TestSoftlayerDetector:
     def test_analyze_line(self, payload, should_flag):
         logic = SoftlayerDetector()
 
-        output = logic.analyze_line(payload, 1, 'mock_filename')
+        output = logic.analyze_line(filename='mock_filename', line=payload)
         assert len(output) == (1 if should_flag else 0)
 
     @responses.activate
@@ -90,7 +91,7 @@ class TestSoftlayerDetector:
 
         assert SoftlayerDetector().verify(
             SL_TOKEN,
-            'softlayer_username={}'.format(SL_USERNAME),
+            get_code_snippet([f'softlayer_username={SL_USERNAME}'], 1),
         ) == VerifiedResult.VERIFIED_FALSE
 
     @responses.activate
@@ -101,20 +102,20 @@ class TestSoftlayerDetector:
         )
         assert SoftlayerDetector().verify(
             SL_TOKEN,
-            'softlayer_username={}'.format(SL_USERNAME),
+            get_code_snippet([f'softlayer_username={SL_USERNAME}'], 1),
         ) == VerifiedResult.VERIFIED_TRUE
 
     @responses.activate
     def test_verify_unverified_secret(self):
         assert SoftlayerDetector().verify(
             SL_TOKEN,
-            'softlayer_username={}'.format(SL_USERNAME),
+            get_code_snippet([f'softlayer_username={SL_USERNAME}'], 1),
         ) == VerifiedResult.UNVERIFIED
 
     def test_verify_no_secret(self):
         assert SoftlayerDetector().verify(
             SL_TOKEN,
-            'no_un={}'.format(SL_USERNAME),
+            get_code_snippet([f'no_un={SL_USERNAME}'], 1),
         ) == VerifiedResult.UNVERIFIED
 
     @pytest.mark.parametrize(
@@ -162,4 +163,4 @@ class TestSoftlayerDetector:
         ),
     )
     def test_find_username(self, content, expected_output):
-        assert find_username(content) == expected_output
+        assert find_username(get_code_snippet(content.splitlines(), 1)) == expected_output

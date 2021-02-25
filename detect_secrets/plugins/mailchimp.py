@@ -6,8 +6,8 @@ from base64 import b64encode
 
 import requests
 
-from detect_secrets.core.constants import VerifiedResult
-from detect_secrets.plugins.base import RegexBasedDetector
+from ..constants import VerifiedResult
+from .base import RegexBasedDetector
 
 
 class MailchimpDetector(RegexBasedDetector):
@@ -18,8 +18,8 @@ class MailchimpDetector(RegexBasedDetector):
         re.compile(r'[0-9a-z]{32}-us[0-9]{1,2}'),
     )
 
-    def verify(self, token, **kwargs):  # pragma: no cover
-        _, datacenter_number = token.split('-us')
+    def verify(self, secret: str) -> VerifiedResult:  # pragma: no cover
+        _, datacenter_number = secret.split('-us')
 
         response = requests.get(
             'https://us{}.api.mailchimp.com/3.0/'.format(
@@ -27,7 +27,7 @@ class MailchimpDetector(RegexBasedDetector):
             ),
             headers={
                 'Authorization': b'Basic ' + b64encode(
-                    'any_user:{}'.format(token).encode('utf-8'),
+                    'any_user:{}'.format(secret).encode('utf-8'),
                 ),
             },
         )

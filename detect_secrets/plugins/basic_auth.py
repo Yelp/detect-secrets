@@ -1,6 +1,6 @@
 import re
 
-from detect_secrets.plugins.base import RegexBasedDetector
+from .base import RegexBasedDetector
 
 
 # This list is derived from RFC 3986 Section 2.2.

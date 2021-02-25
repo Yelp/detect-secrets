@@ -4,9 +4,9 @@ This plugin finds JWT tokens
 import base64
 import json
 import re
+from typing import Generator
 
-from detect_secrets.plugins.base import classproperty
-from detect_secrets.plugins.base import RegexBasedDetector
+from .base import RegexBasedDetector
 
 
 class JwtTokenDetector(RegexBasedDetector):
@@ -16,22 +16,18 @@ class JwtTokenDetector(RegexBasedDetector):
         re.compile(r'eyJ[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*?'),
     ]
 
-    @classproperty
-    def disable_flag_text(cls):
-        return 'no-jwt-scan'
-
-    def secret_generator(self, string, *args, **kwargs):
-        return filter(
+    def analyze_string(self, string: str) -> Generator[str, None, None]:
+        yield from filter(
             self.is_formally_valid,
-            super(JwtTokenDetector, self).secret_generator(string, *args, **kwargs),
+            super().analyze_string(string),
         )
 
     @staticmethod
-    def is_formally_valid(token):
+    def is_formally_valid(token: str) -> bool:
         parts = token.split('.')
-        for idx, part in enumerate(parts):
+        for idx, part_str in enumerate(parts):
             try:
-                part = part.encode('ascii')
+                part = part_str.encode('ascii')
                 # https://github.com/magical/jwt-python/blob/2fd976b41111031313107792b40d5cfd1a8baf90/jwt.py#L49
                 # https://github.com/jpadilla/pyjwt/blob/3d47b0ea9e5d489f9c90ee6dde9e3d9d69244e3a/jwt/utils.py#L33
                 m = len(part) % 4

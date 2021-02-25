@@ -3,8 +3,8 @@ from base64 import b64encode
 
 import requests
 
-from detect_secrets.core.constants import VerifiedResult
-from detect_secrets.plugins.base import RegexBasedDetector
+from ..constants import VerifiedResult
+from .base import RegexBasedDetector
 
 
 class StripeDetector(RegexBasedDetector):
@@ -16,12 +16,12 @@ class StripeDetector(RegexBasedDetector):
         re.compile(r'(?:r|s)k_live_[0-9a-zA-Z]{24}'),
     )
 
-    def verify(self, token, **kwargs):  # pragma: no cover
+    def verify(self, secret: str) -> VerifiedResult:  # pragma: no cover
         response = requests.get(
             'https://api.stripe.com/v1/charges',
             headers={
                 'Authorization': b'Basic ' + b64encode(
-                    '{}:'.format(token).encode('utf-8'),
+                    '{}:'.format(secret).encode('utf-8'),
                 ),
             },
         )
@@ -30,7 +30,7 @@ class StripeDetector(RegexBasedDetector):
             return VerifiedResult.VERIFIED_TRUE
 
         # Restricted keys may be limited to certain endpoints
-        if token.startswith('rk_live'):
+        if secret.startswith('rk_live'):
             return VerifiedResult.UNVERIFIED
 
         return VerifiedResult.VERIFIED_FALSE

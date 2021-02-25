@@ -1,0 +1,116 @@
+#!/usr/bin/env python
+import argparse
+import os
+import subprocess
+import sys
+from contextlib import contextmanager
+from typing import Generator
+
+from detect_secrets.__version__ import VERSION
+
+
+PACKAGE_NAME = 'detect-secrets'
+
+
+def main() -> int:
+    args = parse_args()
+    set_index_url(args.prod)
+
+    if exists_in_pypi():
+        # TODO: Can we force update versions in pypi?
+        print('error: version already exists in pypi.', file=sys.stderr)
+        return 1
+
+    install_dependencies()
+    with create_distribution_files():
+        upload_to_pypi()
+
+    if not exists_in_pypi():
+        print('error: was unable to verify upload.', file=sys.stderr)
+        return 1
+
+    return 0
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--prod',
+        action='store_true',
+        help='Uploads to proper PyPI.',
+    )
+
+    return parser.parse_args()
+
+
+def set_index_url(is_prod: bool) -> None:
+    # Source: https://pip.pypa.io/en/latest/user_guide/#environment-variables
+    if os.environ.get('PIP_DEFAULT_INDEX_URL'):
+        # If this is already specified, don't specify the index url through CLI, otherwise
+        # it will be overwritten.
+        return
+
+    if is_prod:
+        # This will default to public pypi.
+        return
+
+    # Otherwise, we leverage environment variables to inject this to make things simpler.
+    os.environ['PIP_DEFAULT_INDEX_URL'] = 'https://test.pypi.org/simple'
+
+
+def install_dependencies() -> None:
+    pip_install('setuptools', 'wheel', 'twine')
+
+
+def exists_in_pypi() -> bool:
+    try:
+        subprocess.check_output(
+            [
+                sys.executable, '-m',
+                'pip', 'install',
+                f'{PACKAGE_NAME}==v{VERSION}',
+            ],
+            stderr=subprocess.DEVNULL,
+        )
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+
+def upload_to_pypi() -> None:
+    subprocess.run([
+        'twine',
+        'upload',
+        '--repository-url', os.environ['PIP_DEFAULT_INDEX_URL'],
+        'dist/*',
+    ])
+
+
+def pip_install(*packages) -> None:
+    subprocess.run([
+        sys.executable, '-m',
+        'pip', 'install',
+        *packages,
+    ])
+
+
+@contextmanager
+def create_distribution_files() -> Generator[None, None, None]:
+    try:
+        subprocess.run([
+            sys.executable, 'setup.py',
+            # sdist == source files
+            'sdist',
+
+            # bdest == binary distributions through wheels (for faster installs)
+            'bdist_wheel',
+        ])
+
+        yield
+    finally:
+        os.removedirs('build')
+        os.removedirs('dist')
+
+
+if __name__ == '__main__':
+    sys.exit(main())

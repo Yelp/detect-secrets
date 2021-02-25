@@ -1,9 +1,11 @@
 import re
+from typing import List
 
 import requests
 
-from detect_secrets.core.constants import VerifiedResult
-from detect_secrets.plugins.base import RegexBasedDetector
+from ..constants import VerifiedResult
+from ..util.code_snippet import CodeSnippet
+from .base import RegexBasedDetector
 
 
 class CloudantDetector(RegexBasedDetector):
@@ -24,12 +26,12 @@ class CloudantDetector(RegexBasedDetector):
     http = r'(?:https?\:\/\/)'
     cloudant_api_url = r'cloudant\.com'
     denylist = [
-        RegexBasedDetector.assign_regex_generator(
+        RegexBasedDetector.build_assignment_regex(
             prefix_regex=cl,
             secret_keyword_regex=cl_key_or_pass,
             secret_regex=cl_pw,
         ),
-        RegexBasedDetector.assign_regex_generator(
+        RegexBasedDetector.build_assignment_regex(
             prefix_regex=cl,
             secret_keyword_regex=cl_key_or_pass,
             secret_regex=cl_api_key,
@@ -60,26 +62,29 @@ class CloudantDetector(RegexBasedDetector):
         ),
     ]
 
-    def verify(self, token, context):
-
+    def verify(       # type: ignore[override]  # noqa: F821
+        self,
+        secret: str,
+        context: CodeSnippet,
+    ) -> VerifiedResult:
         hosts = find_account(context)
         if not hosts:
             return VerifiedResult.UNVERIFIED
 
         for host in hosts:
-            return verify_cloudant_key(host, token)
+            return verify_cloudant_key(host, secret)
 
         return VerifiedResult.VERIFIED_FALSE
 
 
-def find_account(context):
+def find_account(context: CodeSnippet) -> List[str]:
     opt_hostname_keyword = r'(?:hostname|host|username|id|user|userid|user-id|user-name|' \
         'name|user_id|user_name|uname|account)'
     account = r'(\w[\w\-]*)'
     opt_basic_auth = r'(?:[\w\-:%]*\@)?'
 
     regexes = (
-        RegexBasedDetector.assign_regex_generator(
+        RegexBasedDetector.build_assignment_regex(
             prefix_regex=CloudantDetector.cl,
             secret_keyword_regex=opt_hostname_keyword,
             secret_regex=account,
@@ -98,13 +103,13 @@ def find_account(context):
 
     return [
         match
-        for line in context.splitlines()
+        for line in context
         for regex in regexes
         for match in regex.findall(line)
     ]
 
 
-def verify_cloudant_key(hostname, token):
+def verify_cloudant_key(hostname: str, token: str) -> VerifiedResult:
     headers = {'Content-type': 'application/json'}
     request_url = 'https://{hostname}:' \
         '{token}' \
