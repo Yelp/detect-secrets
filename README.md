@@ -377,6 +377,10 @@ optional arguments:
   --stats       Displays the results of an interactive auditing session which
                 have been saved to a baseline file.
   --report      Displays a report with the secrets detected
+
+reporting:
+  Display a summary with all the findings and the made decisions. To be used with the report mode (--report).
+
   --only-real   Only includes real secrets in the report
   --only-false  Only includes false positives in the report
 

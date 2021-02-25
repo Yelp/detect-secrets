@@ -46,19 +46,21 @@ def _add_mode_parser(parser: argparse.ArgumentParser) -> None:
         ),
     )
 
-
-def _add_report_module(parent: argparse.ArgumentParser) -> None:
-    parser = parent.add_argument_group(
-        title='reporting',
-        description=(
-            'Display a summary with all the findings and the made decisions'
-        ),
-    )
     parser.add_argument(
         '--report',
         action='store_true',
         help=(
             'Displays a report with the secrets detected'
+        ),
+    )
+
+
+def _add_report_module(parent: argparse.ArgumentParser) -> None:
+    parser = parent.add_argument_group(
+        title='reporting',
+        description=(
+            'Display a report with all the findings and the made decisions. '
+            'To be used with the report mode (--report).'
         ),
     )
 
