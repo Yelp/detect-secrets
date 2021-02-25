@@ -5,6 +5,7 @@ Thanks to all our contributors who has helped this project so far (in alphabetic
 - [@0atman](https://github.com/0atman)
 - [@adrianbn](https://github.com/adrianbn)
 - [@baboateng](https://github.com/baboateng)
+- [@cbows](https://github.com/cbows)
 - [@cclauss](https://github.com/cclauss)
 - [@cleborys](https://github.com/cleborys)
 - [@DariuszPorowski](https://github.com/DariuszPorowski)

@@ -29,6 +29,16 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 ### Unreleased
 -->
 
+### v1.0.1
+##### February 25th, 2021
+
+#### :bug: Bugfixes
+
+- Fixes recursive loop with installation ([#408], thanks [@cbows])
+
+[#408]: https://github.com/Yelp/detect-secrets/pull/408
+[@cbows]: https://github.com/cbows
+
 ### v1.0.0
 ##### February 24th, 2021
 
