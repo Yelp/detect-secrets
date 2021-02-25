@@ -161,6 +161,7 @@ FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
         whitespace=OPTIONAL_WHITESPACE,
         secret=SECRET,
     ),
+    flags=re.IGNORECASE,
 )
 FOLLOWED_BY_COLON_REGEX = re.compile(
     # e.g. api_key: foo
@@ -171,6 +172,7 @@ FOLLOWED_BY_COLON_REGEX = re.compile(
         whitespace=OPTIONAL_WHITESPACE,
         secret=SECRET,
     ),
+    flags=re.IGNORECASE,
 )
 FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX = re.compile(
     # e.g. api_key: "foo"
@@ -181,6 +183,7 @@ FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX = re.compile(
         whitespace=OPTIONAL_WHITESPACE,
         secret=SECRET,
     ),
+    flags=re.IGNORECASE,
 )
 FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX = re.compile(
     # e.g. my_password = "bar"
@@ -192,6 +195,7 @@ FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX
         optional_whitespace=OPTIONAL_WHITESPACE,
         secret=SECRET,
     ),
+    flags=re.IGNORECASE,
 )
 FOLLOWED_BY_EQUAL_SIGNS_REGEX = re.compile(
     # e.g. my_password = bar
@@ -202,6 +206,7 @@ FOLLOWED_BY_EQUAL_SIGNS_REGEX = re.compile(
         whitespace=OPTIONAL_WHITESPACE,
         secret=SECRET,
     ),
+    flags=re.IGNORECASE,
 )
 FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
     # e.g. my_password = "bar"
@@ -212,6 +217,7 @@ FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
         whitespace=OPTIONAL_WHITESPACE,
         secret=SECRET,
     ),
+    flags=re.IGNORECASE,
 )
 FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX = re.compile(
     # e.g. private_key "something";
@@ -222,6 +228,7 @@ FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX = re.compile(
         whitespace=OPTIONAL_WHITESPACE,
         secret=SECRET,
     ),
+    flags=re.IGNORECASE,
 )
 DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_COLON_REGEX: 4,

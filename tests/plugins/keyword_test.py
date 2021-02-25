@@ -232,10 +232,19 @@ class TestKeywordDetector:
                 'name': 'KeywordDetector',
             }],
         }):
-            assert not list(scan_line(line))
+            assert list(scan_line(line))
 
             with tempfile.NamedTemporaryFile(suffix='.js') as f:
                 f.write(line.encode('utf-8'))
                 f.seek(0)
 
                 assert not list(scan_file(f.name))
+
+    @staticmethod
+    def test_ignore_case():
+        with transient_settings({
+            'plugins_used': [{
+                'name': 'KeywordDetector',
+            }],
+        }):
+            assert list(scan_line('os.environ["AWS_SECRET_ACCESS_KEY"] = "testing"'))
