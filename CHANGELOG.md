@@ -1,6 +1,7 @@
 # What's New
 
-Thanks to all our contributors, users, and the many people that make `detect-secrets` possible! :heart:
+Thanks to all our contributors, users, and the many people that make `detect-secrets` possible!
+:heart:
 
 If you love `detect-secrets`, please star our project on GitHub to show your support! :star:
 
@@ -27,6 +28,81 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 <!--
 ### Unreleased
 -->
+
+### v1.0.0
+##### February 24th, 2021
+
+#### :mega: Release Highlights
+
+- Added a concept of ["filters"](./docs/filters.md), to weed out false positives
+- Introduce the concept of ["transformers"](./docs/design.md#Transformers), to standardize file
+  parsing across plugins
+- Designed an upgrade system for easy migrations of older baseline versions
+- Core engine redesigned to support module usage (rather than just interacting with it through
+  the command line)
+- Added a global [`Settings`](./docs/design.md#Settings) object for repeatable, serializable,
+  configurations
+- Introduced dependency injection framework for easy-to-design filters.
+
+#### :boom: Breaking Changes
+
+Honestly, too many to list out. Check out the original pull request
+([#355](https://github.com/Yelp/detect-secrets/pull/355)) for more details. It's safe to assume
+that if you interacted with `detect-secrets` as a module (rather than solely a pre-commit hook
+or CLI tool), the APIs have changed (for the better).
+
+**However**, with the new upgrade infrastructure in place, the baseline files will auto upgrade
+by themselves. Users that have used it solely as a pre-commit hook or CLI tool may need to consult
+the ["User Facing Changes"](https://github.com/Yelp/detect-secrets/pull/355) for flag renaming.
+
+#### :tada: New Features
+
+- Added `NpmDetector` ([#347], thanks [@ninoseki])
+- Added `AzureStorageKeyDetector` ([#359], thanks [@DariuszPorowski])
+- Added `SquareOauthDetector` ([#398], thanks [@pablosantiagolopez])
+- Added `--only-allowlisted` flag to scan for inline ignores
+- Added `--list-all-plugins` to show a list of all plugins available to the engine
+- Added `--exclude-secrets` flag to ignore secrets that match specific regexes
+  ([#391], thanks [@pablosantiagolopez])
+- Added `--slim` flag to generate baselines that minimize git diffs
+- Added `--disable-filter` to disable specific filters
+- Added `--disable-plugin` to disable specific plugins
+- Added support for `# pragma: allowlist nextline secret` to ignore the following line
+  ([#367], thanks [@nickiaconis])
+
+[#347]: https://github.com/Yelp/detect-secrets/pull/347
+[#359]: https://github.com/Yelp/detect-secrets/pull/359
+[#367]: https://github.com/Yelp/detect-secrets/pull/367
+[#391]: https://github.com/Yelp/detect-secrets/pull/391
+[#398]: https://github.com/Yelp/detect-secrets/pull/398
+[@DariuszPorowski]: https://github.com/DariuszPorowski
+[@nickiaconis]: https://github.com/nickiaconis
+[@ninoseki]: https://github.com/ninoseki
+[@pablosantiagolopez]: https://github.com/pablosantiagolopez
+
+#### :telescope: Accuracy
+
+- AWS Plugin now scans for secret tokens as well ([#397], thanks [@pablosantiagolopez])
+
+[#397]: https://github.com/Yelp/detect-secrets/pull/397
+[@pablosantiagolopez]: https://github.com/pablosantiagolopez
+
+#### :mortar_board: Walkthrough / Help
+
+- The README now includes examples of common usages, features, and an FAQ section for
+  the common questions we often receive as Github issues.
+- So much better [technical documentation](./docs)!
+- Type support added
+
+#### :bug: Bugfixes
+
+- Inline allowlisting is respected by regular scans, rather than only pre-commit hook
+- `audit` functionality improved on Windows machines
+- git operations now handle file paths with spaces
+- fix KeywordDetector hanging on very long lines ([#373], thanks [@gpflaum])
+
+[#373]: https://github.com/Yelp/detect-secrets/pull/373
+[@gpflaum]: https://github.com/gpflaum
 
 ### v0.14.3
 ##### August 27th, 2020
@@ -723,56 +799,3 @@ This includes using `# pragma: allowlist secret` now for inline allowlisting.
 [#16]: https://github.com/Yelp/detect-secrets/pull/16
 [#17]: https://github.com/Yelp/detect-secrets/pull/17
 [#18]: https://github.com/Yelp/detect-secrets/pull/18
-
-
-
-# Special thanks to our awesome contributors! :clap:
-
-- [@0atman]
-- [@adrianbn]
-- [@baboateng]
-- [@cclauss]
-- [@cleborys]
-- [@dgzlopes]
-- [@EdOverflow]
-- [@gdemarcsek]
-- [@guykisel]
-- [@hpandeycodeit]
-- [@jkozera]
-- [@JoshuaRLi]
-- [@justineyster]
-- [@killuazhu]
-- [@lirantal]
-- [@Namburgesas]
-- [@neunkasulle]
-- [@nymous]
-- [@Patil2099]
-- [@richo]
-- [@security-architecture]
-- [@whathejoe]
-- [@zioalex]
-
-[@0atman]: https://github.com/0atman
-[@adrianbn]: https://github.com/adrianbn
-[@baboateng]: https://github.com/baboateng
-[@cclauss]: https://github.com/cclauss
-[@cleborys]: https://github.com/cleborys
-[@dgzlopes]: https://github.com/dgzlopes
-[@EdOverflow]: https://github.com/EdOverflow
-[@gdemarcsek]: https://github.com/gdemarcsek
-[@guykisel]: https://github.com/guykisel
-[@hpandeycodeit]: https://github.com/hpandeycodeit
-[@jkozera]: https://github.com/jkozera
-[@JoshuaRLi]: https://github.com/JoshuaRLi
-[@justineyster]: https://github.com/justineyster
-[@KevinHock]: https://github.com/KevinHock
-[@killuazhu]: https://github.com/killuazhu
-[@lirantal]: https://github.com/lirantal
-[@Namburgesas]: https://github.com/Namburgesas
-[@neunkasulle]: https://github.com/neunkasulle
-[@nymous]: https://github.com/nymous
-[@Patil2099]: https://github.com/Patil2099
-[@richo]: https://github.com/richo
-[@security-architecture]: https://github.com/security-architecture
-[@whathejoe]: https://github.com/whathejoe
-[@zioalex]: https://github.com/zioalex

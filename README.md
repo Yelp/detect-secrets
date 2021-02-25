@@ -209,15 +209,20 @@ to use. Use this handy checklist to help you decide:
 
 ```
 $ detect-secrets scan --help
-usage: detect-secrets scan [-h] [--string [STRING]] [--all-files]
-                        [--baseline FILENAME] [--force-use-all-plugins]
-                        [--base64-limit [BASE64_LIMIT]]
-                        [--hex-limit [HEX_LIMIT]]
-                        [--disabled-plugins DISABLED_PLUGINS] [-n]
-                        [--exclude-lines EXCLUDE_LINES]
-                        [--exclude-files EXCLUDE_FILES]
-                        [--word-list WORD_LIST_FILE]
-                        [path [path ...]]
+usage: detect-secrets scan [-h] [--string [STRING]] [--only-allowlisted]
+                           [--all-files] [--baseline FILENAME]
+                           [--force-use-all-plugins] [--slim]
+                           [--list-all-plugins] [-p PLUGIN]
+                           [--base64-limit [BASE64_LIMIT]]
+                           [--hex-limit [HEX_LIMIT]]
+                           [--disable-plugin DISABLE_PLUGIN]
+                           [-n | --only-verified]
+                           [--exclude-lines EXCLUDE_LINES]
+                           [--exclude-files EXCLUDE_FILES]
+                           [--exclude-secrets EXCLUDE_SECRETS]
+                           [--word-list WORD_LIST_FILE] [-f FILTER]
+                           [--disable-filter DISABLE_FILTER]
+                           [path [path ...]]
 
 Scans a repository for secrets in code. The generated output is compatible
 with `detect-secrets-hook --baseline`.
@@ -230,6 +235,9 @@ optional arguments:
   -h, --help            show this help message and exit
   --string [STRING]     Scans an individual string, and displays configured
                         plugins' verdict.
+  --only-allowlisted    Only scans the lines that are flagged with `allowlist
+                        secret`. This helps verify that individual exceptions
+                        are indeed non-secrets.
 
 scan options:
   --all-files           Scan all files recursively (as compared to only
@@ -242,19 +250,27 @@ scan options:
                         However, this may also mean it doesn't perform the
                         scan with the latest plugins. If this flag is
                         provided, it will always use the latest plugins
+  --slim                Slim baselines are created with the intention of
+                        minimizing differences between commits. However, they
+                        are not compatible with the `audit` functionality, and
+                        slim baselines will need to be remade to be audited.
 
 plugin options:
   Configure settings for each secret scanning ruleset. By default, all
   plugins are enabled unless explicitly disabled.
 
+  --list-all-plugins    Lists all plugins that will be used for the scan.
+  -p PLUGIN, --plugin PLUGIN
+                        Specify path to custom secret detector plugin.
   --base64-limit [BASE64_LIMIT]
                         Sets the entropy limit for high entropy strings. Value
                         must be between 0.0 and 8.0, defaults to 4.5.
   --hex-limit [HEX_LIMIT]
                         Sets the entropy limit for high entropy strings. Value
                         must be between 0.0 and 8.0, defaults to 3.0.
-  --disabled-plugin DISABLED_PLUGIN
-                        Plugin class names to disable. e.g. Base64HighEntropyString
+  --disable-plugin DISABLE_PLUGIN
+                        Plugin class names to disable. e.g.
+                        Base64HighEntropyString
 
 filter options:
   Configure settings for filtering out secrets after they are flagged by the
@@ -262,6 +278,7 @@ filter options:
 
   -n, --no-verify       Disables additional verification of secrets via
                         network call.
+  --only-verified       Only flags secrets that can be verified.
   --exclude-lines EXCLUDE_LINES
                         If lines match this regex, it will be ignored.
   --exclude-files EXCLUDE_FILES
@@ -271,6 +288,15 @@ filter options:
   --word-list WORD_LIST_FILE
                         Text file with a list of words, if a secret contains a
                         word in the list we ignore it.
+  -f FILTER, --filter FILTER
+                        Specify path to custom filter. May be a python module
+                        path (e.g.
+                        detect_secrets.filters.common.is_invalid_file) or a
+                        local file path (e.g.
+                        file://path/to/file.py::function_name).
+  --disable-filter DISABLE_FILTER
+                        Specify filter to disable. e.g.
+                        detect_secrets.filters.common.is_invalid_file
 ```
 
 ### Blocking Secrets not in Baseline
@@ -278,13 +304,17 @@ filter options:
 ```
 $ detect-secrets-hook --help
 usage: detect-secrets-hook [-h] [-v] [--version] [--baseline FILENAME]
-                          [--base64-limit [BASE64_LIMIT]]
-                          [--hex-limit [HEX_LIMIT]]
-                          [--disabled-plugins DISABLED_PLUGINS] [-n]
-                          [--exclude-lines EXCLUDE_LINES]
-                          [--exclude-files EXCLUDE_FILES]
-                          [--word-list WORD_LIST_FILE]
-                          [filenames [filenames ...]]
+                           [--list-all-plugins] [-p PLUGIN]
+                           [--base64-limit [BASE64_LIMIT]]
+                           [--hex-limit [HEX_LIMIT]]
+                           [--disable-plugin DISABLE_PLUGIN]
+                           [-n | --only-verified]
+                           [--exclude-lines EXCLUDE_LINES]
+                           [--exclude-files EXCLUDE_FILES]
+                           [--exclude-secrets EXCLUDE_SECRETS]
+                           [--word-list WORD_LIST_FILE] [-f FILTER]
+                           [--disable-filter DISABLE_FILTER]
+                           [filenames [filenames ...]]
 
 positional arguments:
   filenames             Filenames to check.
@@ -300,14 +330,17 @@ plugin options:
   Configure settings for each secret scanning ruleset. By default, all
   plugins are enabled unless explicitly disabled.
 
+  --list-all-plugins    Lists all plugins that will be used for the scan.
+  -p PLUGIN, --plugin PLUGIN
+                        Specify path to custom secret detector plugin.
   --base64-limit [BASE64_LIMIT]
                         Sets the entropy limit for high entropy strings. Value
                         must be between 0.0 and 8.0, defaults to 4.5.
   --hex-limit [HEX_LIMIT]
                         Sets the entropy limit for high entropy strings. Value
                         must be between 0.0 and 8.0, defaults to 3.0.
-  --disabled-plugins DISABLED_PLUGINS
-                        Comma-delimited plugin class names to disable. e.g.
+  --disable-plugin DISABLE_PLUGIN
+                        Plugin class names to disable. e.g.
                         Base64HighEntropyString
 
 filter options:
@@ -316,6 +349,7 @@ filter options:
 
   -n, --no-verify       Disables additional verification of secrets via
                         network call.
+  --only-verified       Only flags secrets that can be verified.
   --exclude-lines EXCLUDE_LINES
                         If lines match this regex, it will be ignored.
   --exclude-files EXCLUDE_FILES
@@ -325,6 +359,15 @@ filter options:
   --word-list WORD_LIST_FILE
                         Text file with a list of words, if a secret contains a
                         word in the list we ignore it.
+  -f FILTER, --filter FILTER
+                        Specify path to custom filter. May be a python module
+                        path (e.g.
+                        detect_secrets.filters.common.is_invalid_file) or a
+                        local file path (e.g.
+                        file://path/to/file.py::function_name).
+  --disable-filter DISABLE_FILTER
+                        Specify filter to disable. e.g.
+                        detect_secrets.filters.common.is_invalid_file
 ```
 
 We recommend setting this up as a pre-commit hook. One way to do this is by using the
@@ -362,7 +405,7 @@ const secret = "hunter2";
 ```bash
 $ detect-secrets audit --help
 usage: detect-secrets audit [-h] [--diff] [--stats] [--json]
-                         filename [filename ...]
+                            filename [filename ...]
 
 Auditing a baseline allows analysts to label results, and optimize plugins for
 the highest signal-to-noise ratio for their environment.
