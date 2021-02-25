@@ -255,4 +255,10 @@ class SecretsCollection:
 
             output[filename] = self[filename] - other[filename]
 
+        for filename in self.files:
+            if filename in other.files:
+                continue
+
+            output[filename] = self[filename]
+
         return output
