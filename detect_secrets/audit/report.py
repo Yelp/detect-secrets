@@ -1,10 +1,9 @@
-import hashlib
 from enum import Enum
 from typing import Callable
 
 from ..constants import VerifiedResult
-from .common import get_all_secrets_from_file
 from .common import get_baseline_from_file
+from .common import get_raw_secrets_from_file
 from .common import LineGetter
 from .common import open_file
 
@@ -27,23 +26,26 @@ def generate_report(
 ) -> None:
     secrets = {}
     for filename, secret in get_baseline_from_file(baseline_file):
-        verified_result = get_verified_result_from_boolean(secret.is_secret)
-        if class_to_print is not None and SecretClassToPrint.from_class(verified_result) != class_to_print:  # noqa: E501
+        verified_result = VerifiedResult.from_secret(secret)
+        if (
+            class_to_print is not None and
+            SecretClassToPrint.from_class(verified_result) != class_to_print
+        ):
             continue
-        detections = get_all_secrets_from_file(secret)
-        identifier = hashlib.sha512((secret.secret_hash + filename).encode('utf-8')).hexdigest()
+        secret.line_number = 0
+        detections = get_raw_secrets_from_file(secret)
         line_getter = line_getter_factory(filename)
         for detection in detections:
-            if identifier in secrets:
-                secrets[identifier]['lines'][detection.line_number] = line_getter.lines[detection.line_number - 1]  # noqa: E501
-                if secret.type not in secrets[identifier]['types']:
-                    secrets[identifier]['types'].append(secret.type)
-                secrets[identifier]['category'] = get_prioritary_verified_result(
+            if (secret.secret_hash, filename) in secrets:
+                secrets[(secret.secret_hash, filename)]['lines'][detection.line_number] = line_getter.lines[detection.line_number - 1]  # noqa: E501
+                if secret.type not in secrets[(secret.secret_hash, filename)]['types']:
+                    secrets[(secret.secret_hash, filename)]['types'].append(secret.type)
+                secrets[(secret.secret_hash, filename)]['category'] = get_prioritized_verified_result(  # noqa: E501
                     verified_result,
-                    VerifiedResult[secrets[identifier]['category']],
+                    VerifiedResult[secrets[(secret.secret_hash, filename)]['category']],
                 ).name
             else:
-                secrets[identifier] = {
+                secrets[(secret.secret_hash, filename)] = {
                     'secrets': detection.secret_value,
                     'filename': filename,
                     'lines': {
@@ -55,14 +57,10 @@ def generate_report(
                     'category': verified_result.name,
                 }
 
-    output = []
-    for identifier in secrets:
-        output.append(secrets[identifier])
-
-    return output
+    return list(secrets.values())
 
 
-def get_prioritary_verified_result(
+def get_prioritized_verified_result(
     result1: VerifiedResult,
     result2: VerifiedResult,
 ) -> VerifiedResult:
@@ -70,14 +68,3 @@ def get_prioritary_verified_result(
         return result1
     else:
         return result2
-
-
-def get_verified_result_from_boolean(
-    is_secret: bool,
-) -> VerifiedResult:
-    if is_secret is None:
-        return VerifiedResult.UNVERIFIED
-    elif is_secret:
-        return VerifiedResult.VERIFIED_TRUE
-    else:
-        return VerifiedResult.VERIFIED_FALSE

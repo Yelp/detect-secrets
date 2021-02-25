@@ -21,7 +21,7 @@ def add_audit_action(parent: argparse._SubParsersAction) -> argparse.ArgumentPar
     )
 
     _add_mode_parser(parser)
-    _add_report_parser(parser)
+    _add_report_module(parser)
     _add_statistics_module(parser)
     return parser
 
@@ -47,7 +47,13 @@ def _add_mode_parser(parser: argparse.ArgumentParser) -> None:
     )
 
 
-def _add_report_parser(parser: argparse.ArgumentParser) -> None:
+def _add_report_module(parent: argparse.ArgumentParser) -> None:
+    parser = parent.add_argument_group(
+        title='reporting',
+        description=(
+            'Display a summary with all the findings and the made decisions'
+        ),
+    )
     parser.add_argument(
         '--report',
         action='store_true',

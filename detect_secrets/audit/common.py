@@ -53,64 +53,44 @@ def get_raw_secret_from_file(
     :raises: SecretNotFoundOnSpecifiedLineError
     :raises: NoLineNumberError
     """
-    plugin = cast(BasePlugin, plugins.initialize.from_secret_type(secret.type))
-    line_getter = line_getter_factory(secret.filename)
-    is_first_time_opening_file = not line_getter.has_cached_lines
-    while True:
-        if not secret.line_number:
-            raise NoLineNumberError
+    if not secret.line_number:
+        raise NoLineNumberError
 
-        try:
-            target_line = line_getter.lines[secret.line_number - 1]
-        except IndexError:
-            raise SecretNotFoundOnSpecifiedLineError(secret.line_number)
-
-        identified_secrets = call_function_with_arguments(
-            plugin.analyze_line,
-            filename=secret.filename,
-            line=target_line,
-            line_number=secret.line_number,
-
-            # We enable eager search, because we *know* there's a secret here -- the baseline
-            # flagged it after all.
-            enable_eager_search=True,
-        )
-
-        for identified_secret in (identified_secrets or []):
-            if identified_secret == secret:
-                return cast(str, identified_secret.secret_value)
-
-        # No secret found -- maybe it's due to invalid file transformation.
-        # However, this only applies to the first execution of the file, since we want a
-        # consistent transformed file.
-        #
-        # NOTE: This is defensive coding. If we assume that this is only run on valid baselines,
-        # then the baseline wouldn't record secrets that were both found with and without an eager
-        # transformer, in the same file.
-        if is_first_time_opening_file and not line_getter.use_eager_transformers:
-            line_getter.use_eager_transformers = True
-        else:
-            break
+    for item in get_raw_secrets_from_file(secret, line_getter_factory):
+        return item.secret_value
 
     raise SecretNotFoundOnSpecifiedLineError(secret.line_number)
 
 
-def get_all_secrets_from_file(
+def get_raw_secrets_from_file(
     secret: PotentialSecret,
     line_getter_factory: Callable[[str], 'LineGetter'] = open_file,
 ) -> [PotentialSecret]:
     """
     We're analyzing the contents straight from the baseline, and therefore, we don't know
     the secret value (by design). However, we have secret hashes, filenames, and how we detected
-    it was a secret in the first place, so we can reverse-engineer it. This method searchs all
-    the ocurrences of one secret in one file using one plugin.
+    it was a secret in the first place, so we can reverse-engineer it. This method searches all
+    the occurrences of one secret in one file using one plugin.
+
+    :raises: SecretNotFoundOnSpecifiedLineError
+    :raises: NoLineNumberError
     """
     plugin = cast(BasePlugin, plugins.initialize.from_secret_type(secret.type))
     line_getter = line_getter_factory(secret.filename)
     is_first_time_opening_file = not line_getter.has_cached_lines
     all_secrets = []
     while True:
-        for line_number, line in enumerate(line_getter.lines):
+        if secret.line_number:
+            try:
+                lines_to_scan = [line_getter.lines[secret.line_number - 1]]
+                line_numbers = [secret.line_number]
+            except IndexError:
+                raise SecretNotFoundOnSpecifiedLineError(secret.line_number)
+        else:
+            lines_to_scan = line_getter.lines
+            line_numbers = range(len(lines_to_scan))
+
+        for line_number, line in zip(line_numbers, lines_to_scan):
             identified_secrets = call_function_with_arguments(
                 plugin.analyze_line,
                 filename=secret.filename,
@@ -119,14 +99,18 @@ def get_all_secrets_from_file(
 
                 # We enable eager search, because we *know* there's a secret here -- the baseline
                 # flagged it after all.
-                enable_eager_search=True,
+                enable_eager_search=bool(secret.line_number),
             )
 
             for identified_secret in (identified_secrets or []):
                 if identified_secret == secret:
                     all_secrets.append(identified_secret)
 
-        if len(all_secrets) == 0 and is_first_time_opening_file and not line_getter.use_eager_transformers:   # noqa: E501
+        if (
+            len(all_secrets) == 0 and
+            is_first_time_opening_file and
+            not line_getter.use_eager_transformers
+        ):
             line_getter.use_eager_transformers = True
         else:
             return all_secrets
