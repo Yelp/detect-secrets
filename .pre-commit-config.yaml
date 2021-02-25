@@ -29,3 +29,8 @@ repos:
     rev: v1.4.4
     hooks:
     -   id: autopep8
+-   repo: https://github.com/Yelp/detect-secrets
+    rev: v1.0.1
+    hooks:
+    -   id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
