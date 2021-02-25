@@ -1,0 +1,107 @@
+#!/bin/bash
+# This is just a thin wrapper around bump2version, to support cases where there's no
+# current version in git.
+PACKAGE_NAME='detect_secrets'
+DRY_RUN=0
+
+function usage() {
+    echo "Usage: bump-version [major|minor|patch]"
+}
+
+function main() {
+    verifyArguments "$@"
+    if [[ $? == 1 ]]; then
+        return 1
+    fi
+
+    installDependency
+
+    getLatestTagName
+    if [[ $? == 0 ]]; then
+        bumpVersion "$@"
+    else
+        setVersion
+    fi
+
+    if [[ $? == 1 ]]; then
+        return 1
+    fi
+
+    # Since setVersion has already set the tags, at this point, the tag should already exist.
+    local tagName=`getLatestTagName`
+    if [[ $DRY_RUN == 0 ]]; then
+        git push origin HEAD
+        git push origin "$tagName"
+    else
+        echo "git push origin HEAD"
+        echo "git push origin '$tagName'"
+    fi
+}
+
+function verifyArguments() {
+    local part="$1"
+    if [[ -z "$part" ]]; then
+        # We only allow bump-version to be used with no arguments if there's
+        # no current version.
+        getLatestTagName
+        if [[ $? == 0 ]]; then
+            usage
+            return 1
+        fi
+
+    elif [[ "$part" != "major" ]] && [[ "$part" != "minor" ]] && [[ "$part" != "patch" ]]; then
+        usage
+        return 1
+    fi
+
+    # Check if virtualenv is built.
+    test -f venv/bin/pip
+    if [[ $? != 0 ]]; then
+        echo 'error: Run `make development` first.'
+        return 1
+    fi
+
+    return 0
+}
+
+function getLatestTagName() {
+    local output
+    output=$(git describe --tags --abbrev=0 2>/dev/null)
+    if [[ $? != 0 ]]; then
+        return 1
+    fi
+
+    echo "$output"
+    return 0
+}
+
+function installDependency() {
+    # NOTE: We don't specify this in requirements-dev-minimal, since not all developers need
+    # to bump the version.
+    venv/bin/pip install bump2version
+}
+
+function setVersion() {
+    local version=$(grep -Eo '\d+\.\d+\.\d+' $PACKAGE_NAME/__version__.py)
+
+    if [[ $DRY_RUN == 0 ]]; then
+        git commit -m "Initializing v$version"
+        git tag "v$version"
+    else
+        echo "setting version to $version"
+    fi
+}
+
+function bumpVersion() {
+    local part="$1"
+    shift
+    if [[ $DRY_RUN == 0 ]]; then
+        venv/bin/bump2version "$part" "$@"
+    else
+        venv/bin/bump2version "$part" --dry-run --verbose "$@"
+    fi
+
+    return $?
+}
+
+main "$@"

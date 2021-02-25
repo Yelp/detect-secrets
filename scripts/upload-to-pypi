@@ -1,0 +1,144 @@
+#!/usr/bin/env python
+import argparse
+import os
+import re
+import shutil
+import subprocess
+import sys
+from contextlib import contextmanager
+from functools import lru_cache
+from typing import Generator
+from typing import Tuple
+from urllib.parse import urlsplit
+from urllib.parse import urlunsplit
+
+from detect_secrets.__version__ import VERSION
+
+
+PACKAGE_NAME = 'detect-secrets'
+
+
+def main() -> int:
+    args = parse_args()
+    set_index_url(args.prod)
+
+    if exists_in_pypi():
+        print('error: version already exists in pypi.', file=sys.stderr)
+        return 1
+
+    install_dependencies()
+    with create_distribution_files():
+        upload_to_pypi()
+
+    return 0
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--prod',
+        action='store_true',
+        help='Uploads to proper PyPI.',
+    )
+
+    return parser.parse_args()
+
+
+def set_index_url(is_prod: bool) -> None:
+    # Source: https://pip.pypa.io/en/latest/user_guide/#environment-variables
+    if os.environ.get('PIP_DEFAULT_INDEX_URL'):
+        # If this is already specified, don't specify the index url through CLI, otherwise
+        # it will be overwritten.
+        return
+
+    if is_prod:
+        # This will default to public pypi.
+        return
+
+    # Otherwise, we leverage environment variables to inject this to make things simpler.
+    os.environ['PIP_DEFAULT_INDEX_URL'] = 'https://test.pypi.org/simple/'
+
+
+def install_dependencies() -> None:
+    pip_install('setuptools', 'wheel', 'twine')
+
+
+@lru_cache(maxsize=1)
+def get_pip_version() -> Tuple[int]:
+    return tuple(
+        map(
+            int,
+            # example output: pip 19.3.1 from ...
+            (
+                subprocess.check_output('pip --version'.split()).decode()
+                .split()[1]
+                .split('.')
+            ),
+        ),
+    )
+
+
+def exists_in_pypi() -> bool:
+    # Source: https://stackoverflow.com/a/26664162/13340678
+    pip_version = get_pip_version()
+
+    command = ['pip', 'install']
+    if os.environ.get('PIP_DEFAULT_INDEX_URL'):
+        command += ['-i', os.environ['PIP_DEFAULT_INDEX_URL']]
+    if pip_version[0] >= 20 and pip_version[1] >= 3:
+        command.append('--use-deprecated=legacy-resolver')
+
+    try:
+        subprocess.check_output(
+            [
+                sys.executable, '-m',
+                *command,
+                f'{PACKAGE_NAME}==',
+            ],
+            stderr=subprocess.STDOUT,
+        )
+    except subprocess.CalledProcessError as e:
+        available_versions = re.search(r'from versions: ([^\)]+)\)', e.stdout.decode()).group(1)
+        return VERSION in available_versions
+
+
+def upload_to_pypi() -> None:
+    command = ['twine', 'upload']
+    if os.environ.get('PIP_DEFAULT_INDEX_URL'):
+        # NOTE: The upload URL is `/legacy`.
+        parts = list(urlsplit(os.environ['PIP_DEFAULT_INDEX_URL']))
+        parts[2] = '/legacy/'
+
+        command += ['--repository-url', urlunsplit(parts)]
+
+    subprocess.run([*command, 'dist/*'])
+
+
+def pip_install(*packages) -> None:
+    subprocess.run([
+        sys.executable, '-m',
+        'pip', 'install',
+        *packages,
+    ])
+
+
+@contextmanager
+def create_distribution_files() -> Generator[None, None, None]:
+    try:
+        subprocess.run([
+            sys.executable, 'setup.py',
+            # sdist == source files
+            'sdist',
+
+            # bdest == binary distributions through wheels (for faster installs)
+            'bdist_wheel',
+        ])
+
+        yield
+    finally:
+        shutil.rmtree('build')
+        shutil.rmtree('dist')
+
+
+if __name__ == '__main__':
+    sys.exit(main())

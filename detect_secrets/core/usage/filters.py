@@ -38,12 +38,20 @@ def add_filter_options(parent: argparse.ArgumentParser) -> None:
     parser.add_argument(
         '--exclude-lines',
         type=str,
+        action='append',
         help='If lines match this regex, it will be ignored.',
     )
     parser.add_argument(
         '--exclude-files',
         type=str,
+        action='append',
         help='If filenames match this regex, it will be ignored.',
+    )
+    parser.add_argument(
+        '--exclude-secrets',
+        type=str,
+        action='append',
+        help='If secrets match this regex, it will be ignored.',
     )
 
     if filters.wordlist.is_feature_enabled():
@@ -124,6 +132,11 @@ def parse_args(args: argparse.Namespace) -> None:
     if args.exclude_files:
         get_settings().filters['detect_secrets.filters.regex.should_exclude_file'] = {
             'pattern': args.exclude_files,
+        }
+
+    if args.exclude_secrets:
+        get_settings().filters['detect_secrets.filters.regex.should_exclude_secret'] = {
+            'pattern': args.exclude_secrets,
         }
 
     if (

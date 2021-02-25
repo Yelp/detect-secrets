@@ -32,6 +32,18 @@ class TestAWSKeyDetector:
                 'AKIAZZZ',
                 False,
             ),
+            (
+                'aws_access_key = "{}"'.format(EXAMPLE_SECRET),
+                True,
+            ),
+            (
+                'aws_access_key = "{}"'.format(EXAMPLE_SECRET + 'a'),
+                False,
+            ),
+            (
+                'aws_access_key = "{}"'.format(EXAMPLE_SECRET[0:39]),
+                False,
+            ),
         ],
     )
     def test_analyze(self, line, should_flag):
@@ -45,6 +57,11 @@ class TestAWSKeyDetector:
 
         assert logic.verify(
             self.example_key,
+            get_code_snippet([], 1),
+        ) == VerifiedResult.UNVERIFIED
+
+        assert logic.verify(
+            EXAMPLE_SECRET,
             get_code_snippet([], 1),
         ) == VerifiedResult.UNVERIFIED
 

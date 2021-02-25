@@ -1,7 +1,20 @@
+from pathlib import Path
+
 from setuptools import find_packages
 from setuptools import setup
 
-from detect_secrets.__version__ import VERSION
+
+def get_version():
+    """Parse package __version__.py to get version."""
+    versionpy = (Path('detect_secrets') / '__version__.py').read_text()
+    return versionpy.split("'")[1]
+
+
+VERSION = get_version()
+
+
+with open('README.md') as f:
+    long_description = f.read()
 
 
 setup(
@@ -9,9 +22,8 @@ setup(
     packages=find_packages(exclude=(['test*', 'tmp*'])),
     version=VERSION,
     description='Tool for detecting secrets in the codebase',
-    long_description=(
-        'Check out detect-secrets on `GitHub <https://github.com/Yelp/detect-secrets>`_!'
-    ),
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     license='Copyright Yelp, Inc. 2020',
     author='Aaron Loo',
     author_email='aaronloo@yelp.com',

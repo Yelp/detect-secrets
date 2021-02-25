@@ -57,12 +57,24 @@ assumption of the upgrade script will break.
 
 ### Changing the Version
 
-The version file is specified in `detect_secrets.__version__`. Just modify this value to the
-desired version, based on your change that is made.
+`detect-secrets` integrates with `bump2version` to make this process easier. Here's a handy
+pre-bump checklist to make sure you haven't forgotten anything:
 
-This version bump should be a separate PR (often by a `detect-secrets` maintainer), and should
-be accompanied by a corresponding CHANGELOG modification.
+- [ ] Have you modified the CHANGELOG with the latest changes?
+- [ ] Have you written an upgrade file to ensure backwards compatibility?
+
+Then, you (as a `detect-secrets` maintainer) can run:
+
+```bash
+scripts/bump-version
+```
 
 ### Pushing to PyPi
 
-TODO
+```bash
+# First, test with test.pypi.com
+scripts/upload-to-pypi
+
+# If all looks good, we can head to prod!
+scripts/upload-to-pypi --prod
+```

@@ -106,6 +106,9 @@ class Settings:
                 'detect_secrets.filters.heuristic.is_sequential_string',
                 'detect_secrets.filters.heuristic.is_potential_uuid',
                 'detect_secrets.filters.heuristic.is_likely_id_string',
+                'detect_secrets.filters.heuristic.is_templated_secret',
+                'detect_secrets.filters.heuristic.is_prefixed_with_dollar_sign',
+                'detect_secrets.filters.heuristic.is_indirect_reference',
             }
         }
 
@@ -177,10 +180,16 @@ class Settings:
             serialized_plugin = plugin.json()
 
             plugins_used.append({
+                # We want this to appear first.
+                'name': serialized_plugin['name'],
+
                 # NOTE: We still need to use the saved settings configuration though, since
                 # there are keys specifically in the settings object that we need to carry over
                 # (e.g. `path` for custom plugins).
                 **self.plugins[serialized_plugin['name']],
+
+                # Finally, this comes last so that it overrides any values that are saved in
+                # the settings object.
                 **serialized_plugin,
             })
 
