@@ -180,10 +180,16 @@ class Settings:
             serialized_plugin = plugin.json()
 
             plugins_used.append({
+                # We want this to appear first.
+                'name': serialized_plugin['name'],
+
                 # NOTE: We still need to use the saved settings configuration though, since
                 # there are keys specifically in the settings object that we need to carry over
                 # (e.g. `path` for custom plugins).
                 **self.plugins[serialized_plugin['name']],
+
+                # Finally, this comes last so that it overrides any values that are saved in
+                # the settings object.
                 **serialized_plugin,
             })
 
