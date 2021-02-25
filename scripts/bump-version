@@ -94,10 +94,11 @@ function setVersion() {
 
 function bumpVersion() {
     local part="$1"
+    shift
     if [[ $DRY_RUN == 0 ]]; then
-        venv/bin/bump2version "$part"
+        venv/bin/bump2version "$part" "$@"
     else
-        venv/bin/bump2version "$part" --dry-run --verbose
+        venv/bin/bump2version "$part" --dry-run --verbose "$@"
     fi
 
     return $?
