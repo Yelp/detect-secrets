@@ -106,6 +106,9 @@ class Settings:
                 'detect_secrets.filters.heuristic.is_sequential_string',
                 'detect_secrets.filters.heuristic.is_potential_uuid',
                 'detect_secrets.filters.heuristic.is_likely_id_string',
+                'detect_secrets.filters.heuristic.is_templated_secret',
+                'detect_secrets.filters.heuristic.is_prefixed_with_dollar_sign',
+                'detect_secrets.filters.heuristic.is_indirect_reference',
             }
         }
 
