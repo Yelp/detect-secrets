@@ -1,7 +1,15 @@
+from pathlib import Path
 from setuptools import find_packages
 from setuptools import setup
 
-from detect_secrets.__version__ import VERSION
+
+def get_version():
+    """Parse package __version__.py to get version."""
+    versionpy = Path('detect_secrets/__version__.py').read_text()
+    return versionpy.split("'")[1]
+
+
+VERSION = get_version()
 
 
 with open('README.md') as f:
