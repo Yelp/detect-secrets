@@ -4,6 +4,7 @@ from typing import Any
 from typing import Callable
 from typing import cast
 from typing import Dict
+from typing import List
 from typing import Union
 
 from . import upgrades
@@ -67,8 +68,11 @@ def format_for_output(secrets: SecretsCollection, is_slim_mode: bool = False) ->
     else:
         # NOTE: This has a nice little side effect of keeping it ordered by line number,
         # even though we don't output it.
-        for filename, secrets in output['results'].items():
-            for secret_dict in secrets:
+        for filename, secret_list in cast(
+            Dict[str, List[Dict[str, Any]]],
+            output['results'],
+        ).items():
+            for secret_dict in secret_list:
                 secret_dict.pop('line_number')
 
     return output
