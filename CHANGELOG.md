@@ -29,6 +29,24 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 ### Unreleased
 -->
 
+### v1.0.3
+##### February 26th, 2021
+
+#### :bug: Bugfixes
+
+- Fixes `SecretsCollection` subtraction method, to handle non-overlapping files.
+- Fixes installation for Windows environments ([#412], thanks [@pablosantiagolopez])
+
+[#412]: https://github.com/Yelp/detect-secrets/pull/412
+[@pablosantiagolopez]: https://github.com/pablosantiagolopez
+
+### v1.0.2
+##### February 25th, 2021
+
+#### :bug: Bugfixes
+
+- `KeywordDetector` is no longer case-sensitive.
+
 ### v1.0.1
 ##### February 25th, 2021
 
