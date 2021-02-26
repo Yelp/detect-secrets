@@ -182,7 +182,7 @@ Filters **MUST** only depend on some combination of the following variables:
 
 | Variable Name | Type                                           | Description                       |
 |---------------|------------------------------------------------|-----------------------------------|
-| `filename`    | string                                         | The file being scanned.           |
+| `filename`    | string                                         | The file path being scanned.      |
 | `line`        | string                                         | The line being scanned.           |
 | `plugin`      | `detect_secrets.core.plugins.util.Plugin`      | The plugin that found the secret. |
 | `secret`      | string                                         | The raw secret value.             |

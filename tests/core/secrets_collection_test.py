@@ -343,31 +343,44 @@ class TestEqual:
         assert not secretsA.exactly_equals(secretsB)
 
 
-def test_subtraction(configure_plugins):
-    with transient_settings({**configure_plugins, 'filters_used': []}):
-        secrets = SecretsCollection()
-        secrets.scan_file('test_data/each_secret.py')
+class TestSubtraction:
+    @staticmethod
+    def test_basic(configure_plugins):
+        with transient_settings({**configure_plugins, 'filters_used': []}):
+            secrets = SecretsCollection()
+            secrets.scan_file('test_data/each_secret.py')
 
-    # This baseline will have less secrets, since it filtered out some.
-    with transient_settings({
-        **configure_plugins,
-        'filters_used': [
-            {
-                'path': 'detect_secrets.filters.regex.should_exclude_line',
-                'pattern': [
-                    'EXAMPLE',
-                ],
-            },
-        ],
-    }):
-        baseline = SecretsCollection()
-        baseline.scan_file('test_data/each_secret.py')
+        # This baseline will have less secrets, since it filtered out some.
+        with transient_settings({
+            **configure_plugins,
+            'filters_used': [
+                {
+                    'path': 'detect_secrets.filters.regex.should_exclude_line',
+                    'pattern': [
+                        'EXAMPLE',
+                    ],
+                },
+            ],
+        }):
+            baseline = SecretsCollection()
+            baseline.scan_file('test_data/each_secret.py')
 
-    # This tests the != operator for same file, different number of secrets.
-    # It's hidden in a different test, but I didn't want to set up the boilerplate
-    # again.
-    assert secrets != baseline
+        # This tests the != operator for same file, different number of secrets.
+        # It's hidden in a different test, but I didn't want to set up the boilerplate
+        # again.
+        assert secrets != baseline
 
-    result = secrets - baseline
-    assert len(result['test_data/each_secret.py']) == 2
-    assert len(secrets['test_data/each_secret.py']) == 4
+        result = secrets - baseline
+        assert len(result['test_data/each_secret.py']) == 2
+        assert len(secrets['test_data/each_secret.py']) == 4
+
+    @staticmethod
+    def test_no_overlapping_files(configure_plugins):
+        secrets_a = SecretsCollection()
+        secrets_b = SecretsCollection()
+        with transient_settings({**configure_plugins, 'filters_used': []}):
+            secrets_a.scan_file('test_data/each_secret.py')
+            secrets_b.scan_file('test_data/config.env')
+
+        assert (secrets_a - secrets_b).files == {'test_data/each_secret.py'}
+        assert (secrets_b - secrets_a).files == {'test_data/config.env'}
