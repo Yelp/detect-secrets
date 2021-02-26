@@ -83,7 +83,7 @@ def get_raw_secrets_from_file(
         if secret.line_number:
             try:
                 lines_to_scan = [line_getter.lines[secret.line_number - 1]]
-                line_numbers = [secret.line_number]
+                line_numbers = [secret.line_number - 1]
             except IndexError:
                 raise SecretNotFoundOnSpecifiedLineError(secret.line_number)
         else:

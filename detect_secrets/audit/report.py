@@ -32,7 +32,7 @@ def generate_report(
             SecretClassToPrint.from_class(verified_result) != class_to_print
         ):
             continue
-        # Removal of the stored line number is required to force the complete file scanning to obtain all the secret occurrences.
+        # Removal of the stored line number is required to force the complete file scanning to obtain all the secret occurrences. # noqa: E501
         secret.line_number = 0
         detections = get_raw_secrets_from_file(secret)
         line_getter = line_getter_factory(filename)
