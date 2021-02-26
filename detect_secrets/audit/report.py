@@ -12,7 +12,7 @@ class SecretClassToPrint(Enum):
     REAL_SECRET = 1
     FALSE_POSITIVE = 2
 
-    def from_class(secret_class: VerifiedResult) -> Enum:
+    def from_class(secret_class: VerifiedResult) -> 'SecretClassToPrint':
         if secret_class in [VerifiedResult.UNVERIFIED, VerifiedResult.VERIFIED_TRUE]:
             return SecretClassToPrint.REAL_SECRET
         else:
@@ -32,6 +32,7 @@ def generate_report(
             SecretClassToPrint.from_class(verified_result) != class_to_print
         ):
             continue
+        # Removal of the stored line number is required to force the complete file scanning to obtain all the secret occurrences.
         secret.line_number = 0
         detections = get_raw_secrets_from_file(secret)
         line_getter = line_getter_factory(filename)
