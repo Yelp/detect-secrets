@@ -119,6 +119,8 @@ def should_update_baseline(
 
 
 def pretty_print_diagnostics(secrets: SecretsCollection, width: int = 80) -> None:
+    SECURITY_SLACK_CHANNEL = os.environ.get('DETECT_SECRETS_SECURITY_SLACK_CHANNEL') or '#security'
+
     # Header
     print(
         textwrap.fill(
@@ -144,7 +146,7 @@ def pretty_print_diagnostics(secrets: SecretsCollection, width: int = 80) -> Non
     )
     for suggestion in [
         'For information about putting your secrets in a safer place, '
-        f'please ask {os.environ.get("DETECT_SECRETS_SECURITY_TEAM", "in #security")}',
+        f'please ask {os.environ.get("DETECT_SECRETS_SECURITY_TEAM")} in {SECURITY_SLACK_CHANNEL}',
 
         'Mark false positives with an inline '
         f'`{color.colorize("pragma: allowlist secret", color.AnsiColor.BOLD)}` comment',
