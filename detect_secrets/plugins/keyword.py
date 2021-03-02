@@ -152,7 +152,7 @@ DENYLIST_REGEX = r'|'.join(DENYLIST)
 OPTIONAL_WHITESPACE = r'\s*'
 OPTIONAL_NON_WHITESPACE = r'[^\s]{0,50}?'
 QUOTE = r'[\'"]'
-SECRET = r'[^\r\n]+'
+SECRET = r'[^\r\n\'"]+'
 SQUARE_BRACKETS = r'(\[\])'
 
 FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
