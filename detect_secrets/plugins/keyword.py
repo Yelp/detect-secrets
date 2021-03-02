@@ -50,6 +50,8 @@ DENYLIST = (
     'secret',
     'secrete',
 )
+'''
+Deprecated false positives list. This will be migrated soon.
 FALSE_POSITIVES = {
     '""',
     '""):',
@@ -142,14 +144,15 @@ FALSE_POSITIVES = {
     '{',
     '{{',
 }
+'''
 # Includes ], ', " as closing
 CLOSING = r'[]\'"]{0,2}'
 DENYLIST_REGEX = r'|'.join(DENYLIST)
 # Non-greedy match
-OPTIONAL_WHITESPACE = r'\s*?'
+OPTIONAL_WHITESPACE = r'\s*'
 OPTIONAL_NON_WHITESPACE = r'[^\s]{0,50}?'
 QUOTE = r'[\'"]'
-SECRET = r'[^\s]+'
+SECRET = r'[^\r\n]+'
 SQUARE_BRACKETS = r'(\[\])'
 
 FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
