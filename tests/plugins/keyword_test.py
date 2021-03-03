@@ -173,13 +173,11 @@ PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX = {
     },
     'positives': {
         'quotes_required': [
-            '"m{{h}o)p${e]nob(ody[finds>-_$#thisone}}" == some_dict["secret"]',
-            '"m{{h}o)p${e]nob(ody[finds>-_$#thisone}}" == the_password\n',
-            '\'m{{h}o)p${e]nob(ody[finds>-_$#thisone}}\' == the_password\n',
-            '"m{{h}o)p${e]nob(ody[finds>-_$#thisone}}" != some_dict["secret"]',
-            '"m{{h}o)p${e]nob(ody[finds>-_$#thisone}}" != the_password\n',
-            '\'m{{h}o)p${e]nob(ody[finds>-_$#thisone}}\' === the_password\n',
-            '\'m{{h}o)p${e]nob(ody[finds>-_$#thisone}}\'!== the_password\n',
+            '"m{{h}o)p${e]nob(ody[finds>-_$#thisone}}" == password\n',
+            '\'m{{h}o)p${e]nob(ody[finds>-_$#thisone}}\' == password\n',
+            '"m{{h}o)p${e]nob(ody[finds>-_$#thisone}}" != password\n',
+            '\'m{{h}o)p${e]nob(ody[finds>-_$#thisone}}\' === password\n',
+            '\'m{{h}o)p${e]nob(ody[finds>-_$#thisone}}\'!== password\n',
         ],
     },
 }
@@ -199,8 +197,8 @@ STANDARD_POSITIVES.extend(
     + FOLLOWED_BY_EQUAL_SIGNS_RE.get('positives').get('quotes_required')
     + FOLLOWED_BY_EQUAL_SIGNS_RE.get('positives').get('quotes_not_required')
     + FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE.get('positives').get('quotes_required')
-    + FOLLOWED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX.get('positives').get('quotes_required')
-    + PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX.get('positives').get('quotes_required'),
+    + FOLLOWED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX.get('positives').get('quotes_required')   # noqa: E501
+    + PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX.get('positives').get('quotes_required'),  # noqa: E501
 )
 
 

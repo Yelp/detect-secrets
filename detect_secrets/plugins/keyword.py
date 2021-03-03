@@ -229,7 +229,7 @@ FOLLOWED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
     # or my_password !== "bar"
     # e.g. my_password == 'bar' or my_password != 'bar' or my_password === 'bar'
     # or my_password !== 'bar'
-    r'({denylist})({closing})?{whitespace}[!=]{2,3}{whitespace}({quote})({secret})(\3)'.format(  # noqa: E501
+    r'({denylist})({closing})?{whitespace}[!=]{{2,3}}{whitespace}({quote})({secret})(\3)'.format(  # noqa: E501
         denylist=DENYLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
@@ -238,7 +238,7 @@ FOLLOWED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
     ),
 )
 
-PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX = = re.compile(
+PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
     # e.g. "bar" == my_password or "bar" != my_password or "bar" === my_password
     # or "bar" !== my_password
     # e.g. 'bar' == my_password or 'bar' != my_password or 'bar' === my_password
