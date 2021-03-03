@@ -152,7 +152,8 @@ DENYLIST_REGEX = r'|'.join(DENYLIST)
 OPTIONAL_WHITESPACE = r'\s*'
 OPTIONAL_NON_WHITESPACE = r'[^\s]{0,50}?'
 QUOTE = r'[\'"]'
-SECRET = r'[^\r\n\'"]+'
+# Includes, at least, 1 alphanumeric character
+SECRET = r'[^\r\n]*[a-zA-Z0-9]+[^\r\n]*'
 SQUARE_BRACKETS = r'(\[\])'
 
 FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
@@ -222,6 +223,34 @@ FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
     ),
     flags=re.IGNORECASE,
 )
+
+FOLLOWED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
+    # e.g. my_password == "bar" or my_password != "bar" or my_password === "bar"
+    # or my_password !== "bar"
+    # e.g. my_password == 'bar' or my_password != 'bar' or my_password === 'bar'
+    # or my_password !== 'bar'
+    r'({denylist})({closing})?{whitespace}[!=]{2,3}{whitespace}({quote})({secret})(\3)'.format(  # noqa: E501
+        denylist=DENYLIST_REGEX,
+        closing=CLOSING,
+        quote=QUOTE,
+        whitespace=OPTIONAL_WHITESPACE,
+        secret=SECRET,
+    ),
+)
+
+PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX = = re.compile(
+    # e.g. "bar" == my_password or "bar" != my_password or "bar" === my_password
+    # or "bar" !== my_password
+    # e.g. 'bar' == my_password or 'bar' != my_password or 'bar' === my_password
+    # or 'bar' !== my_password
+    r'({quote})({secret})(\1){whitespace}[!=]{{2,3}}{whitespace}({denylist})'.format(
+        denylist=DENYLIST_REGEX,
+        quote=QUOTE,
+        whitespace=OPTIONAL_WHITESPACE,
+        secret=SECRET,
+    ),
+)
+
 FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX = re.compile(
     # e.g. private_key "something";
     r'({denylist}){nonWhitespace}{whitespace}({quote})({secret})(\2);'.format(
@@ -235,11 +264,15 @@ FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX = re.compile(
 )
 DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_COLON_REGEX: 4,
+    FOLLOWED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX: 4,
+    PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX: 2,
     FOLLOWED_BY_EQUAL_SIGNS_REGEX: 4,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
 }
 GOLANG_DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX: 4,
+    FOLLOWED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX: 4,
+    PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX: 2,
     FOLLOWED_BY_EQUAL_SIGNS_REGEX: 4,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
 }
@@ -248,6 +281,8 @@ OBJECTIVE_C_DENYLIST_REGEX_TO_GROUP = {
 }
 QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX: 5,
+    FOLLOWED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX: 4,
+    PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX: 2,
     FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 4,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
 }

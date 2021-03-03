@@ -142,6 +142,48 @@ FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE = {
     },
 }
 
+FOLLOWED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX = {
+    'negatives': {
+        'quotes_required': [
+            'my_password == ""',  # Nothing in the quotes
+            "my_password == ''",  # Nothing in the quotes
+            'my_password == "fakesecret"',  # 'fake' in the secret
+        ],
+    },
+    'positives': {
+        'quotes_required': [
+            'some_dict["secret"] == "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+            'the_password== "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"\n',
+            'the_password==\'m{{h}o)p${e]nob(ody[finds>-_$#thisone}}\'\n',
+            'some_dict["secret"] != "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
+            'the_password!= "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"\n',
+            'the_password===\'m{{h}o)p${e]nob(ody[finds>-_$#thisone}}\'\n',
+            'the_password!==\'m{{h}o)p${e]nob(ody[finds>-_$#thisone}}\'\n',
+        ],
+    },
+}
+
+PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX = {
+    'negatives': {
+        'quotes_required': [
+            '"" == my_password',  # Nothing in the quotes
+            "'' == my_password",  # Nothing in the quotes
+            '"fakesecret" == my_password',  # 'fake' in the secret
+        ],
+    },
+    'positives': {
+        'quotes_required': [
+            '"m{{h}o)p${e]nob(ody[finds>-_$#thisone}}" == some_dict["secret"]',
+            '"m{{h}o)p${e]nob(ody[finds>-_$#thisone}}" == the_password\n',
+            '\'m{{h}o)p${e]nob(ody[finds>-_$#thisone}}\' == the_password\n',
+            '"m{{h}o)p${e]nob(ody[finds>-_$#thisone}}" != some_dict["secret"]',
+            '"m{{h}o)p${e]nob(ody[finds>-_$#thisone}}" != the_password\n',
+            '\'m{{h}o)p${e]nob(ody[finds>-_$#thisone}}\' === the_password\n',
+            '\'m{{h}o)p${e]nob(ody[finds>-_$#thisone}}\'!== the_password\n',
+        ],
+    },
+}
+
 QUOTES_REQUIRED_FILE_EXTENSIONS = (
     '.cls',
     '.java',
@@ -156,7 +198,9 @@ STANDARD_POSITIVES.extend(
     + FOLLOWED_BY_COLON_RE.get('positives').get('quotes_not_required')
     + FOLLOWED_BY_EQUAL_SIGNS_RE.get('positives').get('quotes_required')
     + FOLLOWED_BY_EQUAL_SIGNS_RE.get('positives').get('quotes_not_required')
-    + FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE.get('positives').get('quotes_required'),
+    + FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE.get('positives').get('quotes_required')
+    + FOLLOWED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX.get('positives').get('quotes_required')
+    + PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX.get('positives').get('quotes_required'),
 )
 
 
