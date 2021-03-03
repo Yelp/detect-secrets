@@ -50,6 +50,9 @@ DENYLIST = (
     'private-key',
     'secret',
     'secrete',
+    'creds',
+    'credentials',
+    'cred',
 )
 FALSE_POSITIVES = {
     '""',

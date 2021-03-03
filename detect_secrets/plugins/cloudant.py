@@ -16,7 +16,7 @@ class CloudantDetector(RegexBasedDetector):
     cl_account = r'[\w\-]+'
     cl = r'(?:cloudant|cl|clou)'
     opt_api = r'(?:api|)'
-    cl_key_or_pass = opt_api + r'(?:key|pwd|pw|password|pass|token)'
+    cl_key_or_pass = opt_api + r'(?:key|pwd|pw|password|pass|token|creds|credentials|cred)'
     cl_pw = r'([0-9a-f]{64})'
     cl_api_key = r'([a-z]{24})'
     colon = r'\:'

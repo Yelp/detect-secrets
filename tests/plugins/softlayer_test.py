@@ -69,6 +69,8 @@ class TestSoftlayerDetector(object):
             ('softlayer_password = "{sl_token}"'.format(sl_token=SL_TOKEN), True),
             ('sl_pass="{sl_token}"'.format(sl_token=SL_TOKEN), True),
             ('softlayer-pwd = {sl_token}'.format(sl_token=SL_TOKEN), True),
+            ('softlayer-cred = {sl_token}'.format(sl_token=SL_TOKEN), True),
+            ('SOFTLAYER_CREDENTIALS = {sl_token}'.format(sl_token=SL_TOKEN), True),
             ('softlayer_api_key="%s" % SL_API_KEY_ENV', False),
             ('sl_api_key: "%s" % <softlayer_api_key>', False),
             ('SOFTLAYER_APIKEY: "insert_key_here"', False),

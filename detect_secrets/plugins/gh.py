@@ -15,7 +15,7 @@ class GheDetector(RegexBasedDetector):
     opt_space = r'(?: *)'
     opt_quote = r'(?:"|\'|)'
     header_keyword = r'(?:token|bearer|Basic)'
-    key_or_pass = r'(?:key|pwd|password|pass|token|oauth)'
+    key_or_pass = r'(?:key|pwd|password|pass|token|oauth|creds|credentials|cred)'
     api_endpoint = r'(?:github.ibm.com|api.github.ibm.com)'
     forty_hex = r'(?:(?<=\W)|(?<=^))([0-9a-f]{40})(?:(?=\W)|(?=$))'
     b64_encoded_token = r'(?:(?<=\W)|(?<=^))([A-Za-z0-9+/]{55}=)(?:(?=\W)|(?=$))'
