@@ -48,6 +48,8 @@ class TestIbmCloudIamDetector(object):
             ('test_apikey = "{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             ('ibm-cloud-pwd = {cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             ('apikey:{cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
+            ('IAMAuthenticator("{cloud_iam_key}")'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
+            ('.set("apikey", "{cloud_iam_key}")'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             ('iam_api_key="%s" % IBM_IAM_API_KEY_ENV', False),
             ('CLOUD_APIKEY: "insert_key_here"', False),
             ('cloud-iam-key:=afakekey', False),

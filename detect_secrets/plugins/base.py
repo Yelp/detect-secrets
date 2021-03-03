@@ -326,7 +326,7 @@ class RegexBasedDetector(BasePlugin):
 
         <prefix_regex>(-|_|)<password_keyword_regex> <assignment> <password_regex>
 
-        assignment would include =,:,:=,::
+        assignment would include =,:,:=,::,,,(
         keyname and value supports optional quotes
         """
         begin = r'(?:(?<=\W)|(?<=^))'
@@ -335,7 +335,7 @@ class RegexBasedDetector(BasePlugin):
         opt_close_square_bracket = r'(?:\]|)'
         opt_dash_undrscr = r'(?:_|-|)'
         opt_space = r'(?: *)'
-        assignment = r'(?:=|:|:=|=>| +|::)'
+        assignment = r'(?:=|:|:=|=>| +|::|,|\()'
         return re.compile(
             r'{begin}{opt_open_square_bracket}{opt_quote}{prefix_regex}{opt_dash_undrscr}'
             '{password_keyword_regex}{opt_quote}{opt_close_square_bracket}{opt_space}'

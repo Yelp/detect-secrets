@@ -14,7 +14,7 @@ class IbmCloudIamDetector(RegexBasedDetector):
         r'ibm(?:_|-|)cloud|ibm(?:_|-|)iam|ibm|iam|cloud|test|)'
     opt_dash_undrscr = r'(?:_|-|)'
     opt_api = r'(?:api|)'
-    key_or_pass = r'(?:key|keyid|pwd|password|pass|token)'
+    key_or_pass = r'(?:key|keyid|pwd|password|pass|token|authenticator)'
     secret = r'([a-zA-Z0-9_\-]{44})'
     denylist = [
         RegexBasedDetector.assign_regex_generator(
