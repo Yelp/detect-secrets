@@ -153,7 +153,7 @@ OPTIONAL_WHITESPACE = r'\s*'
 OPTIONAL_NON_WHITESPACE = r'[^\s]{0,50}?'
 QUOTE = r'[\'"]'
 # Includes, at least, 1 alphanumeric character
-SECRET = r'[^\r\n]*[a-zA-Z0-9]+[^\r\n]*'
+SECRET = r'[^\r\n]*[a-zA-Z0-9]+[^\r\n]*[^\r\n,\'"]'
 SQUARE_BRACKETS = r'(\[\])'
 
 FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
