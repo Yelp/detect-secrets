@@ -32,6 +32,7 @@ class TestGheDetector(object):
             ),
             ('password abcdef0123456789abcdef0123456789abcdef01', True),
             ('cred = abcdef0123456789abcdef0123456789abcdef01', True),
+            ('auth = abcdef0123456789abcdef0123456789abcdef01', True),
             ('gh-credentials: abcdef0123456789abcdef0123456789abcdef01', True),
             ('git+https://abcdef0123456789abcdef0123456789abcdef01@github.ibm.com', True),
             ('sonar.github.oauth=abcdef0123456789abcdef0123456789abcdef01', True),

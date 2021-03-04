@@ -40,8 +40,12 @@ DENYLIST = (
     'apikey',
     'api_key',
     'api-key',
+    'auth',
     'aws_secret_access_key',
     'aws-secret-access-key',
+    'creds',
+    'credentials',
+    'cred',
     'db_pass',
     'db-pass',
     'password',
@@ -50,9 +54,6 @@ DENYLIST = (
     'private-key',
     'secret',
     'secrete',
-    'creds',
-    'credentials',
-    'cred',
 )
 FALSE_POSITIVES = {
     '""',

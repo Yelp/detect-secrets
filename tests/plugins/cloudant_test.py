@@ -55,6 +55,7 @@ class TestCloudantDetector:
             ('cloudant_pw=\'{cl_pw}\''.format(cl_pw=CL_PW), True),
             ('cloudant_pw="{cl_pw}"'.format(cl_pw=CL_PW), True),
             ('clou_pw = "{cl_pw}"'.format(cl_pw=CL_PW), True),
+            ('cl_auth="{cl_pw}"'.format(cl_pw=CL_PW), True),
             ('cloudant-creds="{cl_pw}"'.format(cl_pw=CL_PW), True),
             ('CL_CREDENTIALS:{cl_pw}'.format(cl_pw=CL_PW), True),
             ('cloudant_key = "{cl_api_key}"'.format(cl_api_key=CL_API_KEY), True),

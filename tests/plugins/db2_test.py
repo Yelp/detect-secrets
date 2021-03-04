@@ -79,6 +79,8 @@ class TestGheDetector(object):
             ('astring', 'db2_password = "astring"', True),
             ('Iusedb2!', '"password": "Iusedb2!"', True),
             ('ilikespaces', 'password =    "ilikespaces"', True),
+            ('ilikelemons', 'auth = "ilikelemons"', True),
+            ('ilikelemons', 'creds = "ilikelemons"', True),
             (':anothersyntax!', 'pwd::anothersyntax!', True),
             ('@#!%#', 'DB2_PASSWORD = "@#!%#"', True),
             ('pass', 'dashdb-password = "pass"', True),

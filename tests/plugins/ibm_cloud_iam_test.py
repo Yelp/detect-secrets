@@ -24,6 +24,7 @@ class TestIbmCloudIamDetector(object):
             ('CLOUD_IAM_API_KEY:"{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             ('ibm-cloud-key:{cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             ('ibm_key:"{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
+            ('auth:"{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             (
                 '"ibm_cloud_iam_api_key":"{cloud_iam_key}"'.format(
                     cloud_iam_key=CLOUD_IAM_KEY,
@@ -35,6 +36,11 @@ class TestIbmCloudIamDetector(object):
             ('cloud_iam_api_key="{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             ('ibm_api_key := {cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             ('"ibm-iam_key" := "{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
+            (
+                '"X-Require-Whisk-Auth" = "{cloud_iam_key}"'.format(
+                    cloud_iam_key=CLOUD_IAM_KEY,
+                ), True,
+            ),
             (
                 '"ibm_cloud_iam_api_key":= "{cloud_iam_key}"'.format(
                     cloud_iam_key=CLOUD_IAM_KEY,

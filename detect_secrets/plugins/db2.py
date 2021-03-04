@@ -45,7 +45,7 @@ class Db2Detector(RegexBasedDetector):
     opt_quote = r'(?:"|\'|)'
     opt_db = r'(?:db2|dashdb|db|)'
     opt_dash_undrscr = r'(?:_|-|)'
-    password_keyword = r'(?:password|pwd|pass|passwd|creds|credentials|cred)'
+    password_keyword = r'(?:password|pwd|pass|passwd|creds|credentials|cred|auth)'
     opt_space = r'(?: *)'
     assignment = r'(?:=|:|:=|=>|::)'
     # catch any character except newline and quotations, we exclude these

@@ -13,7 +13,7 @@ class SoftlayerDetector(RegexBasedDetector):
 
     # opt means optional
     sl = r'(?:softlayer|sl|)(?:_|-|)(?:api|)'
-    key_or_pass = r'(?:key|pwd|password|pass|token|creds|credentials|cred)'
+    key_or_pass = r'(?:key|pwd|password|pass|token|creds|credentials|cred|auth)'
     secret = r'([a-z0-9]{64})'
     denylist = [
         RegexBasedDetector.assign_regex_generator(
