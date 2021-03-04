@@ -203,7 +203,11 @@ FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX
 )
 FOLLOWED_BY_EQUAL_SIGNS_REGEX = re.compile(
     # e.g. my_password = bar
-    r'({denylist})({closing})?{whitespace}={whitespace}({quote}?)({secret})(\3)'.format(
+    # e.g. my_password == "bar" or my_password != "bar" or my_password === "bar"
+    # or my_password !== "bar"
+    # e.g. my_password == 'bar' or my_password != 'bar' or my_password === 'bar'
+    # or my_password !== 'bar'
+    r'({denylist})({closing})?{whitespace}(={{1,3}}|!==?){whitespace}({quote}?)({secret})(\4)'.format(  # noqa: E501
         denylist=DENYLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
@@ -214,7 +218,11 @@ FOLLOWED_BY_EQUAL_SIGNS_REGEX = re.compile(
 )
 FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
     # e.g. my_password = "bar"
-    r'({denylist})({closing})?{whitespace}={whitespace}({quote})({secret})(\3)'.format(
+    # e.g. my_password == "bar" or my_password != "bar" or my_password === "bar"
+    # or my_password !== "bar"
+    # e.g. my_password == 'bar' or my_password != 'bar' or my_password === 'bar'
+    # or my_password !== 'bar'
+    r'({denylist})({closing})?{whitespace}(={{1,3}}|!==?){whitespace}({quote})({secret})(\4)'.format(  # noqa: E501
         denylist=DENYLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
@@ -222,20 +230,6 @@ FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
         secret=SECRET,
     ),
     flags=re.IGNORECASE,
-)
-
-FOLLOWED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
-    # e.g. my_password == "bar" or my_password != "bar" or my_password === "bar"
-    # or my_password !== "bar"
-    # e.g. my_password == 'bar' or my_password != 'bar' or my_password === 'bar'
-    # or my_password !== 'bar'
-    r'({denylist})({closing})?{whitespace}[!=]{{2,3}}{whitespace}({quote})({secret})(\3)'.format(  # noqa: E501
-        denylist=DENYLIST_REGEX,
-        closing=CLOSING,
-        quote=QUOTE,
-        whitespace=OPTIONAL_WHITESPACE,
-        secret=SECRET,
-    ),
 )
 
 PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
@@ -264,16 +258,14 @@ FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX = re.compile(
 )
 DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_COLON_REGEX: 4,
-    FOLLOWED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX: 4,
     PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX: 2,
-    FOLLOWED_BY_EQUAL_SIGNS_REGEX: 4,
+    FOLLOWED_BY_EQUAL_SIGNS_REGEX: 5,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
 }
 GOLANG_DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX: 4,
-    FOLLOWED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX: 4,
     PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX: 2,
-    FOLLOWED_BY_EQUAL_SIGNS_REGEX: 4,
+    FOLLOWED_BY_EQUAL_SIGNS_REGEX: 5,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
 }
 OBJECTIVE_C_DENYLIST_REGEX_TO_GROUP = {
@@ -281,9 +273,8 @@ OBJECTIVE_C_DENYLIST_REGEX_TO_GROUP = {
 }
 QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX: 5,
-    FOLLOWED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX: 4,
     PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX: 2,
-    FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 4,
+    FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 5,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
 }
 QUOTES_REQUIRED_FILETYPES = {
