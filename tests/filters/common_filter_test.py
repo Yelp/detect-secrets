@@ -14,7 +14,7 @@ class TestVerify:
     @staticmethod
     def test_does_not_verify_if_no_verify():
         with register_plugin(MockPlugin(should_verify=False)):
-            main_module.main(['scan', '--string', 'fake-secret', '--no-verify'])
+            main_module.main(['scan', '--string', 'deadbeef', '--no-verify'])
 
     @staticmethod
     @pytest.mark.parametrize(
@@ -30,7 +30,7 @@ class TestVerify:
         with register_plugin(
             MockPlugin(verified_result=verified_result),
         ), mock_printer(main_module) as printer:
-            main_module.main(['scan', '--string', 'fake-secret', *args])
+            main_module.main(['scan', '--string', 'deadbeef', *args])
 
         for line in printer.message.splitlines():
             plugin_name, result = [x.strip() for x in line.split(':')]
@@ -54,7 +54,8 @@ class TestVerify:
 
 class MockPlugin(RegexBasedDetector):
     denylist = (
-        re.compile('fake-secret'),
+        # We use a hex string here, due to the gibberish detector.
+        re.compile('deadbeef'),
     )
     secret_type = 'mock plugin'
 

@@ -9,6 +9,7 @@ from detect_secrets.core import baseline
 from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.main import scan_adhoc_string
 from detect_secrets.settings import transient_settings
+from testing.mocks import disable_gibberish_filter
 from testing.mocks import mock_printer
 
 
@@ -130,7 +131,7 @@ class TestScanString:
             ],
         }), mock_stdin(
             'AKIATESTTESTTESTTEST',
-        ), mock_printer(main_module) as printer:
+        ), mock_printer(main_module) as printer, disable_gibberish_filter():
             assert main_module.main(['scan', '--string']) == 0
 
             assert printer.message.strip() == 'AWSKeyDetector: True  (unverified)'

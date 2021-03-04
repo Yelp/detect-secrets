@@ -1,0 +1,1 @@
+include detect_secrets/filters/gibberish/rfc.model

@@ -34,9 +34,13 @@ setup(
         'pyyaml',
         'requests',
     ],
+    include_package_data=True,
     extras_require={
         'word_list': [
             'pyahocorasick',
+        ],
+        'gibberish': [
+            'gibberish-detector',
         ],
     },
     entry_points={

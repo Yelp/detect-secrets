@@ -356,9 +356,6 @@ filter options:
                         If filenames match this regex, it will be ignored.
   --exclude-secrets EXCLUDE_SECRETS
                         If secrets match this regex, it will be ignored.
-  --word-list WORD_LIST_FILE
-                        Text file with a list of words, if a secret contains a
-                        word in the list we ignore it.
   -f FILTER, --filter FILTER
                         Specify path to custom filter. May be a python module
                         path (e.g.
@@ -513,17 +510,6 @@ Or you can specify multiple regex rules as such:
 $ detect-secrets scan --exclude-secrets 'fakesecret' --exclude-secrets '\${.*})'
 ```
 
-#### --word-list
-
-If you know there are certain fake password values that you want to ignore, you can also use
-this option:
-
-```bash
-$ cat wordlist.txt
-not-a-real-secret
-$ detect-secrets scan --word-list wordlist.txt
-```
-
 #### Inline Allowlisting
 
 Sometimes, you want to apply an exclusion to a specific line, rather than globally excluding it.
@@ -555,6 +541,57 @@ $ detect-secrets scan --only-allowlisted
 
 Want to write more custom logic to filter out false positives? Check out how to do this in
 our [filters documentation](docs/filters.md#Using-Your-Own-Filters).
+
+## Extensions
+
+### wordlist
+
+The `--exclude-secrets` flag allows you to specify regex rules to exclude secret values. However,
+if you want to specify a large list of words instead, you can use the `--word-list` flag.
+
+To use this feature, be sure to install the `pyahocorasick` package, or simply use:
+
+```bash
+$ pip install detect-secrets[word_list]
+```
+
+Then, you can use it as such:
+
+```bash
+$ cat wordlist.txt
+not-a-real-secret
+$ cat sample.ini
+password = not-a-real-secret
+
+# Will show results
+$ detect-secrets scan sample.ini
+
+# No results found
+$ detect-secrets scan --word-list wordlist.txt
+```
+
+### Gibberish Detector
+
+The Gibberish Detector is a simple ML model, that attempts to determine whether a secret value
+is actually gibberish, with the assumption that **real** secret values are not word-like.
+
+To use this feature, be sure to install the `gibberish-detector` package, or use:
+
+```bash
+$ pip install detect-secrets[gibberish]
+```
+
+Check out the [gibberish-detector](https://github.com/domanchi/gibberish-detector) package for
+more information on how to train the model. A pre-trained model (seeded by processing RFCs) will
+be included for easy use.
+
+You can also specify your own model as such:
+
+```bash
+$ detect-secrets scan --gibberish-model custom.model
+```
+
+This is not a default plugin, given that this will ignore secrets such as `password`.
 
 ## Caveats
 
