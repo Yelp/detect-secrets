@@ -154,17 +154,17 @@ OPTIONAL_NON_WHITESPACE = r'[^\s]{0,50}?'
 QUOTE = r'[\'"`]'
 '''
 Secret regex details:
-    [^\r\n]*      -> this section match with every character except line breaks. 
-                     This allows to find secrets that starts with symbols or 
+    [^\r\n]*      -> this section match with every character except line breaks.
+                     This allows to find secrets that starts with symbols or
                      alphanumeric characters.
-    [a-zA-Z0-9]+  -> this section match only with alphanumeric characters, and at 
-                     least one is required. This allows to reduce the false positives 
+    [a-zA-Z0-9]+  -> this section match only with alphanumeric characters, and at
+                     least one is required. This allows to reduce the false positives
                      number.
-    [^\r\n]*      -> this section match with every character except line breaks. 
+    [^\r\n]*      -> this section match with every character except line breaks.
                      This allows to find secrets with symbols at the end.
-    [^\r\n,\'"`]  -> this section match with the last secret character that can be 
-                     everything except line breaks, comma, backticks or quotes. This 
-                     allows to reduce the false positives number and to prevent 
+    [^\r\n,\'"`]  -> this section match with the last secret character that can be
+                     everything except line breaks, comma, backticks or quotes. This
+                     allows to reduce the false positives number and to prevent
                      errors in the code snippet highlighting.
 '''
 SECRET = r'[^\r\n]*[a-zA-Z0-9]+[^\r\n]*[^\r\n,\'"`]'
