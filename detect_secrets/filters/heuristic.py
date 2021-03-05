@@ -108,7 +108,7 @@ IGNORED_FILE_EXTENSIONS = set(
         '.mo',
         '.pdf',
         '.png',
-	    '.prefs',
+        '.prefs',
         '.psd',
         '.rar',
         '.realm',
