@@ -85,22 +85,35 @@ def is_non_text_file(filename: str) -> bool:
 IGNORED_FILE_EXTENSIONS = set(
     (
         '.7z',
+        '.bin',
         '.bmp',
         '.bz2',
+        '.class',
+        '.css',
         '.dmg',
+        '.doc',
         '.eot',
         '.exe',
         '.gif',
         '.gz',
         '.ico',
+        '.iml',
+        '.ipr',
+        '.iws',
         '.jar',
         '.jpg',
         '.jpeg',
+        '.lock',
+        '.map',
         '.mo',
+        '.pdf',
         '.png',
+		'.prefs',
+        '.psd',
         '.rar',
         '.realm',
         '.s7z',
+		'.sum',
         '.svg',
         '.tar',
         '.tif',
@@ -113,7 +126,6 @@ IGNORED_FILE_EXTENSIONS = set(
         '.zip',
     ),
 )
-
 
 def is_templated_secret(secret: str) -> bool:
     """
