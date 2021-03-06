@@ -178,3 +178,16 @@ def is_indirect_reference(secret: str) -> bool:
             continue
 
     return output
+
+
+def is_lock_file(filename: str) -> bool:
+    return os.path.basename(filename) in {
+        'Brewfile.lock.json',
+        'Cartfile.resolved',
+        'composer.lock',
+        'Gemfile.lock',
+        'Package.resolved',
+        'package-lock.json',
+        'Podfile.lock',
+        'yarn.lock',
+    }

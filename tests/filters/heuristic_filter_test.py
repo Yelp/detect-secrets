@@ -127,3 +127,14 @@ def test_is_indirect_reference(line, result):
         }],
     }):
         assert bool(list(scan_line(line))) is result
+
+
+def test_is_lock_file():
+    # Basic test
+    assert filters.heuristic.is_lock_file('composer.lock')
+
+    # file path
+    assert filters.heuristic.is_lock_file('path/yarn.lock')
+
+    # assert non-regex
+    assert not filters.heuristic.is_lock_file('Gemfilealock')
