@@ -65,6 +65,19 @@ def add_filter_options(parent: argparse.ArgumentParser) -> None:
             dest='word_list_file',
         )
 
+    if filters.gibberish.is_feature_enabled():
+        parser.add_argument(
+            '--gibberish-model',
+            type=valid_path,
+            help='Path to model trained with gibberish-detector.',
+            dest='gibberish_model_file',
+        )
+        parser.add_argument(
+            '--gibberish-limit',
+            type=float,
+            help='Threshold to determine whether a string is gibberish.',
+        )
+
     _add_custom_filters(parser)
     _add_disable_flag(parser)
 
@@ -144,6 +157,16 @@ def parse_args(args: argparse.Namespace) -> None:
         and args.word_list_file
     ):
         filters.wordlist.initialize(args.word_list_file)
+
+    if filters.gibberish.is_feature_enabled():
+        kwargs = {}
+        if args.gibberish_model_file:
+            kwargs['model_path'] = args.gibberish_model_file
+
+        if args.gibberish_limit:
+            kwargs['limit'] = args.gibberish_limit
+
+        filters.gibberish.initialize(**kwargs)
 
     if not args.no_verify:
         get_settings().filters[

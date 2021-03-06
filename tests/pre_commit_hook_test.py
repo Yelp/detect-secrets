@@ -11,6 +11,7 @@ from detect_secrets.core import baseline
 from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.pre_commit_hook import main
 from detect_secrets.settings import transient_settings
+from testing.mocks import disable_gibberish_filter
 
 
 @pytest.fixture(autouse=True)
@@ -50,31 +51,33 @@ def test_baseline_filters_out_known_secrets():
     secrets = SecretsCollection()
     secrets.scan_file('test_data/each_secret.py')
 
-    with tempfile.NamedTemporaryFile() as f:
-        baseline.save_to_file(secrets, f.name)
-        f.seek(0)
+    assert secrets
 
-        # This succeeds, because all the secrets are known.
-        assert_commit_succeeds([
-            'test_data/each_secret.py',
-            '--baseline',
-            f.name,
-        ])
+    with disable_gibberish_filter():
+        with tempfile.NamedTemporaryFile() as f:
+            baseline.save_to_file(secrets, f.name)
+            f.seek(0)
 
-    # Remove one arbitrary secret, so that it won't be the full set.
-    secrets.data['test_data/each_secret.py'].pop()
+            # This succeeds, because all the secrets are known.
+            assert_commit_succeeds([
+                'test_data/each_secret.py',
+                '--baseline',
+                f.name,
+            ])
 
-    with tempfile.NamedTemporaryFile() as f:
-        baseline.save_to_file(secrets, f.name)
-        f.seek(0)
+        # Remove one arbitrary secret, so that it won't be the full set.
+        secrets.data['test_data/each_secret.py'].pop()
 
-        # Test that it isn't the case that a baseline is provided, and everything passes.
-        # import pdb; pdb.set_trace()
-        assert_commit_blocked([
-            'test_data/each_secret.py',
-            '--baseline',
-            f.name,
-        ])
+        with tempfile.NamedTemporaryFile() as f:
+            baseline.save_to_file(secrets, f.name)
+            f.seek(0)
+
+            # Test that it isn't the case that a baseline is provided, and everything passes.
+            assert_commit_blocked([
+                'test_data/each_secret.py',
+                '--baseline',
+                f.name,
+            ])
 
 
 class TestModifiesBaselineFromVersionChange:

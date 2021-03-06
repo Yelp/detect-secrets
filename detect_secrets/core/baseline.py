@@ -90,6 +90,9 @@ def save_to_file(
         If you're trying to decide the difference, ask yourself whether there are any changes
         that does not directly impact the results of the scan.
     """
+    # TODO: I wonder whether this should add the `detect_secrets.filters.common.is_baseline_file`
+    # filter, since we know the filename already. However, one could argue that it would cause
+    # this function to "do more than one thing".
     output = secrets
     if isinstance(secrets, SecretsCollection):
         output = format_for_output(secrets)

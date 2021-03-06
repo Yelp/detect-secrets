@@ -43,6 +43,15 @@ def configure_settings_from_baseline(baseline: Dict[str, Any], filename: str = '
                 file_hash=config['file_hash'],
             )
 
+        if 'detect_secrets.filters.gibberish.should_exclude_secret' in settings.filters:
+            config = settings.filters['detect_secrets.filters.gibberish.should_exclude_secret']
+
+            from detect_secrets import filters
+            filters.gibberish.initialize(
+                model_path=config.get('model'),
+                limit=config['limit'],
+            )
+
     if filename:
         settings.filters['detect_secrets.filters.common.is_baseline_file'] = {
             'filename': filename,
@@ -130,6 +139,7 @@ class Settings:
             name = plugin.pop('name')
             self.plugins[name] = plugin
 
+        get_plugins.cache_clear()
         return self
 
     def disable_plugins(self, *plugin_names: str) -> 'Settings':
@@ -139,6 +149,7 @@ class Settings:
             except KeyError:
                 pass
 
+        get_plugins.cache_clear()
         return self
 
     def configure_filters(self, config: List[Dict[str, Any]]) -> 'Settings':
@@ -163,12 +174,14 @@ class Settings:
             path = filter_config['path']
             self.filters[path] = filter_config
 
+        get_filters.cache_clear()
         return self
 
     def disable_filters(self, *filter_paths: str) -> 'Settings':
         for filter_path in filter_paths:
             self.filters.pop(filter_path, None)
 
+        get_filters.cache_clear()
         return self
 
     def json(self) -> Dict[str, Any]:
