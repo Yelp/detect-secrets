@@ -50,101 +50,99 @@ DENYLIST = (
     'secret',
     'secrete',
 )
-'''
-Deprecated false positives list. This will be migrated soon.
-FALSE_POSITIVES = {
-    '""',
-    '""):',
-    '"\'',
-    '")',
-    '"dummy',
-    '"replace',
-    '"this',
-    '#pass',
-    '#password',
-    '$(shell',
-    "'\"",
-    "''",
-    "''):",
-    "')",
-    "'dummy",
-    "'replace",
-    "'this",
-    '(nsstring',
-    '-default}',
-    '::',
-    '<%=',
-    '<?php',
-    '<a',
-    '<aws_secret_access_key>',
-    '<input',
-    '<password>',
-    '<redacted>',
-    '<secret',
-    '>',
-    '=',
-    '\\"$(shell',
-    '\\k.*"',
-    "\\k.*'",
-    '`cat',
-    '`grep',
-    '`sudo',
-    'account_password',
-    'api_key',
-    'disable',
-    'dummy_secret',
-    'dummy_value',
-    'false',
-    'false):',
-    'false,',
-    'false;',
-    'login_password',
-    'none',
-    'none,',
-    'none}',
-    'nopasswd',
-    'not',
-    'not_real_key',
-    'null',
-    'null,',
-    'null.*"',
-    "null.*'",
-    'null;',
-    'pass',
-    'pass)',
-    'password',
-    'password)',
-    'password))',
-    'password,',
-    'password},',
-    'prompt',
-    'redacted',
-    'secret',
-    'some_key',
-    'str',
-    'str_to_sign',
-    'string',
-    'string)',
-    'string,',
-    'string;',
-    'string?',
-    'string?)',
-    'string}',
-    'string}}',
-    'test',
-    'test-access-key',
-    'thisisnottherealsecret',
-    'todo',
-    'true',
-    'true):',
-    'true,',
-    'true;',
-    'undef',
-    'undef,',
-    '{',
-    '{{',
-}
-'''
+# Deprecated false positives list. This will be migrated soon.
+# FALSE_POSITIVES = {
+#     '""',
+#     '""):',
+#     '"\'',
+#     '")',
+#     '"dummy',
+#     '"replace',
+#     '"this',
+#     '#pass',
+#     '#password',
+#     '$(shell',
+#     "'\"",
+#     "''",
+#     "''):",
+#     "')",
+#     "'dummy",
+#     "'replace",
+#     "'this",
+#     '(nsstring',
+#     '-default}',
+#     '::',
+#     '<%=',
+#     '<?php',
+#     '<a',
+#     '<aws_secret_access_key>',
+#     '<input',
+#     '<password>',
+#     '<redacted>',
+#     '<secret',
+#     '>',
+#     '=',
+#     '\\"$(shell',
+#     '\\k.*"',
+#     "\\k.*'",
+#     '`cat',
+#     '`grep',
+#     '`sudo',
+#     'account_password',
+#     'api_key',
+#     'disable',
+#     'dummy_secret',
+#     'dummy_value',
+#     'false',
+#     'false):',
+#     'false,',
+#     'false;',
+#     'login_password',
+#     'none',
+#     'none,',
+#     'none}',
+#     'nopasswd',
+#     'not',
+#     'not_real_key',
+#     'null',
+#     'null,',
+#     'null.*"',
+#     "null.*'",
+#     'null;',
+#     'pass',
+#     'pass)',
+#     'password',
+#     'password)',
+#     'password))',
+#     'password,',
+#     'password},',
+#     'prompt',
+#     'redacted',
+#     'secret',
+#     'some_key',
+#     'str',
+#     'str_to_sign',
+#     'string',
+#     'string)',
+#     'string,',
+#     'string;',
+#     'string?',
+#     'string?)',
+#     'string}',
+#     'string}}',
+#     'test',
+#     'test-access-key',
+#     'thisisnottherealsecret',
+#     'todo',
+#     'true',
+#     'true):',
+#     'true,',
+#     'true;',
+#     'undef',
+#     'undef,',
+#     '{',
+#     '{{',
+# }
 # Includes ], ', " as closing
 CLOSING = r'[]\'"]{0,2}'
 DENYLIST_REGEX = r'|'.join(DENYLIST)
@@ -152,21 +150,19 @@ DENYLIST_REGEX = r'|'.join(DENYLIST)
 OPTIONAL_WHITESPACE = r'\s*'
 OPTIONAL_NON_WHITESPACE = r'[^\s]{0,50}?'
 QUOTE = r'[\'"`]'
-'''
-Secret regex details:
-    [^\r\n]*      -> this section match with every character except line breaks.
-                     This allows to find secrets that starts with symbols or
-                     alphanumeric characters.
-    [a-zA-Z0-9]+  -> this section match only with alphanumeric characters, and at
-                     least one is required. This allows to reduce the false positives
-                     number.
-    [^\r\n]*      -> this section match with every character except line breaks.
-                     This allows to find secrets with symbols at the end.
-    [^\r\n,\'"`]  -> this section match with the last secret character that can be
-                     everything except line breaks, comma, backticks or quotes. This
-                     allows to reduce the false positives number and to prevent
-                     errors in the code snippet highlighting.
-'''
+# Secret regex details:
+#    [^\r\n]*      -> this section match with every character except line breaks.
+#                     This allows to find secrets that starts with symbols or
+#                     alphanumeric characters.
+#    [a-zA-Z0-9]+  -> this section match only with alphanumeric characters, and at
+#                     least one is required. This allows to reduce the false positives
+#                     number.
+#    [^\r\n]*      -> this section match with every character except line breaks.
+#                     This allows to find secrets with symbols at the end.
+#    [^\r\n,\'"`]  -> this section match with the last secret character that can be
+#                     everything except line breaks, comma, backticks or quotes. This
+#                     allows to reduce the false positives number and to prevent
+#                     errors in the code snippet highlighting.
 SECRET = r'[^\r\n]*[a-zA-Z0-9]+[^\r\n]*[^\r\n,\'"`]'
 SQUARE_BRACKETS = r'(\[\])'
 
