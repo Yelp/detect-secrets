@@ -127,6 +127,7 @@ IGNORED_FILE_EXTENSIONS = set(
     ),
 )
 
+
 def is_templated_secret(secret: str) -> bool:
     """
     Filters secrets that are shaped like: {secret}, <secret>, or ${secret}.
