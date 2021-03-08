@@ -58,23 +58,23 @@ OPTIONAL_WHITESPACE = r'\s*'
 OPTIONAL_NON_WHITESPACE = r'[^\s]{0,50}?'
 QUOTE = r'[\'"`]'
 # Secret regex details:
-#    [^\v\\g<{quote_group}>]*   -> this section match with every character except line breaks
-#                                  and the previous quote if exists. This allows to find 
-#                                  secrets that starts with symbols or alphanumeric characters.
+#    [^\v\g{quote_group}]*  -> this section match with every character except line breaks
+#                              and the previous quote if exists. This allows to find 
+#                              secrets that starts with symbols or alphanumeric characters.
 #
-#    \w+                        -> this section match only with words (letters, numbers or _ 
-#                                  are allowed), and at least one character is required. This 
-#                                  allows to reduce the false positives number.
+#    \w+                    -> this section match only with words (letters, numbers or _ 
+#                              are allowed), and at least one character is required. This 
+#                              allows to reduce the false positives number.
 #
-#    [^\v\\g<{quote_group}>]*   -> this section match with every character except line breaks
-#                                  and the previous quote if exists. This allows to find secrets 
-#                                  with symbols at the end.
+#    [^\v\g{quote_group}]*  -> this section match with every character except line breaks
+#                              and the previous quote if exists. This allows to find secrets 
+#                              with symbols at the end.
 #
-#    [^\v,\'"`]                 -> this section match with the last secret character that can be
-#                                  everything except line breaks, comma, backticks or quotes. This
-#                                  allows to reduce the false positives number and to prevent
-#                                  errors in the code snippet highlighting.
-SECRET = r'[^\v\\g<{quote_group}>]*\w+[^\v\\g<{quote_group}>]*[^\v,\'"`]'
+#    [^\v,\'"`]             -> this section match with the last secret character that can be
+#                              everything except line breaks, comma, backticks or quotes. This
+#                              allows to reduce the false positives number and to prevent
+#                              errors in the code snippet highlighting.
+SECRET = r'[^\v\\g{quote_group}]*\w+[^\v\\g{quote_group}]*[^\v,\'"`]'
 SQUARE_BRACKETS = r'(\[\])'
 
 FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
@@ -243,7 +243,6 @@ class KeywordDetector(BasePlugin):
         has_results = False
         for denylist_regex_to_group in attempts:
             for denylist_regex, group_number in denylist_regex_to_group.items():
-                print(str(denylist_regex))
                 match = denylist_regex.search(string)
                 if match:
                     has_results = True

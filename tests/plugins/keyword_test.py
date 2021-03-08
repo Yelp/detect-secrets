@@ -7,8 +7,8 @@ from detect_secrets.settings import transient_settings
 
 COMMON_SECRET = 'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'
 WHITES_SECRET = 'value with quotes and spaces'
-LETTER_SECRET = 'A,.:-¨Ç*¿?!'
-SYMBOL_SECRET = ',.:-¨Ç*¿?!'
+LETTER_SECRET = 'A,.:-¨@*¿?!'
+SYMBOL_SECRET = ',.:-¨@*¿?!'
 
 GENERIC_TEST_CASES = [
     ('password = "{}"'.format(WHITES_SECRET), WHITES_SECRET),
