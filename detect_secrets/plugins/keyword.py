@@ -58,19 +58,23 @@ OPTIONAL_WHITESPACE = r'\s*'
 OPTIONAL_NON_WHITESPACE = r'[^\s]{0,50}?'
 QUOTE = r'[\'"`]'
 # Secret regex details:
-#    [^\r\n]*      -> this section match with every character except line breaks.
-#                     This allows to find secrets that starts with symbols or
-#                     alphanumeric characters.
-#    [a-zA-Z0-9]+  -> this section match only with alphanumeric characters, and at
-#                     least one is required. This allows to reduce the false positives
-#                     number.
-#    [^\r\n]*      -> this section match with every character except line breaks.
-#                     This allows to find secrets with symbols at the end.
-#    [^\r\n,\'"`]  -> this section match with the last secret character that can be
-#                     everything except line breaks, comma, backticks or quotes. This
-#                     allows to reduce the false positives number and to prevent
-#                     errors in the code snippet highlighting.
-SECRET = r'[^\r\n]*[a-zA-Z0-9]+[^\r\n]*[^\r\n,\'"`]'
+#    [^\v\\g<{quote_group}>]*   -> this section match with every character except line breaks
+#                                  and the previous quote if exists. This allows to find 
+#                                  secrets that starts with symbols or alphanumeric characters.
+#
+#    \w+                        -> this section match only with words (letters, numbers or _ 
+#                                  are allowed), and at least one character is required. This 
+#                                  allows to reduce the false positives number.
+#
+#    [^\v\\g<{quote_group}>]*   -> this section match with every character except line breaks
+#                                  and the previous quote if exists. This allows to find secrets 
+#                                  with symbols at the end.
+#
+#    [^\v,\'"`]                 -> this section match with the last secret character that can be
+#                                  everything except line breaks, comma, backticks or quotes. This
+#                                  allows to reduce the false positives number and to prevent
+#                                  errors in the code snippet highlighting.
+SECRET = r'[^\v\\g<{quote_group}>]*\w+[^\v\\g<{quote_group}>]*[^\v,\'"`]'
 SQUARE_BRACKETS = r'(\[\])'
 
 FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
@@ -80,7 +84,7 @@ FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
         closing=CLOSING,
         quote=QUOTE,
         whitespace=OPTIONAL_WHITESPACE,
-        secret=SECRET,
+        secret=SECRET.format(quote_group=3),
     ),
     flags=re.IGNORECASE,
 )
@@ -91,7 +95,7 @@ FOLLOWED_BY_COLON_REGEX = re.compile(
         closing=CLOSING,
         quote=QUOTE,
         whitespace=OPTIONAL_WHITESPACE,
-        secret=SECRET,
+        secret=SECRET.format(quote_group=3),
     ),
     flags=re.IGNORECASE,
 )
@@ -102,7 +106,7 @@ FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX = re.compile(
         closing=CLOSING,
         quote=QUOTE,
         whitespace=OPTIONAL_WHITESPACE,
-        secret=SECRET,
+        secret=SECRET.format(quote_group=4),
     ),
     flags=re.IGNORECASE,
 )
@@ -114,7 +118,7 @@ FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX
         denylist=DENYLIST_REGEX,
         square_brackets=SQUARE_BRACKETS,
         optional_whitespace=OPTIONAL_WHITESPACE,
-        secret=SECRET,
+        secret=SECRET.format(quote_group=5),
     ),
     flags=re.IGNORECASE,
 )
@@ -129,7 +133,7 @@ FOLLOWED_BY_EQUAL_SIGNS_REGEX = re.compile(
         closing=CLOSING,
         quote=QUOTE,
         whitespace=OPTIONAL_WHITESPACE,
-        secret=SECRET,
+        secret=SECRET.format(quote_group=4),
     ),
     flags=re.IGNORECASE,
 )
@@ -144,7 +148,7 @@ FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
         closing=CLOSING,
         quote=QUOTE,
         whitespace=OPTIONAL_WHITESPACE,
-        secret=SECRET,
+        secret=SECRET.format(quote_group=4),
     ),
     flags=re.IGNORECASE,
 )
@@ -158,7 +162,7 @@ PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
         denylist=DENYLIST_REGEX,
         quote=QUOTE,
         whitespace=OPTIONAL_WHITESPACE,
-        secret=SECRET,
+        secret=SECRET.format(quote_group=1),
     ),
 )
 
@@ -169,7 +173,7 @@ FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX = re.compile(
         nonWhitespace=OPTIONAL_NON_WHITESPACE,
         quote=QUOTE,
         whitespace=OPTIONAL_WHITESPACE,
-        secret=SECRET,
+        secret=SECRET.format(quote_group=2),
     ),
     flags=re.IGNORECASE,
 )
@@ -239,6 +243,7 @@ class KeywordDetector(BasePlugin):
         has_results = False
         for denylist_regex_to_group in attempts:
             for denylist_regex, group_number in denylist_regex_to_group.items():
+                print(str(denylist_regex))
                 match = denylist_regex.search(string)
                 if match:
                     has_results = True
