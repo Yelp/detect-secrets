@@ -27,7 +27,7 @@ GENERIC_TEST_CASES = [
     ('if (aws_secret_access_key === "{}") {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if (db_pass !== "{}") {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if ("{}" == password) {{'.format(COMMON_SECRET), COMMON_SECRET),
-    ('if ("{}" == my_super_password) {{'.format(COMMON_SECRET), COMMON_SECRET),     # Preffix
+    ('if ("{}" == my_super_password) {{'.format(COMMON_SECRET), COMMON_SECRET),     # Prefix
     ('if ("{}" != passwd) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if ("{}" === private_key) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if ("{}" !== secret) {{'.format(COMMON_SECRET), COMMON_SECRET),
@@ -55,7 +55,7 @@ GOLANG_TEST_CASES = [
     ('if ("{}" === private_key) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if ("{}" != secret) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if ("{}" !== password) {{'.format(COMMON_SECRET), COMMON_SECRET),
-    ('if ("{}" !== my_password_sec) {{'.format(COMMON_SECRET), COMMON_SECRET),    # Preffix/suffix
+    ('if ("{}" !== my_password_sec) {{'.format(COMMON_SECRET), COMMON_SECRET),    # Prefix/suffix
     ('apikey = "{}"'.format(COMMON_SECRET), COMMON_SECRET),
     ("api_key = '{}'".format(COMMON_SECRET), COMMON_SECRET),
     ('aws_secret_access_key = `{}`'.format(COMMON_SECRET), COMMON_SECRET),
@@ -82,7 +82,7 @@ GOLANG_TEST_CASES = [
 OBJECTIVE_C_TEST_CASES = [
     ('apikey = "{}";'.format(COMMON_SECRET), COMMON_SECRET),
     ('password = @"{}";'.format(COMMON_SECRET), COMMON_SECRET),
-    ('my_password_secure = @"{}";'.format(COMMON_SECRET), COMMON_SECRET),   # Preffix/suffix
+    ('my_password_secure = @"{}";'.format(COMMON_SECRET), COMMON_SECRET),   # Prefix/suffix
     ('secrete[] = "{}";'.format(COMMON_SECRET), COMMON_SECRET),
     ('secrete = "{}"'.format(LETTER_SECRET), LETTER_SECRET),    # All symbols are allowed
     ('password = "{}"'.format(SYMBOL_SECRET), None),  # At least 1 alphanumeric char is required
@@ -107,7 +107,7 @@ QUOTES_REQUIRED_TEST_CASES = [
     ("password: '{}'".format(SYMBOL_SECRET), None),  # At least 1 alphanumeric character is required
     ('if ("{}" == passwd) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if ("{}" === private_key) {{'.format(COMMON_SECRET), COMMON_SECRET),
-    ('if ("{}" === my_private_key) {{'.format(COMMON_SECRET), COMMON_SECRET),   # Preffix
+    ('if ("{}" === my_private_key) {{'.format(COMMON_SECRET), COMMON_SECRET),   # Prefix
     ('if ("{}" != secret) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if ("{}" !== password) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('secrete = "{}"'.format(COMMON_SECRET), COMMON_SECRET),
