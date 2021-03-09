@@ -191,3 +191,10 @@ def is_lock_file(filename: str) -> bool:
         'Podfile.lock',
         'yarn.lock',
     }
+
+def is_swagger_file(filename: str) -> bool:
+    """
+    Filters swagger files
+    """
+    regex = re.compile(r'.*swagger.*')
+    return bool(regex.search(filename))
