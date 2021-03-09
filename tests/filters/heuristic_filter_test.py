@@ -138,3 +138,16 @@ def test_is_lock_file():
 
     # assert non-regex
     assert not filters.heuristic.is_lock_file('Gemfilealock')
+
+def test_is_internationalization_file():
+    # i18n test
+    assert filters.heuristic.is_internationalization_file('/something/i18n/text_en.txt')
+
+    # locale test
+    assert filters.heuristic.is_internationalization_file('locale/text_es.yml')
+
+    # messages with locale keys
+    assert filters.heuristic.is_internationalization_file('path/text/Messages_es_ES.json')
+
+    # assert non-regex
+    assert not filters.heuristic.is_internationalization_file('/src/messages/MessageClass.java')
