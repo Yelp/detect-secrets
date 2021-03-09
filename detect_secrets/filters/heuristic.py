@@ -191,3 +191,15 @@ def is_lock_file(filename: str) -> bool:
         'Podfile.lock',
         'yarn.lock',
     }
+
+
+def is_environment_config_file(filename: str) -> bool:
+    return path.split(os.path.sep)[0] in {
+        '.git',         # Git version control
+        '.svn',         # SVN version control
+        '.idea',        # IntelliJ
+        '.vscode',      # Visual Code Studio
+        '.settings',    # Eclipse project
+        '.metadata',    # Eclipse workspace
+        '.netbeans',    # Netbeans
+    }

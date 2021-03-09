@@ -138,3 +138,14 @@ def test_is_lock_file():
 
     # assert non-regex
     assert not filters.heuristic.is_lock_file('Gemfilealock')
+
+
+def test_is_environment_config_file():
+    # Git folder test
+    assert filters.heuristic.is_environment_config_file('.git/hooks/pre-commit')
+    assert not filters.heuristic.is_environment_config_file('hidden_secrets/.git/secret.properties')
+
+    # Eclipse folders test
+    assert filters.heuristic.is_environment_config_file('.settings/org.eclipse.core.resources.prefs')
+    assert not filters.heuristic.is_environment_config_file('my_folder/.settings/it.is.not.eclipse.folder')
+    assert filters.heuristic.is_environment_config_file('.metadata/.plugins/org.eclipse.core.resources/.projects/my-project')
