@@ -71,16 +71,15 @@ OPTIONAL_NON_WHITESPACE = r'[^\s]{0,50}?'
 QUOTE = r'[\'"`]'
 # Secret regex details:
 #    [^\v\'"]*      -> this section match with every character except line breaks
-#                      and the previous quote if exists. This allows to find
-#                      secrets that starts with symbols or alphanumeric characters.
+#                      and quotes. This allows to find secrets that starts with 
+#                      symbols or alphanumeric characters.
 #
 #    \w+            -> this section match only with words (letters, numbers or _
 #                      are allowed), and at least one character is required. This
 #                      allows to reduce the false positives number.
 #
 #    [^\v\'"]*      -> this section match with every character except line breaks
-#                      and the previous quote if exists. This allows to find secrets
-#                      with symbols at the end.
+#                      and quotes. This allows to find secrets with symbols at the end.
 #
 #    [^\v,\'"`]     -> this section match with the last secret character that can be
 #                      everything except line breaks, comma, backticks or quotes. This
