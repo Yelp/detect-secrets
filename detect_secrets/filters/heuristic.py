@@ -191,3 +191,24 @@ def is_lock_file(filename: str) -> bool:
         'Podfile.lock',
         'yarn.lock',
     }
+
+
+def is_compiled_file(filename: str) -> bool:
+    if os.path.basename(filename) in {
+        'package.json'
+    }:
+        return True
+    regexes = [re.compile(r) for r in [
+            r'^dist{}.*'.format(os.path.sep),
+            r'^build{}.*'.format(os.path.sep),
+            r'^\.tox{}.*'.format(os.path.sep),
+            r'.*node_modules{}.*'.format(os.path.sep),
+            r'.*target{}.*'.format(os.path.sep),
+            r'.*__pycache__{}.*'.format(os.path.sep),
+            r'*.egg-info{}.*'.format(os.path.sep),
+        ]
+    ]
+    for regex in regexes:
+        if regex.search(filename):
+            return True
+    return False

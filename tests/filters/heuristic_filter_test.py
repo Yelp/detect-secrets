@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from detect_secrets import filters
@@ -138,3 +140,21 @@ def test_is_lock_file():
 
     # assert non-regex
     assert not filters.heuristic.is_lock_file('Gemfilealock')
+
+
+def test_is_compiled_file():
+    # Apache Maven
+    assert filters.heuristic.is_compiled_file('my-project{sep}target{sep}classes{sep}someclass.class'.format(sep=os.path.sep))
+
+    # Node JS
+    assert filters.heuristic.is_compiled_file('my-poject{sep}node_modules{sep}my-dependencies'.format(sep=os.path.sep))
+
+    # Python
+    assert filters.heuristic.is_compiled_file('my-poject{sep}__pycache__{sep}my-cached-dependencies'.format(sep=os.path.sep))
+    assert filters.heuristic.is_compiled_file('my-poject{sep}detect_secrets.egg-info{sep}PKG-INFO'.format(sep=os.path.sep))
+    assert filters.heuristic.is_compiled_file('dist{sep}detect_secrets-1.0.3-py3.8.egg'.format(sep=os.path.sep))
+    assert not filters.heuristic.is_compiled_file('my-project{sep}dist{sep}detect_secrets-1.0.3-py3.8.egg'.format(sep=os.path.sep))
+    assert filters.heuristic.is_compiled_file('build{sep}lib{sep}detect_secrets'.format(sep=os.path.sep))
+    assert not filters.heuristic.is_compiled_file('my-project{sep}build{sep}lib{sep}detect_secrets'.format(sep=os.path.sep))
+    assert filters.heuristic.is_compiled_file('.tox{sep}dist{sep}detect_secrets.zip'.format(sep=os.path.sep))
+    assert not filters.heuristic.is_compiled_file('my-project{sep}.tox{sep}dist{sep}detect_secrets.zip'.format(sep=os.path.sep))
