@@ -194,7 +194,7 @@ def is_lock_file(filename: str) -> bool:
 
 
 def is_environment_config_file(filename: str) -> bool:
-    return path.split(os.path.sep)[0] in {
+    return filename.split(os.path.sep)[0] in {
         '.git',         # Git version control
         '.svn',         # SVN version control
         '.idea',        # IntelliJ
