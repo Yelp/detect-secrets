@@ -61,7 +61,7 @@ DENYLIST_REGEX = r'({denylist}){suffix}'.format(
 )
 # Support for prefix and suffix with keyword, needed for reverse comparisons
 # i.e. if ("value" == my_password_secure) {}
-DENYLIST_REGEX_WITH_PREFFIX = r'{prefix}{denylist}'.format(
+DENYLIST_REGEX_WITH_PREFIX = r'{prefix}{denylist}'.format(
     prefix=AFFIX_REGEX,
     denylist=DENYLIST_REGEX,
 )
@@ -70,22 +70,22 @@ OPTIONAL_WHITESPACE = r'\s*'
 OPTIONAL_NON_WHITESPACE = r'[^\s]{0,50}?'
 QUOTE = r'[\'"`]'
 # Secret regex details:
-#    [^\v\'"]*      -> this section match with every character except line breaks
-#                      and quotes. This allows to find secrets that starts with 
+#   [^\v\'"]*      ->  this section match with every character except line breaks
+#                      and quotes. This allows to find secrets that starts with
 #                      symbols or alphanumeric characters.
 #
-#    \w+            -> this section match only with words (letters, numbers or _
+#   \w+            ->  this section match only with words (letters, numbers or _
 #                      are allowed), and at least one character is required. This
 #                      allows to reduce the false positives number.
 #
-#    [^\v\'"]*      -> this section match with every character except line breaks
+#   [^\v\'"]*      ->  this section match with every character except line breaks
 #                      and quotes. This allows to find secrets with symbols at the end.
 #
-#    [^\v,\'"`]     -> this section match with the last secret character that can be
+#   [^\v,\'"`]     ->  this section match with the last secret character that can be
 #                      everything except line breaks, comma, backticks or quotes. This
 #                      allows to reduce the false positives number and to prevent
 #                      errors in the code snippet highlighting.
-SECRET = r'[^\v\'"]*\w+[^\v\'"]*[^\v,\'"`]'
+SECRET = r'[^\v\'\"]*\w+[^\v\'\"]*([\[(][\'\"]?\w+[\'\"]?[\])]?)?[^\v,\'\"`]'
 SQUARE_BRACKETS = r'(\[\])'
 
 FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
@@ -170,7 +170,7 @@ PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
     # e.g. 'bar' == my_password or 'bar' != my_password or 'bar' === my_password
     # or 'bar' !== my_password
     r'({quote})({secret})(\1){whitespace}[!=]{{2,3}}{whitespace}{denylist}'.format(
-        denylist=DENYLIST_REGEX_WITH_PREFFIX,
+        denylist=DENYLIST_REGEX_WITH_PREFIX,
         quote=QUOTE,
         whitespace=OPTIONAL_WHITESPACE,
         secret=SECRET,
