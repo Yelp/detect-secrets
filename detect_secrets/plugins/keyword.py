@@ -70,22 +70,28 @@ OPTIONAL_WHITESPACE = r'\s*'
 OPTIONAL_NON_WHITESPACE = r'[^\s]{0,50}?'
 QUOTE = r'[\'"`]'
 # Secret regex details:
-#   [^\v\'"]*      ->  this section match with every character except line breaks
-#                      and quotes. This allows to find secrets that starts with
-#                      symbols or alphanumeric characters.
+#   [^\v\'"]*   ->  this section match with every character except line breaks and quotes. This
+#                   allows to find secrets that starts with
+#                   symbols or alphanumeric characters.
 #
-#   \w+            ->  this section match only with words (letters, numbers or _
-#                      are allowed), and at least one character is required. This
-#                      allows to reduce the false positives number.
+#   \w+         ->  this section match only with words (letters, numbers or _ are allowed), and at
+#                   least one character is required. This allows to reduce the false positives 
+#                   number.
 #
-#   [^\v\'"]*      ->  this section match with every character except line breaks
-#                      and quotes. This allows to find secrets with symbols at the end.
+#   [^\v\'"]*   ->  this section match with every character except line breaks and quotes. This 
+#                   allows to find secrets with symbols at the end.
 #
-#   [^\v,\'"`]     ->  this section match with the last secret character that can be
-#                      everything except line breaks, comma, backticks or quotes. This
-#                      allows to reduce the false positives number and to prevent
-#                      errors in the code snippet highlighting.
-SECRET = r'[^\v\'\"]*\w+[^\v\'\"]*([\[(][\'\"]?\w+[\'\"]?[\])]?)?[^\v,\'\"`]'
+#  ([\[\(][\'\"]?\w+[\'\"]?[\]\)]?)?  ->  this section allow the presence of quotes in cases like:
+#                                           secret = get_secret_key() 
+#                                               or
+#                                           secret = request.headers['apikey']
+#                                       This cases should be managed as secrets because they will 
+#                                       be filtered by is is_indirect_reference
+#
+#   [^\v,\'"`]  ->  this section match with the last secret character that can be everything except
+#                   line breaks, comma, backticks or quotes. This allows to reduce the false 
+#                   positives number and to prevent errors in the code snippet highlighting.
+SECRET = r'[^\v\'\"]*\w+[^\v\'\"]*([\[\(][\'\"]?\w+[\'\"]?[\]\)]?)?[^\v,\'\"`]'
 SQUARE_BRACKETS = r'(\[\])'
 
 FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
