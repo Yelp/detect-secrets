@@ -154,7 +154,7 @@ def test_is_lock_file():
         ('my-project{sep}dist{sep}detect_secrets-1.0.3-py3.8.egg', False),
         ('build{sep}lib{sep}detect_secrets', True),
         ('my-project{sep}build{sep}lib{sep}detect_secrets', False),
-    )
+    ),
 )
 def test_is_compiled_file(filename, result):
     assert filters.heuristic.is_compiled_file(filename.format(sep=os.path.sep)) is result
