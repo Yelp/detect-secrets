@@ -7,11 +7,13 @@ from detect_secrets.settings import transient_settings
 
 COMMON_SECRET = 'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'
 WHITES_SECRET = 'value with quotes and spaces'
-LETTER_SECRET = 'A,.:-¨Ç*¿?!'
-SYMBOL_SECRET = ',.:-¨Ç*¿?!'
+LETTER_SECRET = 'A,.:-¨@*¿?!'
+SYMBOL_SECRET = ',.:-¨@*¿?!'
 
 GENERIC_TEST_CASES = [
     ('password = "{}"'.format(WHITES_SECRET), WHITES_SECRET),
+    ('password_super_secure = "{}"'.format(WHITES_SECRET), WHITES_SECRET),  # Suffix
+    ('my_password_super_secure = "{}"'.format(WHITES_SECRET), WHITES_SECRET),  # Prefix/suffix
     ('apikey = {}'.format(COMMON_SECRET), COMMON_SECRET),
     ("api_key: '{}'".format(WHITES_SECRET), WHITES_SECRET),
     ('aws_secret_access_key: {}'.format(WHITES_SECRET), WHITES_SECRET),
@@ -25,6 +27,7 @@ GENERIC_TEST_CASES = [
     ('if (aws_secret_access_key === "{}") {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if (db_pass !== "{}") {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if ("{}" == password) {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if ("{}" == my_super_password) {{'.format(COMMON_SECRET), COMMON_SECRET),     # Prefix
     ('if ("{}" != passwd) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if ("{}" === private_key) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if ("{}" !== secret) {{'.format(COMMON_SECRET), COMMON_SECRET),
@@ -43,6 +46,7 @@ GOLANG_TEST_CASES = [
     ("api_key := '{}'".format(COMMON_SECRET), COMMON_SECRET),
     ('aws_secret_access_key := `{}`'.format(COMMON_SECRET), COMMON_SECRET),
     ('db_pass := {}'.format(COMMON_SECRET), COMMON_SECRET),
+    ('db_pass_secure := {}'.format(COMMON_SECRET), COMMON_SECRET),  # Suffix
     ('passwd := {},'.format(COMMON_SECRET), COMMON_SECRET),         # Last character is ignored
     ("private_key := {}'".format(COMMON_SECRET), COMMON_SECRET),    # Last character is ignored
     ('secret := {}"'.format(COMMON_SECRET), COMMON_SECRET),         # Last character is ignored
@@ -51,6 +55,7 @@ GOLANG_TEST_CASES = [
     ('if ("{}" === private_key) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if ("{}" != secret) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if ("{}" !== password) {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if ("{}" !== my_password_sec) {{'.format(COMMON_SECRET), COMMON_SECRET),    # Prefix/suffix
     ('apikey = "{}"'.format(COMMON_SECRET), COMMON_SECRET),
     ("api_key = '{}'".format(COMMON_SECRET), COMMON_SECRET),
     ('aws_secret_access_key = `{}`'.format(COMMON_SECRET), COMMON_SECRET),
@@ -77,6 +82,7 @@ GOLANG_TEST_CASES = [
 OBJECTIVE_C_TEST_CASES = [
     ('apikey = "{}";'.format(COMMON_SECRET), COMMON_SECRET),
     ('password = @"{}";'.format(COMMON_SECRET), COMMON_SECRET),
+    ('my_password_secure = @"{}";'.format(COMMON_SECRET), COMMON_SECRET),   # Prefix/suffix
     ('secrete[] = "{}";'.format(COMMON_SECRET), COMMON_SECRET),
     ('secrete = "{}"'.format(LETTER_SECRET), LETTER_SECRET),    # All symbols are allowed
     ('password = "{}"'.format(SYMBOL_SECRET), None),  # At least 1 alphanumeric char is required
@@ -94,12 +100,14 @@ OBJECTIVE_C_TEST_CASES = [
 
 QUOTES_REQUIRED_TEST_CASES = [
     ('apikey: "{}"'.format(COMMON_SECRET), COMMON_SECRET),
+    ('apikey_myservice: "{}"'.format(COMMON_SECRET), COMMON_SECRET),    # Suffix
     ('api_key: `{}`'.format(COMMON_SECRET), COMMON_SECRET),
     ("aws_secret_access_key: '{}'".format(COMMON_SECRET), COMMON_SECRET),
     ("db_pass: '{}'".format(LETTER_SECRET), LETTER_SECRET),  # All symbols are allowed
     ("password: '{}'".format(SYMBOL_SECRET), None),  # At least 1 alphanumeric character is required
     ('if ("{}" == passwd) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if ("{}" === private_key) {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if ("{}" === my_private_key) {{'.format(COMMON_SECRET), COMMON_SECRET),   # Prefix
     ('if ("{}" != secret) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if ("{}" !== password) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('secrete = "{}"'.format(COMMON_SECRET), COMMON_SECRET),
