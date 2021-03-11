@@ -197,5 +197,9 @@ def is_swagger_file(filename: str) -> bool:
     """
     Filters swagger files and paths, like swagger-ui.html or /swagger/.
     """
-    regex = re.compile(r'.*swagger.*')
-    return bool(regex.search(filename))
+    return bool(_get_swagger_regex().search(filename))
+
+
+@lru_cache(maxsize=1)
+def _get_swagger_regex() -> Pattern:
+    return re.compile(r'.*swagger.*')
