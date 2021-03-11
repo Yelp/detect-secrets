@@ -192,9 +192,10 @@ def is_lock_file(filename: str) -> bool:
         'yarn.lock',
     }
 
+
 def is_swagger_file(filename: str) -> bool:
     """
-    Filters swagger files
+    Filters swagger files and paths, like swagger-ui.html or /swagger/.
     """
     regex = re.compile(r'.*swagger.*')
     return bool(regex.search(filename))
