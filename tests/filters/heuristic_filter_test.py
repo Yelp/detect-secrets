@@ -130,3 +130,14 @@ def test_is_lock_file():
 
     # assert non-regex
     assert not filters.heuristic.is_lock_file('Gemfilealock')
+
+
+@pytest.mark.parametrize(
+    'secret, result',
+    (
+        ('*****', True),
+        ('a&b23?!', False),
+    ),
+)
+def test_is_not_alphanumeric_string(secret, result):
+    assert filters.heuristic.is_not_alphanumeric_string(secret) is result

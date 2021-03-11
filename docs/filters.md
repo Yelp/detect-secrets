@@ -51,6 +51,7 @@ the `detect_secrets.filters` namespace.
 | `heuristic.is_likely_id_string`                  | Ignores secret values prefixed with `id`.                                           |
 | `heuristic.is_lock_file`                         | Ignores common lock files.                                                          |
 | `heuristic.is_non_text_file`                     | Ignores non-text files (e.g. archives, images).                                     |
+| `heuristic.is_not_alphanumeric_string`           | Ignores secrets that do not have a single alphanumeric character in it.             |
 | `heuristic.is_potential_uuid`                    | Ignores uuid looking secret values.                                                 |
 | `heuristic.is_prefixed_with_dollar_sign`         | Primarily for `KeywordDetector`, filters secrets like `secret = $variableName;`.    |
 | `heuristic.is_sequential_string`                 | Ignores secrets like `abcdefg`.                                                     |

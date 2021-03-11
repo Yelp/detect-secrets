@@ -195,3 +195,11 @@ def is_lock_file(filename: str) -> bool:
         'Podfile.lock',
         'yarn.lock',
     }
+
+
+def is_not_alphanumeric_string(secret: str) -> bool:
+    """
+    This assumes that secrets should have at least ONE letter in them.
+    This helps avoid clear false positives, like `*****`.
+    """
+    return not bool(set(string.ascii_letters) & set(secret))
