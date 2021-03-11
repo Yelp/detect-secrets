@@ -165,6 +165,11 @@ def is_indirect_reference(line: str) -> bool:
 
         secret = request.headers['apikey']
     """
+    return bool(_get_indirect_reference_regex().search(line))
+
+
+@lru_cache(maxsize=1)
+def _get_indirect_reference_regex() -> Pattern:
     # Regex details:
     #   ([^\v=!:]*)     ->  Something before the assignment or comparison
     #   \s*             ->  Some optional whitespaces
@@ -176,8 +181,7 @@ def is_indirect_reference(line: str) -> bool:
     #       [^\v]*      ->  Something except line breaks
     #       [\]\)]      ->  End of indirect reference: ] or )
     #   )
-    regex = re.compile(r'([^\v=!:]*)\s*(:=?|[!=]{1,3})\s*([\w.-]+[\[\(][^\v]*[\]\)])')
-    return bool(regex.search(line))
+    return re.compile(r'([^\v=!:]*)\s*(:=?|[!=]{1,3})\s*([\w.-]+[\[\(][^\v]*[\]\)])')
 
 
 def is_lock_file(filename: str) -> bool:
