@@ -202,4 +202,5 @@ def is_environment_config_file(filename: str) -> bool:
         '.settings',    # Eclipse project
         '.metadata',    # Eclipse workspace
         '.netbeans',    # Netbeans
+        '.tox',         # Tox
     }
