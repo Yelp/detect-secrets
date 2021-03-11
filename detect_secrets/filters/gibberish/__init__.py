@@ -2,7 +2,9 @@ import os
 import string
 from functools import lru_cache
 from typing import Any
+from typing import Dict
 from typing import Optional
+from typing import Union
 
 from ...core.plugins import Plugin
 from ...plugins.private_key import PrivateKeyDetector
@@ -30,7 +32,7 @@ def initialize(model_path: Optional[str] = None, limit: float = 3.7) -> None:
     """
     path = model_path
     if not path:
-        path = os.path.join(__path__[0], 'rfc.model')
+        path = os.path.join(__path__[0], 'rfc.model')   # type: ignore  # mypy issue #1422
 
     model = get_model()
 
@@ -42,7 +44,7 @@ def initialize(model_path: Optional[str] = None, limit: float = 3.7) -> None:
         except ParsingError:
             raise ValueError('Invalid model.')
 
-    config = {
+    config: Dict[str, Union[float, str]] = {
         'limit': limit,
     }
     if model_path:

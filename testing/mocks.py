@@ -7,6 +7,7 @@ from typing import Any
 from typing import Dict
 from typing import Generator
 from typing import IO
+from typing import Iterator
 from typing import Optional
 from unittest import mock
 
@@ -74,7 +75,7 @@ class MockLogWrapper:
 
 
 @contextmanager
-def disable_gibberish_filter():
+def disable_gibberish_filter() -> Iterator[None]:
     """
     Unfortunately, we can't just use `Settings.disable_filters`, since `parse_args` is
     the function that *enables* this filter. Therefore, for test cases that test through
