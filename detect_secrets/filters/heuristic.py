@@ -202,7 +202,7 @@ def is_i18n_file(filename: str) -> bool:
             r'.*i18n{sep}.*',
             r'.*translations{sep}.*',
             r'.*locale{sep}.*',
-            r'.*{sep}((m|M)essages|storetext)(_[a-z]{{2}}(_[A-Z]{{2}})?)?\.(properties|yml|yaml|json)',
+            r'.*{sep}((m|M)essages|storetext)(_[a-z]{{2}}(_[A-Z]{{2}})?)?\.(properties|yml|yaml|json)',  # noqa: E501
             r'.*english{sep}.*',
             r'italian{sep}.*',
             r'italiano{sep}.*',
