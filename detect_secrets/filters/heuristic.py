@@ -194,8 +194,11 @@ def is_lock_file(filename: str) -> bool:
 
 
 def is_compiled_file(filename: str) -> bool:
+    """
+    Filters files related to compiled sources
+    """
     if os.path.basename(filename) in {
-        'package.json'
+        'package.json'         # It's not a compiled source, but it won't include secrets
     }:
         return True
     regexes = [re.compile(r.format(sep=os.path.sep)) for r in [
