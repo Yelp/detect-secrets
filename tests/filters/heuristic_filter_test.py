@@ -142,19 +142,19 @@ def test_is_lock_file():
     assert not filters.heuristic.is_lock_file('Gemfilealock')
 
 
-def test_is_compiled_file():
-    # Apache Maven
-    assert filters.heuristic.is_compiled_file('my-project{sep}target{sep}classes{sep}someclass.class'.format(sep=os.path.sep))
-
-    # Node JS
-    assert filters.heuristic.is_compiled_file('my-poject{sep}node_modules{sep}my-dependencies'.format(sep=os.path.sep))
-
-    # Python
-    assert filters.heuristic.is_compiled_file('my-poject{sep}__pycache__{sep}my-cached-dependencies'.format(sep=os.path.sep))
-    assert filters.heuristic.is_compiled_file('my-poject{sep}detect_secrets.egg-info{sep}PKG-INFO'.format(sep=os.path.sep))
-    assert filters.heuristic.is_compiled_file('dist{sep}detect_secrets-1.0.3-py3.8.egg'.format(sep=os.path.sep))
-    assert not filters.heuristic.is_compiled_file('my-project{sep}dist{sep}detect_secrets-1.0.3-py3.8.egg'.format(sep=os.path.sep))
-    assert filters.heuristic.is_compiled_file('build{sep}lib{sep}detect_secrets'.format(sep=os.path.sep))
-    assert not filters.heuristic.is_compiled_file('my-project{sep}build{sep}lib{sep}detect_secrets'.format(sep=os.path.sep))
-    assert filters.heuristic.is_compiled_file('.tox{sep}dist{sep}detect_secrets.zip'.format(sep=os.path.sep))
-    assert not filters.heuristic.is_compiled_file('my-project{sep}.tox{sep}dist{sep}detect_secrets.zip'.format(sep=os.path.sep))
+@pytest.mark.parametrize(
+    'filename, result',
+    (
+        ('my-project{sep}target{sep}classes{sep}someclass.class', True),
+        ('my-poject{sep}node_modules{sep}my-dependencies', True),
+        ('my-project{sep}package.json', True),
+        ('my-poject{sep}__pycache__{sep}my-cached-dependencies', True),
+        ('my-poject{sep}detect_secrets.egg-info{sep}PKG-INFO', True),
+        ('dist{sep}detect_secrets-1.0.3-py3.8.egg', True),
+        ('my-project{sep}dist{sep}detect_secrets-1.0.3-py3.8.egg', False),
+        ('build{sep}lib{sep}detect_secrets', True),
+        ('my-project{sep}build{sep}lib{sep}detect_secrets', False),
+    )
+)
+def test_is_compiled_file(filename, result):
+    assert filters.heuristic.is_compiled_file(filename.format(sep=os.path.sep)) is result

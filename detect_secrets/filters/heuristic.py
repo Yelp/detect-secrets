@@ -198,14 +198,13 @@ def is_compiled_file(filename: str) -> bool:
         'package.json'
     }:
         return True
-    regexes = [re.compile(r) for r in [
-            r'^dist{}.*'.format(os.path.sep),
-            r'^build{}.*'.format(os.path.sep),
-            r'^\.tox{}.*'.format(os.path.sep),
-            r'.*node_modules{}.*'.format(os.path.sep),
-            r'.*target{}.*'.format(os.path.sep),
-            r'.*__pycache__{}.*'.format(os.path.sep),
-            r'*.egg-info{}.*'.format(os.path.sep),
+    regexes = [re.compile(r.format(sep=os.path.sep)) for r in [
+            r'^dist{sep}.*',
+            r'^build{sep}.*',
+            r'.*node_modules{sep}.*',
+            r'.*target{sep}.*',
+            r'.*__pycache__{sep}.*',
+            r'.*egg-info{sep}.*',
         ]
     ]
     for regex in regexes:
