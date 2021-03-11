@@ -150,5 +150,5 @@ def test_is_lock_file():
         ('.metadata/.plugins/org.eclipse.core.resources/.projects/my-project', True),
     ),
 )
-def test_is_environment_config_file(filename, result):
-    assert filters.heuristic.is_environment_config_file(filename) is result
+def test_is_env_tool_file(filename, result):
+    assert filters.heuristic.is_env_tool_file(filename) is result

@@ -119,7 +119,7 @@ class Settings:
                 'detect_secrets.filters.heuristic.is_prefixed_with_dollar_sign',
                 'detect_secrets.filters.heuristic.is_indirect_reference',
                 'detect_secrets.filters.heuristic.is_lock_file',
-                'detect_secrets.filters.heuristic.is_environment_config_file',
+                'detect_secrets.filters.heuristic.is_env_tool_file',
             }
         }
 

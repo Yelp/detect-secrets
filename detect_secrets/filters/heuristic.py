@@ -193,7 +193,10 @@ def is_lock_file(filename: str) -> bool:
     }
 
 
-def is_environment_config_file(filename: str) -> bool:
+def is_env_tool_file(filename: str) -> bool:
+    """
+    Filters files related to development environment tools
+    """
     return filename.split(os.path.sep)[0] in {
         '.git',         # Git version control
         '.svn',         # SVN version control
