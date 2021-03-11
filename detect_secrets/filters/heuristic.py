@@ -197,7 +197,8 @@ def is_i18n_file(filename: str) -> bool:
     """
     Filters files related to internationalization messages
     """
-    regexes = [ re.compile(r.format(sep=os.path.sep)) for r in [
+    regexes = [
+        re.compile(r.format(sep=os.path.sep)) for r in [
             r'.*i18n{sep}.*',
             r'.*translations{sep}.*',
             r'.*locale{sep}.*',
@@ -226,5 +227,5 @@ def is_i18n_file(filename: str) -> bool:
     for regex in regexes:
         if regex.search(filename):
             return True
-    
+
     return False
