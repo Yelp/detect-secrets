@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from detect_secrets import filters
@@ -130,3 +132,15 @@ def test_is_lock_file():
 
     # assert non-regex
     assert not filters.heuristic.is_lock_file('Gemfilealock')
+
+
+@pytest.mark.parametrize(
+    'filename, result',
+    (
+        ('{sep}path{sep}swagger-ui.html', True),
+        ('{sep}path{sep}swagger{sep}config.yml', True),
+        ('{sep}path{sep}non{sep}swager{sep}files', False),
+    ),
+)
+def test_is_swagger_file(filename, result):
+    assert filters.heuristic.is_swagger_file(filename.format(sep=os.path.sep)) is result

@@ -54,6 +54,7 @@ the `detect_secrets.filters` namespace.
 | `heuristic.is_potential_uuid`                    | Ignores uuid looking secret values.                                                 |
 | `heuristic.is_prefixed_with_dollar_sign`         | Primarily for `KeywordDetector`, filters secrets like `secret = $variableName;`.    |
 | `heuristic.is_sequential_string`                 | Ignores secrets like `abcdefg`.                                                     |
+| `heuristic.is_swagger_file`                      | Ignores swagger files and paths, like swagger-ui.html or /swagger/.                 |
 | `heuristic.is_templated_secret`                  | Ignores secrets like `secret = <key>`, `secret = {{key}}` and `secret = ${key}`.    |
 | `regex.should_exclude_line`                      | Powers the [`--exclude-lines` functionality](../README.md#--exclude-lines).         |
 | `regex.should_exclude_file`                      | Powers the [`--exclude-files` functionality](../README.md#--exclude-files).         |
