@@ -192,41 +192,37 @@ def is_lock_file(filename: str) -> bool:
         'yarn.lock',
     }
 
-INTERNATIONALIZATION_LANGUAGES = [
-    r'.*english{}.*'.format(os.path.sep),
-    r'italian{}.*'.format(os.path.sep),
-    r'italiano{}.*'.format(os.path.sep),
-    r'spanish{}.*'.format(os.path.sep),
-    r'español{}.*'.format(os.path.sep),
-    r'espanol{}.*'.format(os.path.sep),
-    r'french{}.*'.format(os.path.sep),
-    r'français{}.*'.format(os.path.sep),
-    r'portuguese{}.*'.format(os.path.sep),
-    r'português{}.*'.format(os.path.sep),
-    r'deutsch{}.*'.format(os.path.sep),
-    r'deutsche{}.*'.format(os.path.sep),
-    r'chinese{}.*'.format(os.path.sep),
-    r'japanese{}.*'.format(os.path.sep),
-    r'polski{}.*'.format(os.path.sep),
-    r'turkish{}.*'.format(os.path.sep),
-    r'hindi{}.*'.format(os.path.sep),
-    r'arabic{}.*'.format(os.path.sep),
-    r'russian{}.*'.format(os.path.sep),
-]
 
-def is_internationalization_file(filename: str) -> bool:
+def is_i18n_file(filename: str) -> bool:
     """
-    Filters files if they have internationalization text
+    Filters files related to internationalization messages
     """
-
-    regexes = [ re.compile(r) for r in [
-            r'.*i18n{}.*'.format(os.path.sep),
-            r'.*translations{}.*'.format(os.path.sep),
-            r'.*locale{}.*'.format(os.path.sep),
-            r'.*{}((m|M)essages|storetext)(_[a-z]{2}(_[A-Z]{2})?)?\.(properties|yml|yaml|json)'.format(os.path.sep),
+    regexes = [ re.compile(r.format(sep=os.path.sep)) for r in [
+            r'.*i18n{sep}.*',
+            r'.*translations{sep}.*',
+            r'.*locale{sep}.*',
+            r'.*{sep}((m|M)essages|storetext)(_[a-z]{{2}}(_[A-Z]{{2}})?)?\.(properties|yml|yaml|json)',
+            r'.*english{sep}.*',
+            r'italian{sep}.*',
+            r'italiano{sep}.*',
+            r'spanish{sep}.*',
+            r'español{sep}.*',
+            r'espanol{sep}.*',
+            r'french{sep}.*',
+            r'français{sep}.*',
+            r'portuguese{sep}.*',
+            r'português{sep}.*',
+            r'deutsch{sep}.*',
+            r'deutsche{sep}.*',
+            r'chinese{sep}.*',
+            r'japanese{sep}.*',
+            r'polski{sep}.*',
+            r'turkish{sep}.*',
+            r'hindi{sep}.*',
+            r'arabic{sep}.*',
+            r'russian{sep}.*',
         ]
     ]
-    regexes = regexes + INTERNATIONALIZATION_LANGUAGES
     for regex in regexes:
         if regex.search(filename):
             return True

@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from detect_secrets import filters
@@ -139,15 +141,15 @@ def test_is_lock_file():
     # assert non-regex
     assert not filters.heuristic.is_lock_file('Gemfilealock')
 
-def test_is_internationalization_file():
-    # i18n test
-    assert filters.heuristic.is_internationalization_file('/something/i18n/text_en.txt')
 
-    # locale test
-    assert filters.heuristic.is_internationalization_file('locale/text_es.yml')
-
-    # messages with locale keys
-    assert filters.heuristic.is_internationalization_file('path/text/Messages_es_ES.json')
-
-    # assert non-regex
-    assert not filters.heuristic.is_internationalization_file('/src/messages/MessageClass.java')
+@pytest.mark.parametrize(
+    'filename, result',
+    (
+        ('{sep}something{sep}i18n{sep}text_en.txt', True),
+        ('locale{sep}text_es.yml', True),
+        ('path{sep}text{sep}Messages_es_ES.json', True),
+        ('{sep}src{sep}messages{sep}MessageClass.java', False),
+    ),
+)
+def test_is_i18n_file(filename, result):
+    assert filters.heuristic.is_i18n_file(filename.format(sep=os.path.sep)) is result

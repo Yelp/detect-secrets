@@ -47,10 +47,10 @@ the `detect_secrets.filters` namespace.
 | `common.is_baseline_file`                        | Ignores the baseline file itself.                                                   |
 | `common.is_ignored_due_to_verification_policies` | Powers secret verification functionality.                                           |
 | `gibberish.should_exclude_secret`                | Excludes secrets that are not gibberish looking strings.                            |
+| `heuristic.is_i18n_file`                         | Ignores common internationalization files like files in i18n or languages paths.    |
 | `heuristic.is_indirect_reference`                | Primarily for `KeywordDetector`, filters secrets like `secret = get_secret_key()`.  |
 | `heuristic.is_likely_id_string`                  | Ignores secret values prefixed with `id`.                                           |
 | `heuristic.is_lock_file`                         | Ignores common lock files.                                                          |
-| `heuristic.is_internationalization_file`         | Ignores common internationalization files like files in i18n or languages paths.    |
 | `heuristic.is_non_text_file`                     | Ignores non-text files (e.g. archives, images).                                     |
 | `heuristic.is_potential_uuid`                    | Ignores uuid looking secret values.                                                 |
 | `heuristic.is_prefixed_with_dollar_sign`         | Primarily for `KeywordDetector`, filters secrets like `secret = $variableName;`.    |
