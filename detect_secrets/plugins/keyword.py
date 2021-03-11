@@ -52,30 +52,43 @@ DENYLIST = (
 )
 # Includes ], ', " as closing
 CLOSING = r'[]\'"]{0,2}'
+AFFIX_REGEX = r'\w*'
 DENYLIST_REGEX = r'|'.join(DENYLIST)
+# Support for suffix after keyword i.e. password_secure = "value"
+DENYLIST_REGEX = r'({denylist}){suffix}'.format(
+    denylist=DENYLIST_REGEX,
+    suffix=AFFIX_REGEX,
+)
+# Support for prefix and suffix with keyword, needed for reverse comparisons
+# i.e. if ("value" == my_password_secure) {}
+DENYLIST_REGEX_WITH_PREFIX = r'{prefix}{denylist}'.format(
+    prefix=AFFIX_REGEX,
+    denylist=DENYLIST_REGEX,
+)
 # Non-greedy match
 OPTIONAL_WHITESPACE = r'\s*'
 OPTIONAL_NON_WHITESPACE = r'[^\s]{0,50}?'
 QUOTE = r'[\'"`]'
 # Secret regex details:
-#    [^\r\n]*      -> this section match with every character except line breaks.
-#                     This allows to find secrets that starts with symbols or
-#                     alphanumeric characters.
-#    [a-zA-Z0-9]+  -> this section match only with alphanumeric characters, and at
-#                     least one is required. This allows to reduce the false positives
-#                     number.
-#    [^\r\n]*      -> this section match with every character except line breaks.
-#                     This allows to find secrets with symbols at the end.
-#    [^\r\n,\'"`]  -> this section match with the last secret character that can be
-#                     everything except line breaks, comma, backticks or quotes. This
-#                     allows to reduce the false positives number and to prevent
-#                     errors in the code snippet highlighting.
-SECRET = r'[^\r\n]*[a-zA-Z0-9]+[^\r\n]*[^\r\n,\'"`]'
+#   [^\v\'"]*   ->  this section match with every character except line breaks and quotes. This
+#                   allows to find secrets that starts with symbols or alphanumeric characters.
+#
+#   \w+         ->  this section match only with words (letters, numbers or _ are allowed), and at
+#                   least one character is required. This allows to reduce the false positives
+#                   number.
+#
+#   [^\v\'"]*   ->  this section match with every character except line breaks and quotes. This
+#                   allows to find secrets with symbols at the end.
+#
+#   [^\v,\'"`]  ->  this section match with the last secret character that can be everything except
+#                   line breaks, comma, backticks or quotes. This allows to reduce the false
+#                   positives number and to prevent errors in the code snippet highlighting.
+SECRET = r'[^\v\'\"]*\w+[^\v\'\"]*[^\v,\'\"`]'
 SQUARE_BRACKETS = r'(\[\])'
 
 FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
     # e.g. my_password := "bar" or my_password := bar
-    r'({denylist})({closing})?{whitespace}:=?{whitespace}({quote}?)({secret})(\3)'.format(
+    r'{denylist}({closing})?{whitespace}:=?{whitespace}({quote}?)({secret})(\3)'.format(
         denylist=DENYLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
@@ -86,7 +99,7 @@ FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
 )
 FOLLOWED_BY_COLON_REGEX = re.compile(
     # e.g. api_key: foo
-    r'({denylist})({closing})?:{whitespace}({quote}?)({secret})(\3)'.format(
+    r'{denylist}({closing})?:{whitespace}({quote}?)({secret})(\3)'.format(
         denylist=DENYLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
@@ -97,7 +110,7 @@ FOLLOWED_BY_COLON_REGEX = re.compile(
 )
 FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX = re.compile(
     # e.g. api_key: "foo"
-    r'({denylist})({closing})?:({whitespace})({quote})({secret})(\4)'.format(
+    r'{denylist}({closing})?:({whitespace})({quote})({secret})(\4)'.format(
         denylist=DENYLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
@@ -110,7 +123,7 @@ FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX
     # e.g. my_password = "bar"
     # e.g. my_password = @"bar"
     # e.g. my_password[] = "bar";
-    r'({denylist})({square_brackets})?{optional_whitespace}={optional_whitespace}(@)?(")({secret})(\5)'.format(  # noqa: E501
+    r'{denylist}({square_brackets})?{optional_whitespace}={optional_whitespace}(@)?(")({secret})(\5)'.format(  # noqa: E501
         denylist=DENYLIST_REGEX,
         square_brackets=SQUARE_BRACKETS,
         optional_whitespace=OPTIONAL_WHITESPACE,
@@ -124,7 +137,7 @@ FOLLOWED_BY_EQUAL_SIGNS_REGEX = re.compile(
     # or my_password !== "bar"
     # e.g. my_password == 'bar' or my_password != 'bar' or my_password === 'bar'
     # or my_password !== 'bar'
-    r'({denylist})({closing})?{whitespace}(={{1,3}}|!==?){whitespace}({quote}?)({secret})(\4)'.format(  # noqa: E501
+    r'{denylist}({closing})?{whitespace}(={{1,3}}|!==?){whitespace}({quote}?)({secret})(\4)'.format(  # noqa: E501
         denylist=DENYLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
@@ -139,7 +152,7 @@ FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
     # or my_password !== "bar"
     # e.g. my_password == 'bar' or my_password != 'bar' or my_password === 'bar'
     # or my_password !== 'bar'
-    r'({denylist})({closing})?{whitespace}(={{1,3}}|!==?){whitespace}({quote})({secret})(\4)'.format(  # noqa: E501
+    r'{denylist}({closing})?{whitespace}(={{1,3}}|!==?){whitespace}({quote})({secret})(\4)'.format(  # noqa: E501
         denylist=DENYLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
@@ -154,8 +167,8 @@ PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
     # or "bar" !== my_password
     # e.g. 'bar' == my_password or 'bar' != my_password or 'bar' === my_password
     # or 'bar' !== my_password
-    r'({quote})({secret})(\1){whitespace}[!=]{{2,3}}{whitespace}({denylist})'.format(
-        denylist=DENYLIST_REGEX,
+    r'({quote})({secret})(\1){whitespace}[!=]{{2,3}}{whitespace}{denylist}'.format(
+        denylist=DENYLIST_REGEX_WITH_PREFIX,
         quote=QUOTE,
         whitespace=OPTIONAL_WHITESPACE,
         secret=SECRET,
@@ -164,7 +177,7 @@ PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
 
 FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX = re.compile(
     # e.g. private_key "something";
-    r'({denylist}){nonWhitespace}{whitespace}({quote})({secret})(\2);'.format(
+    r'{denylist}{nonWhitespace}{whitespace}({quote})({secret})(\2);'.format(
         denylist=DENYLIST_REGEX,
         nonWhitespace=OPTIONAL_NON_WHITESPACE,
         quote=QUOTE,

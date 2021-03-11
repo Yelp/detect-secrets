@@ -103,6 +103,7 @@ class TestScanFile:
         assert [str(secret).splitlines()[1] for _, secret in secrets] == [
             'Location:    test_data/config.yaml:3',
             'Location:    test_data/config.yaml:5',
+            'Location:    test_data/config.yaml:13',
         ]
 
     @staticmethod

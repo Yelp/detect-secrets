@@ -114,21 +114,13 @@ def test_is_prefixed_with_dollar_sign():
 @pytest.mark.parametrize(
     'line, result',
     (
-        ('secret = get_secret_key()', False),
-        ('secret = request.headers["apikey"]', False),
-        ('secret = hunter2', True),
+        ('secret = get_secret_key()', True),
+        ('secret = request.headers["apikey"]', True),
+        ('secret = hunter2', False),
     ),
 )
 def test_is_indirect_reference(line, result):
-    with transient_settings({
-        'plugins_used': [{
-            'name': 'KeywordDetector',
-        }],
-        'filters_used': [{
-            'path': 'detect_secrets.filters.heuristic.is_indirect_reference',
-        }],
-    }):
-        assert bool(list(scan_line(line))) is result
+    assert filters.heuristic.is_indirect_reference(line) is result
 
 
 def test_is_lock_file():

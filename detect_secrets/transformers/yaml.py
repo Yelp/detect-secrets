@@ -1,3 +1,4 @@
+import base64
 import re
 from collections import deque
 from functools import lru_cache
@@ -14,7 +15,6 @@ from typing import Union
 
 import yaml
 
-from ..core.log import log
 from ..types import NamedIO
 from ..util.filetype import determine_file_type
 from ..util.filetype import FileType
@@ -43,13 +43,20 @@ class YAMLTransformer(BaseTransformer):
             value = item.value
             if isinstance(value, bytes):
                 # binary strings in YAML are base64 encoded. https://yaml.org/type/binary.html
-                # However, the YAML parser already decodes it for us.
-                # All we need to do is change it to a string.
-                try:
-                    value = value.decode()
-                except UnicodeDecodeError:
-                    log.error('Unable to process binary string: {!r}'.format(value))
-                    continue
+                # While the YAML parser already decodes it for us, we want to capture the *raw*
+                # base64 encoded value for two reasons:
+                #   1. Increases coverage
+                #      Our Base64HighEntropyString plugin is tuned for base64 strings. Including
+                #      other potential characters excludes it from this scan, with no real
+                #      potential gain. While the entropy limit may be different, the fact that
+                #      the string is processable is a win already.
+                #
+                #   2. Supports audit functionality
+                #      When we convert this value to its unicode representation, we need to
+                #      performs several hacks in order to be able to find the raw binary string
+                #      again, during our audit process. Keeping it to its original value simplifies
+                #      this process.
+                value = base64.b64encode(value).decode()
 
             line = item.line.strip()
             # TODO: parse the difference between block_scalar styles, and handle appropriately.

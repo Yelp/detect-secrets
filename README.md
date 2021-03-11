@@ -54,7 +54,7 @@ $ detect-secrets scan test_data/ --all-files > .secrets.baseline
 
 This will rescan your codebase, and:
 
-1. Update your baseline to be compatible with the latest version,
+1. Update/upgrade your baseline to be compatible with the latest version,
 2. Add any new secrets it finds to your baseline,
 3. Remove any secrets no longer in your codebase
 

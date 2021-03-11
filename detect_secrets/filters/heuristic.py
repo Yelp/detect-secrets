@@ -155,7 +155,7 @@ def is_prefixed_with_dollar_sign(secret: str) -> bool:
     return secret[0] == '$'
 
 
-def is_indirect_reference(secret: str) -> bool:
+def is_indirect_reference(line: str) -> bool:
     """
     Filters secrets that take the form of:
 
@@ -165,19 +165,23 @@ def is_indirect_reference(secret: str) -> bool:
 
         secret = request.headers['apikey']
     """
-    output = False
-    for start, end in (
-        list('()'),
-        list('[]'),
-    ):
-        try:
-            output = secret.index(start) < secret.index(end)
-            if output:
-                return output
-        except ValueError:
-            continue
+    return bool(_get_indirect_reference_regex().search(line))
 
-    return output
+
+@lru_cache(maxsize=1)
+def _get_indirect_reference_regex() -> Pattern:
+    # Regex details:
+    #   ([^\v=!:]*)     ->  Something before the assignment or comparison
+    #   \s*             ->  Some optional whitespaces
+    #   (:=?|[!=]{1,3}) ->  Assignment or comparison: :=, =, ==, ===, !=, !==
+    #   \s*             ->  Some optional whitespaces
+    #   (
+    #       [\w.-]+     ->  Some alphanumeric character, dot or -
+    #       [\[\(]      ->  Start of indirect reference: [ or (
+    #       [^\v]*      ->  Something except line breaks
+    #       [\]\)]      ->  End of indirect reference: ] or )
+    #   )
+    return re.compile(r'([^\v=!:]*)\s*(:=?|[!=]{1,3})\s*([\w.-]+[\[\(][^\v]*[\]\)])')
 
 
 def is_lock_file(filename: str) -> bool:
