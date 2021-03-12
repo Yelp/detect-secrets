@@ -14,7 +14,9 @@ class FileType(Enum):
     SWIFT = 8
     TERRAFORM = 9
     YAML = 10
-    OTHER = 11
+    C_SHARP = 11
+    C = 12
+    OTHER = 13
 
 
 def determine_file_type(filename: str) -> FileType:
@@ -34,4 +36,6 @@ def determine_file_type(filename: str) -> FileType:
         '.tf': FileType.TERRAFORM,
         '.yaml': FileType.YAML,
         '.yml': FileType.YAML,
+        '.cs': FileType.C_SHARP,
+        '.c': FileType.C,
     }.get(file_extension, FileType.OTHER)

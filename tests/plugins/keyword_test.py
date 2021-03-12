@@ -79,11 +79,12 @@ GOLANG_TEST_CASES = [
     ('private_key "hopenobodyfindsthisone\';', None),  # Double-quote does not match single-quote)
 ]
 
-OBJECTIVE_C_TEST_CASES = [
+COMMON_C_TEST_CASES = [
     ('apikey = "{}";'.format(COMMON_SECRET), COMMON_SECRET),
     ('password = @"{}";'.format(COMMON_SECRET), COMMON_SECRET),
     ('my_password_secure = @"{}";'.format(COMMON_SECRET), COMMON_SECRET),   # Prefix/suffix
     ('secrete[] = "{}";'.format(COMMON_SECRET), COMMON_SECRET),
+    ('char secrete[25] = "{}";'.format(COMMON_SECRET), COMMON_SECRET),
     ('secrete = "{}"'.format(LETTER_SECRET), LETTER_SECRET),    # All symbols are allowed
     ('password = "{}"'.format(SYMBOL_SECRET), None),  # At least 1 alphanumeric char is required
     ("api_key = '{}';".format(COMMON_SECRET), None),                 # Double quotes required
@@ -139,7 +140,9 @@ def parse_test_cases(test_cases):
         parse_test_cases([
             (None, GENERIC_TEST_CASES),
             ('go', GOLANG_TEST_CASES),
-            ('m', OBJECTIVE_C_TEST_CASES),
+            ('m', COMMON_C_TEST_CASES),
+            ('c', COMMON_C_TEST_CASES),
+            ('cs', COMMON_C_TEST_CASES),
             ('cls', QUOTES_REQUIRED_TEST_CASES),
             ('java', QUOTES_REQUIRED_TEST_CASES),
             ('py', QUOTES_REQUIRED_TEST_CASES),
