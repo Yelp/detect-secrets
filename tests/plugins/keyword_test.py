@@ -81,6 +81,8 @@ GOLANG_TEST_CASES = [
 
 COMMON_C_TEST_CASES = [
     ('apikey = "{}";'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if (secret == "{}")'.format(COMMON_SECRET), COMMON_SECRET),   # Comparison
+    ('if (db_pass != "{}")'.format(COMMON_SECRET), COMMON_SECRET),  # Comparison
     ('password = @"{}";'.format(COMMON_SECRET), COMMON_SECRET),
     ('my_password_secure = @"{}";'.format(COMMON_SECRET), COMMON_SECRET),   # Prefix/suffix
     ('secrete[] = "{}";'.format(COMMON_SECRET), COMMON_SECRET),
@@ -96,6 +98,20 @@ COMMON_C_TEST_CASES = [
     ('api_key = ""', None),                 # Nothing in the quotes
     ('password = "somefakekey"', None),     # 'fake' in the secret
     ('password[] = ${link}', None),         # Has a ${ followed by a }
+    ('some_key = "real_secret"', None),     # We cannot make 'key' a Keyword, too noisy)
+]
+
+C_PLUS_PLUS_TEST_CASES = [
+    ('apikey = "{}";'.format(COMMON_SECRET), COMMON_SECRET),
+    ('my_password_secure = "{}";'.format(COMMON_SECRET), COMMON_SECRET),  # Prefix and suffix
+    ('password = {}'.format(COMMON_SECRET), None),  # Secret without quotes
+    ('if (secret == "{}")'.format(COMMON_SECRET), COMMON_SECRET),   # Comparison
+    ('if (db_pass != "{}")'.format(COMMON_SECRET), COMMON_SECRET),  # Comparison
+    ('std::string secret("{}");'.format(COMMON_SECRET), COMMON_SECRET),
+    ('secrete.assign("{}",17);'.format(COMMON_SECRET), COMMON_SECRET),
+    ('api_key = ""', None),                 # Nothing in the quotes
+    ('password = "somefakekey"', None),     # 'fake' in the secret
+    ('password = ${link}', None),           # Has a ${ followed by a }
     ('some_key = "real_secret"', None),     # We cannot make 'key' a Keyword, too noisy)
 ]
 

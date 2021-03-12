@@ -123,6 +123,7 @@ FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX
     # e.g. my_password = "bar"
     # e.g. my_password = @"bar"
     # e.g. my_password[] = "bar";
+    # e.g. char my_password[25] = "bar";
     r'{denylist}({square_brackets})?{optional_whitespace}[!=]{{1,2}}{optional_whitespace}(@)?(")({secret})(\5)'.format(  # noqa: E501
         denylist=DENYLIST_REGEX,
         square_brackets=SQUARE_BRACKETS,
@@ -130,6 +131,14 @@ FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX
         secret=SECRET,
     ),
     flags=re.IGNORECASE,
+)
+FOLLOWEB_BY_OPTIONAL_ASSIGN_QUOTES_REQUIRED_REGEX = re.compile(
+    # e.g. std::string secret("bar");
+    # e.g. secret.assign("bar",17);
+    r'{denylist}(.assign)?\((")({secret})(\3)'.format(
+        denylist=DENYLIST_REGEX,
+        secret=SECRET,
+    ),
 )
 FOLLOWED_BY_EQUAL_SIGNS_REGEX = re.compile(
     # e.g. my_password = bar
@@ -199,6 +208,10 @@ GOLANG_DENYLIST_REGEX_TO_GROUP = {
 COMMON_C_DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX: 6,
 }
+C_PLUS_PLUS_REGEX_TO_GROUP = {
+    FOLLOWEB_BY_OPTIONAL_ASSIGN_QUOTES_REQUIRED_REGEX: 4,
+    FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 5,
+}
 QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX: 5,
     PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX: 2,
@@ -210,6 +223,7 @@ REGEX_BY_FILETYPE = {
     FileType.OBJECTIVE_C: COMMON_C_DENYLIST_REGEX_TO_GROUP,
     FileType.C_SHARP: COMMON_C_DENYLIST_REGEX_TO_GROUP,
     FileType.C: COMMON_C_DENYLIST_REGEX_TO_GROUP,
+    FileType.C_PLUS_PLUS: C_PLUS_PLUS_REGEX_TO_GROUP,
     FileType.CLS: QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP,
     FileType.JAVA: QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP,
     FileType.JAVASCRIPT: QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP,
