@@ -84,6 +84,8 @@ QUOTE = r'[\'"`]'
 #                   line breaks, comma, backticks or quotes. This allows to reduce the false
 #                   positives number and to prevent errors in the code snippet highlighting.
 SECRET = r'[^\v\'\"]*\w+[^\v\'\"]*[^\v,\'\"`]'
+# Same that SECRET regex, but without < and >
+SECRET_WITHOUT_TAGS = r'[^\v\'\"<>]*\w+[^\v\'\"<>]*[^\v<>,\'\"`]'
 SQUARE_BRACKETS = r'(\[[0-9]*\])'
 
 FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
@@ -193,6 +195,52 @@ FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX = re.compile(
     ),
     flags=re.IGNORECASE,
 )
+KEYWORD_IN_TAG_REGEX = re.compile(
+    # e.g. <password>foo</password>
+    r'<{whitespace}{denylist}[^>]*>{whitespace}({secret})'.format(
+        denylist=DENYLIST_REGEX,
+        whitespace=OPTIONAL_WHITESPACE,
+        secret=SECRET_WITHOUT_TAGS,
+    ),
+)
+KEYWORD_IN_TAG_SECRET_IN_PROPERTY_REGEX = re.compile(
+    # e.g. <password value="foo" />
+    r'<{whitespace}{denylist}[^>]+value{whitespace}={whitespace}({quote})({secret})(\2)'.format(
+        denylist=DENYLIST_REGEX,
+        whitespace=OPTIONAL_WHITESPACE,
+        secret=SECRET_WITHOUT_TAGS,
+        quote=QUOTE,
+    ),
+
+)
+KEYWORD_IN_PROPERTY_NAME_SECRET_BETWEEN_TAGS_REGEX = re.compile(
+    # e.g. <tag name="password">foo</tag>
+    r'<[^>]+name{whitespace}={whitespace}({quote}){denylist}(\1)[^>]*>{whitespace}({secret})'.format(   # noqa: E501
+        denylist=DENYLIST_REGEX,
+        whitespace=OPTIONAL_WHITESPACE,
+        secret=SECRET_WITHOUT_TAGS,
+        quote=QUOTE,
+    ),
+)
+KEYWORD_IN_PROPERTY_NAME_REGEX = re.compile(
+    # e.g. <tag name="password" value="foo" />
+    r'<[^>]+name{whitespace}={whitespace}({quote}){denylist}(\1)[^>]+value{whitespace}={whitespace}({quote})({secret})(\4)'.format(  # noqa: E501
+        denylist=DENYLIST_REGEX,
+        whitespace=OPTIONAL_WHITESPACE,
+        secret=SECRET_WITHOUT_TAGS,
+        quote=QUOTE,
+    ),
+)
+KEYWORD_IN_REVERSE_PROPERTY_NAME_REGEX = re.compile(
+    # e.g. <tag value="foo" name="password" />
+    r'<[^>]+value{whitespace}={whitespace}({quote})({secret})(\1)[^>]+name{whitespace}={whitespace}({quote}){denylist}(\4)'.format(  # noqa: E501
+        denylist=DENYLIST_REGEX,
+        whitespace=OPTIONAL_WHITESPACE,
+        secret=SECRET_WITHOUT_TAGS,
+        quote=QUOTE,
+    ),
+)
+
 DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_COLON_REGEX: 4,
     PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX: 2,
@@ -218,6 +266,14 @@ QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 5,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
 }
+XML_REGEX_TO_GROUP = {
+    FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 5,
+    KEYWORD_IN_TAG_REGEX: 2,
+    KEYWORD_IN_TAG_SECRET_IN_PROPERTY_REGEX: 3,
+    KEYWORD_IN_PROPERTY_NAME_SECRET_BETWEEN_TAGS_REGEX: 4,
+    KEYWORD_IN_PROPERTY_NAME_REGEX: 5,
+    KEYWORD_IN_REVERSE_PROPERTY_NAME_REGEX: 2,
+}
 REGEX_BY_FILETYPE = {
     FileType.GO: GOLANG_DENYLIST_REGEX_TO_GROUP,
     FileType.OBJECTIVE_C: COMMON_C_DENYLIST_REGEX_TO_GROUP,
@@ -230,6 +286,7 @@ REGEX_BY_FILETYPE = {
     FileType.PYTHON: QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP,
     FileType.SWIFT: QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP,
     FileType.TERRAFORM: QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP,
+    FileType.XML: XML_REGEX_TO_GROUP,
 }
 
 
