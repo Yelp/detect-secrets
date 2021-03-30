@@ -27,10 +27,14 @@ setup(
         'requests',
         'boxsdk[jwt]',
         'packaging',
-        'pyahocorasick',
     ],
     extras_require={
-        'db2': 'ibm_db',
+        'word_list': [
+            'pyahocorasick',
+        ],
+        'db2': [
+            'ibm_db',
+        ],
     },
     entry_points={
         'console_scripts': [
