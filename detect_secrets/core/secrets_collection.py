@@ -47,7 +47,7 @@ class SecretsCollection:
 
     def scan_file(self, filename: str) -> None:
         for secret in scan.scan_file(os.path.join(self.root, filename)):
-            self[secret.filename].add(secret)
+            self[filename].add(secret)
 
     def scan_diff(self, diff: str) -> None:
         """
