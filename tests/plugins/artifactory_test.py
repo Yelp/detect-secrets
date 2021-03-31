@@ -49,6 +49,28 @@ class TestArtifactoryDetector(object):
         if len(output) > 0:
             assert list(output.keys())[0].secret == token
 
+    @pytest.mark.parametrize(
+        'line, should_flag',
+        [
+            # Leaked auth credentials:
+            ('_auth = dXNlckBpYm0uY29tOkFLQ3h4eHh4eHh4eHg=', True),
+            ('_auth=dXNlckBpYm0uY29tOkFLQ3h4eHh4eHh4eHg=', True),
+            ('//npm.private-repo.com/:_password = QUtDeHh4eHh4eHh4eA==', True),
+            ('//npm.private-repo.com/:_password=QUtDeHh4eHh4eHh4eA==', True),
+            # Safe environment variable injection:
+            ('//npm.private-repo.com/:_password = ${ENCODED_ARTIFACTORY_API_TOKEN}', False),
+            ('//npm.private-repo.com/:_password=${ENCODED_ARTIFACTORY_API_TOKEN}', False),
+            # Corrupted base64 (to check error handling):
+            ('_auth = BadBase64', False),
+            ('//npm.private-repo.com/:_password=BadBase64', False),
+        ],
+    )
+    def test_npmrc(self, line, should_flag):
+        logic = ArtifactoryDetector()
+
+        output = logic.analyze_line(line, 1, 'somepackage\\.npmrc', output_raw=True)
+        assert bool(output) == should_flag
+
     @responses.activate
     def test_verify_invalid_secret(self):
         responses.add(

@@ -13,3 +13,4 @@
 !.dockerignore
 .python-version
 .vscode
+.idea

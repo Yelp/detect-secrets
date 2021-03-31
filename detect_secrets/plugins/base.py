@@ -1,3 +1,5 @@
+import base64
+import binascii
 import re
 from abc import ABCMeta
 from abc import abstractmethod
@@ -7,7 +9,6 @@ from .common.constants import ALLOWLIST_REGEXES
 from detect_secrets.core.code_snippet import CodeSnippetHighlighter
 from detect_secrets.core.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
-
 
 # NOTE: In this whitepaper (Section V-D), it suggests that there's an
 #       80% chance of finding a multi-factor secret (e.g. username +
@@ -129,13 +130,13 @@ class BasePlugin:
         potential_secrets = {}
         file_lines = tuple(file.readlines())
         for line_num, line in enumerate(file_lines, start=1):
-            results = self.analyze_line(line, line_num, filename, output_raw)
-            if (
-                not results
-                or
-                self._is_excluded_line(line)
-            ):
+            if self._is_excluded_line(line):
                 continue
+
+            results = self.analyze_line(line, line_num, filename, output_raw)
+            if not results:
+                continue
+
             if not self.should_verify:
                 potential_secrets.update(results)
                 continue
@@ -179,8 +180,61 @@ class BasePlugin:
         :returns:         dictionary
         NOTE: line_num and filename are used for PotentialSecret creation only.
         """
-        return self.analyze_string_content(
+        # First, look for a result in the raw input string.
+        result = self.analyze_string_content(
             string,
+            line_num,
+            filename,
+            output_raw,
+        )
+
+        # If there was no result in the raw, look for encoded values.
+        if not result:
+            result = self.analyze_encoded_line(
+                string,
+                line_num,
+                filename,
+                output_raw,
+            )
+
+        # Return the result, if any.
+        return result if result else {}
+
+    def analyze_encoded_line(self, string, line_num, filename, output_raw=False):
+        """Analyzes lines in certain files to identify and parse encoded values.
+        TODO Move this to a plugin system, to support multiple decoders.
+
+        :param string:    string; the line to analyze
+        :param line_num:  integer; line number that is currently being analyzed
+        :param filename:  string; name of file being analyzed
+        :returns:         dictionary
+        NOTE: line_num and filename are used for PotentialSecret creation only.
+        """
+        # Only process .npmrc files for encoded values.
+        if not filename.endswith('.npmrc'):
+            return
+
+        # Look for an encoded _auth or _password field.
+        pattern = r'(?P<key>_auth|_password) ?= ?(?P<encoded>[a-z0-9+/]+=*)'
+        match = re.search(pattern, string, flags=re.IGNORECASE)
+        if not match:
+            return
+
+        # Decode the encoded value, if possible.
+        encoded = match.group('encoded')
+        start = match.start('encoded')
+        end = match.end('encoded')
+        try:
+            decoded = base64.b64decode(encoded).decode('utf-8')
+        except (binascii.Error, binascii.Incomplete):
+            # Ignore any errors encountered while decoding the line.
+            # This is a fail-safe for any invalid or corrupted encoding.
+            return
+
+        # Generate a new string, using the decoded value, and analyze it.
+        processed_string = string[:start] + decoded + string[end:]
+        return self.analyze_string_content(
+            processed_string,
             line_num,
             filename,
             output_raw,
