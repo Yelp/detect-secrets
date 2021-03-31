@@ -81,9 +81,7 @@ class TestScanFile:
 
         assert [str(secret).splitlines()[1] for _, secret in secrets] == [
             'Location:    test_data/config.ini:2',
-            'Location:    test_data/config.ini:6',
             'Location:    test_data/config.ini:10',
-            'Location:    test_data/config.ini:15',
             'Location:    test_data/config.ini:21',
             'Location:    test_data/config.ini:22',
             'Location:    test_data/config.ini:32',
