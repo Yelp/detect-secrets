@@ -44,6 +44,12 @@ Create a baseline of potential secrets currently found in your git repository.
 $ detect-secrets scan > .secrets.baseline
 ```
 
+or, to run it from a different directory:
+
+```bash
+$ detect-secrets -C /path/to/directory scan > /path/to/directory/.secrets.baseline
+```
+
 **Scanning non-git tracked files:**
 
 ```bash
