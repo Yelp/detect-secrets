@@ -3,16 +3,19 @@ import subprocess
 from typing import Set
 
 from ..core.log import log
-from .path import get_relative_path_if_in_cwd
+from .path import get_relative_path
 
 
-def get_root_directory() -> str:
+def get_root_directory(path: str = '') -> str:
     """
     :raises: CalledProcessError
     """
-    return subprocess.check_output(
-        'git rev-parse --show-toplevel'.split(),
-    ).decode('utf-8').strip()
+    command = ['git']
+    if path:
+        command.extend(['-C', path])
+
+    command.extend(['rev-parse', '--show-toplevel'])
+    return subprocess.check_output(command).decode('utf-8').strip()
 
 
 def get_tracked_files(root: str) -> Set[str]:
@@ -33,7 +36,7 @@ def get_tracked_files(root: str) -> Set[str]:
         )
 
         for filename in files.decode('utf-8').splitlines():
-            path = get_relative_path_if_in_cwd(os.path.join(root, filename))
+            path = get_relative_path(root, os.path.join(root, filename))
             if path:
                 output.add(path)
 

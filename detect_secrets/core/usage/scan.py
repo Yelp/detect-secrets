@@ -49,7 +49,7 @@ def _add_initialize_baseline_options(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         'path',
         nargs='*',
-        default='.',
+        default=['.'],
         help=(
             'Scans the entire codebase and outputs a snapshot of '
             'currently identified secrets.'

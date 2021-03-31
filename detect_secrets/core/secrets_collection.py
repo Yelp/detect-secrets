@@ -21,8 +21,15 @@ class PatchedFile:
 
 
 class SecretsCollection:
-    def __init__(self) -> None:
+    def __init__(self, root: str = '') -> None:
+        """
+        :param root: if specified, will scan as if the root was the value provided,
+            rather than the current working directory. We still store results as if
+            relative to root, since we're running as if it was in a different directory,
+            rather than scanning a different directory.
+        """
         self.data: Dict[str, Set[PotentialSecret]] = defaultdict(set)
+        self.root = root
 
     @classmethod
     def load_from_baseline(cls, baseline: Dict[str, Any]) -> 'SecretsCollection':
@@ -39,7 +46,7 @@ class SecretsCollection:
         return set(self.data.keys())
 
     def scan_file(self, filename: str) -> None:
-        for secret in scan.scan_file(filename):
+        for secret in scan.scan_file(os.path.join(self.root, filename)):
             self[secret.filename].add(secret)
 
     def scan_diff(self, diff: str) -> None:
