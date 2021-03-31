@@ -71,7 +71,7 @@ For baselines older than version 0.9, just recreate it.
 **Scanning Staged Files Only:**
 
 ```bash
-$ detect-secret-hook --baseline .secrets.baseline $(git diff --staged --name-only)
+$ detect-secrets-hook --baseline .secrets.baseline $(git diff --staged --name-only)
 ```
 
 **Scanning All Tracked Files:**
