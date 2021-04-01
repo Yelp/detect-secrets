@@ -21,13 +21,9 @@ from .secrets_collection import SecretsCollection
 def create(*paths: str, should_scan_all_files: bool = False, root: str = '') -> SecretsCollection:
     """Scans all the files recursively in path to initialize a baseline."""
     secrets = SecretsCollection(root=root)
-
-    for filename in get_files_to_scan(
-        *paths,
-        should_scan_all_files=should_scan_all_files,
-        root=root,
-    ):
-        secrets.scan_file(filename)
+    secrets.scan_files(
+        *get_files_to_scan(*paths, should_scan_all_files=should_scan_all_files, root=root)
+    )
 
     return secrets
 

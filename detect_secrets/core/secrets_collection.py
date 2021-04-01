@@ -1,3 +1,4 @@
+import multiprocessing as mp
 import os
 from collections import defaultdict
 from typing import Any
@@ -44,6 +45,16 @@ class SecretsCollection:
     @property
     def files(self) -> Set[str]:
         return set(self.data.keys())
+
+    def scan_files(self, *filenames: str, num_processors: int = mp.cpu_count()) -> None:
+        """Just like scan_file, but optimized through parallel processing."""
+        with mp.Pool(processes=num_processors) as p:
+            for secrets in p.imap_unordered(
+                _scan_file_and_serialize,
+                [os.path.join(self.root, filename) for filename in filenames],
+            ):
+                for secret in secrets:
+                    self[os.path.relpath(secret.filename, self.root)].add(secret)
 
     def scan_file(self, filename: str) -> None:
         for secret in scan.scan_file(os.path.join(self.root, filename)):
@@ -269,3 +280,8 @@ class SecretsCollection:
             output[filename] = self[filename]
 
         return output
+
+
+def _scan_file_and_serialize(filename: str) -> List[PotentialSecret]:
+    """Used for multiprocessing, since lambdas can't be serialized."""
+    return list(scan.scan_file(filename))
