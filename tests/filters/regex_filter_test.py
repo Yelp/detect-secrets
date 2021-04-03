@@ -2,6 +2,7 @@ import pytest
 
 from detect_secrets import filters
 from detect_secrets.core.usage import ParserBuilder
+from detect_secrets.settings import default_settings
 from detect_secrets.settings import get_settings
 
 
@@ -86,3 +87,18 @@ def test_should_exclude_secret(parser):
             ],
         },
     ]
+
+
+def test_cache_should_be_cleared_with_different_settings(parser):
+    with default_settings():
+        parser.parse_args([
+            '--exclude-lines', 'abcde',
+        ])
+
+        assert filters.regex.should_exclude_line('abcde') is True
+
+    # Since the regex isn't cached anymore, it needs to be regenerated. However,
+    # we didn't configure the regex in the settings object, so it will raise a KeyError
+    # when trying to obtain the patterns.
+    with pytest.raises(KeyError):
+        assert filters.regex.should_exclude_line('abcde')
