@@ -48,6 +48,10 @@ class SecretsCollection:
 
     def scan_files(self, *filenames: str, num_processors: int = mp.cpu_count()) -> None:
         """Just like scan_file, but optimized through parallel processing."""
+        if len(filenames) == 1:
+            self.scan_file(filenames[0])
+            return
+
         with mp.Pool(processes=num_processors) as p:
             for secrets in p.imap_unordered(
                 _scan_file_and_serialize,
