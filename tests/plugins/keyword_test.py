@@ -1,3 +1,6 @@
+import base64
+from random import randint
+
 import pytest
 
 from detect_secrets.core.scan import scan_line
@@ -9,6 +12,8 @@ COMMON_SECRET = 'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'
 WHITES_SECRET = 'value with quotes and spaces'
 LETTER_SECRET = 'A,.:-¨@*¿?!'
 SYMBOL_SECRET = ',.:-¨@*¿?!'
+
+LONG_LINE = '<img src="data:image/png;base64,{}\n"\n>'.format(base64.b64encode((str(randint(0, 9)) * 30500).encode()))  # noqa: E501
 
 GENERIC_TEST_CASES = [
     ('password = "{}"'.format(WHITES_SECRET), WHITES_SECRET),
@@ -39,6 +44,7 @@ GENERIC_TEST_CASES = [
     ('password: ${link}', None),        # Has a ${ followed by a }
     ('some_key = "real_secret"', None),  # We cannot make 'key' a Keyword, too noisy)
     ('private_key "hopenobodyfindsthisone\';', None),   # Double-quote does not match single-quote)
+    (LONG_LINE, None),  # Long line test
 ]
 
 GOLANG_TEST_CASES = [
@@ -77,6 +83,7 @@ GOLANG_TEST_CASES = [
     ('password := "somefakekey"', None),    # 'fake' in the secret
     ('some_key = "real_secret"', None),     # We cannot make 'key' a Keyword, too noisy)
     ('private_key "hopenobodyfindsthisone\';', None),  # Double-quote does not match single-quote)
+    (LONG_LINE, None),  # Long line test
 ]
 
 OBJECTIVE_C_TEST_CASES = [
@@ -96,6 +103,7 @@ OBJECTIVE_C_TEST_CASES = [
     ('password = "somefakekey"', None),     # 'fake' in the secret
     ('password[] = ${link}', None),         # Has a ${ followed by a }
     ('some_key = "real_secret"', None),     # We cannot make 'key' a Keyword, too noisy)
+    (LONG_LINE, None),  # Long line test
 ]
 
 QUOTES_REQUIRED_TEST_CASES = [
@@ -123,6 +131,7 @@ QUOTES_REQUIRED_TEST_CASES = [
     ('password: ${link}', None),         # Has a ${ followed by a }
     ('some_key = "real_secret"', None),  # We cannot make 'key' a Keyword, too noisy)
     ('private_key "hopenobodyfindsthisone\';', None),  # Double-quote does not match single-quote)
+    (LONG_LINE, None),  # Long line test
 ]
 
 
