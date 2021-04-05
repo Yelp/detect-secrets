@@ -32,7 +32,7 @@ class TestScanFile:
 
         assert (
             'Skipping "test_data" due to `detect_secrets.filters.common.is_invalid_file`'
-            in mock_log.debug_messages
+            in mock_log.info_messages
         )
 
     @staticmethod

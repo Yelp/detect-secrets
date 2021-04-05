@@ -304,6 +304,7 @@ def _process_line_based_plugins(
     # NOTE: We iterate through lines *then* plugins, because we want to quit early if any of the
     # filters return True.
     for line_number, line in lines:
+        log.debug(f'Processing {filename}:{line_number}')
         line = line.rstrip()
         code_snippet = get_code_snippet(
             lines=line_content,
@@ -379,7 +380,7 @@ def _is_filtered_out(required_filter_parameters: Iterable[str], **kwargs: Any) -
                 else:
                     debug_msg = f'Skipping secret due to `{filter_fn.path}`.'
 
-                log.debug(debug_msg)
+                log.info(debug_msg)
                 return True
         except TypeError:
             # Skipping non-compatible filters
