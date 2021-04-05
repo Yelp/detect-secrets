@@ -55,15 +55,23 @@ def handle_scan_action(args: argparse.Namespace) -> None:
         return
 
     if args.only_allowlisted:
-        secrets = SecretsCollection()
-        for filename in get_files_to_scan(*args.path, should_scan_all_files=args.all_files):
+        secrets = SecretsCollection(root=args.custom_root)
+        for filename in get_files_to_scan(
+            *args.path,
+            should_scan_all_files=args.all_files,
+            root=args.custom_root,
+        ):
             for secret in scan_for_allowlisted_secrets_in_file(filename):
                 secrets[secret.filename].add(secret)
 
         print(json.dumps(baseline.format_for_output(secrets), indent=2))
         return
 
-    secrets = baseline.create(*args.path, should_scan_all_files=args.all_files)
+    secrets = baseline.create(
+        *args.path,
+        should_scan_all_files=args.all_files,
+        root=args.custom_root,
+    )
     if args.baseline is not None:
         # The pre-commit hook's baseline upgrade is to trim the supplied baseline for non-existent
         # secrets, and to upgrade the format to the latest version. This is because the pre-commit

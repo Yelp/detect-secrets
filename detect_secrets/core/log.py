@@ -64,4 +64,4 @@ class CustomLogger(logging.Logger):
         )
 
 
-log = get_logger()
+log = get_logger('detect-secrets')

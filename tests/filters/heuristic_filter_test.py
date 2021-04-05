@@ -135,6 +135,17 @@ def test_is_lock_file():
 
 
 @pytest.mark.parametrize(
+    'secret, result',
+    (
+        ('*****', True),
+        ('a&b23?!', False),
+    ),
+)
+def test_is_not_alphanumeric_string(secret, result):
+    assert filters.heuristic.is_not_alphanumeric_string(secret) is result
+
+
+@pytest.mark.parametrize(
     'filename, result',
     (
         ('{sep}path{sep}swagger-ui.html', True),

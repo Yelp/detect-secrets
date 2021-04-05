@@ -197,6 +197,14 @@ def is_lock_file(filename: str) -> bool:
     }
 
 
+def is_not_alphanumeric_string(secret: str) -> bool:
+    """
+    This assumes that secrets should have at least ONE letter in them.
+    This helps avoid clear false positives, like `*****`.
+    """
+    return not bool(set(string.ascii_letters) & set(secret))
+
+
 def is_swagger_file(filename: str) -> bool:
     """
     Filters swagger files and paths, like swagger-ui.html or /swagger/.

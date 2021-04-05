@@ -1,4 +1,6 @@
 import json
+import os
+import subprocess
 import tempfile
 from contextlib import contextmanager
 from contextlib import redirect_stdout
@@ -54,6 +56,20 @@ class TestScan:
                 },
             ]
             assert not printer.message
+
+    @staticmethod
+    def test_works_from_different_directory():
+        with tempfile.TemporaryDirectory() as d:
+            subprocess.call(['git', '-C', d, 'init'])
+            with open(os.path.join(d, 'credentials.yaml'), 'w') as f:
+                f.write('secret: asxeqFLAGMEfxuwma!')
+            subprocess.check_output(['git', '-C', d, 'add', 'credentials.yaml'])
+
+            with mock_printer(main_module) as printer:
+                assert main_module.main(['-C', d, 'scan']) == 0
+
+            results = json.loads(printer.message)['results']
+            assert results
 
 
 class TestSlimScan:
