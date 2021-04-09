@@ -17,7 +17,7 @@ def is_invalid_file(filename: str) -> bool:
 
 
 def is_baseline_file(filename: str) -> bool:
-    return filename == _get_baseline_filename()
+    return os.path.basename(filename) == _get_baseline_filename()
 
 
 @lru_cache(maxsize=1)

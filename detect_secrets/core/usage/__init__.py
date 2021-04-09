@@ -9,6 +9,7 @@ from . import baseline
 from . import filters
 from . import plugins
 from . import scan
+from ...settings import get_settings
 from .common import initialize_plugin_settings
 from detect_secrets.__version__ import VERSION
 
@@ -34,6 +35,17 @@ class ParserBuilder:
             action='version',
             version=VERSION,
             help='Display version information.',
+        )
+        self._parser.add_argument(
+            '-C',
+            metavar='<path>',
+            dest='custom_root',
+            nargs=1,
+            default=[''],
+            help=(
+                'Run as if detect-secrets was started in <path>, rather than in the current '
+                'working directory.'
+            ),
         )
 
         return self
@@ -136,6 +148,18 @@ class ParserBuilder:
             self._parser.print_usage(sys.stderr)
             print(f'error: {str(e)}', file=sys.stderr)
             sys.exit(1)
+
+        args.custom_root = args.custom_root[0]
+        if args.custom_root:
+            # This filter assumes current working directory, which will fail if we're running
+            # from a different directory.
+            # TODO: Maybe adjust this so that it is directory agnostic?
+            get_settings().disable_filters('detect_secrets.filters.common.is_invalid_file')
+
+            # Abide by the Principle of Least Surprise, and have the default value be the
+            # custom root directory itself.
+            if args.path == ['.']:
+                args.path = [args.custom_root]
 
         return args
 

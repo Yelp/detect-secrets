@@ -70,10 +70,10 @@ OPTIONAL_WHITESPACE = r'\s*'
 OPTIONAL_NON_WHITESPACE = r'[^\s]{0,50}?'
 QUOTE = r'[\'"`]'
 # Secret regex details:
-#   [^\v\'"]*   ->  this section match with every character except line breaks and quotes. This
-#                   allows to find secrets that starts with symbols or alphanumeric characters.
+#   (?=[^\v\'"]*)   ->  this section match with every character except line breaks and quotes. This
+#                       allows to find secrets that starts with symbols or alphanumeric characters.
 #
-#   \w+         ->  this section match only with words (letters, numbers or _ are allowed), and at
+#   (?=\w+)     ->  this section match only with words (letters, numbers or _ are allowed), and at
 #                   least one character is required. This allows to reduce the false positives
 #                   number.
 #
@@ -83,9 +83,9 @@ QUOTE = r'[\'"`]'
 #   [^\v,\'"`]  ->  this section match with the last secret character that can be everything except
 #                   line breaks, comma, backticks or quotes. This allows to reduce the false
 #                   positives number and to prevent errors in the code snippet highlighting.
-SECRET = r'[^\v\'\"]*\w+[^\v\'\"]*[^\v,\'\"`]'
-# Same that SECRET regex, but without < and >
-SECRET_WITHOUT_TAGS = r'[^\v\'\"<>]*\w+[^\v\'\"<>]*[^\v<>,\'\"`]'
+SECRET = r'(?=[^\v\'\"]*)(?=\w+)[^\v\'\"]*[^\v,\'\"`]'
+# Same that SECRET regex, but excluding < and >
+SECRET_WITHOUT_TAGS = r'(?=[^\v\'\"<>]*)(?=\w+)[^\v\'\"<>]*[^\v<>,\'\"`]'
 SQUARE_BRACKETS = r'(\[[0-9]*\])'
 
 FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
@@ -134,7 +134,7 @@ FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX
     ),
     flags=re.IGNORECASE,
 )
-FOLLOWEB_BY_OPTIONAL_ASSIGN_QUOTES_REQUIRED_REGEX = re.compile(
+FOLLOWED_BY_OPTIONAL_ASSIGN_QUOTES_REQUIRED_REGEX = re.compile(
     # e.g. std::string secret("bar");
     # e.g. secret.assign("bar",17);
     r'{denylist}(.assign)?\((")({secret})(\3)'.format(
@@ -257,7 +257,7 @@ COMMON_C_DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX: 6,
 }
 C_PLUS_PLUS_REGEX_TO_GROUP = {
-    FOLLOWEB_BY_OPTIONAL_ASSIGN_QUOTES_REQUIRED_REGEX: 4,
+    FOLLOWED_BY_OPTIONAL_ASSIGN_QUOTES_REQUIRED_REGEX: 4,
     FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 5,
 }
 QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP = {

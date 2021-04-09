@@ -88,9 +88,39 @@ def transient_settings(config: Dict[str, Any]) -> Generator['Settings', None, No
 
 
 def cache_bust() -> None:
-    get_settings.cache_clear()
-    get_filters.cache_clear()
     get_plugins.cache_clear()
+
+    get_filters.cache_clear()
+    for path, config in get_settings().filters.items():
+        # Need to also clear the individual caches (e.g. cached regex patterns).
+        parts = urlparse(path)
+        if not parts.scheme:
+            module_path, _ = path.rsplit('.', 1)
+            try:
+                module = import_module(module_path)
+            except ModuleNotFoundError:
+                continue
+        elif parts.scheme == 'file':
+            file_path = path[len('file://'):].split('::')[0]
+            try:
+                module = import_file_as_module(file_path)
+            except (FileNotFoundError, InvalidFile):
+                continue
+        else:
+            continue
+
+        for item_key in dir(module):
+            item = getattr(module, item_key)
+            try:
+                if item.__module__ != module_path:
+                    # Make sure we only clear the cache specific to the module.
+                    raise AttributeError
+
+                item.cache_clear()
+            except AttributeError:
+                pass
+
+    get_settings.cache_clear()
 
 
 class Settings:
@@ -119,6 +149,7 @@ class Settings:
                 'detect_secrets.filters.heuristic.is_prefixed_with_dollar_sign',
                 'detect_secrets.filters.heuristic.is_indirect_reference',
                 'detect_secrets.filters.heuristic.is_lock_file',
+                'detect_secrets.filters.heuristic.is_not_alphanumeric_string',
                 'detect_secrets.filters.heuristic.is_swagger_file',
             }
         }
