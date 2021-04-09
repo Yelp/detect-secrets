@@ -86,11 +86,14 @@ GOLANG_TEST_CASES = [
     (LONG_LINE, None),  # Long line test
 ]
 
-OBJECTIVE_C_TEST_CASES = [
+COMMON_C_TEST_CASES = [
     ('apikey = "{}";'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if (secret == "{}")'.format(COMMON_SECRET), COMMON_SECRET),   # Comparison
+    ('if (db_pass != "{}")'.format(COMMON_SECRET), COMMON_SECRET),  # Comparison
     ('password = @"{}";'.format(COMMON_SECRET), COMMON_SECRET),
     ('my_password_secure = @"{}";'.format(COMMON_SECRET), COMMON_SECRET),   # Prefix/suffix
     ('secrete[] = "{}";'.format(COMMON_SECRET), COMMON_SECRET),
+    ('char secrete[25] = "{}";'.format(COMMON_SECRET), COMMON_SECRET),
     ('secrete = "{}"'.format(LETTER_SECRET), LETTER_SECRET),    # All symbols are allowed
     ('password = "{}"'.format(SYMBOL_SECRET), None),  # At least 1 alphanumeric char is required
     ("api_key = '{}';".format(COMMON_SECRET), None),                 # Double quotes required
@@ -104,6 +107,20 @@ OBJECTIVE_C_TEST_CASES = [
     ('password[] = ${link}', None),         # Has a ${ followed by a }
     ('some_key = "real_secret"', None),     # We cannot make 'key' a Keyword, too noisy)
     (LONG_LINE, None),  # Long line test
+]
+
+C_PLUS_PLUS_TEST_CASES = [
+    ('apikey = "{}";'.format(COMMON_SECRET), COMMON_SECRET),
+    ('my_password_secure = "{}";'.format(COMMON_SECRET), COMMON_SECRET),  # Prefix and suffix
+    ('password = {}'.format(COMMON_SECRET), None),  # Secret without quotes
+    ('if (secret == "{}")'.format(COMMON_SECRET), COMMON_SECRET),   # Comparison
+    ('if (db_pass != "{}")'.format(COMMON_SECRET), COMMON_SECRET),  # Comparison
+    ('std::string secret("{}");'.format(COMMON_SECRET), COMMON_SECRET),
+    ('secrete.assign("{}",17);'.format(COMMON_SECRET), COMMON_SECRET),
+    ('api_key = ""', None),                 # Nothing in the quotes
+    ('password = "somefakekey"', None),     # 'fake' in the secret
+    ('password = ${link}', None),           # Has a ${ followed by a }
+    ('some_key = "real_secret"', None),     # We cannot make 'key' a Keyword, too noisy)
 ]
 
 QUOTES_REQUIRED_TEST_CASES = [
@@ -148,7 +165,9 @@ def parse_test_cases(test_cases):
         parse_test_cases([
             (None, GENERIC_TEST_CASES),
             ('go', GOLANG_TEST_CASES),
-            ('m', OBJECTIVE_C_TEST_CASES),
+            ('m', COMMON_C_TEST_CASES),
+            ('c', COMMON_C_TEST_CASES),
+            ('cs', COMMON_C_TEST_CASES),
             ('cls', QUOTES_REQUIRED_TEST_CASES),
             ('java', QUOTES_REQUIRED_TEST_CASES),
             ('py', QUOTES_REQUIRED_TEST_CASES),

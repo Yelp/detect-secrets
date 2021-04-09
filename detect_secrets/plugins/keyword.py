@@ -84,7 +84,7 @@ QUOTE = r'[\'"`]'
 #                   line breaks, comma, backticks or quotes. This allows to reduce the false
 #                   positives number and to prevent errors in the code snippet highlighting.
 SECRET = r'(?=[^\v\'\"]*)(?=\w+)[^\v\'\"]*[^\v,\'\"`]'
-SQUARE_BRACKETS = r'(\[\])'
+SQUARE_BRACKETS = r'(\[[0-9]*\])'
 
 FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
     # e.g. my_password := "bar" or my_password := bar
@@ -123,13 +123,22 @@ FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX
     # e.g. my_password = "bar"
     # e.g. my_password = @"bar"
     # e.g. my_password[] = "bar";
-    r'{denylist}({square_brackets})?{optional_whitespace}={optional_whitespace}(@)?(")({secret})(\5)'.format(  # noqa: E501
+    # e.g. char my_password[25] = "bar";
+    r'{denylist}({square_brackets})?{optional_whitespace}[!=]{{1,2}}{optional_whitespace}(@)?(")({secret})(\5)'.format(  # noqa: E501
         denylist=DENYLIST_REGEX,
         square_brackets=SQUARE_BRACKETS,
         optional_whitespace=OPTIONAL_WHITESPACE,
         secret=SECRET,
     ),
     flags=re.IGNORECASE,
+)
+FOLLOWED_BY_OPTIONAL_ASSIGN_QUOTES_REQUIRED_REGEX = re.compile(
+    # e.g. std::string secret("bar");
+    # e.g. secret.assign("bar",17);
+    r'{denylist}(.assign)?\((")({secret})(\3)'.format(
+        denylist=DENYLIST_REGEX,
+        secret=SECRET,
+    ),
 )
 FOLLOWED_BY_EQUAL_SIGNS_REGEX = re.compile(
     # e.g. my_password = bar
@@ -161,7 +170,6 @@ FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
     ),
     flags=re.IGNORECASE,
 )
-
 PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
     # e.g. "bar" == my_password or "bar" != my_password or "bar" === my_password
     # or "bar" !== my_password
@@ -174,7 +182,6 @@ PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
         secret=SECRET,
     ),
 )
-
 FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX = re.compile(
     # e.g. private_key "something";
     r'{denylist}{nonWhitespace}{whitespace}({quote})({secret})(\2);'.format(
@@ -198,8 +205,12 @@ GOLANG_DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_EQUAL_SIGNS_REGEX: 5,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
 }
-OBJECTIVE_C_DENYLIST_REGEX_TO_GROUP = {
+COMMON_C_DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX: 6,
+}
+C_PLUS_PLUS_REGEX_TO_GROUP = {
+    FOLLOWED_BY_OPTIONAL_ASSIGN_QUOTES_REQUIRED_REGEX: 4,
+    FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 5,
 }
 QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX: 5,
@@ -207,13 +218,18 @@ QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 5,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
 }
-QUOTES_REQUIRED_FILETYPES = {
-    FileType.CLS,
-    FileType.JAVA,
-    FileType.JAVASCRIPT,
-    FileType.PYTHON,
-    FileType.SWIFT,
-    FileType.TERRAFORM,
+REGEX_BY_FILETYPE = {
+    FileType.GO: GOLANG_DENYLIST_REGEX_TO_GROUP,
+    FileType.OBJECTIVE_C: COMMON_C_DENYLIST_REGEX_TO_GROUP,
+    FileType.C_SHARP: COMMON_C_DENYLIST_REGEX_TO_GROUP,
+    FileType.C: COMMON_C_DENYLIST_REGEX_TO_GROUP,
+    FileType.C_PLUS_PLUS: C_PLUS_PLUS_REGEX_TO_GROUP,
+    FileType.CLS: QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP,
+    FileType.JAVA: QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP,
+    FileType.JAVASCRIPT: QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP,
+    FileType.PYTHON: QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP,
+    FileType.SWIFT: QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP,
+    FileType.TERRAFORM: QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP,
 }
 
 
@@ -268,16 +284,7 @@ class KeywordDetector(BasePlugin):
         **kwargs: Any,
     ) -> Set[PotentialSecret]:
         filetype = determine_file_type(filename)
-
-        if filetype in QUOTES_REQUIRED_FILETYPES:
-            denylist_regex_to_group = QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP
-        elif filetype == FileType.GO:
-            denylist_regex_to_group = GOLANG_DENYLIST_REGEX_TO_GROUP
-        elif filetype == FileType.OBJECTIVE_C:
-            denylist_regex_to_group = OBJECTIVE_C_DENYLIST_REGEX_TO_GROUP
-        else:
-            denylist_regex_to_group = DENYLIST_REGEX_TO_GROUP
-
+        denylist_regex_to_group = REGEX_BY_FILETYPE.get(filetype, DENYLIST_REGEX_TO_GROUP)
         return super().analyze_line(
             filename=filename,
             line=line,
