@@ -46,11 +46,14 @@ class SecretsCollection:
     def files(self) -> Set[str]:
         return set(self.data.keys())
 
-    def scan_files(self, *filenames: str, num_processors: int = mp.cpu_count()) -> None:
+    def scan_files(self, *filenames: str, num_processors: Optional[int] = None) -> None:
         """Just like scan_file, but optimized through parallel processing."""
         if len(filenames) == 1:
             self.scan_file(filenames[0])
             return
+
+        if not num_processors:
+            num_processors = mp.cpu_count()
 
         with mp.Pool(processes=num_processors) as p:
             for secrets in p.imap_unordered(
