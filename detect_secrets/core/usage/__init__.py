@@ -47,6 +47,18 @@ class ParserBuilder:
                 'working directory.'
             ),
         )
+        self._parser.add_argument(
+            '-c',
+            '--cores',
+            dest='num_cores',
+            nargs=1,
+            type=int,
+            default=[None],
+            help=(
+                'Specify the number of cores to use for parallel processing. Defaults to '
+                'using the max cores on the current host.'
+            ),
+        )
 
         return self
 
@@ -160,6 +172,8 @@ class ParserBuilder:
             # custom root directory itself.
             if args.path == ['.']:
                 args.path = [args.custom_root]
+
+        args.num_cores = args.num_cores[0]
 
         return args
 

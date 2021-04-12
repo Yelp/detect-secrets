@@ -5,6 +5,7 @@ from typing import Callable
 from typing import cast
 from typing import Dict
 from typing import List
+from typing import Optional
 from typing import Union
 
 from . import upgrades
@@ -18,16 +19,22 @@ from .scan import get_files_to_scan
 from .secrets_collection import SecretsCollection
 
 
-def create(*paths: str, should_scan_all_files: bool = False, root: str = '') -> SecretsCollection:
+def create(
+    *paths: str,
+    should_scan_all_files: bool = False,
+    root: str = '',
+    num_processors: Optional[int] = None,
+) -> SecretsCollection:
     """Scans all the files recursively in path to initialize a baseline."""
-    secrets = SecretsCollection(root=root)
+    kwargs = {}
+    if num_processors:
+        kwargs['num_processors'] = num_processors
 
-    for filename in get_files_to_scan(
-        *paths,
-        should_scan_all_files=should_scan_all_files,
-        root=root,
-    ):
-        secrets.scan_file(filename)
+    secrets = SecretsCollection(root=root)
+    secrets.scan_files(
+        *get_files_to_scan(*paths, should_scan_all_files=should_scan_all_files, root=root),
+        **kwargs,
+    )
 
     return secrets
 

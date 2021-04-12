@@ -71,6 +71,7 @@ def handle_scan_action(args: argparse.Namespace) -> None:
         *args.path,
         should_scan_all_files=args.all_files,
         root=args.custom_root,
+        num_processors=args.num_cores,
     )
     if args.baseline is not None:
         # The pre-commit hook's baseline upgrade is to trim the supplied baseline for non-existent
