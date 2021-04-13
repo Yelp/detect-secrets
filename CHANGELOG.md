@@ -29,6 +29,45 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 ### Unreleased
 -->
 
+### v1.1.0
+##### April 14th, 2021
+
+#### :mega: Release Highlights
+
+- New gibberish filter added ([#416])
+- Multiprocessing support, for faster scans! ([#441])
+- Support for scanning different directories (rather than the current directory) ([#440])
+
+#### :tada: New Features
+
+- `KeywordDetector` supports whitespace secrets ([#414])
+- `KeywordDetector` now supports prefix/suffixed keywords, and accuracy updates
+- Adding alphanumerical filter to ensure secrets have at least one letter/number in them ([#428])
+- New filter added for ignoring common lock files ([#417])
+- More new ignored file extensions
+- Adding filter to ignore swagger files
+
+#### :bug: Bugfixes
+
+- Filter caches are cleared when swapping between different `Settings` objects ([#444])
+- Upgrading baselines from <0.12 migrates `exclude` to `exclude-files` rather than `exclude-lines`
+  ([#446])
+
+#### :snake: Miscellaneous
+
+- More verbose logging, to help with debugging issues ([#432])
+- YAMLTransformer handles binary entries differently
+
+[#414]: https://github.com/Yelp/detect-secrets/pull/414
+[#416]: https://github.com/Yelp/detect-secrets/pull/416
+[#417]: https://github.com/Yelp/detect-secrets/pull/417
+[#428]: https://github.com/Yelp/detect-secrets/pull/428
+[#432]: https://github.com/Yelp/detect-secrets/pull/432
+[#440]: https://github.com/Yelp/detect-secrets/pull/440
+[#441]: https://github.com/Yelp/detect-secrets/pull/441
+[#444]: https://github.com/Yelp/detect-secrets/pull/444
+[#446]: https://github.com/Yelp/detect-secrets/pull/446
+
 ### v1.0.3
 ##### February 26th, 2021
 
