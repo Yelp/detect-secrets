@@ -1,8 +1,8 @@
 from enum import Enum
-from typing import Callable
 from typing import Any
-from typing import List
+from typing import Callable
 from typing import Dict
+from typing import List
 from typing import Tuple
 
 from ..constants import VerifiedResult

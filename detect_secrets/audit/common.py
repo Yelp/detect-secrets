@@ -1,12 +1,12 @@
 import json
 from contextlib import contextmanager
 from functools import lru_cache
+from typing import Any
 from typing import Callable
 from typing import cast
 from typing import Iterator
 from typing import List
 from typing import Optional
-from typing import Any
 
 from . import io
 from ..core import baseline
