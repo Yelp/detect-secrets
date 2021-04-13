@@ -46,6 +46,8 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 - New filter added for ignoring common lock files ([#417])
 - More new ignored file extensions
 - Adding filter to ignore swagger files
+- Added `audit --report` to extract secret values with a baseline
+  ([#387], thanks [@pablosantiagolopez], [@syn-4ck])
 
 #### :bug: Bugfixes
 
@@ -58,6 +60,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 - More verbose logging, to help with debugging issues ([#432])
 - YAMLTransformer handles binary entries differently
 
+[#387]: https://github.com/Yelp/detect-secrets/pull/387
 [#414]: https://github.com/Yelp/detect-secrets/pull/414
 [#416]: https://github.com/Yelp/detect-secrets/pull/416
 [#417]: https://github.com/Yelp/detect-secrets/pull/417
@@ -67,6 +70,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#441]: https://github.com/Yelp/detect-secrets/pull/441
 [#444]: https://github.com/Yelp/detect-secrets/pull/444
 [#446]: https://github.com/Yelp/detect-secrets/pull/446
+[@syn-4ck]: https://github.com/syn-4ck
 
 ### v1.0.3
 ##### February 26th, 2021
