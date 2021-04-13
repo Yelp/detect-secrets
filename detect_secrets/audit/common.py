@@ -1,7 +1,6 @@
 import json
 from contextlib import contextmanager
 from functools import lru_cache
-from typing import Any
 from typing import Callable
 from typing import cast
 from typing import Iterator
@@ -45,7 +44,7 @@ def open_file(filename: str) -> 'LineGetter':
 def get_raw_secret_from_file(
     secret: PotentialSecret,
     line_getter_factory: Callable[[str], 'LineGetter'] = open_file,
-) -> Any:
+) -> Optional[str]:
     """
     We're analyzing the contents straight from the baseline, and therefore, we don't know
     the secret value (by design). However, we have line numbers, filenames, and how we detected
