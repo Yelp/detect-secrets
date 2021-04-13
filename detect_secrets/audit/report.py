@@ -1,5 +1,9 @@
 from enum import Enum
 from typing import Callable
+from typing import Any
+from typing import List
+from typing import Dict
+from typing import Tuple
 
 from ..constants import VerifiedResult
 from .common import get_baseline_from_file
@@ -12,6 +16,7 @@ class SecretClassToPrint(Enum):
     REAL_SECRET = 1
     FALSE_POSITIVE = 2
 
+    @staticmethod
     def from_class(secret_class: VerifiedResult) -> 'SecretClassToPrint':
         if secret_class in [VerifiedResult.UNVERIFIED, VerifiedResult.VERIFIED_TRUE]:
             return SecretClassToPrint.REAL_SECRET
@@ -23,8 +28,9 @@ def generate_report(
     baseline_file: str,
     class_to_print: SecretClassToPrint = None,
     line_getter_factory: Callable[[str], 'LineGetter'] = open_file,
-) -> None:
-    secrets = {}
+) -> List[Dict[str, Any]]:
+
+    secrets: Dict[Tuple[str, str], Any] = {}
     for filename, secret in get_baseline_from_file(baseline_file):
         verified_result = VerifiedResult.from_secret(secret)
         if (

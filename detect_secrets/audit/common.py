@@ -6,6 +6,7 @@ from typing import cast
 from typing import Iterator
 from typing import List
 from typing import Optional
+from typing import Any
 
 from . import io
 from ..core import baseline
@@ -44,7 +45,7 @@ def open_file(filename: str) -> 'LineGetter':
 def get_raw_secret_from_file(
     secret: PotentialSecret,
     line_getter_factory: Callable[[str], 'LineGetter'] = open_file,
-) -> str:
+) -> Any:
     """
     We're analyzing the contents straight from the baseline, and therefore, we don't know
     the secret value (by design). However, we have line numbers, filenames, and how we detected
@@ -65,7 +66,7 @@ def get_raw_secret_from_file(
 def get_raw_secrets_from_file(
     secret: PotentialSecret,
     line_getter_factory: Callable[[str], 'LineGetter'] = open_file,
-) -> [PotentialSecret]:
+) -> List[PotentialSecret]:
     """
     We're analyzing the contents straight from the baseline, and therefore, we don't know
     the secret value (by design). However, we have secret hashes, filenames, and how we detected
@@ -88,7 +89,7 @@ def get_raw_secrets_from_file(
                 raise SecretNotFoundOnSpecifiedLineError(secret.line_number)
         else:
             lines_to_scan = line_getter.lines
-            line_numbers = range(len(lines_to_scan))
+            line_numbers = list(range(len(lines_to_scan)))
 
         for line_number, line in zip(line_numbers, lines_to_scan):
             identified_secrets = call_function_with_arguments(
