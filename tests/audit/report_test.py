@@ -1,7 +1,8 @@
-import os
 import random
 import string
 import tempfile
+import textwrap
+from contextlib import contextmanager
 
 import pytest
 
@@ -12,27 +13,144 @@ from detect_secrets.core import baseline
 from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.plugins.basic_auth import BasicAuthDetector
 from detect_secrets.plugins.jwt import JwtTokenDetector
-from testing.factories import potential_secret_factory as original_potential_secret_factory
+from detect_secrets.settings import transient_settings
 
 
-CREATED_FILES = []
+url_format = 'http://username:{}@www.example.com/auth'
+first_secret = 'value1'
+second_secret = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ'  # noqa: E501
+random_secret = ''.join(random.choice(string.ascii_letters) for _ in range(8))
 
 
 @pytest.mark.parametrize(
-    'class_to_print, expected_real, expected_false',
+    'class_to_print, expected_real, expected_false, expected_output',
     [
-        (None, 2, 2),
-        (SecretClassToPrint.REAL_SECRET, 2, 0),
-        (SecretClassToPrint.FALSE_POSITIVE, 0, 3),
+        (
+            None, 3, 1, [
+                {
+                    'category': 'VERIFIED_TRUE',
+                    'lines': {
+                        1: 'url = {}'.format(url_format.format(first_secret)),
+                        3: 'link = {}'.format(url_format.format(first_secret)),
+                    },
+                    'secrets': first_secret,
+                    'types': [
+                        BasicAuthDetector.secret_type,
+                    ],
+                },
+                {
+                    'category': 'UNVERIFIED',
+                    'lines': {
+                        2: 'example = {}'.format(url_format.format(random_secret)),
+                    },
+                    'secrets': random_secret,
+                    'types': [
+                        BasicAuthDetector.secret_type,
+                    ],
+                },
+                {
+                    'category': 'VERIFIED_TRUE',
+                    'lines': {
+                        1: 'url = {}'.format(url_format.format(second_secret)),
+                    },
+                    'secrets': second_secret,
+                    'types': [
+                        BasicAuthDetector.secret_type,
+                        JwtTokenDetector.secret_type,
+                    ],
+                },
+                {
+                    'category': 'VERIFIED_FALSE',
+                    'lines': {
+                        2: 'example = {}'.format(url_format.format(random_secret)),
+                    },
+                    'secrets': random_secret,
+                    'types': [
+                        BasicAuthDetector.secret_type,
+                    ],
+                },
+            ],
+        ),
+        (
+            SecretClassToPrint.REAL_SECRET, 3, 0, [
+                {
+                    'category': 'VERIFIED_TRUE',
+                    'lines': {
+                        1: 'url = {}'.format(url_format.format(first_secret)),
+                        3: 'link = {}'.format(url_format.format(first_secret)),
+                    },
+                    'secrets': first_secret,
+                    'types': [
+                        BasicAuthDetector.secret_type,
+                    ],
+                },
+                {
+                    'category': 'UNVERIFIED',
+                    'lines': {
+                        2: 'example = {}'.format(url_format.format(random_secret)),
+                    },
+                    'secrets': random_secret,
+                    'types': [
+                        BasicAuthDetector.secret_type,
+                    ],
+                },
+                {
+                    'category': 'VERIFIED_TRUE',
+                    'lines': {
+                        1: 'url = {}'.format(url_format.format(second_secret)),
+                    },
+                    'secrets': second_secret,
+                    'types': [
+                        JwtTokenDetector.secret_type,
+                    ],
+                },
+            ],
+        ),
+        (
+            SecretClassToPrint.FALSE_POSITIVE, 0, 2, [
+                {
+                    'category': 'VERIFIED_FALSE',
+                    'lines': {
+                        1: 'url = {}'.format(url_format.format(second_secret)),
+                    },
+                    'secrets': second_secret,
+                    'types': [
+                        BasicAuthDetector.secret_type,
+                    ],
+                },
+                {
+                    'category': 'VERIFIED_FALSE',
+                    'lines': {
+                        2: 'example = {}'.format(url_format.format(random_secret)),
+                    },
+                    'secrets': random_secret,
+                    'types': [
+                        BasicAuthDetector.secret_type,
+                    ],
+                },
+            ],
+        ),
     ],
 )
-def test_generate_report(class_to_print, expected_real, expected_false):
-    filename = baseline_file()
-    output = generate_report(filename, class_to_print)
+def test_generate_report(
+    class_to_print,
+    expected_real,
+    expected_false,
+    expected_output,
+    baseline_file,
+):
+    output = generate_report(baseline_file, class_to_print)
     real, false = count_results(output)
     assert real == expected_real
     assert false == expected_false
-    delete_all_temporal_files()
+    for expected in expected_output:
+        found = False
+        for item in output:
+            if expected['secrets'] == item['secrets'] and expected['category'] == item['category']:
+                for key in expected.keys():
+                    assert item[key] == expected[key]
+                found = True
+        assert found
 
 
 def count_results(data):
@@ -46,77 +164,51 @@ def count_results(data):
     return real_secrets, false_secrets
 
 
+@contextmanager
+def create_file_with_content(content):
+    with tempfile.NamedTemporaryFile() as f:
+        f.write(content.encode())
+        f.seek(0)
+        yield f.name
+
+
+@pytest.fixture
 def baseline_file():
     # Create our own SecretsCollection manually, so that we have fine-tuned control.
-    url_format = 'http://username:{}@www.example.com/auth'
-    first_secret = 'value1'
-    second_secret = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ'  # noqa: E501
-    random_secret = ''.join(random.choice(string.ascii_letters) for _ in range(8))
-    file_content = 'url = ' + url_format.format(first_secret) \
-        + '\nexample = ' + url_format.format(random_secret) \
-        + '\nlink = ' + url_format.format(first_secret)
-    first_file = create_file_with_content(file_content)
-    file_content = 'url = ' + url_format.format(second_secret) \
-        + '\nexample = ' + url_format.format(random_secret)
-    second_file = create_file_with_content(file_content)
-    secrets = SecretsCollection()
-    secrets[first_file] = {
-        original_potential_secret_factory(
-            type=BasicAuthDetector.secret_type,
-            secret=first_secret,
-            is_secret=True,
-            line_number=1,
-        ),
-        original_potential_secret_factory(
-            type=BasicAuthDetector.secret_type,
-            secret=random_secret,
-            is_secret=False,
-            line_number=2,
-        ),
-        original_potential_secret_factory(
-            type=BasicAuthDetector.secret_type,
-            secret=first_secret,
-            is_secret=True,
-            line_number=3,
-        ),
-    }
-    secrets[second_file] = {
-        original_potential_secret_factory(
-            type=JwtTokenDetector.secret_type,
-            secret=second_secret,
-            is_secret=True,
-            line_number=1,
-        ),
-        original_potential_secret_factory(
-            type=BasicAuthDetector.secret_type,
-            secret=second_secret,
-            is_secret=False,
-            line_number=1,
-        ),
-        original_potential_secret_factory(
-            type=BasicAuthDetector.secret_type,
-            secret=random_secret,
-            is_secret=False,
-            line_number=2,
-        ),
-    }
+    first_content = textwrap.dedent(f"""
+        url = {url_format.format(first_secret)}
+        example = {url_format.format(random_secret)}
+        link = {url_format.format(first_secret)}
+    """)[1:]
+    second_content = textwrap.dedent(f"""
+        url = {url_format.format(second_secret)}
+        example = {url_format.format(random_secret)}
+    """)[1:]
 
-    f = tempfile.NamedTemporaryFile(delete=False)
-    baseline.save_to_file(secrets, f.name)
-    f.seek(0)
-    CREATED_FILES.append(f.name)
-    return f.name
+    with create_file_with_content(first_content) as first_file, \
+            create_file_with_content(second_content) as second_file, \
+            tempfile.NamedTemporaryFile() as baseline_file, \
+            transient_settings({
+                'plugins_used': [
+                    {'name': 'BasicAuthDetector'},
+                    {'name': 'JwtTokenDetector'},
 
-
-def create_file_with_content(file_content):
-    f = tempfile.NamedTemporaryFile(mode='w+', encoding='utf-8', delete=False)
-    f.write(file_content)
-    f.seek(0)
-    CREATED_FILES.append(f.name)
-    return f.name
-
-
-def delete_all_temporal_files():
-    for file in CREATED_FILES:
-        if os.path.exists(file):
-            os.remove(file)
+                ],
+            }):
+        secrets = SecretsCollection()
+        secrets.scan_file(first_file)
+        secrets.scan_file(second_file)
+        labels = {
+            (first_file, BasicAuthDetector.secret_type, 1): True,
+            (first_file, BasicAuthDetector.secret_type, 2): None,
+            (first_file, BasicAuthDetector.secret_type, 3): True,
+            (second_file, JwtTokenDetector.secret_type, 1): True,
+            (second_file, BasicAuthDetector.secret_type, 1): False,
+            (second_file, BasicAuthDetector.secret_type, 2): False,
+        }
+        for item in secrets:
+            _, secret = item
+            secret.is_secret = labels[(secret.filename, secret.type, secret.line_number)]
+        baseline.save_to_file(secrets, baseline_file.name)
+        baseline_file.seek(0)
+        yield baseline_file.name
