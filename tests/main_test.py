@@ -1,15 +1,17 @@
 import json
+import os
+import subprocess
 import tempfile
 from contextlib import contextmanager
+from contextlib import redirect_stdout
 from unittest import mock
-
-import pytest
 
 from detect_secrets import main as main_module
 from detect_secrets.core import baseline
 from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.main import scan_adhoc_string
 from detect_secrets.settings import transient_settings
+from testing.mocks import disable_gibberish_filter
 from testing.mocks import mock_printer
 
 
@@ -55,6 +57,53 @@ class TestScan:
             ]
             assert not printer.message
 
+    @staticmethod
+    def test_works_from_different_directory():
+        with tempfile.TemporaryDirectory() as d:
+            subprocess.call(['git', '-C', d, 'init'])
+            with open(os.path.join(d, 'credentials.yaml'), 'w') as f:
+                f.write('secret: asxeqFLAGMEfxuwma!')
+            subprocess.check_output(['git', '-C', d, 'add', 'credentials.yaml'])
+
+            with mock_printer(main_module) as printer:
+                assert main_module.main(['-C', d, 'scan']) == 0
+
+            results = json.loads(printer.message)['results']
+            assert results
+
+
+class TestSlimScan:
+    @staticmethod
+    def test_basic():
+        with mock_printer(main_module) as printer:
+            main_module.main(['scan', '--slim', 'test_data'])
+
+            assert 'generated_at' not in printer.message
+            assert 'line_number' not in printer.message
+
+    @staticmethod
+    def test_restores_line_numbers():
+        with tempfile.NamedTemporaryFile('w+') as f:
+            with redirect_stdout(f):
+                main_module.main(['scan', '--slim', 'test_data/config.env'])
+
+            f.seek(0)
+            main_module.main([
+                'scan',
+                '--slim', 'test_data/config.md', 'test_data/config.env',
+                '--baseline', f.name,
+            ])
+
+            f.seek(0)
+            secrets = baseline.load(baseline.load_from_file(f.name))
+
+        # Make sure both old and new files exist
+        assert secrets.files == {'test_data/config.env', 'test_data/config.md'}
+
+        # Make sure they both have line numbers
+        assert list(secrets['test_data/config.env'])[0].line_number
+        assert list(secrets['test_data/config.md'])[0].line_number
+
 
 class TestScanString:
     @staticmethod
@@ -75,7 +124,6 @@ class TestScanString:
             ]
 
     @staticmethod
-    @pytest.mark.xfail(reason='TODO')
     def test_failed_high_entropy_string():
         with transient_settings({
             'plugins_used': [
@@ -99,7 +147,7 @@ class TestScanString:
             ],
         }), mock_stdin(
             'AKIATESTTESTTESTTEST',
-        ), mock_printer(main_module) as printer:
+        ), mock_printer(main_module) as printer, disable_gibberish_filter():
             assert main_module.main(['scan', '--string']) == 0
 
             assert printer.message.strip() == 'AWSKeyDetector: True  (unverified)'
@@ -152,7 +200,7 @@ class TestScanOnlyAllowlisted:
             main_module.main([
                 'scan',
                 '--only-allowlisted',
-                '--disabled-plugins', 'KeywordDetector',
+                '--disable-plugin', 'KeywordDetector',
                 'test_data/config.ini',
             ])
 

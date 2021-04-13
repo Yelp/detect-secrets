@@ -9,12 +9,12 @@ from .core import baseline
 from .core import plugins
 from .core.log import log
 from .core.scan import get_files_to_scan
-from .core.scan import get_plugins
 from .core.scan import scan_for_allowlisted_secrets_in_file
 from .core.scan import scan_line
 from .core.secrets_collection import SecretsCollection
 from .core.usage import ParserBuilder
 from .exceptions import InvalidBaselineError
+from .settings import get_plugins
 from .settings import get_settings
 
 
@@ -55,15 +55,24 @@ def handle_scan_action(args: argparse.Namespace) -> None:
         return
 
     if args.only_allowlisted:
-        secrets = SecretsCollection()
-        for filename in get_files_to_scan(*args.path, should_scan_all_files=args.all_files):
+        secrets = SecretsCollection(root=args.custom_root)
+        for filename in get_files_to_scan(
+            *args.path,
+            should_scan_all_files=args.all_files,
+            root=args.custom_root,
+        ):
             for secret in scan_for_allowlisted_secrets_in_file(filename):
                 secrets[secret.filename].add(secret)
 
         print(json.dumps(baseline.format_for_output(secrets), indent=2))
         return
 
-    secrets = baseline.create(*args.path, should_scan_all_files=args.all_files)
+    secrets = baseline.create(
+        *args.path,
+        should_scan_all_files=args.all_files,
+        root=args.custom_root,
+        num_processors=args.num_cores,
+    )
     if args.baseline is not None:
         # The pre-commit hook's baseline upgrade is to trim the supplied baseline for non-existent
         # secrets, and to upgrade the format to the latest version. This is because the pre-commit
@@ -77,7 +86,7 @@ def handle_scan_action(args: argparse.Namespace) -> None:
 
         baseline.save_to_file(secrets, args.baseline_filename)
     else:
-        print(json.dumps(baseline.format_for_output(secrets), indent=2))
+        print(json.dumps(baseline.format_for_output(secrets, is_slim_mode=args.slim), indent=2))
 
 
 def scan_adhoc_string(line: str) -> str:
@@ -104,7 +113,7 @@ def scan_adhoc_string(line: str) -> str:
             plugin.__class__.__name__,
             results[plugin.secret_type],
         )
-        for plugin in sorted(registered_plugins, key=lambda x: x.__class__.__name__)
+        for plugin in sorted(registered_plugins, key=lambda x: str(x.__class__.__name__))
     ])
 
 

@@ -13,7 +13,6 @@ from typing import Any
 from typing import Dict
 from typing import Generator
 from typing import Iterable
-from typing import Optional
 from typing import Pattern
 from typing import Set
 
@@ -71,10 +70,7 @@ class BasePlugin(metaclass=ABCMeta):
             'name': self.__class__.__name__,
         }
 
-    def format_scan_result(self, secret: Optional[PotentialSecret]) -> str:
-        if not secret:
-            return 'False'
-
+    def format_scan_result(self, secret: PotentialSecret) -> str:
         try:
             verification_level = VerifiedResult(
                 get_settings().filters[

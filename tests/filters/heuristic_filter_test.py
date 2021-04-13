@@ -1,6 +1,10 @@
+import os
+
 import pytest
 
 from detect_secrets import filters
+from detect_secrets.core.scan import scan_line
+from detect_secrets.settings import transient_settings
 
 
 class TestIsSequentialString:
@@ -79,3 +83,75 @@ class TestIsLikelyIdString:
     )
     def test_failure(self, secret, line):
         assert not filters.heuristic.is_likely_id_string(secret, line)
+
+
+@pytest.mark.parametrize(
+    'line, result',
+    (
+        ('secret = {hunter2}', False),
+        ('secret = <hunter2>', False),
+        ('secret = hunter2', True),
+        ('secret= ${hunter2}', False),
+    ),
+)
+def test_is_templated_secret(line, result):
+    with transient_settings({
+        'plugins_used': [{
+            'name': 'KeywordDetector',
+        }],
+        'filters_used': [{
+            'path': 'detect_secrets.filters.heuristic.is_templated_secret',
+        }],
+    }):
+        assert bool(list(scan_line(line))) is result
+
+
+def test_is_prefixed_with_dollar_sign():
+    assert filters.heuristic.is_prefixed_with_dollar_sign('$secret')
+    assert not filters.heuristic.is_prefixed_with_dollar_sign('secret')
+
+
+@pytest.mark.parametrize(
+    'line, result',
+    (
+        ('secret = get_secret_key()', True),
+        ('secret = request.headers["apikey"]', True),
+        ('secret = hunter2', False),
+    ),
+)
+def test_is_indirect_reference(line, result):
+    assert filters.heuristic.is_indirect_reference(line) is result
+
+
+def test_is_lock_file():
+    # Basic test
+    assert filters.heuristic.is_lock_file('composer.lock')
+
+    # file path
+    assert filters.heuristic.is_lock_file('path/yarn.lock')
+
+    # assert non-regex
+    assert not filters.heuristic.is_lock_file('Gemfilealock')
+
+
+@pytest.mark.parametrize(
+    'secret, result',
+    (
+        ('*****', True),
+        ('a&b23?!', False),
+    ),
+)
+def test_is_not_alphanumeric_string(secret, result):
+    assert filters.heuristic.is_not_alphanumeric_string(secret) is result
+
+
+@pytest.mark.parametrize(
+    'filename, result',
+    (
+        ('{sep}path{sep}swagger-ui.html', True),
+        ('{sep}path{sep}swagger{sep}config.yml', True),
+        ('{sep}path{sep}non{sep}swager{sep}files', False),
+    ),
+)
+def test_is_swagger_file(filename, result):
+    assert filters.heuristic.is_swagger_file(filename.format(sep=os.path.sep)) is result

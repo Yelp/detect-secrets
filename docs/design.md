@@ -147,7 +147,7 @@ Filters operate through a system of
 that they need to come to a decision. For more information on how to configure filters, or write
 your own, check out the [filters documentation](filters.md).
 
-All filters are dynamically initialized through `detect_secrets.core.scan.get_filters`, which
+All filters are dynamically initialized through `detect_secrets.settings.get_filters`, which
 is responsible for importing all registered filters (as specified in the `Settings` object).
 Additionally, if you want to learn more about the dependency injection framework we use, check out
 `detect_secrets.util.inject`.

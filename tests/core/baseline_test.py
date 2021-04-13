@@ -80,18 +80,24 @@ class TestCreate:
             assert get_relative_path_if_in_cwd(f.name) in secrets.data
 
 
-@pytest.mark.xfail(
-    reason=(
-        'TODO: When we\'re done with changes, we\'ll update .secrets.baseline and this should '
-        'work then.'
-    ),
-)
 def test_load_and_output():
     with open('.secrets.baseline') as f:
         data = json.loads(f.read())
 
-    secrets = baseline.load(data)
-    assert baseline.format_for_output(secrets) == data
+    secrets = baseline.load(data, filename='.secrets.baseline')
+    output = baseline.format_for_output(secrets)
+
+    for item in [data, output]:
+        item.pop('generated_at')
+
+    # We perform string matching because we want to ensure stable sorts.
+    assert json.dumps(output) == json.dumps(data)
+
+    # We need to make sure that default values carry through, for future backwards compatibility.
+    for plugin in output['plugins_used']:
+        if plugin['name'] == 'Base64HighEntropyString':
+            assert plugin['limit'] == 4.5
+            break
 
 
 def test_upgrade_does_nothing_if_newer_version():

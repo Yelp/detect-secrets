@@ -4,6 +4,8 @@ from typing import Any
 from typing import Callable
 from typing import cast
 from typing import Dict
+from typing import List
+from typing import Optional
 from typing import Union
 
 from . import upgrades
@@ -17,17 +19,27 @@ from .scan import get_files_to_scan
 from .secrets_collection import SecretsCollection
 
 
-def create(*paths: str, should_scan_all_files: bool = False) -> SecretsCollection:
+def create(
+    *paths: str,
+    should_scan_all_files: bool = False,
+    root: str = '',
+    num_processors: Optional[int] = None,
+) -> SecretsCollection:
     """Scans all the files recursively in path to initialize a baseline."""
-    secrets = SecretsCollection()
+    kwargs = {}
+    if num_processors:
+        kwargs['num_processors'] = num_processors
 
-    for filename in get_files_to_scan(*paths, should_scan_all_files=should_scan_all_files):
-        secrets.scan_file(filename)
+    secrets = SecretsCollection(root=root)
+    secrets.scan_files(
+        *get_files_to_scan(*paths, should_scan_all_files=should_scan_all_files, root=root),
+        **kwargs,
+    )
 
     return secrets
 
 
-def load(baseline: Dict[str, Any], filename: str) -> SecretsCollection:
+def load(baseline: Dict[str, Any], filename: str = '') -> SecretsCollection:
     """
     With a given baseline file, load all settings and discovered secrets from it.
 
@@ -52,9 +64,8 @@ def load_from_file(filename: str) -> Dict[str, Any]:
         raise UnableToReadBaselineError from e
 
 
-def format_for_output(secrets: SecretsCollection) -> Dict[str, Any]:
-    return {
-        'generated_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+def format_for_output(secrets: SecretsCollection, is_slim_mode: bool = False) -> Dict[str, Any]:
+    output = {
         'version': VERSION,
 
         # This will populate settings of filters and plugins,
@@ -62,6 +73,20 @@ def format_for_output(secrets: SecretsCollection) -> Dict[str, Any]:
 
         'results': secrets.json(),
     }
+
+    if not is_slim_mode:
+        output['generated_at'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+    else:
+        # NOTE: This has a nice little side effect of keeping it ordered by line number,
+        # even though we don't output it.
+        for filename, secret_list in cast(
+            Dict[str, List[Dict[str, Any]]],
+            output['results'],
+        ).items():
+            for secret_dict in secret_list:
+                secret_dict.pop('line_number')
+
+    return output
 
 
 def save_to_file(
@@ -76,6 +101,9 @@ def save_to_file(
         If you're trying to decide the difference, ask yourself whether there are any changes
         that does not directly impact the results of the scan.
     """
+    # TODO: I wonder whether this should add the `detect_secrets.filters.common.is_baseline_file`
+    # filter, since we know the filename already. However, one could argue that it would cause
+    # this function to "do more than one thing".
     output = secrets
     if isinstance(secrets, SecretsCollection):
         output = format_for_output(secrets)

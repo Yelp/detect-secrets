@@ -49,7 +49,7 @@ def _add_initialize_baseline_options(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         'path',
         nargs='*',
-        default='.',
+        default=['.'],
         help=(
             'Scans the entire codebase and outputs a snapshot of '
             'currently identified secrets.'
@@ -74,6 +74,15 @@ def _add_initialize_baseline_options(parser: argparse.ArgumentParser) -> None:
             'specified by that baseline. However, this may also mean it doesn\'t perform the '
             'scan with the latest plugins. If this flag is provided, it will always use the '
             'latest plugins'
+        ),
+    )
+    group.add_argument(
+        '--slim',
+        action='store_true',
+        help=(
+            'Slim baselines are created with the intention of minimizing differences between '
+            'commits. However, they are not compatible with the `audit` functionality, and '
+            'slim baselines will need to be remade to be audited.'
         ),
     )
 

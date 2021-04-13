@@ -44,6 +44,12 @@ Create a baseline of potential secrets currently found in your git repository.
 $ detect-secrets scan > .secrets.baseline
 ```
 
+or, to run it from a different directory:
+
+```bash
+$ detect-secrets -C /path/to/directory scan > /path/to/directory/.secrets.baseline
+```
+
 **Scanning non-git tracked files:**
 
 ```bash
@@ -54,7 +60,7 @@ $ detect-secrets scan test_data/ --all-files > .secrets.baseline
 
 This will rescan your codebase, and:
 
-1. Update your baseline to be compatible with the latest version,
+1. Update/upgrade your baseline to be compatible with the latest version,
 2. Add any new secrets it finds to your baseline,
 3. Remove any secrets no longer in your codebase
 
@@ -71,7 +77,7 @@ For baselines older than version 0.9, just recreate it.
 **Scanning Staged Files Only:**
 
 ```bash
-$ detect-secret-hook --baseline .secrets.baseline $(git diff --staged --name-only)
+$ detect-secrets-hook --baseline .secrets.baseline $(git diff --staged --name-only)
 ```
 
 **Scanning All Tracked Files:**
@@ -115,7 +121,7 @@ If you want to **only** run a specific plugin, you can do:
 ```bash
 $ detect-secrets scan --list-all-plugins | \
     grep -v 'BasicAuthDetector' | \
-    sed "s#^#--disable-plugin #g | \
+    sed "s#^#--disable-plugin #g" | \
     xargs detect-secrets scan test_data
 ```
 
@@ -127,6 +133,66 @@ ratio.
 
 ```bash
 $ detect-secrets audit .secrets.baseline
+```
+
+### Usage in Other Python Scripts
+
+**Basic Use:**
+
+```python
+from detect_secrets import SecretsCollection
+from detect_secrets.settings import default_settings
+
+secrets = SecretsCollection()
+with default_settings():
+    secrets.scan_file('test_data/config.ini')
+
+
+import json
+print(json.dumps(secrets.json(), indent=2))
+```
+
+**More Advanced Configuration:**
+
+```python
+from detect_secrets import SecretsCollection
+from detect_secrets.settings import transient_settings
+
+secrets = SecretsCollection()
+with transient_settings({
+    # Only run scans with only these plugins.
+    # This format is the same as the one that is saved in the generated baseline.
+    'plugins_used': [
+        # Example of configuring a built-in plugin
+        {
+            'name': 'Base64HighEntropyString',
+            'limit': 5.0,
+        },
+
+        # Example of using a custom plugin
+        {
+            'name': 'HippoDetector',
+            'path': 'file:///Users/aaronloo/Documents/github/detect-secrets/testing/plugins.py',
+        },
+    ],
+
+    # We can also specify whichever additional filters we want.
+    # This is an example of using the function `is_identified_by_ML_model` within the
+    # local file `./private-filters/example.py`.
+    'filters_used': [
+        {
+            'path': 'file://private-filters/example.py::is_identified_by_ML_model',
+        },
+    ]
+}) as settings:
+    # If we want to make any further adjustments to the created settings object (e.g.
+    # disabling default filters), we can do so as such.
+    settings.disable_filters(
+        'detect_secrets.filters.heuristic.is_prefixed_with_dollar_sign',
+        'detect_secrets.filters.heuristic.is_likely_id_string',
+    )
+
+    secrets.scan_file('test_data/config.ini')
 ```
 
 ## Installation
@@ -149,15 +215,20 @@ to use. Use this handy checklist to help you decide:
 
 ```
 $ detect-secrets scan --help
-usage: detect-secrets scan [-h] [--string [STRING]] [--all-files]
-                        [--baseline FILENAME] [--force-use-all-plugins]
-                        [--base64-limit [BASE64_LIMIT]]
-                        [--hex-limit [HEX_LIMIT]]
-                        [--disabled-plugins DISABLED_PLUGINS] [-n]
-                        [--exclude-lines EXCLUDE_LINES]
-                        [--exclude-files EXCLUDE_FILES]
-                        [--word-list WORD_LIST_FILE]
-                        [path [path ...]]
+usage: detect-secrets scan [-h] [--string [STRING]] [--only-allowlisted]
+                           [--all-files] [--baseline FILENAME]
+                           [--force-use-all-plugins] [--slim]
+                           [--list-all-plugins] [-p PLUGIN]
+                           [--base64-limit [BASE64_LIMIT]]
+                           [--hex-limit [HEX_LIMIT]]
+                           [--disable-plugin DISABLE_PLUGIN]
+                           [-n | --only-verified]
+                           [--exclude-lines EXCLUDE_LINES]
+                           [--exclude-files EXCLUDE_FILES]
+                           [--exclude-secrets EXCLUDE_SECRETS]
+                           [--word-list WORD_LIST_FILE] [-f FILTER]
+                           [--disable-filter DISABLE_FILTER]
+                           [path [path ...]]
 
 Scans a repository for secrets in code. The generated output is compatible
 with `detect-secrets-hook --baseline`.
@@ -170,6 +241,9 @@ optional arguments:
   -h, --help            show this help message and exit
   --string [STRING]     Scans an individual string, and displays configured
                         plugins' verdict.
+  --only-allowlisted    Only scans the lines that are flagged with `allowlist
+                        secret`. This helps verify that individual exceptions
+                        are indeed non-secrets.
 
 scan options:
   --all-files           Scan all files recursively (as compared to only
@@ -182,19 +256,27 @@ scan options:
                         However, this may also mean it doesn't perform the
                         scan with the latest plugins. If this flag is
                         provided, it will always use the latest plugins
+  --slim                Slim baselines are created with the intention of
+                        minimizing differences between commits. However, they
+                        are not compatible with the `audit` functionality, and
+                        slim baselines will need to be remade to be audited.
 
 plugin options:
   Configure settings for each secret scanning ruleset. By default, all
   plugins are enabled unless explicitly disabled.
 
+  --list-all-plugins    Lists all plugins that will be used for the scan.
+  -p PLUGIN, --plugin PLUGIN
+                        Specify path to custom secret detector plugin.
   --base64-limit [BASE64_LIMIT]
                         Sets the entropy limit for high entropy strings. Value
                         must be between 0.0 and 8.0, defaults to 4.5.
   --hex-limit [HEX_LIMIT]
                         Sets the entropy limit for high entropy strings. Value
                         must be between 0.0 and 8.0, defaults to 3.0.
-  --disabled-plugin DISABLED_PLUGIN
-                        Plugin class names to disable. e.g. Base64HighEntropyString
+  --disable-plugin DISABLE_PLUGIN
+                        Plugin class names to disable. e.g.
+                        Base64HighEntropyString
 
 filter options:
   Configure settings for filtering out secrets after they are flagged by the
@@ -202,13 +284,25 @@ filter options:
 
   -n, --no-verify       Disables additional verification of secrets via
                         network call.
+  --only-verified       Only flags secrets that can be verified.
   --exclude-lines EXCLUDE_LINES
                         If lines match this regex, it will be ignored.
   --exclude-files EXCLUDE_FILES
                         If filenames match this regex, it will be ignored.
+  --exclude-secrets EXCLUDE_SECRETS
+                        If secrets match this regex, it will be ignored.
   --word-list WORD_LIST_FILE
                         Text file with a list of words, if a secret contains a
                         word in the list we ignore it.
+  -f FILTER, --filter FILTER
+                        Specify path to custom filter. May be a python module
+                        path (e.g.
+                        detect_secrets.filters.common.is_invalid_file) or a
+                        local file path (e.g.
+                        file://path/to/file.py::function_name).
+  --disable-filter DISABLE_FILTER
+                        Specify filter to disable. e.g.
+                        detect_secrets.filters.common.is_invalid_file
 ```
 
 ### Blocking Secrets not in Baseline
@@ -216,13 +310,17 @@ filter options:
 ```
 $ detect-secrets-hook --help
 usage: detect-secrets-hook [-h] [-v] [--version] [--baseline FILENAME]
-                          [--base64-limit [BASE64_LIMIT]]
-                          [--hex-limit [HEX_LIMIT]]
-                          [--disabled-plugins DISABLED_PLUGINS] [-n]
-                          [--exclude-lines EXCLUDE_LINES]
-                          [--exclude-files EXCLUDE_FILES]
-                          [--word-list WORD_LIST_FILE]
-                          [filenames [filenames ...]]
+                           [--list-all-plugins] [-p PLUGIN]
+                           [--base64-limit [BASE64_LIMIT]]
+                           [--hex-limit [HEX_LIMIT]]
+                           [--disable-plugin DISABLE_PLUGIN]
+                           [-n | --only-verified]
+                           [--exclude-lines EXCLUDE_LINES]
+                           [--exclude-files EXCLUDE_FILES]
+                           [--exclude-secrets EXCLUDE_SECRETS]
+                           [--word-list WORD_LIST_FILE] [-f FILTER]
+                           [--disable-filter DISABLE_FILTER]
+                           [filenames [filenames ...]]
 
 positional arguments:
   filenames             Filenames to check.
@@ -238,14 +336,17 @@ plugin options:
   Configure settings for each secret scanning ruleset. By default, all
   plugins are enabled unless explicitly disabled.
 
+  --list-all-plugins    Lists all plugins that will be used for the scan.
+  -p PLUGIN, --plugin PLUGIN
+                        Specify path to custom secret detector plugin.
   --base64-limit [BASE64_LIMIT]
                         Sets the entropy limit for high entropy strings. Value
                         must be between 0.0 and 8.0, defaults to 4.5.
   --hex-limit [HEX_LIMIT]
                         Sets the entropy limit for high entropy strings. Value
                         must be between 0.0 and 8.0, defaults to 3.0.
-  --disabled-plugins DISABLED_PLUGINS
-                        Comma-delimited plugin class names to disable. e.g.
+  --disable-plugin DISABLE_PLUGIN
+                        Plugin class names to disable. e.g.
                         Base64HighEntropyString
 
 filter options:
@@ -254,13 +355,22 @@ filter options:
 
   -n, --no-verify       Disables additional verification of secrets via
                         network call.
+  --only-verified       Only flags secrets that can be verified.
   --exclude-lines EXCLUDE_LINES
                         If lines match this regex, it will be ignored.
   --exclude-files EXCLUDE_FILES
                         If filenames match this regex, it will be ignored.
-  --word-list WORD_LIST_FILE
-                        Text file with a list of words, if a secret contains a
-                        word in the list we ignore it.
+  --exclude-secrets EXCLUDE_SECRETS
+                        If secrets match this regex, it will be ignored.
+  -f FILTER, --filter FILTER
+                        Specify path to custom filter. May be a python module
+                        path (e.g.
+                        detect_secrets.filters.common.is_invalid_file) or a
+                        local file path (e.g.
+                        file://path/to/file.py::function_name).
+  --disable-filter DISABLE_FILTER
+                        Specify filter to disable. e.g.
+                        detect_secrets.filters.common.is_invalid_file
 ```
 
 We recommend setting this up as a pre-commit hook. One way to do this is by using the
@@ -298,7 +408,7 @@ const secret = "hunter2";
 ```bash
 $ detect-secrets audit --help
 usage: detect-secrets audit [-h] [--diff] [--stats] [--json]
-                         filename [filename ...]
+                            filename [filename ...]
 
 Auditing a baseline allows analysts to label results, and optimize plugins for
 the highest signal-to-noise ratio for their environment.
@@ -370,6 +480,12 @@ specific pattern. You can specify a regex rule as such:
 $ detect-secrets scan --exclude-lines 'password = (blah|fake)'
 ```
 
+Or you can specify multiple regex rules as such:
+
+```bash
+$ detect-secrets scan --exclude-lines 'password = blah' --exclude-lines 'password = fake'
+```
+
 #### --exclude-files
 
 Sometimes, you want to be able to ignore certain files in your scan. You can specify a regex
@@ -379,15 +495,25 @@ pattern to do so, and if the filename meets this regex pattern, it will not be s
 $ detect-secrets scan --exclude-files '.*\.signature$'
 ```
 
-#### --word-list
-
-If you know there are certain fake password values that you want to ignore, you can also use
-this option:
+Or you can specify multiple regex patterns as such:
 
 ```bash
-$ cat wordlist.txt
-not-a-real-secret
-$ detect-secrets scan --word-list wordlist.txt
+$ detect-secrets scan --exclude-files '.*\.signature$' --exclude-files '.*/i18n/.*'
+```
+
+#### --exclude-secrets
+
+Sometimes, you want to be able to ignore certain secret values in your scan. You can specify
+a regex rule as such:
+
+```bash
+$ detect-secrets scan --exclude-secrets '(fakesecret|\${.*})'
+```
+
+Or you can specify multiple regex rules as such:
+
+```bash
+$ detect-secrets scan --exclude-secrets 'fakesecret' --exclude-secrets '\${.*})'
 ```
 
 #### Inline Allowlisting
@@ -421,6 +547,57 @@ $ detect-secrets scan --only-allowlisted
 
 Want to write more custom logic to filter out false positives? Check out how to do this in
 our [filters documentation](docs/filters.md#Using-Your-Own-Filters).
+
+## Extensions
+
+### wordlist
+
+The `--exclude-secrets` flag allows you to specify regex rules to exclude secret values. However,
+if you want to specify a large list of words instead, you can use the `--word-list` flag.
+
+To use this feature, be sure to install the `pyahocorasick` package, or simply use:
+
+```bash
+$ pip install detect-secrets[word_list]
+```
+
+Then, you can use it as such:
+
+```bash
+$ cat wordlist.txt
+not-a-real-secret
+$ cat sample.ini
+password = not-a-real-secret
+
+# Will show results
+$ detect-secrets scan sample.ini
+
+# No results found
+$ detect-secrets scan --word-list wordlist.txt
+```
+
+### Gibberish Detector
+
+The Gibberish Detector is a simple ML model, that attempts to determine whether a secret value
+is actually gibberish, with the assumption that **real** secret values are not word-like.
+
+To use this feature, be sure to install the `gibberish-detector` package, or use:
+
+```bash
+$ pip install detect-secrets[gibberish]
+```
+
+Check out the [gibberish-detector](https://github.com/domanchi/gibberish-detector) package for
+more information on how to train the model. A pre-trained model (seeded by processing RFCs) will
+be included for easy use.
+
+You can also specify your own model as such:
+
+```bash
+$ detect-secrets scan --gibberish-model custom.model
+```
+
+This is not a default plugin, given that this will ignore secrets such as `password`.
 
 ## Caveats
 

@@ -7,6 +7,7 @@ from typing import Any
 from typing import Dict
 from typing import Generator
 from typing import IO
+from typing import Iterator
 from typing import Optional
 from unittest import mock
 
@@ -71,3 +72,19 @@ class MockLogWrapper:
     @property
     def debug_messages(self) -> str:        # pragma: no cover
         return self.messages['debug']
+
+
+@contextmanager
+def disable_gibberish_filter() -> Iterator[None]:
+    """
+    Unfortunately, we can't just use `Settings.disable_filters`, since `parse_args` is
+    the function that *enables* this filter. Therefore, for test cases that test through
+    the `main` function flow, we can't disable the filter before the function call.
+
+    However, since this only happens in test environments, we can just mock it out.
+    """
+    with mock.patch(
+        'detect_secrets.filters.gibberish.is_feature_enabled',
+        return_value=False,
+    ):
+        yield

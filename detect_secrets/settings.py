@@ -1,10 +1,15 @@
 from contextlib import contextmanager
 from copy import deepcopy
 from functools import lru_cache
+from importlib import import_module
 from typing import Any
 from typing import Dict
 from typing import Generator
 from typing import List
+from urllib.parse import urlparse
+
+from .exceptions import InvalidFile
+from .util.importlib import import_file_as_module
 
 
 @lru_cache(maxsize=1)
@@ -28,12 +33,45 @@ def configure_settings_from_baseline(baseline: Dict[str, Any], filename: str = '
     if 'filters_used' in baseline:
         settings.configure_filters(baseline['filters_used'])
 
+        if 'detect_secrets.filters.wordlist.should_exclude_secret' in settings.filters:
+            config = settings.filters['detect_secrets.filters.wordlist.should_exclude_secret']
+
+            from detect_secrets import filters
+            filters.wordlist.initialize(
+                wordlist_filename=config['file_name'],
+                min_length=config['min_length'],
+                file_hash=config['file_hash'],
+            )
+
+        if 'detect_secrets.filters.gibberish.should_exclude_secret' in settings.filters:
+            config = settings.filters['detect_secrets.filters.gibberish.should_exclude_secret']
+
+            from detect_secrets import filters
+            filters.gibberish.initialize(
+                model_path=config.get('model'),
+                limit=config['limit'],
+            )
+
     if filename:
         settings.filters['detect_secrets.filters.common.is_baseline_file'] = {
             'filename': filename,
         }
 
     return settings
+
+
+@contextmanager
+def default_settings() -> Generator['Settings', None, None]:
+    """Convenience function to enable all plugins and default filters."""
+    from .core.plugins.util import get_mapping_from_secret_type_to_class
+
+    with transient_settings({
+        'plugins_used': [
+            {'name': plugin_type.__name__}
+            for plugin_type in get_mapping_from_secret_type_to_class().values()
+        ],
+    }) as settings:
+        yield settings
 
 
 @contextmanager
@@ -50,12 +88,39 @@ def transient_settings(config: Dict[str, Any]) -> Generator['Settings', None, No
 
 
 def cache_bust() -> None:
-    from detect_secrets.core.scan import get_filters
-    from detect_secrets.core.scan import get_plugins
+    get_plugins.cache_clear()
+
+    get_filters.cache_clear()
+    for path, config in get_settings().filters.items():
+        # Need to also clear the individual caches (e.g. cached regex patterns).
+        parts = urlparse(path)
+        if not parts.scheme:
+            module_path, _ = path.rsplit('.', 1)
+            try:
+                module = import_module(module_path)
+            except ModuleNotFoundError:
+                continue
+        elif parts.scheme == 'file':
+            file_path = path[len('file://'):].split('::')[0]
+            try:
+                module = import_file_as_module(file_path)
+            except (FileNotFoundError, InvalidFile):
+                continue
+        else:
+            continue
+
+        for item_key in dir(module):
+            item = getattr(module, item_key)
+            try:
+                if item.__module__ != module_path:
+                    # Make sure we only clear the cache specific to the module.
+                    raise AttributeError
+
+                item.cache_clear()
+            except AttributeError:
+                pass
 
     get_settings.cache_clear()
-    get_filters.cache_clear()
-    get_plugins.cache_clear()
 
 
 class Settings:
@@ -80,8 +145,18 @@ class Settings:
                 'detect_secrets.filters.heuristic.is_sequential_string',
                 'detect_secrets.filters.heuristic.is_potential_uuid',
                 'detect_secrets.filters.heuristic.is_likely_id_string',
+                'detect_secrets.filters.heuristic.is_templated_secret',
+                'detect_secrets.filters.heuristic.is_prefixed_with_dollar_sign',
+                'detect_secrets.filters.heuristic.is_indirect_reference',
+                'detect_secrets.filters.heuristic.is_lock_file',
+                'detect_secrets.filters.heuristic.is_not_alphanumeric_string',
+                'detect_secrets.filters.heuristic.is_swagger_file',
             }
         }
+
+    def set(self, other: 'Settings') -> None:
+        self.plugins = other.plugins
+        self.filters = other.filters
 
     def configure_plugins(self, config: List[Dict[str, Any]]) -> 'Settings':
         """
@@ -96,6 +171,7 @@ class Settings:
             name = plugin.pop('name')
             self.plugins[name] = plugin
 
+        get_plugins.cache_clear()
         return self
 
     def disable_plugins(self, *plugin_names: str) -> 'Settings':
@@ -105,6 +181,7 @@ class Settings:
             except KeyError:
                 pass
 
+        get_plugins.cache_clear()
         return self
 
     def configure_filters(self, config: List[Dict[str, Any]]) -> 'Settings':
@@ -129,29 +206,104 @@ class Settings:
             path = filter_config['path']
             self.filters[path] = filter_config
 
+        get_filters.cache_clear()
         return self
 
     def disable_filters(self, *filter_paths: str) -> 'Settings':
         for filter_path in filter_paths:
             self.filters.pop(filter_path, None)
 
+        get_filters.cache_clear()
         return self
 
     def json(self) -> Dict[str, Any]:
+        plugins_used = []
+        for plugin in get_plugins():
+            # NOTE: We use the initialized plugin's JSON representation (rather than using
+            # the configured settings) to deal with cases where plugins define their own
+            # default variables, that is not necessarily carried through through the
+            # settings object.
+            serialized_plugin = plugin.json()
+
+            plugins_used.append({
+                # We want this to appear first.
+                'name': serialized_plugin['name'],
+
+                # NOTE: We still need to use the saved settings configuration though, since
+                # there are keys specifically in the settings object that we need to carry over
+                # (e.g. `path` for custom plugins).
+                **self.plugins[serialized_plugin['name']],
+
+                # Finally, this comes last so that it overrides any values that are saved in
+                # the settings object.
+                **serialized_plugin,
+            })
+
         return {
-            'plugins_used': [
-                {
-                    'name': name,
-                    **config,
-                }
-                for name, config in self.plugins.items()
-            ],
-            'filters_used': [
-                {
-                    'path': path,
-                    **config,
-                }
-                for path, config in self.filters.items()
-                if path not in self.DEFAULT_FILTERS
-            ],
+            'plugins_used': sorted(
+                plugins_used,
+                key=lambda x: str(x['name'].lower()),
+            ),
+            'filters_used': sorted(
+                [
+                    {
+                        'path': path,
+                        **config,
+                    }
+                    for path, config in self.filters.items()
+                    if path not in self.DEFAULT_FILTERS
+                ],
+                key=lambda x: str(x['path'].lower()),
+            ),
         }
+
+
+@lru_cache(maxsize=1)
+def get_plugins() -> List:
+    # We need to import this here, otherwise it will result in a circular dependency.
+    from .core import plugins
+
+    return [
+        plugins.initialize.from_plugin_classname(classname)
+        for classname in get_settings().plugins
+    ]
+
+
+@lru_cache(maxsize=1)
+def get_filters() -> List:
+    from .core.log import log
+    from .util.inject import get_injectable_variables
+
+    output = []
+    for path, config in get_settings().filters.items():
+        parts = urlparse(path)
+        if not parts.scheme:
+            module_path, function_name = path.rsplit('.', 1)
+            try:
+                function = getattr(import_module(module_path), function_name)
+            except (ModuleNotFoundError, AttributeError):
+                log.warning(f'Invalid filter: {path}')
+                continue
+
+        elif parts.scheme == 'file':
+            file_path, function_name = path[len('file://'):].split('::')
+
+            try:
+                function = getattr(import_file_as_module(file_path), function_name)
+            except (FileNotFoundError, InvalidFile, AttributeError):
+                log.warning(f'Invalid filter: {path}')
+                continue
+
+        else:
+            log.warning(f'Invalid filter: {path}')
+            continue
+
+        # We attach this metadata to the function itself, so that we don't need to
+        # compute it everytime. This will allow for dependency injection for filters.
+        function.injectable_variables = set(get_injectable_variables(function))
+        output.append(function)
+
+        # This is for better logging.
+        function.path = path
+
+    return output

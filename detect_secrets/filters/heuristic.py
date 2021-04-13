@@ -85,22 +85,35 @@ def is_non_text_file(filename: str) -> bool:
 IGNORED_FILE_EXTENSIONS = set(
     (
         '.7z',
+        '.bin',
         '.bmp',
         '.bz2',
+        '.class',
+        '.css',
         '.dmg',
+        '.doc',
         '.eot',
         '.exe',
         '.gif',
         '.gz',
         '.ico',
+        '.iml',
+        '.ipr',
+        '.iws',
         '.jar',
         '.jpg',
         '.jpeg',
+        '.lock',
+        '.map',
         '.mo',
+        '.pdf',
         '.png',
+        '.prefs',
+        '.psd',
         '.rar',
         '.realm',
         '.s7z',
+        '.sum',
         '.svg',
         '.tar',
         '.tif',
@@ -113,3 +126,92 @@ IGNORED_FILE_EXTENSIONS = set(
         '.zip',
     ),
 )
+
+
+def is_templated_secret(secret: str) -> bool:
+    """
+    Filters secrets that are shaped like: {secret}, <secret>, or ${secret}.
+    """
+    try:
+        if (
+            (secret[0] == '{' and secret[-1] == '}')
+            or (secret[0] == '<' and secret[-1] == '>')
+            or (secret[0] == '$' and secret[1] == '{' and secret[-1] == '}')
+        ):
+            return True
+    except IndexError:
+        # Any one character secret (that causes this to raise an IndexError) is highly
+        # likely to be a false positive (or if a true positive, INCREDIBLY weak password).
+        return True
+
+    return False
+
+
+def is_prefixed_with_dollar_sign(secret: str) -> bool:
+    # NOTE: This is broken out into its own function since it has more chance of increasing
+    # false negatives than `is_templated_secret` (e.g. secrets that actually start with a $).
+    # This is best used with files that actually use this as a means of referencing variables.
+    # TODO: More intelligent filetype handling?
+    return secret[0] == '$'
+
+
+def is_indirect_reference(line: str) -> bool:
+    """
+    Filters secrets that take the form of:
+
+        secret = get_secret_key()
+
+    or
+
+        secret = request.headers['apikey']
+    """
+    return bool(_get_indirect_reference_regex().search(line))
+
+
+@lru_cache(maxsize=1)
+def _get_indirect_reference_regex() -> Pattern:
+    # Regex details:
+    #   ([^\v=!:]*)     ->  Something before the assignment or comparison
+    #   \s*             ->  Some optional whitespaces
+    #   (:=?|[!=]{1,3}) ->  Assignment or comparison: :=, =, ==, ===, !=, !==
+    #   \s*             ->  Some optional whitespaces
+    #   (
+    #       [\w.-]+     ->  Some alphanumeric character, dot or -
+    #       [\[\(]      ->  Start of indirect reference: [ or (
+    #       [^\v]*      ->  Something except line breaks
+    #       [\]\)]      ->  End of indirect reference: ] or )
+    #   )
+    return re.compile(r'([^\v=!:]*)\s*(:=?|[!=]{1,3})\s*([\w.-]+[\[\(][^\v]*[\]\)])')
+
+
+def is_lock_file(filename: str) -> bool:
+    return os.path.basename(filename) in {
+        'Brewfile.lock.json',
+        'Cartfile.resolved',
+        'composer.lock',
+        'Gemfile.lock',
+        'Package.resolved',
+        'package-lock.json',
+        'Podfile.lock',
+        'yarn.lock',
+    }
+
+
+def is_not_alphanumeric_string(secret: str) -> bool:
+    """
+    This assumes that secrets should have at least ONE letter in them.
+    This helps avoid clear false positives, like `*****`.
+    """
+    return not bool(set(string.ascii_letters) & set(secret))
+
+
+def is_swagger_file(filename: str) -> bool:
+    """
+    Filters swagger files and paths, like swagger-ui.html or /swagger/.
+    """
+    return bool(_get_swagger_regex().search(filename))
+
+
+@lru_cache(maxsize=1)
+def _get_swagger_regex() -> Pattern:
+    return re.compile(r'.*swagger.*')

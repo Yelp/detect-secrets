@@ -60,7 +60,7 @@ def from_file(filename: str) -> Iterable[Type[Plugin]]:
     for plugin_class in get_plugins_from_file(filename):
         secret_type = plugin_class.secret_type  # type: ignore
         if secret_type in get_mapping_from_secret_type_to_class():
-            log.debug(f'Duplicate plugin detected: {plugin_class.__name__}. Skipping...')
+            log.info(f'Duplicate plugin detected: {plugin_class.__name__}. Skipping...')
 
         get_mapping_from_secret_type_to_class()[secret_type] = plugin_class
         output.append(plugin_class)

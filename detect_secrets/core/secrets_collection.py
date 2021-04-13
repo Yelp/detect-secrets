@@ -1,3 +1,4 @@
+import multiprocessing as mp
 import os
 from collections import defaultdict
 from typing import Any
@@ -21,8 +22,15 @@ class PatchedFile:
 
 
 class SecretsCollection:
-    def __init__(self) -> None:
+    def __init__(self, root: str = '') -> None:
+        """
+        :param root: if specified, will scan as if the root was the value provided,
+            rather than the current working directory. We still store results as if
+            relative to root, since we're running as if it was in a different directory,
+            rather than scanning a different directory.
+        """
         self.data: Dict[str, Set[PotentialSecret]] = defaultdict(set)
+        self.root = root
 
     @classmethod
     def load_from_baseline(cls, baseline: Dict[str, Any]) -> 'SecretsCollection':
@@ -38,9 +46,26 @@ class SecretsCollection:
     def files(self) -> Set[str]:
         return set(self.data.keys())
 
+    def scan_files(self, *filenames: str, num_processors: Optional[int] = None) -> None:
+        """Just like scan_file, but optimized through parallel processing."""
+        if len(filenames) == 1:
+            self.scan_file(filenames[0])
+            return
+
+        if not num_processors:
+            num_processors = mp.cpu_count()
+
+        with mp.Pool(processes=num_processors) as p:
+            for secrets in p.imap_unordered(
+                _scan_file_and_serialize,
+                [os.path.join(self.root, filename) for filename in filenames],
+            ):
+                for secret in secrets:
+                    self[os.path.relpath(secret.filename, self.root)].add(secret)
+
     def scan_file(self, filename: str) -> None:
-        for secret in scan.scan_file(filename):
-            self[secret.filename].add(secret)
+        for secret in scan.scan_file(os.path.join(self.root, filename)):
+            self[filename].add(secret)
 
     def scan_diff(self, diff: str) -> None:
         """
@@ -129,13 +154,25 @@ class SecretsCollection:
         # Unfortunately, we can't merely do a set intersection since we want to update the line
         # numbers (if applicable). Therefore, this does it manually.
         result: Dict[str, Set[PotentialSecret]] = defaultdict(set)
-        for filename, secret in scanned_results:
+
+        for filename in scanned_results.files:
             if filename not in self.files:
                 continue
 
-            # This will use the latest information from the scanned results.
-            if secret in self[filename]:
-                result[filename].add(secret)
+            # We construct this so we can get O(1) retrieval of secrets.
+            existing_secret_map = {secret: secret for secret in self[filename]}
+            for secret in scanned_results[filename]:
+                if secret not in existing_secret_map:
+                    continue
+
+                # Currently, we assume that the `scanned_results` have no labelled data, so
+                # we only want to obtain the latest line number from it.
+                existing_secret = existing_secret_map[secret]
+                if existing_secret.line_number:
+                    # Only update line numbers if we're tracking them.
+                    existing_secret.line_number = secret.line_number
+
+                result[filename].add(existing_secret)
 
         for filename in self.files:
             # If this is already populated by scanned_results, then the set intersection
@@ -176,8 +213,8 @@ class SecretsCollection:
         for filename in sorted(self.files):
             secrets = self[filename]
 
-            # TODO: Handle cases when line numbers are not supplied
-            for secret in sorted(secrets, key=lambda x: (x.line_number, x.secret_hash)):
+            # NOTE: If line numbers aren't supplied, they will default to 0.
+            for secret in sorted(secrets, key=lambda x: (x.line_number, x.secret_hash, x.type)):
                 yield filename, secret
 
     def __bool__(self) -> bool:
@@ -215,6 +252,12 @@ class SecretsCollection:
                 valuesB = vars(secretB)
                 valuesB.pop('secret_value')
 
+                if valuesA['line_number'] == 0 or valuesB['line_number'] == 0:
+                    # If line numbers are not provided (for either one), then don't compare
+                    # line numbers.
+                    valuesA.pop('line_number')
+                    valuesB.pop('line_number')
+
                 if valuesA != valuesB:
                     return False
 
@@ -237,4 +280,15 @@ class SecretsCollection:
 
             output[filename] = self[filename] - other[filename]
 
+        for filename in self.files:
+            if filename in other.files:
+                continue
+
+            output[filename] = self[filename]
+
         return output
+
+
+def _scan_file_and_serialize(filename: str) -> List[PotentialSecret]:
+    """Used for multiprocessing, since lambdas can't be serialized."""
+    return list(scan.scan_file(filename))

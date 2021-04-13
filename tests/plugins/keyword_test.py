@@ -1,331 +1,204 @@
+import base64
+from random import randint
+
 import pytest
 
+from detect_secrets.core.scan import scan_line
 from detect_secrets.plugins.keyword import KeywordDetector
+from detect_secrets.settings import transient_settings
 
 
-FOLLOWED_BY_COLON_EQUAL_SIGNS_RE = {
-    'negatives': {
-        'quotes_required': [
-            'theapikey := ""',  # Nothing in the quotes
-            'theapikey := "somefakekey"',  # 'fake' in the secret
-        ],
-        'quotes_not_required': [
-            'theapikeyforfoo := hopenobodyfindsthisone',  # Characters between apikey and :=
-        ],
-    },
-    'positives': {
-        'quotes_required': [
-            'apikey := "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            'apikey :="m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            'apikey  :=   "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            "apikey := 'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
-            "apikey :='m{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
-            'apikey:= "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            'apikey:="m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            "apikey:= 'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
-            "apikey:='m{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
-            "apikey:=  'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
-        ],
-        'quotes_not_required': [
-            'apikey := m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            'apikey :=m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            'apikey:= m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            'apikey:=m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-        ],
-    },
-}
-FOLLOWED_BY_COLON_RE = {
-    'negatives': {
-        'quotes_required': [
-            'theapikey: ""',  # Nothing in the quotes
-            'theapikey: "somefakekey"',  # 'fake' in the secret
-        ],
-        'quotes_not_required': [
-            'theapikeyforfoo:hopenobodyfindsthisone',  # Characters between apikey and :
-            'password: ${link}',  # Has a ${ followed by a }
-        ],
-    },
-    'positives': {
-        'quotes_required': [
-            "'theapikey': 'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
-            '"theapikey": "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            'apikey: "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            "apikey:  'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'",
-        ],
-        'quotes_not_required': [
-            'apikey: m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            'apikey:m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            'theapikey:m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-        ],
-    },
-}
-FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX = {
-    'negatives': {
-        'quotes_required': [
-            'theapikey[] = ""',  # Nothing in the quotes
-            'theapikey = @"somefakekey"',  # 'fake' in the secret
-        ],
-    },
-    'positives': {
-        'quotes_required': [
-            'apikey = "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            'apikey ="m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            'apikey  =   "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            'apikey = @"m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            'apikey =@"m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            'apikey  =   @"m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            'apikey[]= "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            'apikey[]="m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-        ],
-    },
-}
-FOLLOWED_BY_EQUAL_SIGNS_RE = {
-    'negatives': {
-        'quotes_required': [
-            'some_key = "real_secret"',  # We cannot make 'key' a Keyword, too noisy
-            'my_password = ""',  # Nothing in the quotes
-            "my_password = ''",  # Nothing in the quotes
-            'my_password = "fakesecret"',  # 'fake' in the secret
-            'open(self, password = ""):',  # secrets is ""):
-            'open(self, password = ""):',  # secrets is ""):
-        ],
-        'quotes_not_required': [
-            'my_password = foo(hey)you',  # Has a ( followed by a )
-            "my_password = request.json_body['hey']",  # Has a [ followed by a ]
-            'my_password = True',  # 'True' is a known false-positive
-            'login(username=username, password=password)',  # secret is password)
-        ],
-    },
-    'positives': {
-        'quotes_required': [
-            'some_dict["secret"] = "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"',
-            'the_password= "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}"\n',
-            'the_password=\'m{{h}o)p${e]nob(ody[finds>-_$#thisone}}\'\n',
-        ],
-        'quotes_not_required': [
-            "some_dict['secret'] = m{{h}o)p${e]nob(ody[finds>-_$#thisone}}",
-            'my_password=m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            'my_password= m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            'my_password =m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            'my_password = m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            'my_password =m{{h}o)p${e]nob(ody[finds>-_$#thisone}}',
-            'the_password=m{{h}o)p${e]nob(ody[finds>-_$#thisone}}\n',
-        ],
-    },
-}
-FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE = {
-    'negatives': {
-        'quotes_required': [
-            'private_key "";',  # Nothing in the quotes
-            'private_key \'"no spaces\';',  # Has whitespace in the secret
-            'private_key "fake";',  # 'fake' in the secret
-            'private_key "some/dir/aint/a/secret";',  # 3 or more /
-            'private_key "${FOO}";',  # Starts with ${ and ends with }
-            'private_key "hopenobodyfindsthisone\';',  # Double-quote does not match single-quote
-            'private_key \'hopenobodyfindsthisone";',  # Single-quote does not match double-quote
-        ],
-    },
-    'positives': {
-        'quotes_required': [
-            'apikey "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}";',  # Double-quotes
-            'fooapikeyfoo "m{{h}o)p${e]nob(ody[finds>-_$#thisone}}";',  # Double-quotes
-            'fooapikeyfoo"m{{h}o)p${e]nob(ody[finds>-_$#thisone}}";',  # Double-quotes
-            'private_key \'m{{h}o)p${e]nob(ody[finds>-_$#thisone}}\';',  # Single-quotes
-            'fooprivate_keyfoo\'m{{h}o)p${e]nob(ody[finds>-_$#thisone}}\';',  # Single-quotes
-            'fooprivate_key\'m{{h}o)p${e]nob(ody[finds>-_$#thisone}}\';',  # Single-quotes
-        ],
-    },
-}
+COMMON_SECRET = 'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'
+WHITES_SECRET = 'value with quotes and spaces'
+LETTER_SECRET = 'A,.:-¨@*¿?!'
+SYMBOL_SECRET = ',.:-¨@*¿?!'
 
-QUOTES_REQUIRED_FILE_EXTENSIONS = (
-    '.cls',
-    '.java',
-    '.js',
-    '.py',
-    '.swift',
+LONG_LINE = '<img src="data:image/png;base64,{}\n"\n>'.format(base64.b64encode((str(randint(0, 9)) * 30500).encode()))  # noqa: E501
+
+GENERIC_TEST_CASES = [
+    ('password = "{}"'.format(WHITES_SECRET), WHITES_SECRET),
+    ('password_super_secure = "{}"'.format(WHITES_SECRET), WHITES_SECRET),  # Suffix
+    ('my_password_super_secure = "{}"'.format(WHITES_SECRET), WHITES_SECRET),  # Prefix/suffix
+    ('apikey = {}'.format(COMMON_SECRET), COMMON_SECRET),
+    ("api_key: '{}'".format(WHITES_SECRET), WHITES_SECRET),
+    ('aws_secret_access_key: {}'.format(WHITES_SECRET), WHITES_SECRET),
+    ('db_pass: {},'.format(COMMON_SECRET), COMMON_SECRET),      # Last character is ignored
+    ('passwd: {}`'.format(COMMON_SECRET), COMMON_SECRET),       # Last character is ignored
+    ('private_key: {}"'.format(COMMON_SECRET), COMMON_SECRET),  # Last character is ignored
+    ("secret: {}'".format(COMMON_SECRET), COMMON_SECRET),       # Last character is ignored
+    ('secrete "{}";'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if (apikey == "{}") {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if (api_key != "{}") {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if (aws_secret_access_key === "{}") {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if (db_pass !== "{}") {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if ("{}" == password) {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if ("{}" == my_super_password) {{'.format(COMMON_SECRET), COMMON_SECRET),     # Prefix
+    ('if ("{}" != passwd) {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if ("{}" === private_key) {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if ("{}" !== secret) {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('secrete = {}'.format(LETTER_SECRET), LETTER_SECRET),   # All symbols are allowed
+    ('password = {}'.format(SYMBOL_SECRET), None),  # At least 1 alphanumeric character is required
+    ('api_key = ""', None),  # Nothing in the quotes
+    ("secret: ''", None),   # Nothing in the quotes
+    ('secret = "abcdefghi"', None),     # Alphabet sequential string
+    ('password: ${link}', None),        # Has a ${ followed by a }
+    ('some_key = "real_secret"', None),  # We cannot make 'key' a Keyword, too noisy)
+    ('private_key "hopenobodyfindsthisone\';', None),   # Double-quote does not match single-quote)
+    (LONG_LINE, None),  # Long line test
+]
+
+GOLANG_TEST_CASES = [
+    ('apikey := "{}"'.format(COMMON_SECRET), COMMON_SECRET),
+    ("api_key := '{}'".format(COMMON_SECRET), COMMON_SECRET),
+    ('aws_secret_access_key := `{}`'.format(COMMON_SECRET), COMMON_SECRET),
+    ('db_pass := {}'.format(COMMON_SECRET), COMMON_SECRET),
+    ('db_pass_secure := {}'.format(COMMON_SECRET), COMMON_SECRET),  # Suffix
+    ('passwd := {},'.format(COMMON_SECRET), COMMON_SECRET),         # Last character is ignored
+    ("private_key := {}'".format(COMMON_SECRET), COMMON_SECRET),    # Last character is ignored
+    ('secret := {}"'.format(COMMON_SECRET), COMMON_SECRET),         # Last character is ignored
+    ('password := {}`'.format(COMMON_SECRET), COMMON_SECRET),       # Last character is ignored
+    ('if ("{}" == passwd) {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if ("{}" === private_key) {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if ("{}" != secret) {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if ("{}" !== password) {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if ("{}" !== my_password_sec) {{'.format(COMMON_SECRET), COMMON_SECRET),    # Prefix/suffix
+    ('apikey = "{}"'.format(COMMON_SECRET), COMMON_SECRET),
+    ("api_key = '{}'".format(COMMON_SECRET), COMMON_SECRET),
+    ('aws_secret_access_key = `{}`'.format(COMMON_SECRET), COMMON_SECRET),
+    ('db_pass = {}'.format(COMMON_SECRET), COMMON_SECRET),
+    ('password = {},'.format(COMMON_SECRET), COMMON_SECRET),        # Last character is ignored
+    ("passwd = {}'".format(COMMON_SECRET), COMMON_SECRET),          # Last character is ignored
+    ('private_key = {}"'.format(COMMON_SECRET), COMMON_SECRET),     # Last character is ignored
+    ('secret = {}`'.format(COMMON_SECRET), COMMON_SECRET),          # Last character is ignored
+    ('secrete = "{}"'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if (apikey == "{}") {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if (api_key === "{}") {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if (aws_secret_access_key != "{}") {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if (db_pass !== "{}") {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('password "{}";'.format(COMMON_SECRET), COMMON_SECRET),
+    ('secrete := {}'.format(LETTER_SECRET), LETTER_SECRET),   # All symbols are allowed
+    ('password :={}'.format(SYMBOL_SECRET), None),  # At least 1 alphanumeric character is required
+    ('api_key = ""', None),    # Nothing in the quotes
+    ("secret := ''", None),    # Nothing in the quotes
+    ('password := "somefakekey"', None),    # 'fake' in the secret
+    ('some_key = "real_secret"', None),     # We cannot make 'key' a Keyword, too noisy)
+    ('private_key "hopenobodyfindsthisone\';', None),  # Double-quote does not match single-quote)
+    (LONG_LINE, None),  # Long line test
+]
+
+COMMON_C_TEST_CASES = [
+    ('apikey = "{}";'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if (secret == "{}")'.format(COMMON_SECRET), COMMON_SECRET),   # Comparison
+    ('if (db_pass != "{}")'.format(COMMON_SECRET), COMMON_SECRET),  # Comparison
+    ('password = @"{}";'.format(COMMON_SECRET), COMMON_SECRET),
+    ('my_password_secure = @"{}";'.format(COMMON_SECRET), COMMON_SECRET),   # Prefix/suffix
+    ('secrete[] = "{}";'.format(COMMON_SECRET), COMMON_SECRET),
+    ('char secrete[25] = "{}";'.format(COMMON_SECRET), COMMON_SECRET),
+    ('secrete = "{}"'.format(LETTER_SECRET), LETTER_SECRET),    # All symbols are allowed
+    ('password = "{}"'.format(SYMBOL_SECRET), None),  # At least 1 alphanumeric char is required
+    ("api_key = '{}';".format(COMMON_SECRET), None),                 # Double quotes required
+    ("aws_secret_access_key = @'{}';".format(COMMON_SECRET), None),  # Double quotes required
+    ("db_pass[] = '{}';".format(COMMON_SECRET), None),  # Double quotes required
+    ('passwd = {};'.format(COMMON_SECRET), None),       # Double quotes required
+    ('private_key = {};'.format(COMMON_SECRET), None),  # Double quotes required
+    ('secret[] = {};'.format(COMMON_SECRET), None),     # Double quotes required
+    ('api_key = ""', None),                 # Nothing in the quotes
+    ('password = "somefakekey"', None),     # 'fake' in the secret
+    ('password[] = ${link}', None),         # Has a ${ followed by a }
+    ('some_key = "real_secret"', None),     # We cannot make 'key' a Keyword, too noisy)
+    (LONG_LINE, None),  # Long line test
+]
+
+C_PLUS_PLUS_TEST_CASES = [
+    ('apikey = "{}";'.format(COMMON_SECRET), COMMON_SECRET),
+    ('my_password_secure = "{}";'.format(COMMON_SECRET), COMMON_SECRET),  # Prefix and suffix
+    ('password = {}'.format(COMMON_SECRET), None),  # Secret without quotes
+    ('if (secret == "{}")'.format(COMMON_SECRET), COMMON_SECRET),   # Comparison
+    ('if (db_pass != "{}")'.format(COMMON_SECRET), COMMON_SECRET),  # Comparison
+    ('std::string secret("{}");'.format(COMMON_SECRET), COMMON_SECRET),
+    ('secrete.assign("{}",17);'.format(COMMON_SECRET), COMMON_SECRET),
+    ('api_key = ""', None),                 # Nothing in the quotes
+    ('password = "somefakekey"', None),     # 'fake' in the secret
+    ('password = ${link}', None),           # Has a ${ followed by a }
+    ('some_key = "real_secret"', None),     # We cannot make 'key' a Keyword, too noisy)
+]
+
+QUOTES_REQUIRED_TEST_CASES = [
+    ('apikey: "{}"'.format(COMMON_SECRET), COMMON_SECRET),
+    ('apikey_myservice: "{}"'.format(COMMON_SECRET), COMMON_SECRET),    # Suffix
+    ('api_key: `{}`'.format(COMMON_SECRET), COMMON_SECRET),
+    ("aws_secret_access_key: '{}'".format(COMMON_SECRET), COMMON_SECRET),
+    ("db_pass: '{}'".format(LETTER_SECRET), LETTER_SECRET),  # All symbols are allowed
+    ("password: '{}'".format(SYMBOL_SECRET), None),  # At least 1 alphanumeric character is required
+    ('if ("{}" == passwd) {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if ("{}" === private_key) {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if ("{}" === my_private_key) {{'.format(COMMON_SECRET), COMMON_SECRET),   # Prefix
+    ('if ("{}" != secret) {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if ("{}" !== password) {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('secrete = "{}"'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if (apikey == "{}") {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if (api_key === "{}") {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if (aws_secret_access_key != "{}") {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if (db_pass !== "{}") {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('password "{}";'.format(COMMON_SECRET), COMMON_SECRET),
+    ('password = {}'.format(COMMON_SECRET), None),  # Secret without quotes
+    ('api_key = ""', None),              # Nothing in the quotes
+    ("secret: ''", None),                # Nothing in the quotes
+    ('password = "somefakekey"', None),  # 'fake' in the secret
+    ('password: ${link}', None),         # Has a ${ followed by a }
+    ('some_key = "real_secret"', None),  # We cannot make 'key' a Keyword, too noisy)
+    ('private_key "hopenobodyfindsthisone\';', None),  # Double-quote does not match single-quote)
+    (LONG_LINE, None),  # Long line test
+]
+
+
+def parse_test_cases(test_cases):
+    for file_extension, test_case in test_cases:
+        for item in test_case:
+            line, expected_secret = item
+            yield file_extension, line, expected_secret
+
+
+@pytest.mark.parametrize(
+    'file_extension, line, expected_secret',
+    (
+        parse_test_cases([
+            (None, GENERIC_TEST_CASES),
+            ('go', GOLANG_TEST_CASES),
+            ('m', COMMON_C_TEST_CASES),
+            ('c', COMMON_C_TEST_CASES),
+            ('cs', COMMON_C_TEST_CASES),
+            ('cls', QUOTES_REQUIRED_TEST_CASES),
+            ('java', QUOTES_REQUIRED_TEST_CASES),
+            ('py', QUOTES_REQUIRED_TEST_CASES),
+            ('pyi', QUOTES_REQUIRED_TEST_CASES),
+            ('js', QUOTES_REQUIRED_TEST_CASES),
+            ('swift', QUOTES_REQUIRED_TEST_CASES),
+            ('tf', QUOTES_REQUIRED_TEST_CASES),
+        ])
+    ),
 )
-
-STANDARD_NEGATIVES = []
-STANDARD_POSITIVES = []
-
-STANDARD_NEGATIVES.extend(
-    FOLLOWED_BY_COLON_EQUAL_SIGNS_RE.get('negatives').get('quotes_required')
-    + FOLLOWED_BY_COLON_EQUAL_SIGNS_RE.get('negatives').get('quotes_not_required')
-    + FOLLOWED_BY_COLON_RE.get('negatives').get('quotes_required')
-    + FOLLOWED_BY_COLON_RE.get('negatives').get('quotes_not_required')
-    + FOLLOWED_BY_EQUAL_SIGNS_RE.get('negatives').get('quotes_required')
-    + FOLLOWED_BY_EQUAL_SIGNS_RE.get('negatives').get('quotes_not_required')
-    + FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE.get('negatives').get('quotes_required')
-    + FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX.get(
-        'negatives',
-    ).get('quotes_required'),
-)
-STANDARD_POSITIVES.extend(
-    FOLLOWED_BY_COLON_RE.get('positives').get('quotes_required')
-    + FOLLOWED_BY_COLON_RE.get('positives').get('quotes_not_required')
-    + FOLLOWED_BY_EQUAL_SIGNS_RE.get('positives').get('quotes_required')
-    + FOLLOWED_BY_EQUAL_SIGNS_RE.get('positives').get('quotes_not_required')
-    + FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE.get('positives').get('quotes_required'),
-)
-
-
-class TestKeywordDetector:
-
-    @pytest.mark.parametrize(
-        'file_content',
-        STANDARD_POSITIVES,
-    )
-    def test_analyze_standard_positives(self, file_content):
-        secrets = list(KeywordDetector().analyze_string(file_content))
-
-        assert len(secrets) == 1
-        assert secrets[0] == 'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'
-
-    @pytest.mark.parametrize(
-        'file_content, file_extension',
-        (
-            (positive, file_extension)
-            for positive in (
-                FOLLOWED_BY_COLON_RE.get('positives').get('quotes_required')
-                + FOLLOWED_BY_EQUAL_SIGNS_RE.get('positives').get('quotes_required')
-                + FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE.get('positives').get('quotes_required')
-            ) for file_extension in QUOTES_REQUIRED_FILE_EXTENSIONS
-        ),
-    )
-    def test_analyze_quotes_required_positives(self, file_content, file_extension):
-        secrets = KeywordDetector().analyze_line(
-            filename='mock_filename{}'.format(file_extension),
-            line=file_content,
+def test_keyword(file_extension, line, expected_secret):
+    if not file_extension:
+        secrets = list(scan_line(line))
+    else:
+        secrets = list(
+            KeywordDetector(keyword_exclude='.*fake.*').analyze_line(
+                filename='mock_filename.{}'.format(file_extension),
+                line=line,
+            ),
         )
+    if expected_secret:
+        assert secrets[0].secret_value == expected_secret
+    else:
+        assert not secrets
 
-        assert len(secrets) == 1
-        assert list(secrets)[0].secret_value == 'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'
 
-    @pytest.mark.parametrize(
-        'file_content',
-        FOLLOWED_BY_EQUAL_SIGNS_RE.get('positives').get('quotes_required')
-        + FOLLOWED_BY_EQUAL_SIGNS_RE.get('positives').get('quotes_not_required')
-        + FOLLOWED_BY_QUOTES_AND_SEMICOLON_RE.get('positives').get('quotes_required')
-        + FOLLOWED_BY_COLON_EQUAL_SIGNS_RE.get('positives').get('quotes_required')
-        + FOLLOWED_BY_COLON_EQUAL_SIGNS_RE.get('positives').get('quotes_not_required'),
-    )
-    def test_analyze_go_positives(self, file_content):
-        secrets = KeywordDetector().analyze_line(filename='mock_filename.go', line=file_content)
-
-        assert len(secrets) == 1
-        assert list(secrets)[0].secret_value == 'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'
-
-    @pytest.mark.parametrize(
-        'file_content',
-        FOLLOWED_BY_EQUAL_SIGNS_OPTIONAL_BRACKETS_OPTIONAL_AT_SIGN_QUOTES_REQUIRED_REGEX.get(
-            'positives',
-        ).get('quotes_required'),
-    )
-    def test_analyze_objective_c_positives(self, file_content):
-        secrets = KeywordDetector().analyze_line(filename='mock_filename.m', line=file_content)
-
-        assert len(secrets) == 1
-        assert list(secrets)[0].secret_value == 'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'
-
-    @pytest.mark.skip(
-        reason='TODO: false positive heuristics need to be migrated over to filters/*',
-    )
-    @pytest.mark.parametrize(
-        'file_content',
-        STANDARD_NEGATIVES,
-    )
-    def test_analyze_standard_negatives(self, file_content):
-        assert not KeywordDetector().analyze_line(filename='mock_filename.foo', line=file_content)
-
-    @pytest.mark.skip(
-        reason='TODO: false positive heuristics need to be migrated over to filters/*',
-    )
-    @pytest.mark.parametrize(
-        'file_content',
-        STANDARD_NEGATIVES + [
-            # FOLLOWED_BY_COLON_RE
-            'apiKey: this.apiKey,',
-            "apiKey: fs.readFileSync('foo',",
-        ],
-    )
-    def test_analyze_javascript_negatives(self, file_content):
-        assert not KeywordDetector().analyze_line(filename='mock_filename.js', line=file_content)
-
-    @pytest.mark.skip(
-        reason='TODO: false positive heuristics need to be migrated over to filters/*',
-    )
-    @pytest.mark.parametrize(
-        'file_content',
-        STANDARD_NEGATIVES + [
-            # FOLLOWED_BY_EQUAL_SIGNS_RE
-            '$password = $input;',
-        ],
-    )
-    def test_analyze_php_negatives(self, file_content):
-        assert not KeywordDetector().analyze_line(filename='mock_filename.php', line=file_content)
-
-    @pytest.mark.skip(
-        reason='TODO: false positive heuristics need to be migrated over to filters/*',
-    )
-    @pytest.mark.parametrize(
-        'file_content, file_extension',
-        (
-            (negative, file_extension)
-            for negative in (
-                STANDARD_NEGATIVES + [
-                    # FOLLOWED_BY_COLON_QUOTES_REQUIRED_RE
-                    'apikey: hope]nobody[finds>-_$#thisone',
-                    'apikey:hope]nobody[finds>-_$#thisone',
-                    'theapikey:hope]nobody[finds>-_$#thisone',
-                    # FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_RE
-                    "some_dict['secret'] = hope]nobody[finds>-_$#thisone",
-                    'my_password=hope]nobody[finds>-_$#thisone',
-                    'my_password= hope]nobody[finds>-_$#thisone',
-                    'my_password =hope]nobody[finds>-_$#thisone',
-                    'my_password = hope]nobody[finds>-_$#thisone',
-                    'my_password =hope]nobody[finds>-_$#thisone',
-                    'the_password=hope]nobody[finds>-_$#thisone\n',
-                ]
-            ) for file_extension in QUOTES_REQUIRED_FILE_EXTENSIONS
-        ),
-    )
-    def test_analyze_quotes_required_negatives(self, file_content, file_extension):
-        assert not KeywordDetector().analyze_line(
-            filename=f'mock_filename{file_extension}',
-            line=file_content,
-        )
-
-    @pytest.mark.skip(
-        reason='TODO: false positive heuristics need to be migrated over to filters/*',
-    )
-    @pytest.mark.parametrize(
-        'file_content, file_extension',
-        (
-            (standard_positive, file_extension)
-            for standard_positive in STANDARD_POSITIVES
-            for file_extension in (
-                '.yaml',
-                '.yml',
-            )
-        ),
-    )
-    def test_analyze_yaml_negatives(self, file_content, file_extension):
-        assert not KeywordDetector().analyze_line(
-            filename=f'mock_filename{file_extension}',
-            line=file_content,
-        )
-
-    @pytest.mark.skip(
-        reason='TODO: false positive heuristics need to be migrated over to filters/*',
-    )
-    @pytest.mark.parametrize(
-        'file_content',
-        STANDARD_POSITIVES,
-    )
-    def test_analyze_example_negatives(self, file_content):
-        assert not KeywordDetector().analyze_line(
-            filename='mock_filename.example',
-
-            # Make it start with `<`, (and end with `>`) so it hits our false-positive check
-            line=file_content.replace('m{', '<').replace('}', '>'),
-        )
+@pytest.fixture(autouse=True)
+def use_keyword_detector():
+    with transient_settings({
+        'plugins_used': [{
+            'name': 'KeywordDetector',
+        }],
+    }):
+        yield
