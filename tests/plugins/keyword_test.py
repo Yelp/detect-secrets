@@ -9,6 +9,7 @@ from detect_secrets.settings import transient_settings
 
 
 COMMON_SECRET = 'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'
+COMMON_TAG_SECRET = 'm{{h}o)p${e]nob(ody[finds-_$#thisone}}'
 WHITES_SECRET = 'value with quotes and spaces'
 LETTER_SECRET = 'A,.:-¨@*¿?!'
 SYMBOL_SECRET = ',.:-¨@*¿?!'
@@ -151,6 +152,26 @@ QUOTES_REQUIRED_TEST_CASES = [
     (LONG_LINE, None),  # Long line test
 ]
 
+XML_TEST_CASES = [
+    ('apikey = "{}"'.format(WHITES_SECRET), WHITES_SECRET),
+    ('password_super_secure = "{}"'.format(WHITES_SECRET), WHITES_SECRET),  # Suffix
+    ('my_password_super_secure = "{}"'.format(WHITES_SECRET), WHITES_SECRET),  # Prefix/suffix
+    ('<password>{}</password>'.format(COMMON_TAG_SECRET), COMMON_TAG_SECRET),
+    ('<api_key expires="15">{}</api_key>'.format(COMMON_TAG_SECRET), COMMON_TAG_SECRET),
+    ('<db_pass>{}</db_pass>'.format(WHITES_SECRET), WHITES_SECRET),
+    ('<password value="{}"/>'.format(COMMON_TAG_SECRET), COMMON_TAG_SECRET),
+    ('<passwd value="{}"></passwd>'.format(COMMON_TAG_SECRET), COMMON_TAG_SECRET),
+    ('<sometag name="private_key">{}</sometag>'.format(COMMON_TAG_SECRET), COMMON_TAG_SECRET),
+    ('<sometag name="secret" value="{}" />'.format(COMMON_TAG_SECRET), COMMON_TAG_SECRET),
+    ('<sometag value="{}" name="secrete" />'.format(COMMON_TAG_SECRET), COMMON_TAG_SECRET),
+    ('<apikey>{}</apikey>'.format(SYMBOL_SECRET), None),  # At least 1 alphanumeric char is required
+    ('<password>{}</password>'.format(LETTER_SECRET), LETTER_SECRET),  # All symbols are allowed
+    ('<db_pass value=""/>', None),    # Nothing in the quotes
+    ('<secret value="somefakekey"/>', None),    # 'fake' in the secret
+    ('<some_key>real_secret</some_key>', None),     # We cannot make 'key' a Keyword, too noisy)
+    (LONG_LINE, None),  # Long line test
+]
+
 
 def parse_test_cases(test_cases):
     for file_extension, test_case in test_cases:
@@ -175,6 +196,7 @@ def parse_test_cases(test_cases):
             ('js', QUOTES_REQUIRED_TEST_CASES),
             ('swift', QUOTES_REQUIRED_TEST_CASES),
             ('tf', QUOTES_REQUIRED_TEST_CASES),
+            ('xml', XML_TEST_CASES),
         ])
     ),
 )

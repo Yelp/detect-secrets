@@ -17,7 +17,8 @@ class FileType(Enum):
     C_SHARP = 11
     C = 12
     C_PLUS_PLUS = 13
-    OTHER = 14
+    XML = 14
+    OTHER = 15
 
 
 def determine_file_type(filename: str) -> FileType:
@@ -39,5 +40,6 @@ def determine_file_type(filename: str) -> FileType:
         '.yml': FileType.YAML,
         '.cs': FileType.C_SHARP,
         '.c': FileType.C,
-        '.cpp': FileType.C_PLUS_PLUS
+        '.cpp': FileType.C_PLUS_PLUS,
+        '.xml': FileType.XML
     }.get(file_extension, FileType.OTHER)
