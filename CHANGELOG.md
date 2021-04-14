@@ -76,7 +76,10 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#441]: https://github.com/Yelp/detect-secrets/pull/441
 [#444]: https://github.com/Yelp/detect-secrets/pull/444
 [#446]: https://github.com/Yelp/detect-secrets/pull/446
+<<<<<<< HEAD
 [#448]: https://github.com/Yelp/detect-secrets/pull/448
+=======
+>>>>>>> c5b56f47b109c6b5172b4d14d6710d15f06ca6a7
 [@syn-4ck]: https://github.com/syn-4ck
 
 ### v1.0.3
