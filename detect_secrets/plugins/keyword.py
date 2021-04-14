@@ -40,15 +40,24 @@ from .base import BasePlugin
 
 # Note: All values here should be lowercase
 DENYLIST = (
-    'apikey',
-    'api_key',
-    'aws_secret_access_key',
-    'db_pass',
+    'api_?key',
+    'auth_?key',
+    'service_?key',
+    'account_?key',
+    'db_?key',
+    'database_?key',
+    'priv_?key',
+    'private_?key',
+    'client_?key',
+    'db_?pass',
+    'database_?pass',
+    'key_?pass',
     'password',
     'passwd',
-    'private_key',
+    'pwd',
     'secret',
-    'secrete',
+    'contraseña',
+    'contrasena',
 )
 # Includes ], ', " as closing
 CLOSING = r'[]\'"]{0,2}'
