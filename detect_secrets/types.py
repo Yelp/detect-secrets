@@ -11,7 +11,7 @@ from .util.code_snippet import CodeSnippet
 
 try:
     from typing import NoReturn     # noqa: F811
-except ImportError:
+except ImportError:     # pragma: no cover
     # NOTE: NoReturn was introduced in Python3.6.2. However, we need to support Python3.6.0.
     # This section of code is inline imported from `typing-extensions`, so that we don't need
     # to introduce an additional package for such an edge case.
