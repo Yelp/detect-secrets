@@ -144,7 +144,6 @@ QUOTES_REQUIRED_TEST_CASES = [
     ('password = {}'.format(COMMON_SECRET), None),  # Secret without quotes
     ('api_key = ""', None),              # Nothing in the quotes
     ("secret: ''", None),                # Nothing in the quotes
-    ('secret = "abcdefghi"', None),     # Alphabet sequential string
     ('password: ${link}', None),         # Has a ${ followed by a }
     ('some_key = "real_secret"', None),  # We cannot make 'key' a Keyword, too noisy)
     ('private_key "hopenobodyfindsthisone\';', None),  # Double-quote does not match single-quote)
