@@ -21,6 +21,7 @@ def add_audit_action(parent: argparse._SubParsersAction) -> argparse.ArgumentPar
     )
 
     _add_mode_parser(parser)
+    _add_report_module(parser)
     _add_statistics_module(parser)
     return parser
 
@@ -42,6 +43,41 @@ def _add_mode_parser(parser: argparse.ArgumentParser) -> None:
         help=(
             'Displays the results of an interactive auditing session '
             'which have been saved to a baseline file.'
+        ),
+    )
+
+    parser.add_argument(
+        '--report',
+        action='store_true',
+        help=(
+            'Displays a report with the secrets detected'
+        ),
+    )
+
+
+def _add_report_module(parent: argparse.ArgumentParser) -> None:
+    parser = parent.add_argument_group(
+        title='reporting',
+        description=(
+            'Display a report with all the findings and the made decisions. '
+            'To be used with the report mode (--report).'
+        ),
+    )
+
+    report_parser = parser.add_mutually_exclusive_group()
+    report_parser.add_argument(
+        '--only-real',
+        action='store_true',
+        help=(
+            'Only includes real secrets in the report'
+        ),
+    )
+
+    report_parser.add_argument(
+        '--only-false',
+        action='store_true',
+        help=(
+            'Only includes false positives in the report'
         ),
     )
 

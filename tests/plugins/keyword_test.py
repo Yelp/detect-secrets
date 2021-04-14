@@ -15,7 +15,7 @@ SYMBOL_SECRET = ',.:-¨@*¿?!'
 
 LONG_LINE = '<img src="data:image/png;base64,{}\n"\n>'.format(base64.b64encode((str(randint(0, 9)) * 30500).encode()))  # noqa: E501
 
-GENERIC_TEST_CASES = [
+CONFIG_TEST_CASES = [
     ('password = "{}"'.format(WHITES_SECRET), WHITES_SECRET),
     ('password_super_secure = "{}"'.format(WHITES_SECRET), WHITES_SECRET),  # Suffix
     ('my_password_super_secure = "{}"'.format(WHITES_SECRET), WHITES_SECRET),  # Prefix/suffix
@@ -40,7 +40,7 @@ GENERIC_TEST_CASES = [
     ('password = {}'.format(SYMBOL_SECRET), None),  # At least 1 alphanumeric character is required
     ('api_key = ""', None),  # Nothing in the quotes
     ("secret: ''", None),   # Nothing in the quotes
-    ('secret = "abcdefghi"', None),     # Alphabet sequential string
+    ('password = "somefakekey"', None),  # 'fake' in the secret
     ('password: ${link}', None),        # Has a ${ followed by a }
     ('some_key = "real_secret"', None),  # We cannot make 'key' a Keyword, too noisy)
     ('private_key "hopenobodyfindsthisone\';', None),   # Double-quote does not match single-quote)
@@ -144,7 +144,6 @@ QUOTES_REQUIRED_TEST_CASES = [
     ('password = {}'.format(COMMON_SECRET), None),  # Secret without quotes
     ('api_key = ""', None),              # Nothing in the quotes
     ("secret: ''", None),                # Nothing in the quotes
-    ('password = "somefakekey"', None),  # 'fake' in the secret
     ('password: ${link}', None),         # Has a ${ followed by a }
     ('some_key = "real_secret"', None),  # We cannot make 'key' a Keyword, too noisy)
     ('private_key "hopenobodyfindsthisone\';', None),  # Double-quote does not match single-quote)
@@ -163,7 +162,7 @@ def parse_test_cases(test_cases):
     'file_extension, line, expected_secret',
     (
         parse_test_cases([
-            (None, GENERIC_TEST_CASES),
+            ('conf', CONFIG_TEST_CASES),
             ('go', GOLANG_TEST_CASES),
             ('m', COMMON_C_TEST_CASES),
             ('c', COMMON_C_TEST_CASES),
@@ -175,6 +174,7 @@ def parse_test_cases(test_cases):
             ('js', QUOTES_REQUIRED_TEST_CASES),
             ('swift', QUOTES_REQUIRED_TEST_CASES),
             ('tf', QUOTES_REQUIRED_TEST_CASES),
+            (None, QUOTES_REQUIRED_TEST_CASES),
         ])
     ),
 )
