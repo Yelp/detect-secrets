@@ -129,6 +129,19 @@ def handle_audit_action(args: argparse.Namespace) -> None:
                 print(json.dumps(stats.json(), indent=2))
             else:
                 print(str(stats))
+        elif args.report:
+            class_to_print = None
+            if args.only_real:
+                class_to_print = audit.report.SecretClassToPrint.REAL_SECRET
+            elif args.only_false:
+                class_to_print = audit.report.SecretClassToPrint.FALSE_POSITIVE
+            print(
+                json.dumps(
+                    audit.report.generate_report(args.filename[0], class_to_print),
+                    indent=4,
+                    sort_keys=True,
+                ),
+            )
         else:
             # Starts interactive session.
             if args.diff:

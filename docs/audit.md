@@ -140,3 +140,126 @@ There are times you want to extract the raw secret values to run further analysi
 so with the `--raw` flag.
 
 TODO: Example when this feature is written up.
+
+## Report generation
+
+Maybe, you need to generate a full report with all the detect-secrets findings. You can generate
+one with the `--report` flag:
+
+'''bash
+$ detect-secrets audit --report .secret.baseline
+[
+    {
+        "category": "VERIFIED_TRUE",
+        "filename": "test.properties",
+        "lines": {
+            "1": "secret=value",
+            "6": "password=value"
+        },
+        "secrets": "value",
+        "types": [
+            "Secret Keyword"
+        ]
+    },
+    {
+        "category": "UNVERIFIED",
+        "filename": "test.properties",
+        "lines": {
+            "2": "password=changeit",
+            "5": "password=changeit"
+        },
+        "secrets": "changeit",
+        "types": [
+            "Secret Keyword"
+        ]
+    },
+    {
+        "category": "VERIFIED_TRUE",
+        "filename": "test.properties",
+        "lines": {
+            "3": "password=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.",
+            "4": "test=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ."
+        },
+        "secrets": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.",
+        "types": [
+            "Secret Keyword",
+            "JSON Web Token"
+        ]
+    },
+    {
+        "category": "VERIFIED_FALSE",
+        "filename": "test.properties",
+        "lines": {
+            "7": "password=faketest"
+        },
+        "secrets": "faketest",
+        "types": [
+            "Secret Keyword"
+        ]
+    }
+]
+'''
+
+You can also select only the real secrets with the option `--only-real`:
+
+'''bash
+$ detect-secrets audit --report --only-real .secret.baseline
+[
+    {
+        "category": "VERIFIED_TRUE",
+        "filename": "test.properties",
+        "lines": {
+            "1": "secret=value",
+            "6": "password=value"
+        },
+        "secrets": "value",
+        "types": [
+            "Secret Keyword"
+        ]
+    },
+    {
+        "category": "UNVERIFIED",
+        "filename": "test.properties",
+        "lines": {
+            "2": "password=changeit",
+            "5": "password=changeit"
+        },
+        "secrets": "changeit",
+        "types": [
+            "Secret Keyword"
+        ]
+    },
+    {
+        "category": "VERIFIED_TRUE",
+        "filename": "test.properties",
+        "lines": {
+            "3": "password=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.",
+            "4": "test=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ."
+        },
+        "secrets": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.",
+        "types": [
+            "JSON Web Token",
+            "Secret Keyword"
+        ]
+    }
+]
+'''
+
+Or include only the false positives with `--only-false`:
+
+'''bash
+$ detect-secrets audit --report --only-false .secret.baseline
+[
+    {
+        "category": "VERIFIED_FALSE",
+        "filename": "test.properties",
+        "lines": {
+            "7": "password=faketest"
+        },
+        "secrets": "faketest",
+        "types": [
+            "Secret Keyword"
+        ]
+    }
+]
+'''
