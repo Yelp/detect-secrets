@@ -193,7 +193,7 @@ FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX = re.compile(
     ),
     flags=re.IGNORECASE,
 )
-DENYLIST_REGEX_TO_GROUP = {
+CONFIG_DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_COLON_REGEX: 4,
     PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX: 2,
     FOLLOWED_BY_EQUAL_SIGNS_REGEX: 5,
@@ -230,6 +230,11 @@ REGEX_BY_FILETYPE = {
     FileType.PYTHON: QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP,
     FileType.SWIFT: QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP,
     FileType.TERRAFORM: QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP,
+    FileType.YAML: CONFIG_DENYLIST_REGEX_TO_GROUP,
+    FileType.CONFIG: CONFIG_DENYLIST_REGEX_TO_GROUP,
+    FileType.INI: CONFIG_DENYLIST_REGEX_TO_GROUP,
+    FileType.PROPERTIES: CONFIG_DENYLIST_REGEX_TO_GROUP,
+    FileType.TOML: CONFIG_DENYLIST_REGEX_TO_GROUP,
 }
 
 
@@ -260,7 +265,6 @@ class KeywordDetector(BasePlugin):
         if denylist_regex_to_group is None:
             attempts = [
                 QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP,
-                DENYLIST_REGEX_TO_GROUP,
             ]
         else:
             attempts = [denylist_regex_to_group]
@@ -284,7 +288,7 @@ class KeywordDetector(BasePlugin):
         **kwargs: Any,
     ) -> Set[PotentialSecret]:
         filetype = determine_file_type(filename)
-        denylist_regex_to_group = REGEX_BY_FILETYPE.get(filetype, DENYLIST_REGEX_TO_GROUP)
+        denylist_regex_to_group = REGEX_BY_FILETYPE.get(filetype, QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP)
         return super().analyze_line(
             filename=filename,
             line=line,

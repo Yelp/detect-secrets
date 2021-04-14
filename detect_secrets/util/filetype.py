@@ -17,7 +17,11 @@ class FileType(Enum):
     C_SHARP = 11
     C = 12
     C_PLUS_PLUS = 13
-    OTHER = 14
+    CONFIG = 14
+    INI = 15
+    PROPERTIES = 16
+    TOML = 17
+    OTHER = 18
 
 
 def determine_file_type(filename: str) -> FileType:
@@ -39,5 +43,12 @@ def determine_file_type(filename: str) -> FileType:
         '.yml': FileType.YAML,
         '.cs': FileType.C_SHARP,
         '.c': FileType.C,
-        '.cpp': FileType.C_PLUS_PLUS
+        '.cpp': FileType.C_PLUS_PLUS,
+        '.cnf': FileType.CONFIG,
+        '.conf': FileType.CONFIG,
+        '.cfg': FileType.CONFIG,
+        '.cf': FileType.CONFIG,
+        '.ini': FileType.INI,
+        '.properties': FileType.PROPERTIES,
+        '.toml': FileType.TOML
     }.get(file_extension, FileType.OTHER)
