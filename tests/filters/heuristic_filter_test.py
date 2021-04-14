@@ -90,7 +90,7 @@ class TestIsLikelyIdString:
     (
         ('secret = {hunter2}', False),
         ('secret = <hunter2>', False),
-        ('secret = hunter2', True),
+        ('secret = "hunter2"', True),
         ('secret= ${hunter2}', False),
     ),
 )
