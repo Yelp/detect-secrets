@@ -80,6 +80,63 @@ class TestYAMLTransformer:
 
         assert YAMLTransformer().parse_file(file) == ['']
 
+    @staticmethod
+    @pytest.mark.parametrize(
+        'content, expected',
+        (
+            # NOTE: The trailing new lines are important here!
+            # It needs to be a string value, since we ignore non-string values (because we assume
+            # secrets will be strings). However, the combination of the dictionary start character
+            # `{` and the keys being on the same line causes unexpected results (see #374).
+            (
+                textwrap.dedent("""
+                    { a: "1" }
+                """)[1:],
+                ['a: "1"'],
+            ),
+            (
+                textwrap.dedent("""
+                    a:
+                        {b: "2"}
+                """)[1:],
+                ['', 'b: "2"'],
+            ),
+            (
+                textwrap.dedent("""
+                    a:
+                    - {b: "2"}
+                """)[1:],
+                ['', 'b: "2"'],
+            ),
+
+            # New lines aren't important here, but since the first key is on the same line
+            # as the start of the block, it will be handled funkily.
+            (
+                textwrap.dedent("""
+                    {a: "1",
+
+
+                        b: "2",
+                    }
+                """)[1:-1],
+                ['a: "1"', '', '', 'b: "2"'],
+            ),
+
+            (
+                textwrap.dedent("""
+                    {
+                        a: "1",
+                        b: "2",
+                    }
+                """)[1:],
+                ['', 'a: "1"', 'b: "2"'],
+            ),
+        ),
+    )
+    def test_inline_dictionary(content, expected):
+        lines = YAMLTransformer().parse_file(mock_file_object(content))
+        assert lines == expected
+
 
 class TestYAMLFileParser:
     @staticmethod

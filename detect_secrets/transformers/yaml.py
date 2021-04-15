@@ -152,6 +152,9 @@ class YAMLFileParser:
         self.loader = yaml.SafeLoader(self.content)
         self.loader.compose_node = self._compose_node_shim  # type: ignore
 
+        self.is_flow_mapping_first_key = False
+        self.loader.parse_flow_mapping_key = self._parse_flow_mapping_key_shim  # type: ignore
+
     def json(self) -> Dict[str, Any]:
         return cast(Dict[str, Any], self.loader.get_single_data())
 
@@ -206,7 +209,11 @@ class YAMLFileParser:
         parent: Optional[yaml.nodes.Node],
         index: Optional[yaml.nodes.Node],
     ) -> yaml.nodes.Node:
-        line = self.loader.line
+        line = (
+            self.loader.marks[-1].line
+            if self.is_flow_mapping_first_key
+            else self.loader.line
+        )
 
         node = yaml.composer.Composer.compose_node(self.loader, parent, index)
         node.__line__ = line + 1
@@ -217,6 +224,28 @@ class YAMLFileParser:
         # TODO: Not sure if need to do :seq
 
         return cast(yaml.nodes.Node, node)
+
+    def _parse_flow_mapping_key_shim(
+        self,
+        first: bool = False,
+    ) -> yaml.nodes.Node:
+        if (
+            first
+
+            # NOTE(domanchi|2021-04-15): There exists an edge case when the first key of a flow
+            # style mapping is on the same line as the start of that mapping (e.g. `{a: "asdf"`).
+            # In these cases, the parser will produce an off-by-one error for the line number
+            # that it tracks internally.
+            #
+            # Thus, this logic checks for this case specifically. `marks` contains the start of
+            # the mapping, and `peek_token().start_mark` is the start of the key.
+            and self.loader.marks[-1].line == self.loader.peek_token().start_mark.line
+        ):
+            self.is_flow_mapping_first_key = True
+        else:
+            self.is_flow_mapping_first_key = False
+
+        return cast(yaml.nodes.Node, yaml.parser.Parser.parse_flow_mapping_key(self.loader, first))
 
 
 def _tag_dict_values(map_node: yaml.nodes.MappingNode) -> yaml.nodes.MappingNode:
