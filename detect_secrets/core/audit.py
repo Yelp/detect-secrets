@@ -287,13 +287,14 @@ def determine_audit_results(baseline, baseline_path):
         audit_results['stats'][audit_result]['count'] += 1
         audit_results['stats'][audit_result]['files'][filename] += 1
         total += 1
-    audit_results['stats']['signal'] = str(
-        (
-            float(audit_results['stats']['true-positives']['count'])
-            /
-            total
-        ) * 100,
-    )[:4] + '%'
+    if total > 0:
+        audit_results['stats']['signal'] = str(
+            (
+                float(audit_results['stats']['true-positives']['count'])
+                /
+                total
+            ) * 100,
+        )[:4] + '%'
 
     for plugin_config in baseline['plugins_used']:
         plugin_name = plugin_config['name']
