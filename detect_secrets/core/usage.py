@@ -2,6 +2,7 @@ import argparse
 from collections import namedtuple
 
 from detect_secrets import VERSION
+from detect_secrets.consts import DEFAULT_GHE_INSTANCE
 
 
 def add_exclude_lines_argument(parser):
@@ -458,6 +459,9 @@ class PluginOptions:
             flag_text='--no-ghe-scan',
             help_text='Disables scans for GitHub credentials',
             filename='gh',
+            related_args=[
+                ('--ghe-instance', DEFAULT_GHE_INSTANCE),
+            ],
         ),
         PluginDescriptor(
             classname='SoftlayerDetector',
@@ -509,6 +513,7 @@ class PluginOptions:
         self._add_opt_out_options()
         self._add_opt_in_options()
         self._add_keyword_exclude()
+        self._add_ghe_instance()
 
         return self
 
@@ -642,4 +647,11 @@ class PluginOptions:
             '--keyword-exclude',
             type=str,
             help='Pass in regex to exclude false positives found by keyword detector.',
+        )
+
+    def _add_ghe_instance(self):
+        self.parser.add_argument(
+            '--ghe-instance',
+            type=str,
+            help='Instance URL for GHE i.e. github.ibm.com',
         )

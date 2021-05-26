@@ -24,7 +24,7 @@ def get_list_of_plugins(include=None, exclude=None):
     :rtype: List[Dict[str, Any]]
     """
     included_plugins = []
-    if include:
+    if include:  # pragma: no cover
         included_plugins = [
             config['name']
             for config in include
@@ -45,7 +45,7 @@ def get_list_of_plugins(include=None, exclude=None):
 
         output.append(payload)
 
-    if include:
+    if include:  # pragma: no cover
         output.extend(include)
 
     return sorted(output, key=lambda x: x['name'])
@@ -360,6 +360,10 @@ class TestMain:
                             'base64_limit': 1.5,
                             'name': 'Base64HighEntropyString',
                         },
+                        {
+                            'name': 'GheDetector',
+                            'ghe_instance': 'github.ibm.com',
+                        },
                     ],
                     exclude=(
                         'Db2Detector',
@@ -376,6 +380,12 @@ class TestMain:
 
                 '--use-all-plugins --no-base64-string-scan --no-private-key-scan',
                 get_list_of_plugins(
+                    include=(
+                        {
+                            'name': 'GheDetector',
+                            'ghe_instance': 'github.ibm.com',
+                        },
+                    ),
                     exclude=(
                         'Base64HighEntropyString',
                         'PrivateKeyDetector',
@@ -454,6 +464,10 @@ class TestMain:
                             'base64_limit': 5.5,
                             'name': 'Base64HighEntropyString',
                         },
+                        {
+                            'name': 'GheDetector',
+                            'ghe_instance': 'github.ibm.com',
+                        },
                     ],
                     exclude=(
                         'HexHighEntropyString',
@@ -478,6 +492,10 @@ class TestMain:
                         {
                             'base64_limit': 2.5,
                             'name': 'Base64HighEntropyString',
+                        },
+                        {
+                            'name': 'GheDetector',
+                            'ghe_instance': 'github.ibm.com',
                         },
                     ],
                     exclude=(

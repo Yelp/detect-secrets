@@ -61,6 +61,30 @@ class TestGheDetector(object):
         output = logic.analyze_line(payload, 1, 'mock_filename')
         assert len(output) == int(should_flag)
 
+    @pytest.mark.parametrize(
+        'payload, should_flag',
+        [
+            (
+                'https://username:abcdef0123456789abcdef0123456789abcdef01@'
+                'github.somecompany.com', True,
+            ),
+            (
+                'https://username:abcdef0123456789abcdef0123456789abcdef01@'
+                'api.github.somecompany.com', True,
+            ),
+            ('git+https://abcdef0123456789abcdef0123456789abcdef01@github.somecompany.com', True),
+            (
+                'https://x-oauth-basic:abcdef0123456789abcdef0123456789abcdef01'
+                '@github.somecompany.com/org/repo.git', True,
+            ),
+        ],
+    )
+    def test_analyze_line_non_(self, payload, should_flag):
+        logic = GheDetector('github.somecompany.com')
+
+        output = logic.analyze_line(payload, 1, 'mock_filename')
+        assert len(output) == int(should_flag)
+
     @responses.activate
     def test_verify_invalid_secret(self):
         responses.add(
