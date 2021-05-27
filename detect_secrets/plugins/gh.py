@@ -10,13 +10,12 @@ from detect_secrets.core.constants import VerifiedResult
 class GheDetector(RegexBasedDetector):
     """ Scans for GitHub credentials """
 
-    secret_type = None
+    secret_type = 'GitHub Credentials'
     denylist = None
 
     def __init__(self, ghe_instance=DEFAULT_GHE_INSTANCE, *args, **kwargs):
         super(GheDetector, self).__init__(*args, **kwargs)
         self.ghe_instance = ghe_instance
-        self.secret_type = 'GitHub Credentials'
 
         opt_github_prefix = r'(?:github|gh|ghe|git|)(?:_|-|)(?:api|)'
         opt_space = r'(?: *)'
