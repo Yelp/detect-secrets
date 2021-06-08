@@ -1,4 +1,4 @@
-# FAQs (Detect Secrets Suite - Developer tool)
+# FAQ (Detect Secrets Suite - Developer tool)
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
