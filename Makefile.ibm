@@ -5,6 +5,7 @@ MAKEFLAGS += --warn-undefined-variables
 DEBUG_IMAGE_TAG := $(TRAVIS_BRANCH)-$(TRAVIS_BUILD_NUMBER)-id-$(TRAVIS_BUILD_ID)-time-$(shell date +%s)
 
 DOCKER_DOMAIN := git-defenders
+DOCKERHUB_DOMAIN := ibmcom
 
 DOCKER_REGISTRY_ICR := us.icr.io
 DOCKER_USER_ICR := iamapikey
@@ -14,8 +15,12 @@ DOCKER_REGISTRY_ART := txo-toolbox-team-docker-local.artifactory.swg-devops.com
 DOCKER_USER_ART := dssadmin@us.ibm.com
 DOCKER_PASS_ART := $(ART_API_KEY)
 
+DOCKER_REGISTRY_DOCKERHUB := hub.docker.com
+DOCKER_USER_DOCKERHUB := $(DOCKER_HUB_USERNAME)
+DOCKER_PASS_DOCKERHUB := $(DOCKER_HUB_API_KEY)
+
 DOCKER_IMAGES := detect-secrets detect-secrets-hook
-DOCKER_REGISTRIES := $(DOCKER_REGISTRY_ART)
+DOCKER_REGISTRIES := $(DOCKER_REGISTRY_ART) $(DOCKER_REGISTRY_DOCKERHUB)
 
 IMAGE_NAME :=
 IMAGE_TAG :=
@@ -65,6 +70,7 @@ docker-build-images:
 	done
 
 docker-login:
+	@echo $(DOCKER_PASS_DOCKERHUB) | docker login -u $(DOCKER_USER_DOCKERHUB) --password-stdin;
 	@echo $(DOCKER_PASS_ART) | docker login -u $(DOCKER_USER_ART) --password-stdin $(DOCKER_REGISTRY_ART);
 
 docker-publish-images: docker-login
@@ -78,8 +84,13 @@ docker-publish-images: docker-login
 	done
 
 docker-publish-image:
+ifeq ($(DOCKER_REGISTRY), $(DOCKER_REGISTRY_DOCKERHUB))
+	docker tag $(DOCKER_DOMAIN_LOCAL)/$(IMAGE_NAME) $(DOCKER_REGISTRY)/$(DOCKERHUB_DOMAIN)/$(IMAGE_NAME):$(IMAGE_TAG)
+	docker push $(DOCKER_REGISTRY)/$(DOCKERHUB_DOMAIN)/$(IMAGE_NAME):$(IMAGE_TAG)
+else
 	docker tag $(DOCKER_DOMAIN_LOCAL)/$(IMAGE_NAME) $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME):$(IMAGE_TAG)
 	docker push $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME):$(IMAGE_TAG)
+endif
 
 publish-cos:
 	pip install requests packaging;                                                                                 \
