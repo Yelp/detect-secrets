@@ -84,13 +84,13 @@ docker-publish-images: docker-login
 	done
 
 docker-publish-image:
-ifeq ($(DOCKER_REGISTRY), $(DOCKER_REGISTRY_DOCKERHUB))
-	docker tag $(DOCKER_DOMAIN_LOCAL)/$(IMAGE_NAME) $(DOCKERHUB_DOMAIN)/$(IMAGE_NAME):$(IMAGE_TAG)
-	docker push $(DOCKERHUB_DOMAIN)/$(IMAGE_NAME):$(IMAGE_TAG)
-else
-	docker tag $(DOCKER_DOMAIN_LOCAL)/$(IMAGE_NAME) $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME):$(IMAGE_TAG)
-	docker push $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME):$(IMAGE_TAG)
-endif
+	if [ "$(DOCKER_REGISTRY)" = "$(DOCKER_REGISTRY_DOCKERHUB)" ]; then                                                  \
+		docker tag $(DOCKER_DOMAIN_LOCAL)/$(IMAGE_NAME) $(DOCKERHUB_DOMAIN)/$(IMAGE_NAME):$(IMAGE_TAG);                 \
+		docker push $(DOCKERHUB_DOMAIN)/$(IMAGE_NAME):$(IMAGE_TAG);                                                     \
+	else                                                                                                                \
+		docker tag $(DOCKER_DOMAIN_LOCAL)/$(IMAGE_NAME) $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME):$(IMAGE_TAG); \
+		docker push $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME):$(IMAGE_TAG);                                     \
+	fi
 
 publish-cos:
 	pip install requests packaging;                                                                                 \
