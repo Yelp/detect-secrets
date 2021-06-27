@@ -202,6 +202,12 @@ $ pip install detect-secrets
 ✨🍰✨
 ```
 
+Install via [brew](https://brew.sh/):
+
+```bash
+$ brew install detect-secrets
+```
+
 ## Usage
 
 `detect-secrets` comes with three different tools, and there is often confusion around which one
