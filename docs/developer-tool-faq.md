@@ -3,13 +3,11 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
+
 - [pip setup](#pip-setup)
   - [I’m getting a `Could not install packages due to an Environment Error: [Errno 13] Permission denied: ` error when installing the `detect-secrets` pip package. What should I do?](#im-getting-a-could-not-install-packages-due-to-an-environment-error-errno-13-permission-denied--error-when-installing-the-detect-secrets-pip-package-what-should-i-do)
   - [I cannot find the `detect-secrets` binary after installation](#i-cannot-find-the-detect-secrets-binary-after-installation)
   - [How do I upgrade `detect-secrets` to a newer version?](#how-do-i-upgrade-detect-secrets-to-a-newer-version)
-      - [Upgrade for user mode](#upgrade-for-user-mode)
-      - [Upgrade for global mode - keep install to global mode](#upgrade-for-global-mode---keep-install-to-global-mode)
-      - [Upgrade for global mode - switch to user mode](#upgrade-for-global-mode---switch-to-user-mode)
   - [How do I upgrade the `detect-secrets` pre-commit hook?](#how-do-i-upgrade-the-detect-secrets-pre-commit-hook)
 - [General usage](#general-usage)
   - [Which python versions does detect-secrets support?](#which-python-versions-does-detect-secrets-support)
@@ -23,21 +21,33 @@
   - [Which plugins are used in the scan by default?](#which-plugins-are-used-in-the-scan-by-default)
   - [How do I use fewer plugins when scanning?](#how-do-i-use-fewer-plugins-when-scanning)
   - [`detect-secrets` generates too many false positives. What should I do?](#detect-secrets-generates-too-many-false-positives-what-should-i-do)
-      - [Exclude some files with the `—exclude-files` option.](#exclude-some-files-with-the-exclude-files-option)
-      - [Tune the threshold for the entropy based scanner](#tune-the-threshold-for-the-entropy-based-scanner)
-      - [Use fewer scanners](#use-fewer-scanners)
   - [Why did `detect-secrets` not find some secrets in my code?](#why-did-detect-secrets-not-find-some-secrets-in-my-code)
-      - [Cause 1: Not using all plugins](#cause-1-not-using-all-plugins)
-      - [Cause 2: Verifiable token is verified as false](#cause-2-verifiable-token-is-verified-as-false)
-      - [Cause 3: The entropy threshold is too high for entropy based plugins](#cause-3-the-entropy-threshold-is-too-high-for-entropy-based-plugins)
-      - [Cause 4: Unsupported token type](#cause-4-unsupported-token-type)
   - [Why is the `detect-secrets` pre-commit output messed up with multiple headings and footers?](#why-is-the-detect-secrets-pre-commit-output-messed-up-with-multiple-headings-and-footers)
   - [How do I configure the `detect-secrets` pre-commit hook with the Node.js husky library?](#how-do-i-configure-the-detect-secrets-pre-commit-hook-with-the-nodejs-husky-library)
   - [How do I use inline allowlisting?](#how-do-i-use-inline-allowlisting)
   - [Why does my scan get stuck](#why-does-my-scan-get-stuck)
   - [Can I use detect-secrets to detect secrets in an arbitrary file system/folder that is not a git repo?](#can-i-use-detect-secrets-to-detect-secrets-in-an-arbitrary-file-systemfolder-that-is-not-a-git-repo)
   - [Why is detect-secrets not verifying my password on DB2 for zOS?](#why-is-detect-secrets-not-verifying-my-password-on-db2-for-zos)
-      - [Missing certificates (known limitation)](#missing-certificates-known-limitation)
+- [docker setup](#docker-setup)
+  - [How do I install the `detect-secrets` docker image?](#how-do-i-install-the-detect-secrets-docker-image)
+    - [Prerequisite](#prerequisite)
+    - [Setup steps](#setup-steps)
+  - [How do I run a scan with the docker image?](#how-do-i-run-a-scan-with-the-docker-image)
+    - [Windows Powershell and cmd](#windows-powershell-and-cmd)
+    - [Windows git bash](#windows-git-bash)
+    - [MacOS & Linux](#macos--linux)
+  - [How do I run an audit with the docker image?](#how-do-i-run-an-audit-with-the-docker-image)
+    - [Windows Powershell and cmd](#windows-powershell-and-cmd-1)
+    - [Windows git bash](#windows-git-bash-1)
+    - [MacOS & Linux](#macos--linux-1)
+  - [How do I setup a pre-commit hook with the docker image?](#how-do-i-setup-a-pre-commit-hook-with-the-docker-image)
+  - [How do I upgrade docker image in a pre-commit hook?](#how-do-i-upgrade-docker-image-in-a-pre-commit-hook)
+  - [Can I pull a specific version of docker image?](#can-i-pull-a-specific-version-of-docker-image)
+  - [How do I run `detect-secrets` commands with the docker image on different operating systems?](#how-do-i-run-detect-secrets-commands-with-the-docker-image-on-different-operating-systems)
+    - [Windows Powershell and cmd](#windows-powershell-and-cmd-2)
+    - [Windows git bash](#windows-git-bash-2)
+    - [MacOS & Linux](#macos--linux-2)
+  - [Powershell docker command is too long, do you have some shortcut for detect-secrets?](#powershell-docker-command-is-too-long-do-you-have-some-shortcut-for-detect-secrets)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -368,3 +378,150 @@ A known case when DB2 for zOS password has not been caught is that you are missi
 If your DB2 server requires a keystore DB and a keystash file to connect, then `detect-secrets` won't test the connection to
 verify the token. This is known limitation. You can still run the scan with `--no-verify` flag;
 It will report on the potential password string, but won't verify it against remote DB2 server.
+
+# docker setup
+
+The `detect-secrets` tool can also be run as a docker container. It supports Windows 10, macOS and Linux environments.
+
+## How do I install the `detect-secrets` docker image?
+
+### Prerequisite
+
+You need to have Python and [install the pre-commit framework](https://pre-commit.com/#install). The docker image of `detect-secrets` saves you the effort of installing the detect-secret pip package, which would require a heavy weight compilation environment. Besides that, please also make sure you have [docker installed](https://docs.docker.com/install/).
+
+1. python [installed](https://docs.python-guide.org/starting/installation/)
+1. pre-commit framework [installed](https://pre-commit.com/#install)
+1. docker [installed](https://docs.docker.com/install/)
+
+### Setup steps
+#### 1. scan with docker image
+
+See [How do I run a scan with the docker image?](#how-do-i-run-a-scan-with-the-docker-image)
+
+#### 2. audit the baseline file
+
+See [How do I run an audit with the docker image?](#how-do-i-run-an-audit-with-the-docker-image)
+
+#### 3. setup pre-commit hook
+
+See [How do I setup a pre-commit hook with the docker image?](#how-do-i-setup-a-pre-commit-hook-with-the-docker-image)
+
+## How do I run a scan with the docker image?
+
+### Windows Powershell and cmd
+
+> Note: You can also setup a Powershell script following [doc here](#powershell-docker-command-is-too-long-do-you-have-some-shortcut-for-detect-secrets) to avoid typing the long command.
+
+```shell
+# scan
+# Mount to /code folder is important since it's the workdir for detect-secrets
+docker run -it --rm -v c:/replace/with/your/folder/containing/git/repo:/code ibmcom/detect-secrets:latest scan
+
+# generate or update baseline
+#
+# Note: please do NOT use "> .secrets.baseline" to generat new baseline on Windows platform as it will generate Linux line ending format from docker output.
+docker run -it --rm -v c:/replace/with/your/folder/containing/git/repo:/code ibmcom/detect-secrets:latest scan --update .secrets.baseline
+```
+
+### Windows git bash
+
+```shell
+# the leading / is important for git bash env
+# do not wrap trailing command after docker image is also important
+winpty docker run -it --rm -v /$(pwd):/code ibmcom/detect-secrets:latest scan
+
+# generate or update baseline
+winpty docker run -it --rm -v /$(pwd):/code ibmcom/detect-secrets:latest scan --update .secrets.baseline
+```
+
+### MacOS & Linux
+
+```shell
+# scan
+docker run -it --rm -v $(pwd):/code ibmcom/detect-secrets:latest scan
+
+# generate or update baseline
+docker run -it --rm -v $(pwd):/code ibmcom/detect-secrets:latest scan --update .secrets.baseline
+```
+
+## How do I run an audit with the docker image?
+
+### Windows Powershell and cmd
+
+> Note: You can also setup a Powershell script following [doc here](#powershell-docker-command-is-too-long-do-you-have-some-shortcut-for-detect-secrets) to avoid typing the long command.
+
+```shell
+docker run -it --rm -v c:/replace/with/your/folder/containing/git/repo:/code ibmcom/detect-secrets:latest audit .secrets.baseline
+```
+
+### Windows git bash
+
+```shell
+winpty docker run -it --rm -v /$(pwd):/code ibmcom/detect-secrets:latest audit .secrets.baseline
+```
+
+### MacOS & Linux
+
+```shell
+docker run -it --rm -v $(pwd):/code ibmcom/detect-secrets:latest audit .secrets.baseline
+```
+
+## How do I setup a pre-commit hook with the docker image?
+
+1. Add the following content to `.pre-commit-config.yaml`.
+
+```shell
+# .pre-commit-config.yaml
+-   repo: local
+    hooks:
+    -   id: detect-secrets-docker
+        name: detect-secrets-docker
+        language: docker_image
+        entry: ibmcom/detect-secrets-hook:latest --baseline .secrets.baseline
+```
+
+1. [Windows environment], run the following command to turn off the CRLF warning message
+
+```shell
+git config --global core.safecrlf false
+```
+
+1. Install the pre-commit hook to the git repo with `pre-commit install`
+
+## How do I upgrade docker image in a pre-commit hook?
+
+1. Identify the docker image tag for `ibmcom/detect-secrets-hook` in your `.pre-commit-config.yaml` file. For example, the default is `latest`.
+1. If you are using a latest tag such as `latest`.
+   1. In a terminal, run `docker pull ibmcom/detect-secrets-hook:latest` to get the latest image.
+1. If you are using a specific version tag, such as `0.13.1+ibm.37.dss`
+   1. Update the `.pre-commit-config.yaml` to use a newer version tag.
+
+## Can I pull a specific version of docker image?
+
+Yes, any tag listed [in docker hub for image ibmcom/detect-secrets](https://hub.docker.com/repository/docker/ibmcom/detect-secrets) can be used. You can use the same approach to find tags for `ibmcom/detect-secrets-hook`.
+
+The latest version for `detect-secrets` suite is `latest`.
+
+> Note: due to docker tagging restriction, plus sign (`+`) is not allowed. The `+` in any tag on Github repo would be replaced by `.`. For example, tag `0.13.0+ibm.8.dss` would have docker image label `0.13.0.ibm.8.dss`
+
+## How do I run `detect-secrets` commands with the docker image on different operating systems?
+
+To run other `detect-secrets` commands with the docker image, like the ones below in the "General Usage" section, you need to make sure you're using the correct prefix depending on which environment you're in. For example, if you wanted to run `detect-secrets scan --exclude-files '<folder_to_ignore>|<file_to_ignore>'`, you would do the following...
+
+### Windows Powershell and cmd
+
+Replace `detect-secrets` with `docker run -it --rm -v c:/replace/with/your/folder/containing/git/repo:/code ibmcom/detect-secrets:latest`
+
+You can also setup a Powershell script following [doc here](#powershell-docker-command-is-too-long-do-you-have-some-shortcut-for-detect-secrets).
+
+### Windows git bash
+
+Replace `detect-secrets` with `winpty docker run -it --rm -v /$(pwd):/code ibmcom/detect-secrets:latest`
+
+### MacOS & Linux
+
+Replace `detect-secrets` with `docker run -it --rm -v $(pwd):/code ibmcom/detect-secrets:latest`
+
+## Powershell docker command is too long, do you have some shortcut for detect-secrets?
+
+Yes, if you are using Powershell, you can download [this file](https://github.com/ibm/detect-secrets/blob/master/user-config/detect-secrets.psm1) and follow the instruction in description to setup a Powershell command wrapper.
