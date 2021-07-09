@@ -380,7 +380,7 @@ We recommend setting this up as a pre-commit hook. One way to do this is by usin
 # .pre-commit-config.yaml
 repos:
 -   repo: https://github.com/Yelp/detect-secrets
-    rev: v1.0.0
+    rev: v1.0.3
     hooks:
     -   id: detect-secrets
         args: ['--baseline', '.secrets.baseline']
