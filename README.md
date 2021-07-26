@@ -4,26 +4,22 @@
 
 ## About
 
-The purpose of the project is to **detect secrets** within a code base. This is a fork of [detect-secrets](https://github.com/Yelp/detect-secrets) from yelp. This includes additional detection, some of which is unique to IBM, as well as additional features to help integrate with IBM services.
+IBM `detect-secrets` is a client-side security tool built for developers, and is designed to **detect secrets** within a codebase for the sake of remediation and prevention of secret leaks.
 
-`detect-secrets` is an aptly-named module for (surprise, surprise) **detecting
-secrets** within a code base.
+This is a fork of [detect-secrets from Yelp](https://github.com/Yelp/detect-secrets). Our version includes additional detection, some of which is unique to IBM, as well as additional features to help integrate with IBM services.
 
-However, unlike other similar packages that solely focus on finding secrets,
-this package is designed with the enterprise client in mind: providing a
-**backwards-compatible**, systematic means of:
+Unlike other similar packages that solely focus on finding secrets,
+this package is designed with the enterprise client in mind,
+providing a backwards-compatible, systematic means of:
 
-1. Preventing new secrets from entering the code base,
-2. Detecting if such preventions are explicitly bypassed, and
-3. Providing a checklist of secrets to roll, and migrate off to a more secure
-   storage.
+1. **Detecting secret leaks.** Scan a repository to find and remediate existing secrets within its source code.
+2. **Preventing secret leaks.** Prevent new secrets from entering the repository via a pre-commit hook.
 
 This way, you create a
 [separation of concern](https://en.wikipedia.org/wiki/Separation_of_concerns):
-accepting that there may *currently* be secrets hiding in your large repository
+understanding that there may *currently* be secrets hiding in your large repository
 (this is what we refer to as a _baseline_),
-but preventing this issue from getting any larger, without dealing with the
-potentially gargantuous effort of moving existing secrets away.
+while also preventing the issue from getting any larger.
 
 It does this by running periodic diff outputs against heuristically-crafted
 regex statements, to identify whether any *new* secret has been committed. This
@@ -32,45 +28,70 @@ need to scan the entire repository every time.
 
 For a look at recent changes, please see the
 [changelog](/CHANGELOG.md).
+(Note: the upstream Yelp community maintains this but we historically have not done so within IBM.)
+
+## Requirements
+
+Python 3
 
 ## Example Usage
 
-### Setting Up a Baseline
+Utilize `--help` flag of `detect-secrets` CLI for more usage information.
 
-```
-$ detect-secrets scan > .secrets.baseline
-```
+### Install/Upgrade Module
 
-### pre-commit Hook
+`pip install --upgrade "git+https://github.com/ibm/detect-secrets.git@master#egg=detect-secrets"`
 
-```
-$ cat .pre-commit-config.yaml
--   repo: git@github.com:Yelp/detect-secrets
-    rev: v0.13.1
-    hooks:
-    -   id: detect-secrets
-        args: ['--baseline', '.secrets.baseline']
-        exclude: .*/tests/.*
-```
 
-### Auditing a Baseline
+### Detection: Setting Up a Baseline
 
-```
-$ detect-secrets audit .secrets.baseline
-```
-
-### Upgrading Baselines
-
-This is only applicable for upgrading baselines that have been created after version 0.9.
-For upgrading baselines lower than that version, just recreate it.
+After installing detect-secrets, run the following command from within the root directory of a given repository to scan it for existing secrets, logging the results in `.secrets.baseline`.
 
 ```
 $ detect-secrets scan --update .secrets.baseline
 ```
 
+Note: You may run this same command again to re-scan the repo and update the baseline file.
+
+### Detection: Auditing a Baseline
+
+Run the following command to audit `.secrets.baseline`, marking secrets as true postitives or false positives. Remove true positives from your codebase, revoking them if they've been leaked remotely.
+
+```
+$ detect-secrets audit .secrets.baseline
+```
+
+Commit the `.secrets.baseline` file to your repo with remediated files after auditing.
+
+### Detection: Reducing False Positives during Baseline Scan
+
+Use the built-in help command `detect-secrets scan --help` to identify ways of excluding files, lines, or plugins that are generating too many false positives. Note that this comes with a security trade-off.
+
+Also see [inline allowlisting](#inline-allowlisting) for instructions on excluding individual lines via in-line comments.
+
+### Prevention: pre-commit Hook
+
+A pre-commit hook can automatically run `detect-secrets` against new commits in your local repository at commit-time. The purpose of this is to prevent additional secrets from being leaked.
+
+Configuration steps (per-developer, per-repo, must have created `.secrets.baseline` file first):
+
+- If not installed, install the `pre-commit` Python module (ex. `pip install pre-commit`).
+- If `.pre-commit-config.yaml` not already present, copy the text from this [example pre-commit configuration](/user-config/.pre-commit-config.yaml)
+ into a file called `.pre-commit-config.yaml` at the root of the repository where you want to setup the pre-commit hook.
+- Finally, run `pre-commit install` in the root of the repo to set up the pre-commit hook based on the specifications in `.pre-commit-config.yaml`.
+
+You may use the built-in help command `detect-secrets-hook --help` to identify additional arguments you can pass to the pre-commit script. These arguments must be passed via the `args` section of `.pre-commit-config.yaml`. Ex:
+
+```
+rev: master
+  hooks:
+    - id: detect-secrets
+      args: [ --argument1, --argument2 ]
+```
+
 ### Command Line
 
-`detect-secrets` is designed to be used as a git pre-commit hook, but you can also invoke `detect-secrets scan [path]` directly being `path` the file(s) and/or directory(ies) to scan (`path` defaults to `.` if not specified).
+`detect-secrets` is designed to be used as a git pre-commit hook, but you can also invoke `detect-secrets scan [path]` directly, `path` being the file(s) and/or directory(ies) to scan (`path` defaults to `.` if not specified).
 
 It should be noted that by default, `detect-secrets scan` only operates on files that are tracked by git. So if you intend to scan files outside of a git repository, you will need to pass the `--all-files` flag.
 
@@ -101,7 +122,7 @@ secrets easily searchable, auditable, and maintainable.
 
 ### User Guide
 
-If you are looking for more information on how to use this project as an end user please refer to the [user guide](https://w3.ibm.com/w3publisher/detect-secrets).
+If you are an IBMer looking for more information on how to use this project as an end user please refer to the [user guide](https://w3.ibm.com/w3publisher/detect-secrets/developer-tool). Within this repo, see [docs](/docs) for an FAQ and cheat-sheet.
 
 ## Caveats
 
@@ -112,8 +133,7 @@ committing secrets.
 
 ### Things that won't be prevented
 
-* Multi-line secrets
-* Default passwords that don't trigger the `KeywordDetector` (e.g. `login = "hunter2"`)
+* Secrets that don't trigger any of the enabled plugins.
 
 ### Plugin Configuration
 
@@ -125,7 +145,7 @@ rejected as a potential secret.
 
 This preset amount can be adjusted in several ways:
 
-* Specifying it within the config file, for server scanning.
+* Specifying it within a config file (`.secrets.baseline`, `.pre-commit-config.yaml`).
 * Specifying it with command line flags (e.g. `--base64-limit`)
 
 Lowering these limits will identify more potential secrets, but also create
@@ -133,7 +153,7 @@ more false positives. Adjust these limits to suit your needs.
 
 ## Contribution
 
-Please read the [CONTRIBUTING.md](/CONTRIBUTING.md). Bellow is information on how setup the testing environment, and run the tests.
+Please read [CONTRIBUTING.md](/CONTRIBUTING.md). It contains information on how setup a development environment, verify changes, and run the test suite.
 
 ## Plugins
 

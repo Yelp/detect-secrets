@@ -2,7 +2,7 @@
 # on python 3.6.0 (xenial)
 pip>=21.1
 urllib3>=1.26.4
-coverage<5
+coverage>=6.0b1
 flake8
 mock
 monotonic
