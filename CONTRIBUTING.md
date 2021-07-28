@@ -218,9 +218,10 @@ just run:
 make test
 ```
 
-If you run into dependency issues with the `cryptography` library, you may need to add the following to your `.bashrc` or equivalent:
+If you run into dependency issues with the `cryptography` library, you may need to specify where `openssl` lives on your machine by the following to your `.bashrc` or equivalent:
 
 ```sh
+# if you used brew to install openssl, your paths will likely be:
 export LDFLAGS="-L/usr/local/opt/openssl/lib"
 export CPPFLAGS="-I/usr/local/opt/openssl/include"
 ```
