@@ -213,8 +213,8 @@ class SecretsCollection:
         for filename in sorted(self.files):
             secrets = self[filename]
 
-            # NOTE: If line numbers aren't supplied, they will default to 0.
-            for secret in sorted(secrets, key=lambda x: (x.line_number, x.secret_hash, x.type)):
+            # NOTE: If line numbers aren't supplied, they are supposed to default to 0.
+            for secret in sorted(secrets, key=lambda x: (x.get(line_number, 0), x.secret_hash, x.type)):
                 yield filename, secret
 
     def __bool__(self) -> bool:
