@@ -77,13 +77,13 @@ For baselines older than version 0.9, just recreate it.
 **Scanning Staged Files Only:**
 
 ```bash
-$ detect-secrets-hook --baseline .secrets.baseline $(git diff --staged --name-only)
+$ git diff --staged --name-only -z | xargs -0 detect-secrets-hook --baseline .secrets.baseline
 ```
 
 **Scanning All Tracked Files:**
 
 ```bash
-$ detect-secrets-hook --baseline .secrets.baseline $(git ls-files)
+$ git ls-files -z | xargs -0 detect-secrets-hook --baseline .secrets.baseline 
 ```
 
 ### Viewing All Enabled Plugins:
