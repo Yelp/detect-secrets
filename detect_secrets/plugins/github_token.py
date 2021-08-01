@@ -8,7 +8,7 @@ from detect_secrets.plugins.base import RegexBasedDetector
 
 class GitHubTokenDetector(RegexBasedDetector):
     """Scans for GitHub tokens."""
-    secret_type = 'GitHub token'
+    secret_type = 'GitHub Token'
 
     denylist = [
         # ref. https://github.blog/2021-04-05-behind-githubs-new-authentication-token-formats/
