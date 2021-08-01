@@ -28,7 +28,7 @@ def get_tracked_files(root: str) -> Set[str]:
 
     :raises: CalledProcessError
     """
-    output = set([])
+    output = set()
     try:
         files = subprocess.check_output(
             ['git', '-C', root, 'ls-files'],

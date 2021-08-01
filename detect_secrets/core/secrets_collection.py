@@ -147,7 +147,7 @@ class SecretsCollection:
             ]
 
         if not filelist:
-            fileset = set([])
+            fileset = set()
         else:
             fileset = set(filelist)
 

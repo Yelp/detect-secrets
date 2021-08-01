@@ -49,7 +49,7 @@ class BasePlugin(metaclass=ABCMeta):
         **kwargs: Any
     ) -> Set[PotentialSecret]:
         """This examines a line and finds all possible secret values in it."""
-        output = set([])
+        output = set()
         for match in self.analyze_string(line, **kwargs):   # type: ignore
             output.add(
                 PotentialSecret(
