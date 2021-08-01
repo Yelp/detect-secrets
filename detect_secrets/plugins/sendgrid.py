@@ -8,7 +8,7 @@ from detect_secrets.plugins.base import RegexBasedDetector
 
 class SendGridDetector(RegexBasedDetector):
     """Scans for SendGrid API keys."""
-    secret_type = 'SendGrid API key'
+    secret_type = 'SendGrid API Key'
 
     denylist = [
         # SendGrid API key
