@@ -214,7 +214,14 @@ class SecretsCollection:
             secrets = self[filename]
 
             # NOTE: If line numbers aren't supplied, they are supposed to default to 0.
-            for secret in sorted(secrets, key=lambda x: (x.get(line_number, 0), x.secret_hash, x.type)):
+            for secret in sorted(
+                secrets,
+                key=lambda secret: (
+                    getattr(secret, 'line_number', 0),
+                    secret.secret_hash,
+                    secret.type
+                )
+            ):
                 yield filename, secret
 
     def __bool__(self) -> bool:
