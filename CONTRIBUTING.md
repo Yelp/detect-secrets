@@ -60,6 +60,7 @@ Work in Progress pull requests are also welcome to get feedback early on, or if 
 -   [How to Contribute to Open Source](https://opensource.guide/how-to-contribute/)
 -   [Using Pull Requests](https://help.github.com/articles/about-pull-requests/)
 -   [GitHub Help](https://help.github.com)
+-   [RegHex GitHub Project](https://github.com/l4yton/RegHex)
 
 ## Process for Adding a New Secret Detector to whitewater-detect-secrets
 
