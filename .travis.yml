@@ -20,7 +20,7 @@ matrix:
         # - env: TOXENV=py35
         #   python: 3.5
         - env: TOXENV=py36
-          python: 3.6
+          python: 3.6.10 # We're targeting a specific patch version; if set to 3.6, the GitHub Travis build will use Python 3.6.7 and will fail due to a cryptography installation error
         - env: TOXENV=py37
           python: 3.7
           dist: xenial  # Required for Python >= 3.7 (travis-ci/travis-ci#9069)
