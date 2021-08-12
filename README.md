@@ -114,7 +114,7 @@ Inline commenting syntax for a multitude of languages is supported:
 | `/* */` | e.g. C, Java|
 | `'` | e.g. Visual Basic .NET|
 | `--` | e.g. SQL, Haskell|
-| `<!-- --!>` | e.g. XML |
+| `<!-- -->` | e.g. XML |
 
 This may be a convenient way for you to allowlist secrets, without having to
 regenerate the entire baseline again. Furthermore, this makes the allowlisted
