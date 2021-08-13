@@ -12,8 +12,8 @@ deploy:
     all_branches: true
     # only build docker image and push once
     condition: $TOXENV = py38
-    # only deploy when pushing to ghe repo
-    repo: Whitewater/whitewater-detect-secrets
+    # only deploy when pushing to gh repo
+    repo: IBM/detect-secrets
 
 matrix:
     include:
