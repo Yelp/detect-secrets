@@ -8,10 +8,8 @@ addons:
     ssh_known_hosts: github.ibm.com
 deploy:
     - provider: script
-      # TODO: revert back to below
-      #  make docker-build-images docker-test-images setup-trivy docker-quality-images deploy
       script: >-
-          set -e; make push-tag sync-branches
+          set -e; make docker-build-images docker-test-images setup-trivy docker-quality-images deploy
       on:
           all_branches: true
           # only build docker image and push once
