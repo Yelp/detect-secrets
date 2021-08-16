@@ -129,10 +129,6 @@ deploy:
 	fi
 
 push-tag:
-<<<<<<< Updated upstream
-	git remote add github git@github.ibm.com:Whitewater/whitewater-detect-secrets.git
-=======
->>>>>>> Stashed changes
 	git fetch github
 	git push github $(TRAVIS_TAG)
 
