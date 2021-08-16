@@ -31,7 +31,7 @@ matrix:
         #   python: pypy
 before_install:
     - echo -e "machine github.com\n  login $GH_ACCESS_TOKEN" >> ~/.netrc # Login to GitHub
-    - echo -e "machine github.ibm.com\n  login $GHE_ACCESS_TOKEN" >> ~/.netrc # Login to GitHub enterprise
+    - echo -e "machine github.ibm.com\n  login $GHE_ACCESS_TOKEN" >> ~/.netrc # Login to GitHub Enterprise
 install:
     - pip install tox
 script: make test
