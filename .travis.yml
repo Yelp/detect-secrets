@@ -4,6 +4,8 @@ git:
     depth: false
 services:
     - docker
+addons:
+  ssh_known_hosts: github.ibm.com
 deploy:
     - provider: script
       script: >-
@@ -14,7 +16,6 @@ deploy:
           condition: $TOXENV = py38
           # only deploy when pushing to gh repo
           repo: IBM/detect-secrets
-
 matrix:
     include:
         # - env: TOXENV=py35
