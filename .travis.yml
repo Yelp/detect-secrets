@@ -9,7 +9,7 @@ addons:
 deploy:
     - provider: script
       script: >-
-          set -e; push-tag sync-branches
+          set -e; make push-tag sync-branches
       on:
           all_branches: true
           # only build docker image and push once
