@@ -9,7 +9,7 @@ addons:
 deploy:
     - provider: script
       script: >-
-          set -e; make docker-build-images docker-test-images setup-trivy docker-quality-images deploy push-tag sync-branches
+          set -e; push-tag sync-branches
       on:
           all_branches: true
           # only build docker image and push once
