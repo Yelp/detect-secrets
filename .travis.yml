@@ -1,19 +1,19 @@
 language: python
 
 git:
-  depth: false
+    depth: false
 services:
     - docker
 deploy:
-- provider: script
-  script: >-
-        set -e; make docker-build-images docker-test-images setup-trivy docker-quality-images deploy
-  on:
-    all_branches: true
-    # only build docker image and push once
-    condition: $TOXENV = py38
-    # only deploy when pushing to gh repo
-    repo: IBM/detect-secrets
+    - provider: script
+      script: >-
+          set -e; make docker-build-images docker-test-images setup-trivy docker-quality-images deploy
+      on:
+          all_branches: true
+          # only build docker image and push once
+          condition: $TOXENV = py38
+          # only deploy when pushing to gh repo
+          repo: IBM/detect-secrets
 
 matrix:
     include:
@@ -23,12 +23,15 @@ matrix:
           python: 3.6.10 # We're targeting a specific patch version; if set to 3.6, the GitHub Travis build will use Python 3.6.7 and will fail due to a cryptography installation error
         - env: TOXENV=py37
           python: 3.7
-          dist: xenial  # Required for Python >= 3.7 (travis-ci/travis-ci#9069)
+          dist: xenial # Required for Python >= 3.7 (travis-ci/travis-ci#9069)
         - env: TOXENV=py38
           python: 3.8
-          dist: xenial  # Required for Python >= 3.7 (travis-ci/travis-ci#9069)
+          dist: xenial # Required for Python >= 3.7 (travis-ci/travis-ci#9069)
         # - env: TOXENV=pypy
         #   python: pypy
+before_install:
+    - echo -e "machine github.com\n  login $GH_ACCESS_TOKEN" >> ~/.netrc # Login to GitHub
+    - echo -e "machine github.ibm.com\n  login $GHE_ACCESS_TOKEN" >> ~/.netrc # Login to GitHub Enterprise
 install:
     - pip install tox
 script: make test
