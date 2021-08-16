@@ -129,7 +129,7 @@ deploy:
 	fi
 
 push-tag:
-	git remote add github git@github.ibm.com:Whitewater/whitewater-detect-secrets.git
+	git remote add github https://github.ibm.com/Whitewater/whitewater-detect-secrets.git
 	git fetch github
 	git push github $(TRAVIS_TAG)
 
@@ -139,7 +139,7 @@ sync-branches:
 	git push origin $(TRAVIS_BRANCH):dss -f --tags
 
 	# sync to Whitewater/whitewater-detect-secrets
-	git remote add github git@github.ibm.com:Whitewater/whitewater-detect-secrets.git
+	git remote add github https://github.ibm.com/Whitewater/whitewater-detect-secrets.git
 	git fetch github
 	git push github $(TRAVIS_BRANCH):master -f --tags
 
