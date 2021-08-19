@@ -487,6 +487,12 @@ class PluginOptions:
             help_text='Disables scans for Twilio API keys.',
             filename='twilio',
         ),
+        PluginDescriptor(
+            classname='NpmDetector',
+            flag_text='--no-npm-scan',
+            help_text='Disables scans for NPM keys.',
+            filename='npm',
+        ),
     ]
     opt_in_plugins = [
         PluginDescriptor(
