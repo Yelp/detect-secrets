@@ -457,8 +457,8 @@ class PluginOptions:
         PluginDescriptor(
             classname='GheDetector',
             flag_text='--no-ghe-scan',
-            help_text='Disables scans for GitHub credentials',
-            filename='gh',
+            help_text='Disables scans for GitHub Enterprise credentials',
+            filename='github_enterprise',
             related_args=[
                 ('--ghe-instance', DEFAULT_GHE_INSTANCE),
             ],
@@ -504,6 +504,12 @@ class PluginOptions:
             flag_text='--no-azure-storage-scan',
             help_text='Disables scans for Azure Storage Account access.',
             filename='azure_storage_key',
+        ),
+        PluginDescriptor(
+            classname='GitHubTokenDetector',
+            flag_text='--no-github-scan',
+            help_text='Disables scans for GitHub credentials',
+            filename='github_token',
         ),
     ]
     opt_in_plugins = [

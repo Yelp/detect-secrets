@@ -2,7 +2,7 @@ import pytest
 import responses
 
 from detect_secrets.core.constants import VerifiedResult
-from detect_secrets.plugins.gh import GheDetector
+from detect_secrets.plugins.github_enterprise import GheDetector
 
 
 GHE_TOKEN = 'abcdef0123456789abcdef0123456789abcdef01'
