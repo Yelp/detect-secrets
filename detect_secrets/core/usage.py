@@ -493,6 +493,12 @@ class PluginOptions:
             help_text='Disables scans for NPM keys.',
             filename='npm',
         ),
+        PluginDescriptor(
+            classname='SquareOAuthDetector',
+            flag_text='--no-square-oauth',
+            help_text='Disables scans for Square OAuth tokens.',
+            filename='square_oauth',
+        ),
     ]
     opt_in_plugins = [
         PluginDescriptor(
