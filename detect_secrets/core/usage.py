@@ -494,6 +494,12 @@ class PluginOptions:
             filename='npm',
         ),
         PluginDescriptor(
+            classname='SquareOAuthDetector',
+            flag_text='--no-square-oauth',
+            help_text='Disables scans for Square OAuth tokens.',
+            filename='square_oauth',
+        ),
+        PluginDescriptor(
             classname='AzureStorageKeyDetector',
             flag_text='--no-azure-storage-scan',
             help_text='Disables scans for Azure Storage Account access.',
