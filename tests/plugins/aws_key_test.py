@@ -34,6 +34,18 @@ class TestAWSKeyDetector(object):
                 'AKIAZZZ',
                 False,
             ),
+            (
+                'aws_access_key = "{}"'.format(EXAMPLE_SECRET),
+                True,
+            ),
+            (
+                'aws_access_key = "{}"'.format(EXAMPLE_SECRET + 'a'),
+                False,
+            ),
+            (
+                'aws_access_key = "{}"'.format(EXAMPLE_SECRET[0:39]),
+                False,
+            ),
         ],
     )
     def test_analyze(self, file_content, should_flag):
@@ -49,6 +61,7 @@ class TestAWSKeyDetector(object):
         logic = AWSKeyDetector()
 
         assert logic.verify(self.example_key, '') == VerifiedResult.UNVERIFIED
+        assert logic.verify(EXAMPLE_SECRET, '') == VerifiedResult.UNVERIFIED
 
     def test_verify_valid_secret(self):
         with mock.patch(
