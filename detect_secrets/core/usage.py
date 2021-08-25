@@ -499,6 +499,12 @@ class PluginOptions:
             help_text='Disables scans for Square OAuth tokens.',
             filename='square_oauth',
         ),
+        PluginDescriptor(
+            classname='AzureStorageKeyDetector',
+            flag_text='--no-azure-storage-scan',
+            help_text='Disables scans for Azure Storage Account access.',
+            filename='azure_storage_key',
+        ),
     ]
     opt_in_plugins = [
         PluginDescriptor(
