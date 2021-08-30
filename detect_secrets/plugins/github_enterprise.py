@@ -8,9 +8,9 @@ from detect_secrets.core.constants import VerifiedResult
 
 
 class GheDetector(RegexBasedDetector):
-    """ Scans for GitHub credentials """
+    """ Scans for GitHub Enterprise credentials """
 
-    secret_type = 'GitHub Credentials'
+    secret_type = 'GitHub Enterprise Credentials'
     denylist = None
 
     def __init__(self, ghe_instance=DEFAULT_GHE_INSTANCE, *args, **kwargs):
