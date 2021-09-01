@@ -152,7 +152,7 @@ CLOSING = r'[]\'"]{0,2}'
 DENYLIST_REGEX = r'|'.join(DENYLIST)
 # Non-greedy match
 OPTIONAL_WHITESPACE = r'\s*?'
-OPTIONAL_NON_WHITESPACE = r'[^\s]*?'
+OPTIONAL_NON_WHITESPACE = r'[^\s]{0,50}?'
 QUOTE = r'[\'"]'
 SECRET = r'[^\s]+'
 SQUARE_BRACKETS = r'(\[\])'
