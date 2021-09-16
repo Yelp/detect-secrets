@@ -10,11 +10,44 @@ from typing import Set
 from typing import Tuple
 
 from . import scan
+from ..settings import get_settings
+from ..settings import Settings
 from .potential_secret import PotentialSecret
+
+
+def initialize_settings(settings: Settings) -> None:
+    new_settings = get_settings()
+    new_settings.set(settings)
+
+    if 'detect_secrets.filters.wordlist.should_exclude_secret' in settings.filters:
+        config = settings.filters[
+            'detect_secrets.filters.wordlist.should_exclude_secret'
+        ]
+
+        from detect_secrets import filters
+
+        filters.wordlist.initialize(
+            wordlist_filename=config['file_name'],
+            min_length=config['min_length'],
+            file_hash=config['file_hash'],
+        )
+
+    if 'detect_secrets.filters.gibberish.should_exclude_secret' in settings.filters:
+        config = settings.filters[
+            'detect_secrets.filters.gibberish.should_exclude_secret'
+        ]
+
+        from detect_secrets import filters
+
+        filters.gibberish.initialize(
+            model_path=config.get('model'),
+            limit=config['limit'],
+        )
 
 
 class PatchedFile:
     """This exists so that we can do typecasting, without importing unidiff."""
+
     path: str
 
     def __iter__(self) -> Generator:
@@ -37,7 +70,9 @@ class SecretsCollection:
         output = cls()
         for filename in baseline['results']:
             for item in baseline['results'][filename]:
-                secret = PotentialSecret.load_secret_from_dict({'filename': filename, **item})
+                secret = PotentialSecret.load_secret_from_dict(
+                    {'filename': filename, **item},
+                )
                 output[filename].add(secret)
 
         return output
@@ -55,7 +90,11 @@ class SecretsCollection:
         if not num_processors:
             num_processors = mp.cpu_count()
 
-        with mp.Pool(processes=num_processors) as p:
+        with mp.Pool(
+            processes=num_processors,
+            initializer=initialize_settings,
+            initargs=(get_settings(),),
+        ) as p:
             for secrets in p.imap_unordered(
                 _scan_file_and_serialize,
                 [os.path.join(self.root, filename) for filename in filenames],
@@ -74,7 +113,7 @@ class SecretsCollection:
         try:
             for secret in scan.scan_diff(diff):
                 self[secret.filename].add(secret)
-        except ImportError:     # pragma: no cover
+        except ImportError:  # pragma: no cover
             raise NotImplementedError(
                 'SecretsCollection.scan_diff requires `unidiff` to work. Try pip '
                 'installing that package, and try again.',
@@ -95,10 +134,7 @@ class SecretsCollection:
                 continue
 
             # This allows us to obtain the same secret, by accessing the hash.
-            mapping = {
-                secret: secret
-                for secret in self.data[filename]
-            }
+            mapping = {secret: secret for secret in self.data[filename]}
 
             for old_secret in old_results.data[filename]:
                 if old_secret not in mapping:
@@ -141,9 +177,7 @@ class SecretsCollection:
         if scanned_results is None:
             scanned_results = SecretsCollection()
             filelist = [
-                filename
-                for filename in self.files
-                if not os.path.exists(filename)
+                filename for filename in self.files if not os.path.exists(filename)
             ]
 
         if not filelist:
@@ -201,7 +235,7 @@ class SecretsCollection:
         return dict(output)
 
     def exactly_equals(self, other: Any) -> bool:
-        return self.__eq__(other, strict=True)      # type: ignore
+        return self.__eq__(other, strict=True)  # type: ignore
 
     def __getitem__(self, filename: str) -> Set[PotentialSecret]:
         return self.data[filename]
@@ -219,8 +253,8 @@ class SecretsCollection:
                 key=lambda secret: (
                     getattr(secret, 'line_number', 0),
                     secret.secret_hash,
-                    secret.type
-                )
+                    secret.type,
+                ),
             ):
                 yield filename, secret
 
