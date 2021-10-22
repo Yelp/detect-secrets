@@ -2,8 +2,11 @@
 This plugin finds JWT tokens
 """
 import base64
+import jwt
 import json
 import re
+import datetime  
+from datetime import datetime
 from typing import Generator
 
 from .base import RegexBasedDetector
@@ -19,6 +22,7 @@ class JwtTokenDetector(RegexBasedDetector):
     def analyze_string(self, string: str) -> Generator[str, None, None]:
         yield from filter(
             self.is_formally_valid,
+            self.is_time_valid,
             super().analyze_string(string),
         )
 
@@ -42,5 +46,15 @@ class JwtTokenDetector(RegexBasedDetector):
                     _ = json.loads(b64_decoded.decode('utf-8'))
             except (TypeError, ValueError, UnicodeDecodeError):
                 return False
+            
+    @staticmethod
+    def is_time_valid(token: str) -> bool:
+        try:
+            json_data = jwt.decode(token,options={"verify_signature": False})
+            json_exp_date_time = datetime.fromtimestamp( json_data['exp']  )  
+            if datetime.now() > json_exp_date_time:
+                return False
+        except (TypeError, ValueError, UnicodeDecodeError):
+            return False
 
         return True
