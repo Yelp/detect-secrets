@@ -21,7 +21,7 @@ class SlackDetector(RegexBasedDetector):
         re.compile(r'xox(?:a|b|p|o|s|r)-(?:\d+-)+[a-z0-9]+', flags=re.IGNORECASE),
         # Slack Webhooks
         re.compile(
-            r'https://hooks.slack.com/services/T[a-zA-Z0-9_]+/B[a-zA-Z0-9_]+/[a-zA-Z0-9_]+',
+            r'https://hooks\.slack\.com/services/T[a-zA-Z0-9_]+/B[a-zA-Z0-9_]+/[a-zA-Z0-9_]+',
             flags=re.IGNORECASE | re.VERBOSE,
         ),
     )
