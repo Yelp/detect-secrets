@@ -145,7 +145,12 @@ class RegexBasedDetector(BasePlugin, metaclass=ABCMeta):
     def analyze_string(self, string: str) -> Generator[str, None, None]:
         for regex in self.denylist:
             for match in regex.findall(string):
-                yield match
+                if isinstance(match, tuple):
+                    for submatch in filter(bool, tuple):
+                        # It might make sense to paste break after yielding
+                        yield submatch
+                else:
+                    yield match
 
     @staticmethod
     def build_assignment_regex(
