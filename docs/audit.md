@@ -6,7 +6,7 @@ a pre-generated baseline. Some common use cases of this include:
 -   **Manually labelling secrets**, to distinguish between true and false positives
 -   **Comparing baselines**, to determine the effect of a certain configuration
 
-## How to auditing a Baseline
+## How to Audit a Baseline
 
 This is an optional step to label the results in your baseline. It can be used to narrow down your checklist of secrets to migrate, or to better configure your plugins to improve its signal-to-noise ratio.
 
