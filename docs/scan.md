@@ -40,7 +40,7 @@ You'll find a **`results`** object, which contains a list of file paths correspo
   "results": {
     "detect_secrets/plugins/private_key.py": [
       {
-        "hashed_secret": "daefe0b4345a654580dcad25c7c11ff4c944a8c0",
+        "hashed_secret": "513e0a36963ae1e8431c041b744679ee578b7c44",
         "is_secret": false,
         "is_verified": false,
         "line_number": 45,
@@ -52,7 +52,7 @@ You'll find a **`results`** object, which contains a list of file paths correspo
 | Field           | Description                                                                                                                                                                                                                 |
 | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `hashed_secret` | The hash of the detected secret. The baseline file will not record raw secrets. To see them in plaintext, run `detect-secrets audit --display-results .secrets.baseline`.                                                   |
-| `is_secret`     | This field is manually set when interactively auditing a baseline file (`detect-secrets audit .secrets.baseline`). This field is for auditing / record-keeping purposes.                                                    |
+| `is_secret`     | This field is manually set when interactively auditing a baseline file (`detect-secrets audit .secrets.baseline`). This field is for auditing / record-keeping purposes.results                                                    |
 | `is_verified`   | Set automatically based off active secret validation; however, there are [those which are _not_ validated](#secret-verification). If this field is true, it means the associated token is active, and requires remediation. |
 | `line_number`   | The line number that the secret is found on.                                                                                                                                                                                |
 | `type`          | The secret type.                                                                                                                                                                                                            |
