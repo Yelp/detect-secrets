@@ -13,7 +13,6 @@
 -   [Excluding Files](#excluding-files)
 -   [Plugins](#plugins)
 -   [Adjusting the Scan Sensitivity](#adjusting-the-scan-sensitivity)
--   [Code](#code)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -25,7 +24,7 @@ This snapshot should be stored in a baseline file and updated on an as-needed ba
 
 ### Pre-commit Hook
 
-The pre-commit hook uses Detect Secrets' scanning functionality to scan your code before it gets committed. It's recommended to set up this hook ([docs](./docs/../developer-tool-faq.md#how-do-i-set-up-the-pre-commit-hook)) to prevent leaks before they reach GitHub.
+The pre-commit hook uses `detect-secrets`'s scanning functionality to scan your code before it gets committed. It's recommended to set up this hook ([docs](./docs/../developer-tool-faq.md#how-do-i-set-up-the-pre-commit-hook)) to prevent leaks before they reach GitHub.
 
 It's also known as the [`detect-secrets-hook`](./detect-secrets/pre_commit_hook.py).
 
@@ -35,7 +34,7 @@ This file contains the output of a scan. This includes a list of detected secret
 
 #### Notable Fields
 
-You'll find a **`results`** object which contains lists of detected tokens under the names of files they were detected in, for example:
+You'll find a **`results`** object, which contains a list of file paths corresponding to detected token data; for example:
 
 ```json
   "results": {
@@ -50,17 +49,17 @@ You'll find a **`results`** object which contains lists of detected tokens under
       },
 ```
 
-| Field           | Description                                                                                                                                                                                                                                                                                     |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `hashed_secret` | The hash of the detected secret. The baseline file will not record raw secrets. To see them in plaintext, run `detect-secrets audit --display-results .secrets.baseline`.                                                                                                                       |
-| `is_secret`     | This field is manually set when interactively auditing a baseline file (`detect-secrets audit .secrets.baseline`). The only time it should ever be true is when a valid secret has been detected in your codebase and has been remediated. This field is for auditing / record-keeping purposes |
-| `is_verified`   | Set automatically based off the result of detect-secrets validating if your secret is active. If this field is set to true, it means that the associated token is active and requires remediation.                                                                                              |
-| `line_number`   | The line number that the secret is found on                                                                                                                                                                                                                                                     |
-| `type`          | The secret                                                                                                                                                                                                                                                                                      |
+| Field           | Description                                                                                                                                                                                                                 |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `hashed_secret` | The hash of the detected secret. The baseline file will not record raw secrets. To see them in plaintext, run `detect-secrets audit --display-results .secrets.baseline`.                                                   |
+| `is_secret`     | This field is manually set when interactively auditing a baseline file (`detect-secrets audit .secrets.baseline`). This field is for auditing / record-keeping purposes.                                                    |
+| `is_verified`   | Set automatically based off active secret validation; however, there are [those which are _not_ validated](#secret-verification). If this field is true, it means the associated token is active, and requires remediation. |
+| `line_number`   | The line number that the secret is found on.                                                                                                                                                                                |
+| `type`          | The secret type.                                                                                                                                                                                                            |
 
 ## What Gets Scanned?
 
-The repository's files are scanned in ther current state. Detect Secrets will not run a "deep scan" of the repository (i.e. full commit history).
+The repository's files are scanned in their current state. `detect-secrets` will not run a "deep scan" of the repository (i.e. full commit history).
 
 ### Secret Verification
 
@@ -74,16 +73,14 @@ If you're updating an existing baseline, your previous auditing results and sett
 
 ## Excluding Files
 
-Detect Secrets gives you the option to [exclude files from being scanned](./developer-tool-faq.md#exclude-some-files-with-the-exclude-files-option) as well [allowlist](./developer-tool-faq.md#how-do-i-use-inline-allowlisting) specfici lines of code.
+`detect-secrets` gives you the option to [exclude files from being scanned](./developer-tool-faq.md#exclude-some-files-with-the-exclude-files-option), as well as to [allowlist](./developer-tool-faq.md#how-do-i-use-inline-allowlisting) lines of code.
 
 ## Plugins
 
-Detect-secrets uses [plugin detectors](./README.md#plugins) to identify certain types of secrets. You have the option to disable detectors, although this is not recommended (see `detect-secrets scan --help `).
+`detect-secrets` uses [plugin detectors](./README.md#plugins) to identify certain types of secrets. You have the option to disable detectors, although this is not recommended (see `detect-secrets scan --help `).
 
 ## Adjusting the Scan Sensitivity
 
-If Detect Secrets is being overly-sensitive or not sensitive enough when scanning for secrets, you'll need to adjust some settings. See [`detect-secrets` generates too many false positives. What should I do?](#detect-secrets-generates-too-many-false-positives-what-should-i-do) to learn more about what you can do to fix this.
+If `detect-secrets` is overly sensitive, or not sensitive enough when scanning for secrets, you'll need to adjust some settings (see [`detect-secrets` generates too many false positives. What should I do?](#detect-secrets-generates-too-many-false-positives-what-should-i-do)).
 
-## Code
-
-The scanning process is found in [`detect_secrets.core.scan`], and is interfaced through `SecretsCollection`.
+---
