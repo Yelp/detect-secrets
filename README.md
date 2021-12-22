@@ -62,7 +62,7 @@ $ detect-secrets audit .secrets.baseline
 
 Commit the `.secrets.baseline` file to your repo with remediated files after auditing.
 
-For more information see [audit documentation.](audit.md#what-to-do-after-marking-an-potential-secret-as-a-valid-secret?)
+For more information see [audit documentation](audit.md#what-to-do-after-marking-an-potential-secret-as-a-valid-secret?).
 
 ### Detection: Reducing False Positives during Baseline Scan
 
