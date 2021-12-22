@@ -201,7 +201,7 @@ Our developer tool uses the following plugins by default
 
 > Note that all of the listed plugins are used by Detect Secrets, but only certain ones support verification (i.e. checking if the tokens are active)
 
-Support verification
+Supports verification
 
 -   AWS Key
 -   Slack
@@ -216,7 +216,7 @@ Support verification
 -   Stripe
 -   Mailchimp
 
-Do not support verification
+Does not support verification
 
 -   Private Key Detector
 -   Basic Auth Detector
