@@ -1,5 +1,21 @@
 # Scanning
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [What it does](#what-it-does)
+  - [Baseline file](#baseline-file)
+  - [Notable fields](#notable-fields)
+  - [Secret validation](#secret-validation)
+- [What is scanned?](#what-is-scanned)
+- [How it's used](#how-its-used)
+- [Excluding files](#excluding-files)
+- [Plugins](#plugins)
+- [Adjusting the scan](#adjusting-the-scan)
+- [Code](#code)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 ## What it does
 
 `detect-secrets scan` scans the entire codebase and outputs a snapshot of currently identified secrets.
@@ -25,7 +41,7 @@ You'll find `results` object which contains files as well as potential secrets d
       },
 ```
 
-Notable fields:
+### Notable fields
 
 | Field             | Description                                                                                                                                                                                                                                                                                     |
 | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
