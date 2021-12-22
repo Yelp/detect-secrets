@@ -14,6 +14,7 @@
   - [How do I generate a baseline file?](#how-do-i-generate-a-baseline-file)
   - [How do I re-generate (update) my baseline file?](#how-do-i-re-generate-update-my-baseline-file)
   - [How do I audit my baseline file?](#how-do-i-audit-my-baseline-file)
+  - [What to do after marking an potential secret as a valid secret?](#what-to-do-after-marking-an-potential-secret-as-a-valid-secret?)
   - [How can fixed entries be removed from my baseline file?](#how-can-fixed-entries-be-removed-from-my-baseline-file)
   - [Will `detect-secrets` find tokens in git history?](#will-detect-secrets-find-tokens-in-git-history)
   - [What kinds of tokens does detect-secrets find?](#what-kinds-of-tokens-does-detect-secrets-find)
@@ -156,6 +157,10 @@ detect-secrets scan --update <baseline_file> <optional --no-xxx-scan or --use-al
 ## How do I audit my baseline file?
 
 -   You can audit entries which do not have the `is_secret` field with `detect-secrets audit <baseline>`
+
+## What to do after marking an potential secret as a valid secret?
+
+See [audit doc](audit.md#what-to-do-after-marking-an-potential-secret-as-a-valid-secret?)
 
 ## How can fixed entries be removed from my baseline file?
 
