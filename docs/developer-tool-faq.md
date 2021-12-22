@@ -3,18 +3,20 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [pip setup](#pip-setup)
   - [I’m getting a `Could not install packages due to an Environment Error: [Errno 13] Permission denied: ` error when installing the `detect-secrets` pip package. What should I do?](#im-getting-a-could-not-install-packages-due-to-an-environment-error-errno-13-permission-denied--error-when-installing-the-detect-secrets-pip-package-what-should-i-do)
   - [I cannot find the `detect-secrets` binary after installation](#i-cannot-find-the-detect-secrets-binary-after-installation)
   - [How do I upgrade `detect-secrets` to a newer version?](#how-do-i-upgrade-detect-secrets-to-a-newer-version)
+    - [Upgrade for user mode](#upgrade-for-user-mode)
+    - [Upgrade for global mode - keep install to global mode](#upgrade-for-global-mode---keep-install-to-global-mode)
+    - [Upgrade for global mode - switch to user mode](#upgrade-for-global-mode---switch-to-user-mode)
   - [How do I upgrade the `detect-secrets` pre-commit hook?](#how-do-i-upgrade-the-detect-secrets-pre-commit-hook)
 - [General usage](#general-usage)
   - [Which python versions does detect-secrets support?](#which-python-versions-does-detect-secrets-support)
   - [How do I generate a baseline file?](#how-do-i-generate-a-baseline-file)
   - [How do I re-generate (update) my baseline file?](#how-do-i-re-generate-update-my-baseline-file)
   - [How do I audit my baseline file?](#how-do-i-audit-my-baseline-file)
-  - [What to do after marking an potential secret as a valid secret?](#what-to-do-after-marking-an-potential-secret-as-a-valid-secret?)
+  - [What to do after marking an potential secret as a valid secret?](#what-to-do-after-marking-an-potential-secret-as-a-valid-secret)
   - [How can fixed entries be removed from my baseline file?](#how-can-fixed-entries-be-removed-from-my-baseline-file)
   - [Will `detect-secrets` find tokens in git history?](#will-detect-secrets-find-tokens-in-git-history)
   - [What kinds of tokens does detect-secrets find?](#what-kinds-of-tokens-does-detect-secrets-find)
@@ -22,17 +24,28 @@
   - [Which plugins are used in the scan by default?](#which-plugins-are-used-in-the-scan-by-default)
   - [How do I use fewer plugins when scanning?](#how-do-i-use-fewer-plugins-when-scanning)
   - [`detect-secrets` generates too many false positives. What should I do?](#detect-secrets-generates-too-many-false-positives-what-should-i-do)
+    - [Exclude some files with the `—exclude-files` option.](#exclude-some-files-with-the-exclude-files-option)
+    - [Tune the threshold for the entropy based scanner](#tune-the-threshold-for-the-entropy-based-scanner)
+    - [Use fewer scanners](#use-fewer-scanners)
   - [Why did `detect-secrets` not find some secrets in my code?](#why-did-detect-secrets-not-find-some-secrets-in-my-code)
+    - [Cause 1: Not using all plugins](#cause-1-not-using-all-plugins)
+    - [Cause 2: Verifiable token is verified as false](#cause-2-verifiable-token-is-verified-as-false)
+    - [Cause 3: The entropy threshold is too high for entropy based plugins](#cause-3-the-entropy-threshold-is-too-high-for-entropy-based-plugins)
+    - [Cause 4: Unsupported token type](#cause-4-unsupported-token-type)
   - [Why is the `detect-secrets` pre-commit output messed up with multiple headings and footers?](#why-is-the-detect-secrets-pre-commit-output-messed-up-with-multiple-headings-and-footers)
   - [How do I configure the `detect-secrets` pre-commit hook with the Node.js husky library?](#how-do-i-configure-the-detect-secrets-pre-commit-hook-with-the-nodejs-husky-library)
   - [How do I use inline allowlisting?](#how-do-i-use-inline-allowlisting)
   - [Why does my scan get stuck](#why-does-my-scan-get-stuck)
   - [Can I use detect-secrets to detect secrets in an arbitrary file system/folder that is not a git repo?](#can-i-use-detect-secrets-to-detect-secrets-in-an-arbitrary-file-systemfolder-that-is-not-a-git-repo)
   - [Why is detect-secrets not verifying my password on DB2 for zOS?](#why-is-detect-secrets-not-verifying-my-password-on-db2-for-zos)
+    - [Missing certificates (known limitation)](#missing-certificates-known-limitation)
 - [docker setup](#docker-setup)
   - [How do I install the `detect-secrets` docker image?](#how-do-i-install-the-detect-secrets-docker-image)
     - [Prerequisite](#prerequisite)
     - [Setup steps](#setup-steps)
+      - [1. scan with docker image](#1-scan-with-docker-image)
+      - [2. audit the baseline file](#2-audit-the-baseline-file)
+      - [3. setup pre-commit hook](#3-setup-pre-commit-hook)
   - [How do I run a scan with the docker image?](#how-do-i-run-a-scan-with-the-docker-image)
     - [Windows Powershell and cmd](#windows-powershell-and-cmd)
     - [Windows git bash](#windows-git-bash)
@@ -52,9 +65,9 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-# pip setup
+## pip setup
 
-## I’m getting a `Could not install packages due to an Environment Error: [Errno 13] Permission denied: ` error when installing the `detect-secrets` pip package. What should I do?
+### I’m getting a `Could not install packages due to an Environment Error: [Errno 13] Permission denied: ` error when installing the `detect-secrets` pip package. What should I do?
 
 This is normally caused by `pip` trying to add the package to system folders which the current user does not have write permission to. You can try to add the `--user` option to `pip install` like below
 
@@ -70,11 +83,11 @@ pip install --user --upgrade pip
 
 Then perform the `detect-secrets` install again.
 
-## I cannot find the `detect-secrets` binary after installation
+### I cannot find the `detect-secrets` binary after installation
 
 By default, the tool will be installed at `~/Library/Python/<python_version>/bin/detect-secrets` on Mac (similar directory on Linux). If you cannot find `detect-secrets`, you can add the installation bin directory to your PATH by running `export PATH=$PATH:~/Library/Python/<python_version>/bin`
 
-## How do I upgrade `detect-secrets` to a newer version?
+### How do I upgrade `detect-secrets` to a newer version?
 
 `detect-secrets` can be installed in either `user` mode or `global` mode. You can run the one-liner below to identify where `detect-secrets` is installed.
 
@@ -109,7 +122,7 @@ If you cannot find `detect-secrets` after upgrading, refer to [this](#i-cannot-f
 
 > Note: if you install `detect-secrets` as a pre-commit hook, you should also [upgrade it in the `pre-commit` framework](#how-do-i-upgrade-the-detect-secrets-pre-commit-hook).
 
-## How do I upgrade the `detect-secrets` pre-commit hook?
+### How do I upgrade the `detect-secrets` pre-commit hook?
 
 > Note: `autoupdate` only scans for tags on the master branch. It does **not** support the dss branch right now. Before dss has been released to the master branch, please use a specific version tag such as `rev: 0.13.0+ibm.7.dss` in `.pre-commit-config.yaml` to get the latest dss version.
 
@@ -132,9 +145,9 @@ pre-commit gc
 pre-commit autoupdate
 ```
 
-# General usage
+## General usage
 
-## Which python versions does detect-secrets support?
+### Which python versions does detect-secrets support?
 
 This tool supports Python 3.5 and above. Since Python 2 reached its end of life on January 1st, 2020, `detect-secrets` supported Python 2 until July 1st, 2020.
 
@@ -142,36 +155,36 @@ You can follow the guide [here](https://docs.python-guide.org/starting/installat
 
 > Note: If you are using macOS, the default Python installation is version 2, please make sure you follow the guide above to properly install Python 3.
 
-## How do I generate a baseline file?
+### How do I generate a baseline file?
 
 ```shell
 detect-secrets scan --update <baseline>
 ```
 
-## How do I re-generate (update) my baseline file?
+### How do I re-generate (update) my baseline file?
 
 ```shell
 detect-secrets scan --update <baseline_file> <optional --no-xxx-scan or --use-all-plugins to adjust scan plugin list>
 ```
 
-## How do I audit my baseline file?
+### How do I audit my baseline file?
 
 -   You can audit entries which do not have the `is_secret` field with `detect-secrets audit <baseline>`
 
-## What to do after marking an potential secret as a valid secret?
+### What to do after marking an potential secret as a valid secret?
 
 See [audit doc](audit.md#what-to-do-after-marking-an-potential-secret-as-a-valid-secret?)
 
-## How can fixed entries be removed from my baseline file?
+### How can fixed entries be removed from my baseline file?
 
 -   Running `detect-secrets scan --update <baseline_file>` will clean up old entries.
 -   Once you have the pre-commit hook configured, if there are no new issues found, this hook will clean up old (remediated) entries from the baseline file. You can also manually trigger this process by running `detect-secrets-hook --baseline <baseline> <changed_file>`. If the pre-commit check fails, the baseline file will not be updated.
 
-## Will `detect-secrets` find tokens in git history?
+### Will `detect-secrets` find tokens in git history?
 
 No, by default the `detect-secrets` CLI tool only scans the code in the current commit.
 
-## What kinds of tokens does detect-secrets find?
+### What kinds of tokens does detect-secrets find?
 
 Our developer tool uses the following plugins by default:
 
@@ -201,24 +214,24 @@ Does not support verification
 
 If you wish, check out our plugins folder (`detect_secrets/plugins`) for more details about what we scan.
 
-## Why is the Slack webhook considered a secret?
+### Why is the Slack webhook considered a secret?
 
 Based on the Slack doc below, incoming webhooks should be considered secrets <https://api.slack.com/messaging/webhooks>.
 
 > Keep it secret, keep it safe. Your webhook URL contains a secret. Don't share it online, including via public version control repositories. Slack actively searches out and revokes leaked secrets.
 
-## Which plugins are used in the scan by default?
+### Which plugins are used in the scan by default?
 
 -   All plugins will be used when not reading the config from an existing baseline.
 -   When using the `--update <baseline>` option with the existing baseline, the tool will only use the plugins listed in the baseline. Use `--use-all-plugins` along with `--update <baseline>` to force the use of all plugins.
 
-## How do I use fewer plugins when scanning?
+### How do I use fewer plugins when scanning?
 
 You can use the `--use-all-plugins` and `--no-xxx-scan` options (replace `xxx` with plugin name, use `detect-secrets scan --help` to list out the options) to customize the plugin list. The added plugins will persist in the baseline file. If you use `-—update <baseline>` in `detect-secrets` or `--baseline <baseline>` in `detect-secrets-hook` to run a scan without additional options, the plugins used will be read from the baseline file.
 
 Example: `detect-secrets scan --update .secrets.baseline --use-all-plugins`
 
-## `detect-secrets` generates too many false positives. What should I do?
+### `detect-secrets` generates too many false positives. What should I do?
 
 If the false positive hits are overwhelming, you can tune the tool in several ways (it's recommended to try this before turning off the check):
 
@@ -253,7 +266,7 @@ detect-secrets scan --hex-limit <new_limit>
 detect-secrets scan --no-base64-string-scan --no-hex-string-scan
 ```
 
-## Why did `detect-secrets` not find some secrets in my code?
+### Why did `detect-secrets` not find some secrets in my code?
 
 There are several things that can cause this. Many of them are by design and intended to avoid false positives. These behaviors can be adjusted.
 
@@ -280,7 +293,7 @@ Tuning the entropy to a lower value by following the [tune the threshold for ent
 
 This can happen if the signature of one token type is not supported by the `detect-secrets` tool. You can contribute a new token type following the guide [here](../CONTRIBUTING.md#process-for-adding-a-new-secret-detector-to-whitewater-detect-secrets).
 
-## Why is the `detect-secrets` pre-commit output messed up with multiple headings and footers?
+### Why is the `detect-secrets` pre-commit output messed up with multiple headings and footers?
 
 Below is what a usual pre-commit scan output looks like. The potential secrets warning heading is printed first, then followed by the found secret type and locations, then the possible mitigations footer.
 
@@ -318,7 +331,7 @@ To avoid messed up output, you can add `require_serial: true` option to `pre-com
         require_serial: true
 ```
 
-## How do I configure the `detect-secrets` pre-commit hook with the Node.js husky library?
+### How do I configure the `detect-secrets` pre-commit hook with the Node.js husky library?
 
 If you are using the [husky](https://github.com/typicode/husky) library to manage the pre-commit hook, you can use the snippet below in your `package.json` to properly invoke `detect-secrets-hook`. The main problem is that detect-secrets-hook is expecting a list of files in the git staging area. husky is not feeding the file list to the pre-commit hook line as a parameter. The following setting will manually generate the list of staged files.
 
@@ -330,7 +343,7 @@ If you are using the [husky](https://github.com/typicode/husky) library to manag
   }
 ```
 
-## How do I use inline allowlisting?
+### How do I use inline allowlisting?
 
 The tool supports the following inline allowlisting syntax.
 
@@ -346,7 +359,7 @@ secret <!-- pragma: allowlist secret -->
 secret <!-- # pragma: allowlist secret -->
 ```
 
-## Why does my scan get stuck
+### Why does my scan get stuck
 
 There are most likely some big text files causing the scan to run very slowly. This gives the appearance that the scan is stuck. You can find these offending files and exclude them from scanning.
 
@@ -358,7 +371,7 @@ detect-secrets --verbose scan <file_or_folder_to_scan>
 
 The command above will emit which file is currently being scanned. Once you've identified the file, you can use `--exclude-lines` option to skip the offending file(s).
 
-## Can I use detect-secrets to detect secrets in an arbitrary file system/folder that is not a git repo?
+### Can I use detect-secrets to detect secrets in an arbitrary file system/folder that is not a git repo?
 
 Yes.
 
@@ -374,7 +387,7 @@ To scan an arbitrary folder, use the `scan --all-files` option
  detect-secrets scan --all-files <folder_name>
 ```
 
-## Why is detect-secrets not verifying my password on DB2 for zOS?
+### Why is detect-secrets not verifying my password on DB2 for zOS?
 
 A known case when DB2 for zOS password has not been caught is that you are missing certificates (known limitation).
 
@@ -384,13 +397,13 @@ If your DB2 server requires a keystore DB and a keystash file to connect, then `
 verify the token. This is known limitation. You can still run the scan with `--no-verify` flag;
 It will report on the potential password string, but won't verify it against remote DB2 server.
 
-# docker setup
+## docker setup
 
 The `detect-secrets` tool can also be run as a docker container. It supports Windows 10, macOS and Linux environments.
 
-## How do I install the `detect-secrets` docker image?
+### How do I install the `detect-secrets` docker image?
 
-### Prerequisite
+#### Prerequisite
 
 You need to have Python and [install the pre-commit framework](https://pre-commit.com/#install). The docker image of `detect-secrets` saves you the effort of installing the detect-secret pip package, which would require a heavy weight compilation environment. Besides that, please also make sure you have [docker installed](https://docs.docker.com/install/).
 
@@ -398,22 +411,23 @@ You need to have Python and [install the pre-commit framework](https://pre-commi
 1. pre-commit framework [installed](https://pre-commit.com/#install)
 1. docker [installed](https://docs.docker.com/install/)
 
-### Setup steps
-#### 1. scan with docker image
+#### Setup steps
+
+##### 1. scan with docker image
 
 See [How do I run a scan with the docker image?](#how-do-i-run-a-scan-with-the-docker-image)
 
-#### 2. audit the baseline file
+##### 2. audit the baseline file
 
 See [How do I run an audit with the docker image?](#how-do-i-run-an-audit-with-the-docker-image)
 
-#### 3. setup pre-commit hook
+##### 3. setup pre-commit hook
 
 See [How do I setup a pre-commit hook with the docker image?](#how-do-i-setup-a-pre-commit-hook-with-the-docker-image)
 
-## How do I run a scan with the docker image?
+### How do I run a scan with the docker image?
 
-### Windows Powershell and cmd
+#### Windows Powershell and cmd
 
 > Note: You can also setup a Powershell script following [doc here](#powershell-docker-command-is-too-long-do-you-have-some-shortcut-for-detect-secrets) to avoid typing the long command.
 
@@ -428,7 +442,7 @@ docker run -it --rm -v c:/replace/with/your/folder/containing/git/repo:/code ibm
 docker run -it --rm -v c:/replace/with/your/folder/containing/git/repo:/code ibmcom/detect-secrets:latest scan --update .secrets.baseline
 ```
 
-### Windows git bash
+#### Windows git bash
 
 ```shell
 # the leading / is important for git bash env
@@ -439,7 +453,7 @@ winpty docker run -it --rm -v /$(pwd):/code ibmcom/detect-secrets:latest scan
 winpty docker run -it --rm -v /$(pwd):/code ibmcom/detect-secrets:latest scan --update .secrets.baseline
 ```
 
-### MacOS & Linux
+#### MacOS & Linux
 
 ```shell
 # scan
@@ -449,9 +463,9 @@ docker run -it --rm -v $(pwd):/code ibmcom/detect-secrets:latest scan
 docker run -it --rm -v $(pwd):/code ibmcom/detect-secrets:latest scan --update .secrets.baseline
 ```
 
-## How do I run an audit with the docker image?
+### How do I run an audit with the docker image?
 
-### Windows Powershell and cmd
+#### Windows Powershell and cmd
 
 > Note: You can also setup a Powershell script following [doc here](#powershell-docker-command-is-too-long-do-you-have-some-shortcut-for-detect-secrets) to avoid typing the long command.
 
@@ -459,19 +473,19 @@ docker run -it --rm -v $(pwd):/code ibmcom/detect-secrets:latest scan --update .
 docker run -it --rm -v c:/replace/with/your/folder/containing/git/repo:/code ibmcom/detect-secrets:latest audit .secrets.baseline
 ```
 
-### Windows git bash
+#### Windows git bash
 
 ```shell
 winpty docker run -it --rm -v /$(pwd):/code ibmcom/detect-secrets:latest audit .secrets.baseline
 ```
 
-### MacOS & Linux
+#### MacOS & Linux
 
 ```shell
 docker run -it --rm -v $(pwd):/code ibmcom/detect-secrets:latest audit .secrets.baseline
 ```
 
-## How do I setup a pre-commit hook with the docker image?
+### How do I setup a pre-commit hook with the docker image?
 
 1. Add the following content to `.pre-commit-config.yaml`.
 
@@ -493,15 +507,15 @@ git config --global core.safecrlf false
 
 1. Install the pre-commit hook to the git repo with `pre-commit install`
 
-## How do I upgrade docker image in a pre-commit hook?
+### How do I upgrade docker image in a pre-commit hook?
 
 1. Identify the docker image tag for `ibmcom/detect-secrets-hook` in your `.pre-commit-config.yaml` file. For example, the default is `latest`.
 1. If you are using a latest tag such as `latest`.
-   1. In a terminal, run `docker pull ibmcom/detect-secrets-hook:latest` to get the latest image.
+    1. In a terminal, run `docker pull ibmcom/detect-secrets-hook:latest` to get the latest image.
 1. If you are using a specific version tag, such as `0.13.1+ibm.37.dss`
-   1. Update the `.pre-commit-config.yaml` to use a newer version tag.
+    1. Update the `.pre-commit-config.yaml` to use a newer version tag.
 
-## Can I pull a specific version of docker image?
+### Can I pull a specific version of docker image?
 
 Yes, any tag listed [in docker hub for image ibmcom/detect-secrets](https://hub.docker.com/repository/docker/ibmcom/detect-secrets) can be used. You can use the same approach to find tags for `ibmcom/detect-secrets-hook`.
 
@@ -509,24 +523,24 @@ The latest version for `detect-secrets` suite is `latest`.
 
 > Note: due to docker tagging restriction, plus sign (`+`) is not allowed. The `+` in any tag on Github repo would be replaced by `.`. For example, tag `0.13.0+ibm.8.dss` would have docker image label `0.13.0.ibm.8.dss`
 
-## How do I run `detect-secrets` commands with the docker image on different operating systems?
+### How do I run `detect-secrets` commands with the docker image on different operating systems?
 
 To run other `detect-secrets` commands with the docker image, like the ones below in the "General Usage" section, you need to make sure you're using the correct prefix depending on which environment you're in. For example, if you wanted to run `detect-secrets scan --exclude-files '<folder_to_ignore>|<file_to_ignore>'`, you would do the following...
 
-### Windows Powershell and cmd
+#### Windows Powershell and cmd
 
 Replace `detect-secrets` with `docker run -it --rm -v c:/replace/with/your/folder/containing/git/repo:/code ibmcom/detect-secrets:latest`
 
 You can also setup a Powershell script following [doc here](#powershell-docker-command-is-too-long-do-you-have-some-shortcut-for-detect-secrets).
 
-### Windows git bash
+#### Windows git bash
 
 Replace `detect-secrets` with `winpty docker run -it --rm -v /$(pwd):/code ibmcom/detect-secrets:latest`
 
-### MacOS & Linux
+#### MacOS & Linux
 
 Replace `detect-secrets` with `docker run -it --rm -v $(pwd):/code ibmcom/detect-secrets:latest`
 
-## Powershell docker command is too long, do you have some shortcut for detect-secrets?
+### Powershell docker command is too long, do you have some shortcut for detect-secrets?
 
 Yes, if you are using Powershell, you can download [this file](https://github.com/ibm/detect-secrets/blob/master/user-config/detect-secrets.psm1) and follow the instruction in description to setup a Powershell command wrapper.
