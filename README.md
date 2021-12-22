@@ -125,7 +125,7 @@ secrets easily searchable, auditable, and maintainable.
 
 ### User Guide
 
-If you are an IBMer looking for more information on how to use this project as an end user please refer to the [user guide](https://w3.ibm.com/w3publisher/detect-secrets/developer-tool). Within this repo, see [docs](/docs/audit.md) for an FAQ and cheat-sheet.
+If you are an IBMer looking for more information on how to use this project as an end user please refer to the [user guide](https://w3.ibm.com/w3publisher/detect-secrets/developer-tool). Within this repo, see [docs](/docs) for an FAQ and cheat-sheet.
 
 ## Caveats
 
