@@ -62,6 +62,8 @@ $ detect-secrets audit .secrets.baseline
 
 Commit the `.secrets.baseline` file to your repo with remediated files after auditing.
 
+For more information see [audit documentation.](audit.md#what-to-do-after-marking-an-potential-secret-as-a-valid-secret?)
+
 ### Detection: Reducing False Positives during Baseline Scan
 
 Use the built-in help command `detect-secrets scan --help` to identify ways of excluding files, lines, or plugins that are generating too many false positives. Note that this comes with a security trade-off.
