@@ -16,8 +16,8 @@
   - [How do I generate a baseline file?](#how-do-i-generate-a-baseline-file)
   - [How do I re-generate (update) my baseline file?](#how-do-i-re-generate-update-my-baseline-file)
   - [How do I audit my baseline file?](#how-do-i-audit-my-baseline-file)
-  - [How can fixed entries be removed from my baseline file?](#how-can-fixed-entries-be-removed-from-my-baseline-file)
   - [What to do after marking an potential secret as a valid secret?](#what-to-do-after-marking-an-potential-secret-as-a-valid-secret)
+  - [How can fixed entries be removed from my baseline file?](#how-can-fixed-entries-be-removed-from-my-baseline-file)
   - [Will `detect-secrets` find tokens in git history?](#will-detect-secrets-find-tokens-in-git-history)
   - [What kinds of tokens does detect-secrets find?](#what-kinds-of-tokens-does-detect-secrets-find)
   - [Why is the Slack webhook considered a secret?](#why-is-the-slack-webhook-considered-a-secret)
@@ -171,14 +171,14 @@ detect-secrets scan --update <baseline_file> <optional --no-xxx-scan or --use-al
 
 -   You can audit entries which do not have the `is_secret` field with `detect-secrets audit <baseline>`
 
+### What to do after marking an potential secret as a valid secret?
+
+See [audit doc](audit.md#what-to-do-after-marking-an-potential-secret-as-a-valid-secret?)
+
 ### How can fixed entries be removed from my baseline file?
 
 -   Running `detect-secrets scan --update <baseline_file>` will clean up old entries.
 -   Once you have the pre-commit hook configured, if there are no new issues found, this hook will clean up old (remediated) entries from the baseline file. You can also manually trigger this process by running `detect-secrets-hook --baseline <baseline> <changed_file>`. If the pre-commit check fails, the baseline file will not be updated.
-
-### What to do after marking an potential secret as a valid secret?
-
-See [audit doc](audit.md#what-to-do-after-marking-an-potential-secret-as-a-valid-secret?)
 
 ### Will `detect-secrets` find tokens in git history?
 
