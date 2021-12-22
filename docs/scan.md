@@ -3,16 +3,16 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-- [What it does](#what-it-does)
-  - [Baseline file](#baseline-file)
-  - [Notable fields](#notable-fields)
-  - [Secret validation](#secret-validation)
-- [What is scanned?](#what-is-scanned)
-- [How it's used](#how-its-used)
-- [Excluding files](#excluding-files)
-- [Plugins](#plugins)
-- [Adjusting the scan](#adjusting-the-scan)
-- [Code](#code)
+-   [What it does](#what-it-does)
+    -   [Baseline file](#baseline-file)
+    -   [Notable fields](#notable-fields)
+    -   [Secret validation](#secret-validation)
+-   [What is scanned?](#what-is-scanned)
+-   [How it's used](#how-its-used)
+-   [Excluding files](#excluding-files)
+-   [Plugins](#plugins)
+-   [Adjusting the scan](#adjusting-the-scan)
+-   [Code](#code)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -43,14 +43,13 @@ You'll find `results` object which contains files as well as potential secrets d
 
 ### Notable fields
 
-| Field             | Description                                                                                                                                                                                                                                                                                     |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `hashed_secret`   | The hash of the detected secret. The baseline file will not record raw secrets. To see them in plaintext, run `detect-secrets audit --display-results .secrets.baseline`.                                                                                                                       |
-| `is_secret`       | This field is manually set when interactively auditing a baseline file (`detect-secrets audit .secrets.baseline`). The only time it should ever be true is when a valid secret has been detected in your codebase and has been remediated. This field is for auditing / record-keeping purposes |
-| `is_verified`     | Set automatically based off the result of detect-secrets validating if your secret is active. If this field is set to true, it means that the associated token is active and requires remediation.                                                                                              |
-| `line_number`     | The line number that the secret is found on                                                                                                                                                                                                                                                     |
-| `type`            | The secret type                                                                                                                                                                                                                                                                                 |
-| `verified_result` | TODO: https://github.com/Yelp/detect-secrets/blob/b914bb656f71a9baf7c6b3a713d4a8a1eb8f4436/detect_secrets/plugins/base.py                                                                                                                                                                       |
+| Field           | Description                                                                                                                                                                                                                                                                                     |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `hashed_secret` | The hash of the detected secret. The baseline file will not record raw secrets. To see them in plaintext, run `detect-secrets audit --display-results .secrets.baseline`.                                                                                                                       |
+| `is_secret`     | This field is manually set when interactively auditing a baseline file (`detect-secrets audit .secrets.baseline`). The only time it should ever be true is when a valid secret has been detected in your codebase and has been remediated. This field is for auditing / record-keeping purposes |
+| `is_verified`   | Set automatically based off the result of detect-secrets validating if your secret is active. If this field is set to true, it means that the associated token is active and requires remediation.                                                                                              |
+| `line_number`   | The line number that the secret is found on                                                                                                                                                                                                                                                     |
+| `type`          | The secret                                                                                                                                                                                                                                                                                      |
 
 ### Secret validation
 
