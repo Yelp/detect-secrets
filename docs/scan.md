@@ -3,16 +3,16 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
--   [What it does](#what-it-does)
-    -   [Baseline file](#baseline-file)
-    -   [Notable fields](#notable-fields)
-    -   [Secret validation](#secret-validation)
--   [What is scanned?](#what-is-scanned)
--   [How it's used](#how-its-used)
--   [Excluding files](#excluding-files)
--   [Plugins](#plugins)
--   [Adjusting the scan](#adjusting-the-scan)
--   [Code](#code)
+- [What it does](#what-it-does)
+  - [Baseline file](#baseline-file)
+    - [Notable fields](#notable-fields)
+  - [Secret verification](#secret-verification)
+- [What is scanned?](#what-is-scanned)
+- [How it's used](#how-its-used)
+- [Excluding files](#excluding-files)
+- [Plugins](#plugins)
+- [Adjusting the scan](#adjusting-the-scan)
+- [Code](#code)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -24,9 +24,11 @@ This snapshot should be stored in a baseline file and updated on an as-needed ba
 
 ### Baseline file
 
-This file contains a list of current and verified secrets along with scanning settings. After it is generated or updated, it should be [audited](./audit.md). For simplicity's sake, we'll focus on scanning in this document.
+This file contains the output of a scan. This includes a list of detected secrets, plugins used during scanning and their settings, and line & file exclusion info. After the baseline file generated or updated via the `scan` command, it should be [audited](./audit.md). For simplicity's sake, we'll focus on scanning in this document.
 
-You'll find `results` object which contains files as well as potential secrets detected within them, for example:
+#### Notable fields
+
+You'll find a **`results`** object which contains lists of detected tokens under the names of files they were detected in, for example:
 
 ```json
   "results": {
@@ -41,8 +43,6 @@ You'll find `results` object which contains files as well as potential secrets d
       },
 ```
 
-### Notable fields
-
 | Field           | Description                                                                                                                                                                                                                                                                                     |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `hashed_secret` | The hash of the detected secret. The baseline file will not record raw secrets. To see them in plaintext, run `detect-secrets audit --display-results .secrets.baseline`.                                                                                                                       |
@@ -51,13 +51,15 @@ You'll find `results` object which contains files as well as potential secrets d
 | `line_number`   | The line number that the secret is found on                                                                                                                                                                                                                                                     |
 | `type`          | The secret                                                                                                                                                                                                                                                                                      |
 
-### Secret validation
+### Secret verification
 
-Note that not only does the scan identify potential secrets, it also verifies if certain types of secrets in your codebase are active (TODO: link to docs for secret validation information).
+Not only does scanning identify potential tokens, it also verifies if certain types of tokens are active ([verifiable tokens list](./developer-tool-faq.md#what-kinds-of-tokens-does-detect-secrets-find)). I the `is_verified` field in your baseline is set to `true`, be sure to remediate the associated token and re-run the scan.
 
 ## What is scanned?
 
-Only the repository's current files are scanned, past commits are excluded. It's recommended to configure the pre-commit hook(TODO: link to docs) so that it will detect-secrets will scan local changes before they are committed.
+The repository's files are scanned in ther current state. Detect Secrets will not run a "deep scan" of the repository (i.e. full commit history).
+
+It's recommended to set up the pre-commit hook ([docs](#how-do-i-set-up-the-pre-commit-hook)) so that leaks can be prevented before they reach your codebase.
 
 ## How it's used
 
@@ -71,7 +73,9 @@ See the [Developer Tool FAQ](./developer-tool-faq.md#) (TODO: find exclude files
 
 ## Plugins
 
-Detect-secrets uses plugin detectors to identify specific secrets. You have the option to disable detectors, although this is not recommended. Learn more here (TODO: add link to FAQ for adjusting detectors / plugins used).
+Detect-secrets uses plugin detectors to identify specific types of tokens. You have the option to disable detectors, although this is not recommended. See (What kinds ### What kinds of tokens does detect-secrets find?
+
+Learn more here (TODO: add link to FAQ for adjusting detectors / plugins used).
 
 https://github.com/Yelp/detect-secrets#plugins
 
