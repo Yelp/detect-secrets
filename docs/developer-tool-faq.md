@@ -184,7 +184,7 @@ detect-secrets scan --update <baseline_file> <optional --no-xxx-scan or --use-al
 
 ### What to do after marking an potential secret as a valid secret?
 
-See [audit doc](audit.md#what-to-do-after-marking-an-potential-secret-as-a-valid-secret?)
+See [audit documentation](audit.md#what-to-do-after-marking-an-potential-secret-as-a-valid-secret?).
 
 ### How can fixed entries be removed from my baseline file?
 
@@ -382,7 +382,7 @@ To find the offending file, run the scan with the `--verbose` option like below
 detect-secrets --verbose scan <file_or_folder_to_scan>
 ```
 
-The command above will emit which file is currently being scanned. Once you've identified the file, you can use `--exclude-lines` option to skip the offending file(s).
+The command above will emit which file is currently being scanned. Once you've identified the file, you can use `--exclude-files` option to skip the offending file(s).
 
 ### Can I use detect-secrets to detect secrets in an arbitrary file system/folder that is not a git repo?
 
