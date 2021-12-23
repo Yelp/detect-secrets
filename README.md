@@ -52,6 +52,8 @@ $ detect-secrets scan --update .secrets.baseline
 
 Note: You may run this same command again to re-scan the repo and update the baseline file.
 
+For more information see [scan documentation](/docs/scan.md).
+
 ### Detection: Auditing a Baseline
 
 Run the following command to audit `.secrets.baseline`, marking secrets as true postitives or false positives. Remove true positives from your codebase, revoking them if they've been leaked remotely.
