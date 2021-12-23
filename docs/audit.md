@@ -1,5 +1,22 @@
 # Audit
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+-   [What Is It?](#what-is-it)
+-   [How to Audit a Baseline](#how-to-audit-a-baseline)
+    -   [Windows Powershell and cmd](#windows-powershell-and-cmd)
+    -   [Windows git bash](#windows-git-bash)
+    -   [MacOS & Linux](#macos--linux)
+-   [Manually Labelling Secrets](#manually-labelling-secrets)
+    -   [Handling Developer Secrets](#handling-developer-secrets)
+-   [What to do after marking an potential secret as a valid secret?](#what-to-do-after-marking-an-potential-secret-as-a-valid-secret)
+-   [Comparing Baselines](#comparing-baselines)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+## What Is It?
+
 The `audit` command is a set of functionality designed for analysts to do more with
 a pre-generated baseline. Some common use cases of this include:
 
@@ -16,7 +33,7 @@ $ detect-secrets audit .secrets.baseline
 
 ### Windows Powershell and cmd
 
-> Note: You can also setup a Powershell script following [doc here](https://github.com/IBM/detect-secrets/blob/master/docs/developer-tool-faq.md#powershell-docker-command-is-too-long-do-you-have-some-shortcut-for-detect-secrets) to avoid typing the long command.
+> Note: You can also setup a Powershell script following [doc here](./developer-tool-faq.md#powershell-docker-command-is-too-long-do-you-have-some-shortcut-for-detect-secrets) to avoid typing the long command.
 
 ```shell
 docker run -it --rm -v c:/replace/with/your/folder/containing/git/repo:/code ibmcom/detect-secrets:latest audit .secrets.baseline
