@@ -1,14 +1,9 @@
 # Audit
 
-The `audit` command is a set of functionality designed for analysts to do more with
-a pre-generated baseline. Some common use cases of this include:
-
--   **Manually labelling secrets**, to distinguish between true and false positives
--   **Comparing baselines**, to determine the effect of a certain configuration
-
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
+-   [What is it?](#what-is-it)
 -   [How to Audit a Baseline](#how-to-audit-a-baseline)
     -   [Windows Powershell and cmd](#windows-powershell-and-cmd)
     -   [Windows git bash](#windows-git-bash)
@@ -19,6 +14,14 @@ a pre-generated baseline. Some common use cases of this include:
 -   [Comparing Baselines](#comparing-baselines)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+## What is it?
+
+The `audit` command is a set of functionality designed for analysts to do more with
+a pre-generated baseline. Some common use cases of this include:
+
+-   **Manually labelling secrets**, to distinguish between true and false positives
+-   **Comparing baselines**, to determine the effect of a certain configuration
 
 ## How to Audit a Baseline
 
