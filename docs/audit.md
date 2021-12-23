@@ -3,7 +3,7 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
--   [What is it?](#what-is-it)
+-   [What Is It?](#what-is-it)
 -   [How to Audit a Baseline](#how-to-audit-a-baseline)
     -   [Windows Powershell and cmd](#windows-powershell-and-cmd)
     -   [Windows git bash](#windows-git-bash)
