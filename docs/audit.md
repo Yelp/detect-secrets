@@ -15,7 +15,7 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-## What is it?
+## What Is It?
 
 The `audit` command is a set of functionality designed for analysts to do more with
 a pre-generated baseline. Some common use cases of this include:
