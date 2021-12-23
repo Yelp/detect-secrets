@@ -26,7 +26,7 @@ This snapshot should be stored in a baseline file and updated on an as-needed ba
 
 The pre-commit hook uses `detect-secrets`'s scanning functionality to scan your code before it gets committed. It's recommended to set up this hook ([docs](./developer-tool-faq.md#how-do-i-set-up-the-pre-commit-hook)) to prevent leaks before they reach GitHub.
 
-It's also known as the [`detect-secrets-hook`](./detect-secrets/pre_commit_hook.py).
+It's also known as the [`detect-secrets-hook`](../detect_secrets/pre_commit_hook.py).
 
 ### Baseline File
 
