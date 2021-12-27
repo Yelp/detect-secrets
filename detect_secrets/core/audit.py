@@ -540,6 +540,19 @@ def _print_context(  # pragma: no cover
 
     print('-' * 10)
 
+    print(
+        '{}'.format(
+            colorize(
+                (
+                    'A potential secret was detected in this code.'
+                    ' If so, it should be remediated.'
+                ), AnsiColor.RED,
+            ),
+        ),
+    )
+
+    print('-' * 10)
+
     if error_obj:
         raise error_obj
 
@@ -561,7 +574,7 @@ def _get_user_decision(prompt_secret_decision=True, can_step_back=False):
             print('Invalid input.')
 
         if 'y' in allowable_user_input:
-            user_input_string = 'Is this a valid secret? i.e. not a false-positive (y)es, (n)o, '
+            user_input_string = 'Is this actually a secret? i.e. not a false-positive (y)es, (n)o, '
         else:
             user_input_string = 'What would you like to do? '
         if 'b' in allowable_user_input:
