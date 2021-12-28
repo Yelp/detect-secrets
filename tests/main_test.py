@@ -611,6 +611,8 @@ class TestMain:
                 ----------
                 {}
                 ----------
+                A potential secret was detected in this code. If so, it should be remediated.
+                ----------
                 Saving progress...
             """)[1:].format(
                 filename,

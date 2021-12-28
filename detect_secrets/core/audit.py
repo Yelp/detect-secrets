@@ -198,6 +198,7 @@ def compare_baselines(old_baseline_filename, new_baseline_filename):
                 plugins_used,
                 additional_header_lines=header,
                 force=is_removed,
+                exclude_remediation_note=True,
             )
             decision = _get_user_decision(
                 can_step_back=secret_iterator.can_step_back(),
@@ -481,6 +482,7 @@ def _print_context(  # pragma: no cover
     plugin_settings,
     additional_header_lines=None,
     force=False,
+    exclude_remediation_note=False,
 ):
     """
     :type filename: str
@@ -505,6 +507,10 @@ def _print_context(  # pragma: no cover
     :type force: bool
     :param force: if True, will print the lines of code even if it doesn't
         find the secret expected
+
+    :type exclude_remediation_note: bool
+    :param exclude_remediation_note: if True, the secret remediation note
+        won't be displayed
 
     :raises: SecretNotFoundOnSpecifiedLineError
     """
@@ -542,7 +548,7 @@ def _print_context(  # pragma: no cover
 
     if error_obj:
         raise error_obj
-    else:
+    elif not exclude_remediation_note:
         print(
             '{}'.format(
                 colorize(
