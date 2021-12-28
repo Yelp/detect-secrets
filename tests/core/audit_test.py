@@ -824,6 +824,8 @@ class TestPrintContext:
             19:b
             20:a
             ----------
+            A potential secret was detected in this code. If so, it should be remediated.
+            ----------
 
         """)[1:-1]
 
@@ -849,6 +851,8 @@ class TestPrintContext:
             4:c
             5:b
             6:a
+            ----------
+            A potential secret was detected in this code. If so, it should be remediated.
             ----------
 
         """)[1:-1]
@@ -911,6 +915,8 @@ class TestPrintContext:
             19:b
             20:a
             ----------
+            A potential secret was detected in this code. If so, it should be remediated.
+            ----------
 
         """)[1:-1]
 
@@ -950,6 +956,8 @@ class TestPrintContext:
             19:b
             20:a
             ----------
+            A potential secret was detected in this code. If so, it should be remediated.
+            ----------
 
         """)[1:-1]
 
@@ -988,6 +996,8 @@ class TestPrintContext:
             19:b
             20:a
             ----------
+            A potential secret was detected in this code. If so, it should be remediated.
+            ----------
 
         """)[1:-1]
 
@@ -1020,6 +1030,8 @@ class TestPrintContext:
             8:\u2570\u00BB ssh to server x:22324241234423414
             9:
             10:key="ToCynx5Se4e2PtoZxEhW7lUJcOX15c54"
+            ----------
+            A potential secret was detected in this code. If so, it should be remediated.
             ----------
 
         """)[1:-1]
@@ -1056,7 +1068,8 @@ class TestGetUserDecision:
         [
             (
                 True,
-                'Is this a valid secret? i.e. not a false-positive (y)es, (n)o, (s)kip, (q)uit: ',
+                'Is this actually a secret? i.e. not a false-positive'
+                ' (y)es, (n)o, (s)kip, (q)uit: ',
             ),
             (
                 False,
