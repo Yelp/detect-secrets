@@ -540,21 +540,21 @@ def _print_context(  # pragma: no cover
 
     print('-' * 10)
 
-    print(
-        '{}'.format(
-            colorize(
-                (
-                    'A potential secret was detected in this code.'
-                    ' If so, it should be remediated.'
-                ), AnsiColor.RED,
-            ),
-        ),
-    )
-
-    print('-' * 10)
-
     if error_obj:
         raise error_obj
+    else:
+        print(
+            '{}'.format(
+                colorize(
+                    (
+                        'A potential secret was detected in this code.'
+                        ' If so, it should be remediated.'
+                    ), AnsiColor.RED,
+                ),
+            ),
+        )
+
+        print('-' * 10)
 
 
 def _get_user_decision(prompt_secret_decision=True, can_step_back=False):
