@@ -130,5 +130,4 @@ class TestIbmCloudIamDetector(object):
             body='not json', headers={'content-type': 'not/json'},
         )
 
-        with pytest.raises(Exception):
-            IbmCloudIamDetector().verify(CLOUD_IAM_KEY)
+        assert IbmCloudIamDetector().verify(CLOUD_IAM_KEY) == VerifiedResult.UNVERIFIED
