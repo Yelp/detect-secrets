@@ -807,27 +807,33 @@ class TestPrintContext:
         ):
             self.run_logic()
 
-        assert uncolor(mock_printer.message) == textwrap.dedent("""
-            Secret:      1 of 2
-            Filename:    filenameA
-            Secret Type: Private Key
-            ----------
-            10:a
-            11:b
-            12:c
-            13:d
-            14:e
-            15:-----BEGIN PRIVATE KEY-----
-            16:e
-            17:d
-            18:c
-            19:b
-            20:a
-            ----------
-            A potential secret was detected in this code. If so, it should be remediated.
-            ----------
+        expected_message = (
+            'Secret:      1 of 2'
+            '\nFilename:    filenameA'
+            '\nSecret Type: Private Key'
+            '\n----------'
+            '\n10:a'
+            '\n11:b'
+            '\n12:c'
+            '\n13:d'
+            '\n14:e'
+            '\n15:-----BEGIN PRIVATE KEY-----'
+            '\n16:e'
+            '\n17:d'
+            '\n18:c'
+            '\n19:b'
+            '\n20:a'
+            '\n----------'
+            '\nA potential secret was detected in this code.'
+            ' If so, you should select "yes" below to mark it'
+            ' as an actual secret, and remediate it.'
+            '\nOnce the secret has been removed from the file,'
+            ' and another scan has been run,'
+            ' its entry will be removed from the baseline file.'
+            '\n----------\n'
+        )
 
-        """)[1:-1]
+        assert uncolor(mock_printer.message) == expected_message
 
     def test_secret_at_top_of_file(self, mock_printer):
         with self.mock_open(
@@ -840,22 +846,28 @@ class TestPrintContext:
                 secret_lineno=1,
             )
 
-        assert uncolor(mock_printer.message) == textwrap.dedent("""
-            Secret:      1 of 2
-            Filename:    filenameA
-            Secret Type: Private Key
-            ----------
-            1:-----BEGIN PRIVATE KEY-----
-            2:e
-            3:d
-            4:c
-            5:b
-            6:a
-            ----------
-            A potential secret was detected in this code. If so, it should be remediated.
-            ----------
+        expected_message = (
+            'Secret:      1 of 2'
+            '\nFilename:    filenameA'
+            '\nSecret Type: Private Key'
+            '\n----------'
+            '\n1:-----BEGIN PRIVATE KEY-----'
+            '\n2:e'
+            '\n3:d'
+            '\n4:c'
+            '\n5:b'
+            '\n6:a'
+            '\n----------'
+            '\nA potential secret was detected in this code.'
+            ' If so, you should select "yes" below to mark it'
+            ' as an actual secret, and remediate it.'
+            '\nOnce the secret has been removed from the file,'
+            ' and another scan has been run,'
+            ' its entry will be removed from the baseline file.'
+            '\n----------\n'
+        )
 
-        """)[1:-1]
+        assert uncolor(mock_printer.message) == expected_message
 
     def test_secret_not_found_no_force(self, mock_printer):
         with self.mock_open(), pytest.raises(
@@ -898,27 +910,33 @@ class TestPrintContext:
                 force=True,
             )
 
-        assert uncolor(mock_printer.message) == textwrap.dedent("""
-            Secret:      1 of 2
-            Filename:    filenameA
-            Secret Type: Private Key
-            ----------
-            10:a
-            11:b
-            12:c
-            13:d
-            14:e
-            15:THIS IS NOT AN RSA PRIVATE KEY
-            16:e
-            17:d
-            18:c
-            19:b
-            20:a
-            ----------
-            A potential secret was detected in this code. If so, it should be remediated.
-            ----------
+        expected_message = (
+            'Secret:      1 of 2'
+            '\nFilename:    filenameA'
+            '\nSecret Type: Private Key'
+            '\n----------'
+            '\n10:a'
+            '\n11:b'
+            '\n12:c'
+            '\n13:d'
+            '\n14:e'
+            '\n15:THIS IS NOT AN RSA PRIVATE KEY'
+            '\n16:e'
+            '\n17:d'
+            '\n18:c'
+            '\n19:b'
+            '\n20:a'
+            '\n----------'
+            '\nA potential secret was detected in this code.'
+            ' If so, you should select "yes" below to mark it'
+            ' as an actual secret, and remediate it.'
+            '\nOnce the secret has been removed from the file,'
+            ' and another scan has been run,'
+            ' its entry will be removed from the baseline file.'
+            '\n----------\n'
+        )
 
-        """)[1:-1]
+        assert uncolor(mock_printer.message) == expected_message
 
     def test_hex_high_entropy_secret_in_yaml_file(self, mock_printer):
         with self.mock_open(
@@ -939,27 +957,33 @@ class TestPrintContext:
                 ],
             )
 
-        assert uncolor(mock_printer.message) == textwrap.dedent("""
-            Secret:      1 of 2
-            Filename:    filenameB
-            Secret Type: Hex High Entropy String
-            ----------
-            10:a
-            11:b
-            12:c
-            13:d
-            14:e
-            15:api key: 123456789a
-            16:e
-            17:d
-            18:c
-            19:b
-            20:a
-            ----------
-            A potential secret was detected in this code. If so, it should be remediated.
-            ----------
+        expected_message = (
+            'Secret:      1 of 2'
+            '\nFilename:    filenameB'
+            '\nSecret Type: Hex High Entropy String'
+            '\n----------'
+            '\n10:a'
+            '\n11:b'
+            '\n12:c'
+            '\n13:d'
+            '\n14:e'
+            '\n15:api key: 123456789a'
+            '\n16:e'
+            '\n17:d'
+            '\n18:c'
+            '\n19:b'
+            '\n20:a'
+            '\n----------'
+            '\nA potential secret was detected in this code.'
+            ' If so, you should select "yes" below to mark it'
+            ' as an actual secret, and remediate it.'
+            '\nOnce the secret has been removed from the file,'
+            ' and another scan has been run,'
+            ' its entry will be removed from the baseline file.'
+            '\n----------\n'
+        )
 
-        """)[1:-1]
+        assert uncolor(mock_printer.message) == expected_message
 
     def test_keyword_secret_in_yaml_file(self, mock_printer):
         with self.mock_open(
@@ -979,27 +1003,33 @@ class TestPrintContext:
                 ],
             )
 
-        assert uncolor(mock_printer.message) == textwrap.dedent("""
-            Secret:      1 of 2
-            Filename:    filenameB
-            Secret Type: Secret Keyword
-            ----------
-            10:a
-            11:b
-            12:c
-            13:d
-            14:e
-            15:api_key: yerba
-            16:e
-            17:d
-            18:c
-            19:b
-            20:a
-            ----------
-            A potential secret was detected in this code. If so, it should be remediated.
-            ----------
+        expected_message = (
+            'Secret:      1 of 2'
+            '\nFilename:    filenameB'
+            '\nSecret Type: Secret Keyword'
+            '\n----------'
+            '\n10:a'
+            '\n11:b'
+            '\n12:c'
+            '\n13:d'
+            '\n14:e'
+            '\n15:api_key: yerba'
+            '\n16:e'
+            '\n17:d'
+            '\n18:c'
+            '\n19:b'
+            '\n20:a'
+            '\n----------'
+            '\nA potential secret was detected in this code.'
+            ' If so, you should select "yes" below to mark it'
+            ' as an actual secret, and remediate it.'
+            '\nOnce the secret has been removed from the file,'
+            ' and another scan has been run,'
+            ' its entry will be removed from the baseline file.'
+            '\n----------\n'
+        )
 
-        """)[1:-1]
+        assert uncolor(mock_printer.message) == expected_message
 
     def test_unicode_in_output(self, mock_printer):
         # Instead of mocking open, read from file with
@@ -1019,22 +1049,28 @@ class TestPrintContext:
             ],
         )
 
-        assert uncolor(mock_printer.message) == textwrap.dedent("""
-            Secret:      1 of 2
-            Filename:    test_data/config.md
-            Secret Type: Base64 High Entropy String
-            ----------
-            5:Test Unicode in non ini file would not fail on python 2.7.
-            6:
-            7:\u256D\u2500 diagnose
-            8:\u2570\u00BB ssh to server x:22324241234423414
-            9:
-            10:key="ToCynx5Se4e2PtoZxEhW7lUJcOX15c54"
-            ----------
-            A potential secret was detected in this code. If so, it should be remediated.
-            ----------
+        expected_message = (
+            'Secret:      1 of 2'
+            '\nFilename:    test_data/config.md'
+            '\nSecret Type: Base64 High Entropy String'
+            '\n----------'
+            '\n5:Test Unicode in non ini file would not fail on python 2.7.'
+            '\n6:'
+            '\n7:\u256D\u2500 diagnose'
+            '\n8:\u2570\u00BB ssh to server x:22324241234423414'
+            '\n9:'
+            '\n10:key="ToCynx5Se4e2PtoZxEhW7lUJcOX15c54"'
+            '\n----------'
+            '\nA potential secret was detected in this code.'
+            ' If so, you should select "yes" below to mark it'
+            ' as an actual secret, and remediate it.'
+            '\nOnce the secret has been removed from the file,'
+            ' and another scan has been run,'
+            ' its entry will be removed from the baseline file.'
+            '\n----------\n'
+        )
 
-        """)[1:-1]
+        assert uncolor(mock_printer.message) == expected_message
 
 
 class TestGetUserDecision:

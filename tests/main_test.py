@@ -604,21 +604,28 @@ class TestMain:
         ) as printer_shim:
             main('audit will_be_mocked'.split())
 
-            assert uncolor(printer_shim.message) == textwrap.dedent("""
-                Secret:      1 of 1
-                Filename:    {}
-                Secret Type: {}
-                ----------
-                {}
-                ----------
-                A potential secret was detected in this code. If so, it should be remediated.
-                ----------
-                Saving progress...
-            """)[1:].format(
-                filename,
-                baseline_dict['results'][filename][0]['type'],
-                expected_output,
+            expected_message = (
+                'Secret:      1 of 1'
+                '\nFilename:    {}'
+                '\nSecret Type: {}'
+                '\n----------'
+                '\n{}'
+                '\n----------'
+                '\nA potential secret was detected in this code.'
+                ' If so, you should select "yes" below to mark it'
+                ' as an actual secret, and remediate it.'
+                '\nOnce the secret has been removed from the file,'
+                ' and another scan has been run,'
+                ' its entry will be removed from the baseline file.'
+                '\n----------'
+                '\nSaving progress...\n'.format(
+                    filename,
+                    baseline_dict['results'][filename][0]['type'],
+                    expected_output,
+                )
             )
+
+            assert uncolor(printer_shim.message) == expected_message
 
     @pytest.mark.parametrize(
         'filename, expected_output',
