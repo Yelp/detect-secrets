@@ -18,6 +18,7 @@ from .code_snippet import CodeSnippetHighlighter
 from .color import AnsiColor
 from .color import colorize
 from .common import write_baseline_to_file
+from detect_secrets.core.constants import AUDIT_POTENTIAL_SECRET_DETECTED_NOTE
 
 
 class SecretNotFoundOnSpecifiedLineError(Exception):
@@ -551,15 +552,7 @@ def _print_context(  # pragma: no cover
     elif not exclude_remediation_note:
         print(
             '{}'.format(
-                colorize(
-                    (
-                        'A potential secret was detected in this code.'
-                        ' If so, you should select "yes" below to mark it as an'
-                        ' actual secret, and remediate it.\nOnce the secret has been'
-                        ' removed from the file, and another scan has been run,'
-                        ' its entry will be removed from the baseline file.'
-                    ), AnsiColor.RED,
-                ),
+                colorize(AUDIT_POTENTIAL_SECRET_DETECTED_NOTE, AnsiColor.RED),
             ),
         )
 

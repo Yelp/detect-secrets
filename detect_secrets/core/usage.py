@@ -2,7 +2,7 @@ import argparse
 from collections import namedtuple
 
 from detect_secrets import VERSION
-from detect_secrets.consts import DEFAULT_GHE_INSTANCE
+from detect_secrets.constants import DEFAULT_GHE_INSTANCE
 
 
 def add_exclude_lines_argument(parser):

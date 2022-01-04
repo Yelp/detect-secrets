@@ -9,6 +9,7 @@ import pytest
 from detect_secrets import main as main_module
 from detect_secrets import VERSION
 from detect_secrets.core import audit as audit_module
+from detect_secrets.core.constants import AUDIT_POTENTIAL_SECRET_DETECTED_NOTE
 from detect_secrets.main import main
 from detect_secrets.plugins.common.util import import_plugins
 from testing.factories import secrets_collection_factory
@@ -604,28 +605,22 @@ class TestMain:
         ) as printer_shim:
             main('audit will_be_mocked'.split())
 
-            expected_message = (
-                'Secret:      1 of 1'
-                '\nFilename:    {}'
-                '\nSecret Type: {}'
-                '\n----------'
-                '\n{}'
-                '\n----------'
-                '\nA potential secret was detected in this code.'
-                ' If so, you should select "yes" below to mark it'
-                ' as an actual secret, and remediate it.'
-                '\nOnce the secret has been removed from the file,'
-                ' and another scan has been run,'
-                ' its entry will be removed from the baseline file.'
-                '\n----------'
-                '\nSaving progress...\n'.format(
-                    filename,
-                    baseline_dict['results'][filename][0]['type'],
-                    expected_output,
-                )
+            assert uncolor(printer_shim.message) == textwrap.dedent("""
+                Secret:      1 of 1
+                Filename:    {}
+                Secret Type: {}
+                ----------
+                {}
+                ----------
+                {}
+                ----------
+                Saving progress...
+            """)[1:].format(
+                filename,
+                baseline_dict['results'][filename][0]['type'],
+                expected_output,
+                AUDIT_POTENTIAL_SECRET_DETECTED_NOTE,
             )
-
-            assert uncolor(printer_shim.message) == expected_message
 
     @pytest.mark.parametrize(
         'filename, expected_output',
