@@ -7,7 +7,7 @@ import mock
 import pytest
 
 from detect_secrets.core import audit
-from detect_secrets.core.constants import AUDIT_POTENTIAL_SECRET_DETECTED_NOTE
+from detect_secrets.core.constants import POTENTIAL_SECRET_DETECTED_NOTE
 from testing.factories import potential_secret_factory
 from testing.mocks import mock_open as mock_open_base
 from testing.mocks import mock_printer as mock_printer_base
@@ -828,7 +828,7 @@ class TestPrintContext:
             {}
             ----------
 
-        """).format(AUDIT_POTENTIAL_SECRET_DETECTED_NOTE)[1:-1]
+        """).format(POTENTIAL_SECRET_DETECTED_NOTE)[1:-1]
 
     def test_secret_at_top_of_file(self, mock_printer):
         with self.mock_open(
@@ -856,7 +856,7 @@ class TestPrintContext:
             {}
             ----------
 
-        """).format(AUDIT_POTENTIAL_SECRET_DETECTED_NOTE)[1:-1]
+        """).format(POTENTIAL_SECRET_DETECTED_NOTE)[1:-1]
 
         print(mock_printer.message)
         print(test)
@@ -875,7 +875,7 @@ class TestPrintContext:
             {}
             ----------
 
-        """).format(AUDIT_POTENTIAL_SECRET_DETECTED_NOTE)[1:-1]
+        """).format(POTENTIAL_SECRET_DETECTED_NOTE)[1:-1]
 
     def test_secret_not_found_no_force(self, mock_printer):
         with self.mock_open(), pytest.raises(
@@ -938,7 +938,7 @@ class TestPrintContext:
             {}
             ----------
 
-        """).format(AUDIT_POTENTIAL_SECRET_DETECTED_NOTE)[1:-1]
+        """).format(POTENTIAL_SECRET_DETECTED_NOTE)[1:-1]
 
     def test_hex_high_entropy_secret_in_yaml_file(self, mock_printer):
         with self.mock_open(
@@ -979,7 +979,7 @@ class TestPrintContext:
             {}
             ----------
 
-        """).format(AUDIT_POTENTIAL_SECRET_DETECTED_NOTE)[1:-1]
+        """).format(POTENTIAL_SECRET_DETECTED_NOTE)[1:-1]
 
     def test_keyword_secret_in_yaml_file(self, mock_printer):
         with self.mock_open(
@@ -1019,7 +1019,7 @@ class TestPrintContext:
             {}
             ----------
 
-        """).format(AUDIT_POTENTIAL_SECRET_DETECTED_NOTE)[1:-1]
+        """).format(POTENTIAL_SECRET_DETECTED_NOTE)[1:-1]
 
     def test_unicode_in_output(self, mock_printer):
         # Instead of mocking open, read from file with
@@ -1054,7 +1054,7 @@ class TestPrintContext:
             {}
             ----------
 
-        """).format(AUDIT_POTENTIAL_SECRET_DETECTED_NOTE)[1:-1]
+        """).format(POTENTIAL_SECRET_DETECTED_NOTE)[1:-1]
 
 
 class TestGetUserDecision:

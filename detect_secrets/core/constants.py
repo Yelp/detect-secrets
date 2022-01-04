@@ -46,7 +46,7 @@ class VerifiedResult(Enum):
     VERIFIED_TRUE = 3
 
 
-AUDIT_POTENTIAL_SECRET_DETECTED_NOTE = (
+POTENTIAL_SECRET_DETECTED_NOTE = (
     'A potential secret was detected in this code.'
     ' If so, you should select "yes" below to mark it as an'
     ' actual secret, and remediate it.\nOnce the secret has been'
