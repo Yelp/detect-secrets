@@ -554,7 +554,10 @@ def _print_context(  # pragma: no cover
                 colorize(
                     (
                         'A potential secret was detected in this code.'
-                        ' If so, it should be remediated.'
+                        ' If so, you should select "yes" below to mark it as an'
+                        ' actual secret, and remediate it.\nOnce the secret has been'
+                        ' removed from the file, and another scan has been run,'
+                        ' its entry will be removed from the baseline file.'
                     ), AnsiColor.RED,
                 ),
             ),
