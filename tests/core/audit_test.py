@@ -7,6 +7,7 @@ import mock
 import pytest
 
 from detect_secrets.core import audit
+from detect_secrets.core.constants import POTENTIAL_SECRET_DETECTED_NOTE
 from testing.factories import potential_secret_factory
 from testing.mocks import mock_open as mock_open_base
 from testing.mocks import mock_printer as mock_printer_base
@@ -824,8 +825,10 @@ class TestPrintContext:
             19:b
             20:a
             ----------
+            {}
+            ----------
 
-        """)[1:-1]
+        """).format(POTENTIAL_SECRET_DETECTED_NOTE)[1:-1]
 
     def test_secret_at_top_of_file(self, mock_printer):
         with self.mock_open(
@@ -838,6 +841,25 @@ class TestPrintContext:
                 secret_lineno=1,
             )
 
+        test = textwrap.dedent("""
+            Secret:      1 of 2
+            Filename:    filenameA
+            Secret Type: Private Key
+            ----------
+            1:-----BEGIN PRIVATE KEY-----
+            2:e
+            3:d
+            4:c
+            5:b
+            6:a
+            ----------
+            {}
+            ----------
+
+        """).format(POTENTIAL_SECRET_DETECTED_NOTE)[1:-1]
+
+        print(mock_printer.message)
+        print(test)
         assert uncolor(mock_printer.message) == textwrap.dedent("""
             Secret:      1 of 2
             Filename:    filenameA
@@ -850,8 +872,10 @@ class TestPrintContext:
             5:b
             6:a
             ----------
+            {}
+            ----------
 
-        """)[1:-1]
+        """).format(POTENTIAL_SECRET_DETECTED_NOTE)[1:-1]
 
     def test_secret_not_found_no_force(self, mock_printer):
         with self.mock_open(), pytest.raises(
@@ -911,8 +935,10 @@ class TestPrintContext:
             19:b
             20:a
             ----------
+            {}
+            ----------
 
-        """)[1:-1]
+        """).format(POTENTIAL_SECRET_DETECTED_NOTE)[1:-1]
 
     def test_hex_high_entropy_secret_in_yaml_file(self, mock_printer):
         with self.mock_open(
@@ -950,8 +976,10 @@ class TestPrintContext:
             19:b
             20:a
             ----------
+            {}
+            ----------
 
-        """)[1:-1]
+        """).format(POTENTIAL_SECRET_DETECTED_NOTE)[1:-1]
 
     def test_keyword_secret_in_yaml_file(self, mock_printer):
         with self.mock_open(
@@ -988,8 +1016,10 @@ class TestPrintContext:
             19:b
             20:a
             ----------
+            {}
+            ----------
 
-        """)[1:-1]
+        """).format(POTENTIAL_SECRET_DETECTED_NOTE)[1:-1]
 
     def test_unicode_in_output(self, mock_printer):
         # Instead of mocking open, read from file with
@@ -1021,8 +1051,10 @@ class TestPrintContext:
             9:
             10:key="ToCynx5Se4e2PtoZxEhW7lUJcOX15c54"
             ----------
+            {}
+            ----------
 
-        """)[1:-1]
+        """).format(POTENTIAL_SECRET_DETECTED_NOTE)[1:-1]
 
 
 class TestGetUserDecision:
@@ -1056,7 +1088,8 @@ class TestGetUserDecision:
         [
             (
                 True,
-                'Is this a valid secret? i.e. not a false-positive (y)es, (n)o, (s)kip, (q)uit: ',
+                'Is this actually a secret? i.e. not a false-positive'
+                ' (y)es, (n)o, (s)kip, (q)uit: ',
             ),
             (
                 False,

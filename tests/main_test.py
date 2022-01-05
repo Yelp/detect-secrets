@@ -9,6 +9,7 @@ import pytest
 from detect_secrets import main as main_module
 from detect_secrets import VERSION
 from detect_secrets.core import audit as audit_module
+from detect_secrets.core.constants import POTENTIAL_SECRET_DETECTED_NOTE
 from detect_secrets.main import main
 from detect_secrets.plugins.common.util import import_plugins
 from testing.factories import secrets_collection_factory
@@ -611,11 +612,14 @@ class TestMain:
                 ----------
                 {}
                 ----------
+                {}
+                ----------
                 Saving progress...
             """)[1:].format(
                 filename,
                 baseline_dict['results'][filename][0]['type'],
                 expected_output,
+                POTENTIAL_SECRET_DETECTED_NOTE,
             )
 
     @pytest.mark.parametrize(

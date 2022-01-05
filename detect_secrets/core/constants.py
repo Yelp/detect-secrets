@@ -44,3 +44,12 @@ class VerifiedResult(Enum):
     UNVERIFIED = 1
     VERIFIED_FALSE = 2
     VERIFIED_TRUE = 3
+
+
+POTENTIAL_SECRET_DETECTED_NOTE = (
+    'A potential secret was detected in this code.'
+    ' If so, you should select "yes" below to mark it as an'
+    ' actual secret, and remediate it.\nOnce the secret has been'
+    ' removed from the file, and another scan has been run,'
+    ' its entry will be removed from the baseline file.'
+)

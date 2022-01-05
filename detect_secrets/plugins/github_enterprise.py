@@ -3,7 +3,7 @@ import re
 import requests
 
 from .base import RegexBasedDetector
-from detect_secrets.consts import DEFAULT_GHE_INSTANCE
+from detect_secrets.constants import DEFAULT_GHE_INSTANCE
 from detect_secrets.core.constants import VerifiedResult
 
 

@@ -18,6 +18,7 @@ from .code_snippet import CodeSnippetHighlighter
 from .color import AnsiColor
 from .color import colorize
 from .common import write_baseline_to_file
+from detect_secrets.core.constants import POTENTIAL_SECRET_DETECTED_NOTE
 
 
 class SecretNotFoundOnSpecifiedLineError(Exception):
@@ -198,6 +199,7 @@ def compare_baselines(old_baseline_filename, new_baseline_filename):
                 plugins_used,
                 additional_header_lines=header,
                 force=is_removed,
+                exclude_remediation_note=True,
             )
             decision = _get_user_decision(
                 can_step_back=secret_iterator.can_step_back(),
@@ -481,6 +483,7 @@ def _print_context(  # pragma: no cover
     plugin_settings,
     additional_header_lines=None,
     force=False,
+    exclude_remediation_note=False,
 ):
     """
     :type filename: str
@@ -505,6 +508,10 @@ def _print_context(  # pragma: no cover
     :type force: bool
     :param force: if True, will print the lines of code even if it doesn't
         find the secret expected
+
+    :type exclude_remediation_note: bool
+    :param exclude_remediation_note: if True, the secret remediation note
+        won't be displayed
 
     :raises: SecretNotFoundOnSpecifiedLineError
     """
@@ -542,6 +549,14 @@ def _print_context(  # pragma: no cover
 
     if error_obj:
         raise error_obj
+    elif not exclude_remediation_note:
+        print(
+            '{}'.format(
+                colorize(POTENTIAL_SECRET_DETECTED_NOTE, AnsiColor.RED),
+            ),
+        )
+
+        print('-' * 10)
 
 
 def _get_user_decision(prompt_secret_decision=True, can_step_back=False):
@@ -561,7 +576,7 @@ def _get_user_decision(prompt_secret_decision=True, can_step_back=False):
             print('Invalid input.')
 
         if 'y' in allowable_user_input:
-            user_input_string = 'Is this a valid secret? i.e. not a false-positive (y)es, (n)o, '
+            user_input_string = 'Is this actually a secret? i.e. not a false-positive (y)es, (n)o, '
         else:
             user_input_string = 'What would you like to do? '
         if 'b' in allowable_user_input:
