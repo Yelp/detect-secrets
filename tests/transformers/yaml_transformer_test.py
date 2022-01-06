@@ -258,7 +258,7 @@ class TestYAMLFileParser:
         )
 
         assert YAMLFileParser(file).json() == {
-            'extra_volumes': [
+            'dictionary': [
                 {
                     'keyA': {
                         '__value__': 'valueA',
@@ -290,7 +290,7 @@ class TestYAMLFileParser:
         )
 
         assert YAMLFileParser(file).json() == {
-            'extra_volumes': [
+            'dictionary': [
                 {
                     'keyA': {
                         '__value__': 'valueA',
