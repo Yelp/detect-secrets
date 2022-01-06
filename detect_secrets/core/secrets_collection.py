@@ -219,8 +219,8 @@ class SecretsCollection:
                 key=lambda secret: (
                     getattr(secret, 'line_number', 0),
                     secret.secret_hash,
-                    secret.type
-                )
+                    secret.type,
+                ),
             ):
                 yield filename, secret
 
