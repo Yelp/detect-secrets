@@ -80,7 +80,8 @@ def initialize(
 
         def filename_regex_match(filename):
             if sys.platform.lower() == 'win32':
-                # use Unix-like forward-slash path separator when filtering, for cross-platform compatibility
+                # use Unix-like forward-slash path separator when filtering
+                # for cross-platform compatibility
                 filename = filename.replace('\\', '/')
             return not exclude_files_regex.search(filename)
 
