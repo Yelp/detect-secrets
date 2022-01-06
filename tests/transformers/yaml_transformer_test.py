@@ -84,10 +84,10 @@ class TestYAMLTransformer:
     def test_single_line_flow_mapping():
         file = mock_file_object(
             textwrap.dedent("""
-            batch:
-                cpus: 1
-                extra_volumes:
-                    - {containerPath: /nail/tmp, hostPath: /nail/tmp, mode: RW}
+            object:
+                keyA: 1
+                dictionary:
+                    - {keyB: valueB, keyC: valueC, keyD: valueD}
             """)[1:-1],
         )
 
@@ -95,9 +95,30 @@ class TestYAMLTransformer:
             '',
             '',
             '',
-            'containerPath: "/nail/tmp"',
-            'hostPath: "/nail/tmp"',
-            'mode: "RW"',
+            'keyB: "valueB"',
+            'keyC: "valueC"',
+            'keyD: "valueD"',
+        ]
+
+    @staticmethod
+    def test_multi_line_flow_mapping():
+        file = mock_file_object(
+            textwrap.dedent("""
+            object:
+                keyA: 1
+                dictionary:
+                    - {keyB: valueB, keyC: valueC, keyD: valueD}
+
+            """)[1:-1],
+        )
+
+        assert YAMLTransformer().parse_file(file) == [
+            '',
+            '',
+            '',
+            'keyB: "valueB"',
+            'keyC: "valueC"',
+            'keyD: "valueD"',
         ]
 
 
@@ -166,4 +187,173 @@ class TestYAMLFileParser:
             '__value__': expected_value,
             '__line__': mock.ANY,
             '__original_key__': mock.ANY,
+        }
+
+    @staticmethod
+    @pytest.mark.parametrize(
+        'content, expected',
+        (
+            # NOTE: The trailing new lines are important here!
+            # It needs to be a string value, since we ignore non-string values (because we assume
+            # secrets will be strings). However, the combination of the dictionary start character
+            # `{` and the keys being on the same line causes unexpected results (see #374).
+            (
+                textwrap.dedent("""
+                    { a: "1" }
+                """)[1:],
+                ['a: "1"'],
+            ),
+            (
+                textwrap.dedent("""
+                    a:
+                        {b: "2"}
+                """)[1:],
+                ['', 'b: "2"'],
+            ),
+            (
+                textwrap.dedent("""
+                    a:
+                    - {b: "2"}
+                """)[1:],
+                ['', 'b: "2"'],
+            ),
+            # New lines aren't important here, but since the first key is on the same line
+            # as the start of the block, it will be handled funkily.
+            (
+                textwrap.dedent("""
+                    {a: "1",
+                        b: "2",
+                    }
+                """)[1:-1],
+                ['a: "1"', 'b: "2"'],
+            ),
+            (
+                textwrap.dedent("""
+                    {
+                        a: "1",
+                        b: "2",
+                    }
+                """)[1:],
+                ['', 'a: "1"', 'b: "2"'],
+            ),
+            (
+                textwrap.dedent("""
+                    { a: "1", b: "2" }
+                """)[1:],
+                ['a: "1"', 'b: "2"'],
+            ),
+        ),
+    )
+    def test_inline_dictionary(content, expected):
+        lines = YAMLTransformer().parse_file(mock_file_object(content))
+        assert lines == expected
+
+    @staticmethod
+    def test_single_line_flow_mapping():
+        file = mock_file_object(
+            textwrap.dedent("""
+            dictionary:
+                - {keyA: valueA, keyB: valueB, keyC: valueC}
+            """)[1:-1],
+        )
+
+        assert YAMLFileParser(file).json() == {
+            'extra_volumes': [
+                {
+                    'keyA': {
+                        '__value__': 'valueA',
+                        '__line__': 2,
+                        '__original_key__': 'keyA',
+                    },
+                    'keyB': {
+                        '__value__': 'valueB',
+                        '__line__': 2,
+                        '__original_key__': 'keyB',
+                    },
+                    'keyC': {
+                        '__value__': 'valueC',
+                        '__line__': 2,
+                        '__original_key__': 'keyC',
+                    },
+                },
+            ],
+        }
+
+    @staticmethod
+    def test_multi_line_flow_mapping():
+        file = mock_file_object(
+            textwrap.dedent("""
+            dictionary:
+                - {keyA: valueA, keyB: valueB, keyC: valueC}
+
+            """)[1:-1],
+        )
+
+        assert YAMLFileParser(file).json() == {
+            'extra_volumes': [
+                {
+                    'keyA': {
+                        '__value__': 'valueA',
+                        '__line__': 2,
+                        '__original_key__': 'keyA',
+                    },
+                    'keyB': {
+                        '__value__': 'valueB',
+                        '__line__': 2,
+                        '__original_key__': 'keyB',
+                    },
+                    'keyC': {
+                        '__value__': 'valueC',
+                        '__line__': 2,
+                        '__original_key__': 'keyC',
+                    },
+                },
+            ],
+        }
+
+    @staticmethod
+    def test_inline_dictionary_same_starting_line():
+        file = mock_file_object(
+            textwrap.dedent("""
+                {a: "1",
+                    b: "2",
+                }
+            """)[1:-1],
+        )
+
+        assert YAMLFileParser(file).json() == {
+            'a': {
+                '__value__': '1',
+                '__line__': 1,
+                '__original_key__': 'a',
+            },
+            'b': {
+                '__value__': '2',
+                '__line__': 2,
+                '__original_key__': 'b',
+            },
+        }
+
+    @staticmethod
+    def test_inline_dictionary_different_starting_line():
+        file = mock_file_object(
+            textwrap.dedent("""
+                {
+                    a: "1",
+                    b: "2",
+                }
+            """)[1:-1],
+        )
+
+        assert YAMLFileParser(file).json() == {
+            'a': {
+                '__value__': '1',
+                '__line__': 2,
+                '__original_key__': 'a',
+            },
+            'b': {
+                '__value__': '2',
+                '__line__': 3,
+                '__original_key__': 'b',
+            },
         }
