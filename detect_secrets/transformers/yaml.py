@@ -164,7 +164,7 @@ class YAMLFileParser:
 
         to_search = deque([self.json()])
         while to_search:
-            item: Any = to_search.pop()
+            item: Any = to_search.popleft()
 
             if not item:
                 # mainly for base case (e.g. if file is all comments)

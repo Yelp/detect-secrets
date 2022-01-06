@@ -80,6 +80,26 @@ class TestYAMLTransformer:
 
         assert YAMLTransformer().parse_file(file) == ['']
 
+    @staticmethod
+    def test_single_line_flow_mapping():
+        file = mock_file_object(
+            textwrap.dedent("""
+            batch:
+                cpus: 1
+                extra_volumes:
+                    - {containerPath: /nail/tmp, hostPath: /nail/tmp, mode: RW}
+            """)[1:-1],
+        )
+
+        assert YAMLTransformer().parse_file(file) == [
+            '',
+            '',
+            '',
+            'containerPath: "/nail/tmp"',
+            'hostPath: "/nail/tmp"',
+            'mode: "RW"',
+        ]
+
 
 class TestYAMLFileParser:
     @staticmethod
