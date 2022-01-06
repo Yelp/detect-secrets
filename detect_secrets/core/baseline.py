@@ -2,6 +2,7 @@ import json
 import os
 import re
 import subprocess
+import sys
 import types
 
 from detect_secrets import util
@@ -76,12 +77,14 @@ def initialize(
 
     if exclude_files_regex:
         exclude_files_regex = re.compile(exclude_files_regex, re.IGNORECASE)
-        files_to_scan = filter(
-            lambda file: (
-                not exclude_files_regex.search(file)
-            ),
-            files_to_scan,
-        )
+
+        def filename_regex_match(filename):
+            if sys.platform.lower() == 'win32':
+                # use Unix-like forward-slash path separator when filtering, for cross-platform compatibility
+                filename = filename.replace('\\', '/')
+            return not exclude_files_regex.search(filename)
+
+        files_to_scan = filter(filename_regex_match, files_to_scan)
 
     for file in sorted(files_to_scan):
         output.scan_file(file)
