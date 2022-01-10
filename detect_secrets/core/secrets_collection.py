@@ -2,6 +2,7 @@ import codecs
 import json
 import os
 import re
+import sys
 from time import gmtime
 from time import strftime
 
@@ -334,6 +335,10 @@ class SecretsCollection:
 
         if not file_results:
             return
+
+        if sys.platform.lower() == 'win32':
+            # always store results with Unix-like forward-slashes, for cross-platform compatibility
+            filename = filename.replace('\\', '/')
 
         if filename not in self.data:
             self.data[filename] = file_results
