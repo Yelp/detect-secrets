@@ -231,6 +231,14 @@ class YAMLFileParser:
         self,
         first: bool = False,
     ) -> yaml.nodes.Node:
+        # There exists an edge case when a key and flow mapping start character `{` are on the same
+        # line (Ex. '{key: value}) followed by an empty line. The parser will produce an off-by-one
+        # error for the line number that it tracks internally. Since we track the start of the
+        # mapping, we will use this line number when we are processing:
+        # A) The first key in an inline dictionary where the flow mapping start character is on the
+        # same line as the key
+        # B) The n key of an inline dictionary that is followed by a FlowEntryToken (',') and
+        # KeyToken ('key:')
         if (
             first
             and self.loader.marks[-1].line == self.loader.peek_token().start_mark.line
