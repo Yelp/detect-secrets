@@ -83,7 +83,7 @@ $ git diff --staged --name-only -z | xargs -0 detect-secrets-hook --baseline .se
 **Scanning All Tracked Files:**
 
 ```bash
-$ git ls-files -z | xargs -0 detect-secrets-hook --baseline .secrets.baseline 
+$ git ls-files -z | xargs -0 detect-secrets-hook --baseline .secrets.baseline
 ```
 
 ### Viewing All Enabled Plugins:

@@ -14,6 +14,8 @@ from typing import Tuple
 from typing import Union
 
 import yaml
+from yaml.tokens import FlowEntryToken
+from yaml.tokens import KeyToken
 
 from ..types import NamedIO
 from ..util.filetype import determine_file_type
@@ -152,6 +154,9 @@ class YAMLFileParser:
         self.loader = yaml.SafeLoader(self.content)
         self.loader.compose_node = self._compose_node_shim  # type: ignore
 
+        self.is_inline_flow_mapping_key = False
+        self.loader.parse_flow_mapping_key = self._parse_flow_mapping_key_shim  # type: ignore
+
     def json(self) -> Dict[str, Any]:
         return cast(Dict[str, Any], self.loader.get_single_data())
 
@@ -164,7 +169,7 @@ class YAMLFileParser:
 
         to_search = deque([self.json()])
         while to_search:
-            item: Any = to_search.pop()
+            item: Any = to_search.popleft()
 
             if not item:
                 # mainly for base case (e.g. if file is all comments)
@@ -206,7 +211,11 @@ class YAMLFileParser:
         parent: Optional[yaml.nodes.Node],
         index: Optional[yaml.nodes.Node],
     ) -> yaml.nodes.Node:
-        line = self.loader.line
+        line = (
+            self.loader.marks[-1].line
+            if self.is_inline_flow_mapping_key
+            else self.loader.line
+        )
 
         node = yaml.composer.Composer.compose_node(self.loader, parent, index)
         node.__line__ = line + 1
@@ -217,6 +226,49 @@ class YAMLFileParser:
         # TODO: Not sure if need to do :seq
 
         return cast(yaml.nodes.Node, node)
+
+    def _parse_flow_mapping_key_shim(
+        self,
+        first: bool = False,
+    ) -> yaml.nodes.Node:
+        # There exists an edge case when a key and flow mapping start character `{` are on the same
+        # line (Ex. '{key: value}) followed by an empty line. The parser will produce an off-by-one
+        # error for the line number that it tracks internally. Since we track the start of the
+        # mapping, we will use this line number when we are processing:
+        # A) The first key in an inline dictionary where the flow mapping start character is on the
+        # same line as the key
+        # B) The n key of an inline dictionary that is followed by a FlowEntryToken (',') and
+        # KeyToken ('key:')
+        if (
+            first
+            and self.loader.marks[-1].line == self.loader.peek_token().start_mark.line
+            or self._check_next_tokens_shim(FlowEntryToken, KeyToken)
+        ):
+            self.is_inline_flow_mapping_key = True
+        else:
+            self.is_inline_flow_mapping_key = False
+
+        return cast(yaml.nodes.Node, yaml.parser.Parser.parse_flow_mapping_key(self.loader, first))
+
+    def _check_next_tokens_shim(
+        self,
+        *choices: Any,
+    ) -> bool:
+        # Check the next tokens type match the argument list of token types
+        result = True
+        i = 0
+
+        if self.loader.tokens:
+            if not choices:
+                return result
+            for choice in choices:
+                if i < len(self.loader.tokens):
+                    result = result and isinstance(self.loader.tokens[i], choice)
+                    i += 1
+        else:
+            result = False
+
+        return result
 
 
 def _tag_dict_values(map_node: yaml.nodes.MappingNode) -> yaml.nodes.MappingNode:

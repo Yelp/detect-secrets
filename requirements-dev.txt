@@ -18,7 +18,7 @@ monotonic==1.5
 mypy==0.790
 mypy-extensions==0.4.3
 nodeenv==1.5.0
-packaging==20.7
+packaging==20.9
 pluggy==0.13.1
 pre-commit==2.9.2
 py==1.10.0
@@ -26,7 +26,7 @@ pyahocorasick==1.4.0
 pycodestyle==2.3.1
 pyflakes==1.6.0
 pyparsing==2.4.7
-pytest==6.1.2
+pytest==6.2.2
 PyYAML==5.4
 requests==2.25.0
 responses==0.12.1
@@ -38,5 +38,5 @@ typed-ast==1.4.1
 typing-extensions==3.7.4.3
 unidiff==0.6.0
 urllib3==1.26.4
-virtualenv==20.2.1
+virtualenv==20.6.0
 zipp==3.4.0

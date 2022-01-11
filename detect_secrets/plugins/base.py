@@ -146,7 +146,7 @@ class RegexBasedDetector(BasePlugin, metaclass=ABCMeta):
         for regex in self.denylist:
             for match in regex.findall(string):
                 if isinstance(match, tuple):
-                    for submatch in filter(bool, tuple):
+                    for submatch in filter(bool, match):
                         # It might make sense to paste break after yielding
                         yield submatch
                 else:
