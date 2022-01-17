@@ -239,11 +239,13 @@ class YAMLFileParser:
         # same line as the key
         # B) The n key of an inline dictionary that is followed by a FlowEntryToken (',') and
         # KeyToken ('key:')
-        if (
+        is_inline_dictionary = (
             first
             and self.loader.marks[-1].line == self.loader.peek_token().start_mark.line
             or self._check_next_tokens_shim(FlowEntryToken, KeyToken)
-        ):
+        )
+
+        if is_inline_dictionary:
             self.is_inline_flow_mapping_key = True
         else:
             self.is_inline_flow_mapping_key = False
@@ -254,7 +256,7 @@ class YAMLFileParser:
         self,
         *choices: Any,
     ) -> bool:
-        # Check the next tokens type match the argument list of token types
+        """Check the next tokens type match the argument list of token types."""
         result = True
         i = 0
 
