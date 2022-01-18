@@ -55,7 +55,8 @@ class SecretsCollection:
         if not num_processors:
             num_processors = mp.cpu_count()
 
-        with mp.Pool(processes=num_processors) as p:
+        # Default to fork multiprocessing. Python 3.8+ defaults to spawn which doesn't share memory.
+        with mp.get_context('fork').Pool(processes=num_processors) as p:
             for secrets in p.imap_unordered(
                 _scan_file_and_serialize,
                 [os.path.join(self.root, filename) for filename in filenames],
