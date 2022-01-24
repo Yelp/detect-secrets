@@ -12,7 +12,7 @@ jobs:
   main:
     strategy:
       matrix:
-        python: ['3.6']
+        python: ['3.6', '3.7']
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
