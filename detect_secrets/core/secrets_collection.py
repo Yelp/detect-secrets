@@ -11,6 +11,8 @@ from typing import Tuple
 
 from . import scan
 from .potential_secret import PotentialSecret
+from detect_secrets.settings import configure_settings_from_baseline
+from detect_secrets.settings import get_settings
 
 
 class PatchedFile:
@@ -55,8 +57,13 @@ class SecretsCollection:
         if not num_processors:
             num_processors = mp.cpu_count()
 
-        # Default to fork multiprocessing. Python 3.8+ defaults to spawn which doesn't share memory.
-        with mp.get_context('fork').Pool(processes=num_processors) as p:
+        child_process_settings = get_settings().json()
+
+        with mp.Pool(
+            processes=num_processors,
+            initializer=configure_settings_from_baseline,
+            initargs=(child_process_settings,),
+        ) as p:
             for secrets in p.imap_unordered(
                 _scan_file_and_serialize,
                 [os.path.join(self.root, filename) for filename in filenames],
