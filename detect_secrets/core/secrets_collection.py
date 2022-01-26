@@ -241,14 +241,8 @@ class SecretsCollection:
             return False
 
         for filename in self.files:
-            self_mapping = {
-                (secret.secret_hash, secret.type): secret
-                for secret in self[filename]
-            }
-            other_mapping = {
-                (secret.secret_hash, secret.type): secret
-                for secret in other[filename]
-            }
+            self_mapping = {secret.secret_hash: secret for secret in self[filename]}
+            other_mapping = {secret.secret_hash: secret for secret in other[filename]}
 
             # Since PotentialSecret is hashable, we compare their identities through this.
             if set(self_mapping.values()) != set(other_mapping.values()):
@@ -258,7 +252,7 @@ class SecretsCollection:
                 continue
 
             for secretA in self_mapping.values():
-                secretB = other_mapping[(secretA.secret_hash, secretA.type)]
+                secretB = other_mapping[secretA.secret_hash]
 
                 valuesA = vars(secretA)
                 valuesA.pop('secret_value')
