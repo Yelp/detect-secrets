@@ -195,6 +195,8 @@ def is_lock_file(filename: str) -> bool:
         'Podfile.lock',
         'yarn.lock',
         'Pipfile.lock',
+        'poetry.lock',
+        'Cargo.lock',
     }
 
 
