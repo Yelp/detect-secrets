@@ -21,5 +21,7 @@ jobs:
       with:
         python-version: ${{ matrix.python }}
     - run: python -m pip install --upgrade setuptools pip tox virtualenv
+    # Run tox only for the installed py version on the runner as outlined in the python matrix
+    # Ensures the correct py version is installed and tested as opposed to 'tox' which attempts to run for all py versions in tox.ini
     - run: tox -e py
     - run: tox -e mypy
