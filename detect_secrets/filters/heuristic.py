@@ -165,6 +165,8 @@ def is_indirect_reference(line: str) -> bool:
 
         secret = request.headers['apikey']
     """
+    if len(line) > 1000:
+        return False
     return bool(_get_indirect_reference_regex().search(line))
 
 
@@ -181,7 +183,7 @@ def _get_indirect_reference_regex() -> Pattern:
     #       [^\v]*      ->  Something except line breaks
     #       [\]\)]      ->  End of indirect reference: ] or )
     #   )
-    return re.compile(r'(\w+)\s*(:=?|[!=]{1,3})\s*([\w.-]+[\[\(][^\v]*[\]\)])')
+    return re.compile(r'([^\v=!:]*)\s*(:=?|[!=]{1,3})\s*([\w.-]+[\[\(][^\v]*[\]\)])')
 
 
 def is_lock_file(filename: str) -> bool:
