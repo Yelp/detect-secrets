@@ -11,6 +11,8 @@ from typing import Tuple
 
 from . import scan
 from .potential_secret import PotentialSecret
+from detect_secrets.settings import configure_settings_from_baseline
+from detect_secrets.settings import get_settings
 
 
 class PatchedFile:
@@ -55,7 +57,13 @@ class SecretsCollection:
         if not num_processors:
             num_processors = mp.cpu_count()
 
-        with mp.Pool(processes=num_processors) as p:
+        child_process_settings = get_settings().json()
+
+        with mp.Pool(
+            processes=num_processors,
+            initializer=configure_settings_from_baseline,
+            initargs=(child_process_settings,),
+        ) as p:
             for secrets in p.imap_unordered(
                 _scan_file_and_serialize,
                 [os.path.join(self.root, filename) for filename in filenames],
@@ -241,8 +249,12 @@ class SecretsCollection:
             return False
 
         for filename in self.files:
-            self_mapping = {secret.secret_hash: secret for secret in self[filename]}
-            other_mapping = {secret.secret_hash: secret for secret in other[filename]}
+            self_mapping = {
+                (secret.secret_hash, secret.type): secret for secret in self[filename]
+            }
+            other_mapping = {
+                (secret.secret_hash, secret.type): secret for secret in other[filename]
+            }
 
             # Since PotentialSecret is hashable, we compare their identities through this.
             if set(self_mapping.values()) != set(other_mapping.values()):
@@ -252,7 +264,7 @@ class SecretsCollection:
                 continue
 
             for secretA in self_mapping.values():
-                secretB = other_mapping[secretA.secret_hash]
+                secretB = other_mapping[(secretA.secret_hash, secretA.type)]
 
                 valuesA = vars(secretA)
                 valuesA.pop('secret_value')
