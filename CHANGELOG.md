@@ -29,6 +29,41 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 ### Unreleased
 -->
 
+### v1.2.0
+##### TODO DATE
+
+#### :mega: Release Highlights
+- Continous integration github action added ([#506])
+- Release pipeline github action added ([#TODO])
+
+#### :tada: New Features
+
+- New GitHub token plugin added ([#465])
+- New SendGrid plugin added ([#463])
+
+#### :bug: Bugfixes
+- Fixes catastrophic backtracking for indirect reference heuristic ([#509])
+- Fixes pre-commit hook secret equality checking causing updates to baseline with no real changes - only a timestamp update ([#507])
+- Fixes python 3.8 failing to load plugins on windows and macos ([#505])
+- Fixes yaml transformer inline dicitonary index out of bounds exceptions ([#501])
+- Fixes regex for slack url ([#477])
+- Fixes `AttributeError: 'PotentialSecret' object has no attribute 'line_number'` by safely falling back to 0 if line_number isn't present. ([#471])([#472])
+- Fixes gibberish-detector current version
+- Fixes filtering ordering in .secrets.baseline
+
+#### :snake: Miscellaneous
+
+- Updated README due hook failing to interpret filenames with spaces ([#470])
+- Adding more lock file types to excluded lock files
+
+[#450]: https://github.com/Yelp/detect-secrets/pull/450
+[#474]: https://github.com/Yelp/detect-secrets/pull/474
+[#478]: https://github.com/Yelp/detect-secrets/pull/478
+[#504]: https://github.com/Yelp/detect-secrets/pull/504
+[#510]: https://github.com/Yelp/detect-secrets/pull/510
+[#511]: https://github.com/Yelp/detect-secrets/pull/511
+
+
 ### v1.1.0
 ##### April 14th, 2021
 
