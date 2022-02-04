@@ -357,3 +357,45 @@ class TestYAMLFileParser:
                 '__original_key__': 'b',
             },
         }
+
+    @staticmethod
+    def test_inline_empty_dictionary_line_number():
+        file = mock_file_object(
+            textwrap.dedent("""
+                a: {}
+                b: "2"
+            """)[1:-1],
+        )
+
+        assert YAMLFileParser(file).json() == {
+            'a': {},
+            'b': {
+                '__value__': '2',
+                '__line__': 2,
+                '__original_key__': 'b',
+            },
+        }
+
+    @staticmethod
+    def test_inline_dictionary_single_line_line_number():
+        file = mock_file_object(
+            textwrap.dedent("""
+                a: {b: "2"}
+                c: "3"
+            """)[1:-1],
+        )
+
+        assert YAMLFileParser(file).json() == {
+            'a': {
+                'b': {
+                    '__value__': '2',
+                    '__line__': 1,
+                    '__original_key__': 'b',
+                },
+            },
+            'c': {
+                '__value__': '3',
+                '__line__': 2,
+                '__original_key__': 'c',
+            },
+        }

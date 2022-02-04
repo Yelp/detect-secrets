@@ -221,6 +221,7 @@ class YAMLFileParser:
         node.__line__ = line + 1
 
         if node.tag.endswith(':map'):
+            self.is_inline_flow_mapping_key = False
             return _tag_dict_values(node)
 
         # TODO: Not sure if need to do :seq
