@@ -47,7 +47,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 - Fixes python 3.8 failing to load plugins on windows and macos ([#505])
 - Fixes yaml transformer inline dicitonary index out of bounds exceptions ([#501])
 - Fixes regex for slack url ([#477])
-- Fixes `AttributeError: 'PotentialSecret' object has no attribute 'line_number'` by safely falling back to 0 if line_number isn't present. ([#471])([#472])
+- Fixes `AttributeError: 'PotentialSecret' object has no attribute 'line_number'` by safely falling back to 0 if line_number isn't present. ([#472])([#476])
 - Fixes gibberish-detector current version
 - Fixes filtering ordering in .secrets.baseline
 
