@@ -40,6 +40,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 - New GitHub token plugin added ([#465])
 - New SendGrid plugin added ([#463])
+- More new ignored file extensions
 
 #### :bug: Bugfixes
 - Fixes catastrophic backtracking for indirect reference heuristic ([#509])
@@ -47,22 +48,26 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 - Fixes python 3.8 failing to load plugins on windows and macos ([#505])
 - Fixes yaml transformer inline dicitonary index out of bounds exceptions ([#501])
 - Fixes regex for slack url ([#477])
-- Fixes `AttributeError: 'PotentialSecret' object has no attribute 'line_number'` by safely falling back to 0 if line_number isn't present. ([#472])([#476])
+- Fixes `AttributeError: 'PotentialSecret' object has no attribute 'line_number'` by safely falling back to 0 if line_number isn't present. ([#476])([#472])
 - Fixes gibberish-detector current version
 - Fixes filtering ordering in .secrets.baseline
 
 #### :snake: Miscellaneous
 
 - Updated README due hook failing to interpret filenames with spaces ([#470])
-- Adding more lock file types to excluded lock files
+- Add CI github action badge to README
 
-[#450]: https://github.com/Yelp/detect-secrets/pull/450
-[#474]: https://github.com/Yelp/detect-secrets/pull/474
-[#478]: https://github.com/Yelp/detect-secrets/pull/478
-[#504]: https://github.com/Yelp/detect-secrets/pull/504
-[#510]: https://github.com/Yelp/detect-secrets/pull/510
-[#511]: https://github.com/Yelp/detect-secrets/pull/511
-
+[#463]: https://github.com/Yelp/detect-secrets/pull/463
+[#465]: https://github.com/Yelp/detect-secrets/pull/465
+[#470]: https://github.com/Yelp/detect-secrets/pull/470
+[#472]: https://github.com/Yelp/detect-secrets/pull/472
+[#476]: https://github.com/Yelp/detect-secrets/pull/476
+[#477]: https://github.com/Yelp/detect-secrets/pull/477
+[#501]: https://github.com/Yelp/detect-secrets/pull/501
+[#505]: https://github.com/Yelp/detect-secrets/pull/505
+[#506]: https://github.com/Yelp/detect-secrets/pull/506
+[#507]: https://github.com/Yelp/detect-secrets/pull/507
+[#509]: https://github.com/Yelp/detect-secrets/pull/509
 
 ### v1.1.0
 ##### April 14th, 2021
