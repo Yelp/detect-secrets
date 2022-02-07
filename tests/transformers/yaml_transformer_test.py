@@ -357,3 +357,74 @@ class TestYAMLFileParser:
                 '__original_key__': 'b',
             },
         }
+
+    @staticmethod
+    def test_inline_empty_mapping_line_numbers():
+        file = mock_file_object(
+            textwrap.dedent("""
+                a: {}
+                b: "2"
+            """)[1:-1],
+        )
+
+        assert YAMLFileParser(file).json() == {
+            'a': {},
+            'b': {
+                '__value__': '2',
+                '__line__': 2,
+                '__original_key__': 'b',
+            },
+        }
+
+    @staticmethod
+    def test_inline_mapping_single_line_single_key_line_numbers():
+        file = mock_file_object(
+            textwrap.dedent("""
+                a: {b: "2"}
+                c: "3"
+            """)[1:-1],
+        )
+
+        assert YAMLFileParser(file).json() == {
+            'a': {
+                'b': {
+                    '__value__': '2',
+                    '__line__': 1,
+                    '__original_key__': 'b',
+                },
+            },
+            'c': {
+                '__value__': '3',
+                '__line__': 2,
+                '__original_key__': 'c',
+            },
+        }
+
+    @staticmethod
+    def test_inline_mapping_single_line_multikey_line_numbers():
+        file = mock_file_object(
+            textwrap.dedent("""
+                a: {b: "2", c: "3"}
+                d: "4"
+            """)[1:-1],
+        )
+
+        assert YAMLFileParser(file).json() == {
+            'a': {
+                'b': {
+                    '__value__': '2',
+                    '__line__': 1,
+                    '__original_key__': 'b',
+                },
+                'c': {
+                    '__value__': '3',
+                    '__line__': 1,
+                    '__original_key__': 'c',
+                },
+            },
+            'd': {
+                '__value__': '4',
+                '__line__': 2,
+                '__original_key__': 'd',
+            },
+        }
