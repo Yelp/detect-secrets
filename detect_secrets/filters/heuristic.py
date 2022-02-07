@@ -165,6 +165,8 @@ def is_indirect_reference(line: str) -> bool:
 
         secret = request.headers['apikey']
     """
+    # Constrain line length as the heuristic's intention is to target lines that resemble
+    # function calls. The constraint avoids catastrophic backtracking failures of the regex.
     if len(line) > 1000:
         return False
     return bool(_get_indirect_reference_regex().search(line))
