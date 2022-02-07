@@ -36,7 +36,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.x'
+        python-version: 3.8
     # this will create a .tar.gz with all the code (i.e., an sdist)
     - run: python setup.py sdist
     # and finally, upload the above sdist to public PyPI
