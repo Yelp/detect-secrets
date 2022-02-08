@@ -30,11 +30,11 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 -->
 
 ### v1.2.0
-##### TODO DATE
+##### February 10th, 2022
 
 #### :mega: Release Highlights
 - Continous integration github action added ([#506])
-- Release pipeline github action added ([#TODO])
+- Release pipeline github action added ([#513])
 
 #### :tada: New Features
 
@@ -56,6 +56,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 - Updated README due hook failing to interpret filenames with spaces ([#470])
 - Add CI github action badge to README
+- Development dependency bumps ([#519])
 
 [#463]: https://github.com/Yelp/detect-secrets/pull/463
 [#465]: https://github.com/Yelp/detect-secrets/pull/465
@@ -68,6 +69,8 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#506]: https://github.com/Yelp/detect-secrets/pull/506
 [#507]: https://github.com/Yelp/detect-secrets/pull/507
 [#509]: https://github.com/Yelp/detect-secrets/pull/509
+[#513]: https://github.com/Yelp/detect-secrets/pull/513
+[#519]: https://github.com/Yelp/detect-secrets/pull/519
 
 ### v1.1.0
 ##### April 14th, 2021

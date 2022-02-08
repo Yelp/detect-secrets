@@ -71,10 +71,5 @@ scripts/bump-version
 
 ### Pushing to PyPi
 
-```bash
-# First, test with test.pypi.com
-scripts/upload-to-pypi
-
-# If all looks good, we can head to prod!
-scripts/upload-to-pypi --prod
-```
+Once the tag from `scripts/bump-version` has been created and pushed to the repository, the pypi
+github action will automatically start and publish the package to pypi.
