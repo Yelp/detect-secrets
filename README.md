@@ -1,6 +1,6 @@
-[![Build Status](https://travis.ibm.com/Whitewater/whitewater-detect-secrets.svg?token=tSTYkwXezbKBusqJ3V4L&branch=master)](https://travis.ibm.com/Whitewater/whitewater-detect-secrets)
-
 # Whitewater Detect Secrets
+
+[![Build Status](https://travis-ci.com/IBM/detect-secrets.svg?branch=master)](https://travis-ci.com/IBM/detect-secrets.svg?branch=master)
 
 ## About
 
