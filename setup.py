@@ -18,9 +18,9 @@ setup(
     description='Tool for detecting secrets in the codebase',
     long_description=(
         'Check out detect-secrets on `GitHub ' +
-        '<https://github.ibm.com/Whitewater/whitewater-detect-secrets>`_!'
+        '<https://github.com/IBM/detect-secrets>`_!'
     ),
-    url='https://github.ibm.com/Whitewater/whitewater-detect-secrets',
+    url='hhttps://github.com/IBM/detect-secrets',
     keywords=['secret-management', 'pre-commit', 'security', 'entropy-checks'],
     install_requires=[
         'pyyaml',

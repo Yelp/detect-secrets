@@ -304,7 +304,7 @@ Tuning the entropy to a lower value by following the [tune the threshold for ent
 
 #### Cause 4: Unsupported token type
 
-This can happen if the signature of one token type is not supported by the `detect-secrets` tool. You can contribute a new token type following the guide [here](../CONTRIBUTING.md#process-for-adding-a-new-secret-detector-to-whitewater-detect-secrets).
+This can happen if the signature of one token type is not supported by the `detect-secrets` tool. You can contribute a new token type following the guide [here](../CONTRIBUTING.md#process-for-adding-a-new-secret-detector-to-detect-secrets).
 
 ### Why is the `detect-secrets` pre-commit output messed up with multiple headings and footers?
 

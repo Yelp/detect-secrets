@@ -62,7 +62,7 @@ Work in Progress pull requests are also welcome to get feedback early on, or if 
 -   [GitHub Help](https://help.github.com)
 -   [RegHex GitHub Project](https://github.com/l4yton/RegHex)
 
-## Process for Adding a New Secret Detector to whitewater-detect-secrets
+## Process for Adding a New Secret Detector to detect-secrets
 
 There are two key steps for developing a new secret detector: secret identification and secret verification.
 It is often easier to review contributions if these two steps are submitted as separate PRs, although this is not mandatory.
@@ -139,7 +139,7 @@ within this repo. Particularly if you have the `detect-secrets` package
 installed in your environment, Python may resolve module imports from the
 installed `detect-secrets` package instead of from within the repo where you're
 developing. To avoid this, ensure `PYTHONPATH` is set in your developer
-environment and includes the path to the whitewater-detect-secrets repo.
+environment and includes the path to the detect-secrets repo.
 
 ## Debugging with VSCode
 
