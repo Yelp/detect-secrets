@@ -29,6 +29,49 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 ### Unreleased
 -->
 
+### v1.2.0
+##### February 10th, 2022
+
+#### :mega: Release Highlights
+- Continous integration github action added ([#506])
+- Release pipeline github action added ([#513])
+
+#### :tada: New Features
+
+- New GitHub token plugin added ([#465])
+- New SendGrid plugin added ([#463])
+- More new ignored file extensions
+
+#### :bug: Bugfixes
+- Fixes catastrophic backtracking for indirect reference heuristic ([#509])
+- Fixes pre-commit hook secret equality checking causing updates to baseline with no real changes - only a timestamp update ([#507])
+- Fixes python 3.8 failing to load plugins on windows and macos ([#505])
+- Fixes yaml transformer inline dicitonary index out of bounds exceptions ([#501])
+- Fixes regex for slack url ([#477])
+- Fixes `AttributeError: 'PotentialSecret' object has no attribute 'line_number'` by safely falling back to 0 if line_number isn't present. ([#476])([#472])
+- Fixes gibberish-detector current version
+- Fixes filtering ordering in .secrets.baseline
+
+#### :snake: Miscellaneous
+
+- Updated README due hook failing to interpret filenames with spaces ([#470])
+- Add CI github action badge to README
+- Development dependency bumps ([#519])
+
+[#463]: https://github.com/Yelp/detect-secrets/pull/463
+[#465]: https://github.com/Yelp/detect-secrets/pull/465
+[#470]: https://github.com/Yelp/detect-secrets/pull/470
+[#472]: https://github.com/Yelp/detect-secrets/pull/472
+[#476]: https://github.com/Yelp/detect-secrets/pull/476
+[#477]: https://github.com/Yelp/detect-secrets/pull/477
+[#501]: https://github.com/Yelp/detect-secrets/pull/501
+[#505]: https://github.com/Yelp/detect-secrets/pull/505
+[#506]: https://github.com/Yelp/detect-secrets/pull/506
+[#507]: https://github.com/Yelp/detect-secrets/pull/507
+[#509]: https://github.com/Yelp/detect-secrets/pull/509
+[#513]: https://github.com/Yelp/detect-secrets/pull/513
+[#519]: https://github.com/Yelp/detect-secrets/pull/519
+
 ### v1.1.0
 ##### April 14th, 2021
 
