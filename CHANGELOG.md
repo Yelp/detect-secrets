@@ -30,7 +30,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 -->
 
 ### v1.2.0
-##### February 10th, 2022
+##### February 16th, 2022
 
 #### :mega: Release Highlights
 - Continous integration github action added ([#506])
