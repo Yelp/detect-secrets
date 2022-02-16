@@ -1,5 +1,5 @@
 FROM python:3
-LABEL maintainer="squad:git-defenders" url="https://github.ibm.com/whitewater/whitewater-detect-secrets"
+LABEL maintainer="squad:git-defenders" url="https://github.com/IBM/detect-secrets"
 
 RUN apt-get -y remove --purge mysql*
 RUN apt-get update && apt-get upgrade -y
