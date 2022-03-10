@@ -336,6 +336,13 @@ def print_audit_results(baseline_filename):
     )
 
 
+def get_secrets_list_from_file(baseline_filename: str) -> list:
+    baseline = _get_baseline_from_file(baseline_filename)
+    secrets = list(_secret_generator(baseline))
+
+    return secrets
+
+
 def _get_baseline_from_file(filename):  # pragma: no cover
     try:
         with open(filename) as f:
