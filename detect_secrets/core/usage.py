@@ -273,9 +273,9 @@ class AuditOptions:
             action='store_true',
             help=(
                 'This condition is met when there are potential secrets'
-                ' in the baseline file which have not been audited yet.'
-                ' To pass this check, run detect-secrets audit .secrets.baseline to'
-                ' audit any unaudited secrets.'
+                ' in the baseline file which have not yet been audited.'
+                ' To pass this check, run detect-secrets audit <BASELINE_FILE> to'
+                ' audit all unaudited secrets.'
             ),
         )
 
@@ -296,9 +296,9 @@ class AuditOptions:
             help=(
                 'This condition is met when the baseline file contains'
                 ' one or more secrets which have been marked as actual'
-                ' secrets during the auditing stage. Secrets with a'
+                ' secrets during the auditing process. Secrets with a'
                 ' property of is_secret: true meet this condition.'
-                ' To pass this check, remove those secrets from your'
+                ' To pass this check, remove these secrets from your'
                 ' code and re-scan so that they will be removed from your baseline.'
             ),
         )
@@ -307,13 +307,13 @@ class AuditOptions:
         report_parser_exclusive.add_argument(
             '--json',
             action='store_true',
-            help=('Providing this flag will cause the report output to be formatted as JSON.'),
+            help=('Causes the report output to be formatted as JSON.'),
         )
 
         report_parser_exclusive.add_argument(
             '--omit-instructions',
             action='store_true',
-            help=('Providing this flag will omit instructions from the report.'),
+            help=('Omits instructions from the report.'),
         )
 
     def add_arguments(self):
