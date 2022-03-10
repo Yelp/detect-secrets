@@ -1,8 +1,5 @@
-from typing import List
-
 from detect_secrets.core.audit import get_secrets_list_from_file
 from detect_secrets.core.report.constants import ReportCheckResult
-from detect_secrets.core.report.constants import ReportedSecret
 from detect_secrets.core.report.constants import ReportExitCode
 from detect_secrets.core.report.constants import ReportSecretType
 
@@ -16,11 +13,11 @@ def fail_on_unaudited(baseline_filename: str) -> ReportCheckResult:
     value.
     """
     secrets = get_secrets_list_from_file(baseline_filename)
-    non_audited_secrets: List[ReportedSecret] = []
+    non_audited_secrets = []
 
     for filename, secret in secrets:
         if 'is_secret' not in secret or secret['is_secret'] is None:
-            unaudited_secret: ReportedSecret = {
+            unaudited_secret = {
                 'failed_condition': ReportSecretType.UNAUDITED.value,
                 'filename': filename,
                 'line': secret['line_number'],
@@ -44,11 +41,11 @@ def fail_on_live(baseline_filename: str) -> ReportCheckResult:
     value.
     """
     secrets = get_secrets_list_from_file(baseline_filename)
-    live_secrets: List[ReportedSecret] = []
+    live_secrets = []
 
     for filename, secret in secrets:
         if 'is_verified' in secret and secret['is_verified'] is True:
-            live_secret: ReportedSecret = {
+            live_secret = {
                 'failed_condition': ReportSecretType.LIVE.value,
                 'filename': filename,
                 'line': secret['line_number'],
@@ -71,11 +68,11 @@ def fail_on_audited_real(baseline_filename: str) -> ReportCheckResult:
     value.
     """
     secrets = get_secrets_list_from_file(baseline_filename)
-    audited_true_secrets: List[ReportedSecret] = []
+    audited_true_secrets = []
 
     for filename, secret in secrets:
         if 'is_secret' in secret and secret['is_secret'] is True:
-            audited_true_secret: ReportedSecret = {
+            audited_true_secret = {
                 'failed_condition': ReportSecretType.AUDITED_REAL.value,
                 'filename': filename,
                 'line': secret['line_number'],
