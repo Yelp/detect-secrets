@@ -69,7 +69,7 @@ class ParserBuilder(object):
             ._add_use_all_plugins_argument()\
             ._add_no_verify_flag() \
             ._add_output_verified_false_flag()\
-            ._add_fail_on_non_audited_flag()
+            ._add_fail_on_unaudited_flag()
 
         PluginOptions(self.parser).add_arguments()
 
@@ -146,9 +146,9 @@ class ParserBuilder(object):
         add_output_verified_false_flag(self.parser)
         return self
 
-    def _add_fail_on_non_audited_flag(self):
+    def _add_fail_on_unaudited_flag(self):
         self.parser.add_argument(
-            '--fail-on-non-audited',
+            '--fail-on-unaudited',
             action='store_true',
             help='Fail check if there are entries have not been audited in baseline.',
         )
