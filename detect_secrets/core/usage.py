@@ -64,8 +64,8 @@ class ParserBuilder(object):
         self._add_filenames_argument()\
             ._add_set_baseline_argument()\
             ._add_exclude_lines_argument()\
-            ._add_word_list_argument().\
-            _add_use_all_plugins_argument()\
+            ._add_word_list_argument()\
+            ._add_use_all_plugins_argument()\
             ._add_no_verify_flag()\
             ._add_output_verified_false_flag()\
             ._add_fail_on_non_audited_flag()
