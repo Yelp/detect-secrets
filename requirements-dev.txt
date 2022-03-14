@@ -18,3 +18,4 @@ ibm_db
 boxsdk[jwt]
 pyahocorasick
 safety
+tabulate
