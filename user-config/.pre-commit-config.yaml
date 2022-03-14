@@ -16,5 +16,5 @@
         # You may also run `pre-commit run detect-secrets` to preview the scan result.
         # when "--baseline" without "--use-all-plugins", pre-commit scan with just plugins in baseline file
         # when "--baseline" with "--use-all-plugins", pre-commit scan with all available plugins
-        # add "--fail-on-non-audited" to fail pre-commit for unaudited potential secrets
+        # add "--fail-on-unaudited" to fail pre-commit for unaudited potential secrets
         args: [--baseline, .secrets.baseline, --use-all-plugins]
