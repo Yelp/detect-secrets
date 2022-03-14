@@ -507,7 +507,7 @@ Audited as real     Test Type      filenameB       60\n"""
             ' and run detect-secrets scan --update {} to re-scan.'.format(
                 baseline_filename,
             ),
-            '\nFor additional help, run detect-secret audit --report --help.\n',
+            '\nFor additional help, run detect-secrets audit --help.\n',
         )
 
     def test_print_summary_failed_conditions_omit_instructions(self, capsys):
