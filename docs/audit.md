@@ -12,6 +12,7 @@
     -   [Handling Developer Secrets](#handling-developer-secrets)
 -   [What to do after marking an potential secret as a valid secret?](#what-to-do-after-marking-an-potential-secret-as-a-valid-secret)
 -   [Comparing Baselines](#comparing-baselines)
+-   [Report Generation](#report-generation)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -154,4 +155,66 @@ $ detect-secrets scan --string 'Base64HighEntropyString' --base64-limit 4
 ...
 Base64HighEntropyString: True  (4.089)
 ...
+```
+
+## Report Generation
+
+Maybe, you need to generate a full report with all the detect-secrets findings. IBM's reporting feature fulfills a different use case from the [upstream version's](https://github.com/Yelp/detect-secrets/blob/master/docs/audit.md#report-generation). IBM's version is meant to be run in CI / CD pipelines for auditing purposes. It will execute certain checks against a baseline file, and produce either a table or JSON report output.
+
+In order to pass or fail CI / CD stage, this feature outputs an exit code. If a report is run without any `fail-on` arguments, it will execute all the fail checks, but always exit with code zero even if they fail. \*\*In CI / CD, is recommended to run the report with `detect-secrets audit --report --fail-on-unaudited fail-on-live --fail-on-audited-real`.\*\* If a `fail-on` argument is provided and the checks fails, the report will execute with a non-zero exit code.
+
+### Usage
+
+To see what each individual report argument does, run the following command:
+
+```bash
+$ detect-secrets audit --help
+```
+
+Output:
+```
+
+usage: detect-secrets audit [-h] [--diff |  --display-results | --report [--fail-on-unaudited] [--fail-on-live] [--fail-on-audited-real] [--json | --omit-instructions]] filename [filename ...]
+
+# ...
+
+reporting:
+  Displays a report with the secrets detected which fail certain conditions. To be used with the report mode (--report).
+
+  --fail-on-unaudited   This condition is met when there are potential secrets in the baseline file which have not been audited yet. To pass this check,
+                        run detect-secrets audit .secrets.baseline to audit any unaudited secrets.
+  --fail-on-live        This condition is met when a secret has been verified to be live. To pass this check, make sure that any secrets in the baseline
+                        file with a property of is_verified: true have been remediated, afterwards re-scan.
+  --fail-on-audited-real
+                        This condition is met when the baseline file contains one or more secrets which have been marked as actual secrets during the
+                        auditing stage. Secrets with a property of is_secret: true meet this condition. To pass this check, remove those secrets from your
+                        code and re-scan so that they will be removed from your baseline.
+  --json                Providing this flag will cause the report output to be formatted as JSON.
+  --omit-instructions   Providing this flag will omit instructions from the report.
+```
+### Table
+
+By default, a table will be displayed which lists secrets that failed the checks. There will also be a stats section, and a report text summary which contains instructions on how to pass the checks, if any are failing. Instructions can be omitted with the `--omit option`.
+
+### JSON
+
+To produce a JSON output, pass in the `--json` flag.
+
+### Usage
+
+You can generate one with the --report flag: `detect-secrets audit --report`.
+
+#### Case:
+
+```bash
+$ detect-secrets audit --report .secrets.baseline
+
+10 potential secrets in .secrets.baseline were reviewed. All checks have passed.
+
+        - No unaudited secrets were found
+
+        - No live secrets were found
+
+        - No secrets that were audited as real were found
+
 ```
