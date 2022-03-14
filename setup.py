@@ -27,6 +27,7 @@ setup(
         'requests',
         'boxsdk[jwt]',
         'packaging',
+        'tabulate',
     ],
     extras_require={
         'word_list': [
