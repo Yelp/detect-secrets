@@ -114,7 +114,7 @@ def main(argv=None):
         return 2
 
     # check if there are non-audited secrets
-    if args.fail_on_non_audited:
+    if args.fail_on_unaudited:
         non_audited = get_non_audited_secrets_from_baseline(
             baseline_collection,
         )
@@ -243,7 +243,7 @@ def pretty_print_diagnostics_for_non_audited(secrets):
 
     suggestions = [
         'Audit baseline file to make sure you have reviewed the risk',
-        'Remove the --fail-on-non-audited option from pre-commit hook',
+        'Remove the --fail-on-unaudited option from pre-commit hook',
     ]
 
     _print_warning_header(message)
