@@ -2,6 +2,7 @@ from contextlib import contextmanager
 from copy import deepcopy
 
 import mock
+import pytest
 
 from detect_secrets.core import audit
 from detect_secrets.core.report.conditions import fail_on_audited_real
@@ -11,18 +12,26 @@ from detect_secrets.core.report.constants import ReportExitCode
 from detect_secrets.core.report.constants import ReportSecretType
 from testing.baseline import baseline
 from testing.baseline import baseline_filename
+from testing.mocks import mock_printer as mock_printer_base
+
+
+@pytest.fixture
+def mock_printer():
+    with mock_printer_base(audit) as shim:
+        yield shim
 
 
 class TestReportConditions:
-
     @contextmanager
     def mock_env(self, baseline=None):
+        if baseline is None:
+            baseline = self.baseline
 
         with mock.patch.object(
             # We mock this, so we don't need to do any file I/O.
             audit,
             '_get_baseline_from_file',
-            return_value=baseline or self.baseline,
+            return_value=baseline,
         ) as m:
             yield m
 
@@ -186,13 +195,13 @@ class TestReportConditions:
                 'line': modified_baseline['results']['filenameA'][0]['line_number'],
                 'type': 'Test Type',
             },
+
         ]
 
         with self.mock_env(baseline=modified_baseline):
             (live_return_code, live_secrets) = fail_on_live(baseline_filename)
-            (audited_real_return_code, audited_real_secrets) = fail_on_audited_real(
-                baseline_filename,
-            )
+            (audited_real_return_code, audited_real_secrets) =\
+                fail_on_audited_real(baseline_filename)
 
         secrets = live_secrets + audited_real_secrets
 
