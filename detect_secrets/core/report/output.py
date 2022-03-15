@@ -22,17 +22,15 @@ def get_stats(
     """
     secrets = audit.get_secrets_list_from_file(baseline_filename)
 
-    stats = {
-        'reviewed': len(secrets),
-    }
+    stats = {'reviewed': len(secrets)}
 
-    if (fail_on_live):
+    if fail_on_live:
         stats['live'] = len(live_secrets)
 
-    if (fail_on_unaudited):
+    if fail_on_unaudited:
         stats['unaudited'] = len(unaudited_secrets)
 
-    if (fail_on_audited_real):
+    if fail_on_audited_real:
         stats['audited_real'] = len(audited_real_secrets)
 
     return stats
@@ -140,25 +138,26 @@ def print_stats(
         )
         return
 
-    stats = '\n{} potential secrets in {} were reviewed.'.format(
-            colorize(len(secrets), AnsiColor.BOLD),
-            colorize(baseline_filename, AnsiColor.BOLD),
+    stats = '\n{} potential secrets in {} were reviewed. Found'.format(
+        colorize(len(secrets), AnsiColor.BOLD), colorize(baseline_filename, AnsiColor.BOLD),
     )
 
     if fail_on_live:
-        stats += ' Found {} live secret{}'.format(
+        stats += ' {} live secret{}'.format(
             colorize(len(live_secrets), AnsiColor.BOLD),
             's' if len(live_secrets) > 1 or len(live_secrets) == 0 else '',
         )
 
     if fail_on_unaudited:
-        stats += ', {} unaudited secret{},'.format(
+        stats += '{} {} unaudited secret{},'.format(
+            ',' if fail_on_live else '',
             colorize(len(unaudited_secrets), AnsiColor.BOLD),
             's' if len(unaudited_secrets) > 1 or len(unaudited_secrets) == 0 else '',
         )
 
     if fail_on_audited_real:
-        stats += ' and {} secret{} that {} audited as real.\n'.format(
+        stats += ' {} {} secret{} that {} audited as real.\n'.format(
+            'and' if fail_on_live or fail_on_audited_real else '',
             colorize(len(audited_real_secrets), AnsiColor.BOLD),
             's' if len(audited_real_secrets) > 1 or len(audited_real_secrets) == 0 else '',
             'were' if len(audited_real_secrets) > 1 or len(audited_real_secrets) == 0 else 'was',
@@ -172,6 +171,9 @@ def print_summary(
     live_return_code: int,
     audited_real_return_code: int,
     baseline_filename: str,
+    fail_on_live: bool,
+    fail_on_unaudited: bool,
+    fail_on_audited_real: bool,
     omit_instructions=False,
 ) -> None:
     """
@@ -182,26 +184,31 @@ def print_summary(
     """
 
     if unaudited_return_code == live_return_code == audited_real_return_code == 0:
-        print(
-            '{}\n'.format(
-                colorize('\t- No unaudited secrets were found', AnsiColor.BOLD),
-            ),
-        )
-        print(
-            '{}\n'.format(
-                colorize('\t- No live secrets were found', AnsiColor.BOLD),
-            ),
-        )
-        print(
-            '{}\n'.format(
-                colorize('\t- No secrets that were audited as real were found', AnsiColor.BOLD),
-            ),
-        )
+        if fail_on_unaudited:
+            print(
+                '{}\n'.format(
+                    colorize('\t- No unaudited secrets were found', AnsiColor.BOLD),
+                ),
+            )
+
+        if fail_on_live:
+            print(
+                '{}\n'.format(
+                    colorize('\t- No live secrets were found', AnsiColor.BOLD),
+                ),
+            )
+
+        if fail_on_audited_real:
+            print(
+                '{}\n'.format(
+                    colorize('\t- No secrets that were audited as real were found', AnsiColor.BOLD),
+                ),
+            )
         return
 
     print('\nFailed conditions:')
 
-    if unaudited_return_code != 0:
+    if fail_on_unaudited and unaudited_return_code != 0:
         print(
             '{}\n'.format(
                 colorize('\n\t- Unaudited secrets were found', AnsiColor.BOLD),
@@ -213,7 +220,7 @@ def print_summary(
                     baseline_filename,
                 ),
             )
-    if live_return_code != 0:
+    if fail_on_live and live_return_code != 0:
         print(
             '{}\n'.format(
                 colorize('\n\t- Live secrets were found', AnsiColor.BOLD),
@@ -227,7 +234,7 @@ def print_summary(
                 ),
             )
 
-    if audited_real_return_code != 0:
+    if fail_on_audited_real and audited_real_return_code != 0:
         print(
             '{}\n'.format(
                 colorize('\n\t- Audited true secrets were found', AnsiColor.BOLD),

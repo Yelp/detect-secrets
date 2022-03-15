@@ -538,11 +538,7 @@ Audited as real     Test Type      filenameB       60\n"""
         )
 
     def test_print_json_report_only_live(
-        self,
-        capsys,
-        live_secrets_fixture,
-        unaudited_secrets_fixture,
-        audited_real_secrets_fixture,
+        self, capsys, live_secrets_fixture, unaudited_secrets_fixture, audited_real_secrets_fixture,
     ):
         with self.mock_env():
             print_json_report(
@@ -576,11 +572,7 @@ Audited as real     Test Type      filenameB       60\n"""
         )
 
     def test_print_json_report_only_unaudited(
-        self,
-        capsys,
-        live_secrets_fixture,
-        unaudited_secrets_fixture,
-        audited_real_secrets_fixture,
+        self, capsys, live_secrets_fixture, unaudited_secrets_fixture, audited_real_secrets_fixture,
     ):
         with self.mock_env():
             print_json_report(
@@ -614,11 +606,7 @@ Audited as real     Test Type      filenameB       60\n"""
         )
 
     def test_print_json_report_only_audited_true(
-        self,
-        capsys,
-        live_secrets_fixture,
-        unaudited_secrets_fixture,
-        audited_real_secrets_fixture,
+        self, capsys, live_secrets_fixture, unaudited_secrets_fixture, audited_real_secrets_fixture,
     ):
         with self.mock_env():
             print_json_report(
@@ -659,6 +647,10 @@ Audited as real     Test Type      filenameB       60\n"""
             live_return_code,
             audited_real_return_code,
             baseline_filename,
+            True,
+            True,
+            True,
+            True,
         )
 
         captured = capsys.readouterr()
@@ -678,6 +670,9 @@ Audited as real     Test Type      filenameB       60\n"""
             audited_real_return_code,
             baseline_filename,
             True,
+            True,
+            True,
+            True,
         )
 
         captured = capsys.readouterr()
@@ -690,7 +685,7 @@ Audited as real     Test Type      filenameB       60\n"""
             colorize('\t- No secrets that were audited as real were found', AnsiColor.BOLD),
         )
 
-    def test_print_summary_failed_conditions(self, capsys):
+    def test_print_summary_all_failed_conditions(self, capsys):
         unaudited_return_code = live_return_code = audited_real_return_code = 1
 
         print_summary(
@@ -698,6 +693,10 @@ Audited as real     Test Type      filenameB       60\n"""
             live_return_code,
             audited_real_return_code,
             baseline_filename,
+            True,
+            True,
+            True,
+            False,
         )
 
         captured = capsys.readouterr()
@@ -720,7 +719,7 @@ Audited as real     Test Type      filenameB       60\n"""
             '\nFor additional help, run detect-secrets audit --help.\n',
         )
 
-    def test_print_summary_failed_conditions_omit_instructions(self, capsys):
+    def test_print_summary_all_failed_conditions_omit_instructions(self, capsys):
         unaudited_return_code = live_return_code = audited_real_return_code = 1
 
         print_summary(
@@ -729,6 +728,9 @@ Audited as real     Test Type      filenameB       60\n"""
             audited_real_return_code,
             baseline_filename,
             True,
+            True,
+            True,
+            True,
         )
 
         captured = capsys.readouterr()
@@ -736,5 +738,199 @@ Audited as real     Test Type      filenameB       60\n"""
         assert captured.out == '\nFailed conditions:\n{}\n\n{}\n\n{}\n\n'.format(
             colorize('\n\t- Unaudited secrets were found', AnsiColor.BOLD),
             colorize('\n\t- Live secrets were found', AnsiColor.BOLD),
+            colorize('\n\t- Audited true secrets were found', AnsiColor.BOLD),
+        )
+
+    def test_print_summary_only_live_pass(self, capsys):
+        unaudited_return_code = live_return_code = audited_real_return_code = 0
+
+        print_summary(
+            unaudited_return_code,
+            live_return_code,
+            audited_real_return_code,
+            baseline_filename,
+            True,
+            False,
+            False,
+            False,
+        )
+
+        captured = capsys.readouterr()
+
+        assert captured.out == '{}\n\n'.format(
+            colorize('\t- No live secrets were found', AnsiColor.BOLD),
+        )
+
+    def test_print_summary_only_unaudited_pass(self, capsys):
+        unaudited_return_code = live_return_code = audited_real_return_code = 0
+
+        print_summary(
+            unaudited_return_code,
+            live_return_code,
+            audited_real_return_code,
+            baseline_filename,
+            False,
+            True,
+            False,
+            False,
+        )
+
+        captured = capsys.readouterr()
+
+        assert captured.out == '{}\n\n'.format(
+            colorize('\t- No unaudited secrets were found', AnsiColor.BOLD),
+        )
+
+    def test_print_summary_only_audited_real_pass(self, capsys):
+        unaudited_return_code = live_return_code = audited_real_return_code = 0
+
+        print_summary(
+            unaudited_return_code,
+            live_return_code,
+            audited_real_return_code,
+            baseline_filename,
+            False,
+            False,
+            True,
+            False,
+        )
+
+        captured = capsys.readouterr()
+
+        assert captured.out == '{}\n\n'.format(
+            colorize('\t- No secrets that were audited as real were found', AnsiColor.BOLD),
+        )
+
+    def test_print_summary_only_live_fail(self, capsys):
+        unaudited_return_code = live_return_code = audited_real_return_code = 1
+
+        print_summary(
+            unaudited_return_code,
+            live_return_code,
+            audited_real_return_code,
+            baseline_filename,
+            True,
+            False,
+            False,
+            False,
+        )
+
+        captured = capsys.readouterr()
+
+        assert captured.out == '\nFailed conditions:\n{}\n{}\n{}\n'.format(
+            colorize('\n\t- Live secrets were found', AnsiColor.BOLD),
+            '\n\t\tRevoke all live secrets and remove them from the codebase.'
+            ' Afterwards, run detect-secrets scan --update {} to re-scan.'.format(
+                baseline_filename,
+            ),
+            '\nFor additional help, run detect-secrets audit --help.\n',
+        )
+
+    def test_print_summary_only_live_fail_omit_instructions(self, capsys):
+        unaudited_return_code = live_return_code = audited_real_return_code = 1
+
+        print_summary(
+            unaudited_return_code,
+            live_return_code,
+            audited_real_return_code,
+            baseline_filename,
+            True,
+            False,
+            False,
+            True,
+        )
+
+        captured = capsys.readouterr()
+
+        assert captured.out == '\nFailed conditions:\n{}\n\n'.format(
+            colorize('\n\t- Live secrets were found', AnsiColor.BOLD),
+        )
+
+    def test_print_summary_only_unaudited_fail(self, capsys):
+        unaudited_return_code = live_return_code = audited_real_return_code = 1
+
+        print_summary(
+            unaudited_return_code,
+            live_return_code,
+            audited_real_return_code,
+            baseline_filename,
+            False,
+            True,
+            False,
+            False,
+        )
+
+        captured = capsys.readouterr()
+
+        assert captured.out == '\nFailed conditions:\n{}\n{}\n{}\n'.format(
+            colorize('\n\t- Unaudited secrets were found', AnsiColor.BOLD),
+            '\n\t\tRun detect-secrets audit {}, and audit all potential secrets.'.format(
+                baseline_filename,
+            ),
+            '\nFor additional help, run detect-secrets audit --help.\n',
+        )
+
+    def test_print_summary_only_unaudited_fail_omit_instructions(self, capsys):
+        unaudited_return_code = live_return_code = audited_real_return_code = 1
+
+        print_summary(
+            unaudited_return_code,
+            live_return_code,
+            audited_real_return_code,
+            baseline_filename,
+            False,
+            True,
+            False,
+            True,
+        )
+
+        captured = capsys.readouterr()
+
+        assert captured.out == '\nFailed conditions:\n{}\n\n'.format(
+            colorize('\n\t- Unaudited secrets were found', AnsiColor.BOLD),
+        )
+
+    def test_print_summary_only_audited_real_fail(self, capsys):
+        unaudited_return_code = live_return_code = audited_real_return_code = 1
+
+        print_summary(
+            unaudited_return_code,
+            live_return_code,
+            audited_real_return_code,
+            baseline_filename,
+            False,
+            False,
+            True,
+            False,
+        )
+
+        captured = capsys.readouterr()
+
+        assert captured.out == '\nFailed conditions:\n{}\n{}\n{}\n'.format(
+            colorize('\n\t- Audited true secrets were found', AnsiColor.BOLD),
+            '\n\t\tRemove secrets meeting this condition from the codebase,'
+            ' and run detect-secrets scan --update {} to re-scan.'.format(
+                baseline_filename,
+            ),
+            '\nFor additional help, run detect-secrets audit --help.\n',
+        )
+
+    def test_print_summary_only_audited_real_fail_omit_instructions(self, capsys):
+        unaudited_return_code = live_return_code = audited_real_return_code = 1
+
+        print_summary(
+            unaudited_return_code,
+            live_return_code,
+            audited_real_return_code,
+            baseline_filename,
+            False,
+            False,
+            True,
+            True,
+        )
+
+        captured = capsys.readouterr()
+
+        assert captured.out == '\nFailed conditions:\n{}\n\n'.format(
             colorize('\n\t- Audited true secrets were found', AnsiColor.BOLD),
         )
