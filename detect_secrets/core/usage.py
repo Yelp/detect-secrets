@@ -255,8 +255,8 @@ class AuditOptions:
         self.parser: argparse.ArgumentParser = subparser.add_parser(
             'audit',
             usage='%(prog)s [-h] [--diff |  --display-results | --report [--fail-on-unaudited]'
-            """ [--fail-on-live] [--fail-on-audited-real] [--json | --omit-instructions]]
-                     filename [filename ...]""",
+            ' [--fail-on-live] [--fail-on-audited-real] [--json | --omit-instructions]]'
+            ' [filename ...]',
         )
 
     def _add_report_module(self):
@@ -317,15 +317,6 @@ class AuditOptions:
         )
 
     def add_arguments(self):
-        self.parser.add_argument(
-            'filename',
-            nargs='+',
-            help=(
-                'Audit a given baseline file to distinguish the difference '
-                'between false and true positives.'
-            ),
-        )
-
         action_parser = self.parser.add_mutually_exclusive_group()
 
         action_parser.add_argument(
@@ -354,6 +345,15 @@ class AuditOptions:
         )
 
         self._add_report_module()
+
+        self.parser.add_argument(
+            'filename',
+            nargs='+',
+            help=(
+                'Audit a given baseline file to distinguish the difference '
+                'between false and true positives.'
+            ),
+        )
 
         return self
 
