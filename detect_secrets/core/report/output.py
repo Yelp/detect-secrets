@@ -13,6 +13,9 @@ def get_stats(
     unaudited_secrets: List,
     audited_real_secrets: List,
     baseline_filename: str,
+    fail_on_live: bool,
+    fail_on_unaudited: bool,
+    fail_on_audited_real: bool,
 ):
     """
     Returns a dictionary containing aggregate stats, to be used in a report.
@@ -21,10 +24,16 @@ def get_stats(
 
     stats = {
         'reviewed': len(secrets),
-        'live': len(live_secrets),
-        'unaudited': len(unaudited_secrets),
-        'audited_real': len(audited_real_secrets),
     }
+
+    if (fail_on_live):
+        stats['live'] = len(live_secrets)
+
+    if (fail_on_unaudited):
+        stats['unaudited'] = len(unaudited_secrets)
+
+    if (fail_on_audited_real):
+        stats['audited_real'] = len(audited_real_secrets)
 
     return stats
 
@@ -34,6 +43,9 @@ def print_json_report(
     unaudited_secrets: List,
     audited_real_secrets: List,
     baseline_filename: str,
+    fail_on_live: bool,
+    fail_on_unaudited: bool,
+    fail_on_audited_real: bool,
 ) -> None:
     """
     Prints a JSON report summarizing information about secrets
@@ -44,9 +56,21 @@ def print_json_report(
         unaudited_secrets,
         audited_real_secrets,
         baseline_filename,
+        fail_on_live,
+        fail_on_unaudited,
+        fail_on_audited_real,
     )
 
-    secrets = live_secrets + unaudited_secrets + audited_real_secrets
+    secrets = []
+
+    if fail_on_live:
+        secrets += live_secrets
+
+    if fail_on_unaudited:
+        secrets += unaudited_secrets
+
+    if fail_on_audited_real:
+        secrets += audited_real_secrets
 
     print(json.dumps({'stats': stats, 'secrets': secrets}, indent=4))
 
@@ -94,6 +118,9 @@ def print_stats(
     unaudited_secrets: List,
     audited_real_secrets: List,
     baseline_filename: str,
+    fail_on_live: bool,
+    fail_on_unaudited: bool,
+    fail_on_audited_real: bool,
 ) -> None:
     """
     Given lists of secrets which failed certain conditions and a baseline file name,
@@ -113,21 +140,31 @@ def print_stats(
         )
         return
 
-    print(
-        '\n{} potential secrets in {} were reviewed.'
-        ' Found {} live secret{}, {} unaudited secret{},'
-        ' and {} secret{} that {} audited as real.\n'.format(
+    stats = '\n{} potential secrets in {} were reviewed.'.format(
             colorize(len(secrets), AnsiColor.BOLD),
             colorize(baseline_filename, AnsiColor.BOLD),
+    )
+
+    if fail_on_live:
+        stats += ' Found {} live secret{}'.format(
             colorize(len(live_secrets), AnsiColor.BOLD),
             's' if len(live_secrets) > 1 or len(live_secrets) == 0 else '',
+        )
+
+    if fail_on_unaudited:
+        stats += ', {} unaudited secret{},'.format(
             colorize(len(unaudited_secrets), AnsiColor.BOLD),
             's' if len(unaudited_secrets) > 1 or len(unaudited_secrets) == 0 else '',
+        )
+
+    if fail_on_audited_real:
+        stats += ' and {} secret{} that {} audited as real.\n'.format(
             colorize(len(audited_real_secrets), AnsiColor.BOLD),
             's' if len(audited_real_secrets) > 1 or len(audited_real_secrets) == 0 else '',
             'were' if len(audited_real_secrets) > 1 or len(audited_real_secrets) == 0 else 'was',
-        ),
-    )
+        )
+
+    print(stats)
 
 
 def print_summary(
