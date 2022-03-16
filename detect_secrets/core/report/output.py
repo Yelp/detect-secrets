@@ -206,12 +206,12 @@ def print_summary(
             )
         return
 
-    print('\nFailed conditions:')
+    print('\nFailed conditions:\n')
 
     if fail_on_unaudited and unaudited_return_code != 0:
         print(
             '{}\n'.format(
-                colorize('\n\t- Unaudited secrets were found', AnsiColor.BOLD),
+                colorize('\t- Unaudited secrets were found', AnsiColor.BOLD),
             ),
         )
         if omit_instructions is False:
@@ -223,7 +223,7 @@ def print_summary(
     if fail_on_live and live_return_code != 0:
         print(
             '{}\n'.format(
-                colorize('\n\t- Live secrets were found', AnsiColor.BOLD),
+                colorize('\t- Live secrets were found', AnsiColor.BOLD),
             ),
         )
         if omit_instructions is False:
@@ -237,7 +237,7 @@ def print_summary(
     if fail_on_audited_real and audited_real_return_code != 0:
         print(
             '{}\n'.format(
-                colorize('\n\t- Audited true secrets were found', AnsiColor.BOLD),
+                colorize('\t- Audited true secrets were found', AnsiColor.BOLD),
             ),
         )
         if omit_instructions is False:
