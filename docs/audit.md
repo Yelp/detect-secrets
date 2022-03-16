@@ -17,7 +17,16 @@
   - [Output](#output)
   - [Usage](#usage)
     - [Instructions](#instructions)
-    - [Case:](#case)
+    - [Examples:](#examples)
+      - [Case: No --fail-on arguments provided](#case-no---fail-on-arguments-provided)
+      - [Case: No --fail-on arguments provided, instructions omitted](#case-no---fail-on-arguments-provided-instructions-omitted)
+      - [Case: All --fail-on arguments provided](#case-all---fail-on-arguments-provided)
+      - [Case: All --fail-on arguments provided, instructions omitted](#case-all---fail-on-arguments-provided-instructions-omitted)
+      - [Case: One --fail-on argument provided](#case-one---fail-on-argument-provided)
+      - [Case: One --fail-on argument provided, instructions omitted](#case-one---fail-on-argument-provided-instructions-omitted)
+      - [Case: No --fail-on arguments provided, json](#case-no---fail-on-arguments-provided-json)
+      - [Case: All --fail-on arguments provided, json](#case-all---fail-on-arguments-provided-json)
+      - [Case: One --fail-on argument provided, json](#case-one---fail-on-argument-provided-json)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -174,6 +183,8 @@ If a report is run without any `fail-on` arguments (`detect-secrets audit --repo
 
 In CI / CD, it is recommended to provide all `fail-on` args: `detect-secrets audit --report --fail-on-on-unaudited fail-on-live --fail-on-on-audited-real .secrets.baseline`.
 
+TODO: add instructions for setting up in CI / CD
+
 
 ### Output
 
@@ -295,6 +306,7 @@ $ detect-secrets audit --report --fail-on-live --fail-on-unaudited --fail-on-aud
 ```
 
 Fail (exit code = 1):
+
 ```
 $ detect-secrets audit --report --fail-on-live --fail-on-unaudited --fail-on-audited-real .secrets.baseline
 
@@ -328,6 +340,7 @@ For additional help, run detect-secrets audit --help.
 ##### Case: All --fail-on arguments provided, instructions omitted
 
 Fail (exit code = 1):
+
 ```
 $ detect-secrets audit --report --fail-on-live --fail-on-unaudited --fail-on-audited-real --omit-instructions  .secrets.baseline
 
@@ -349,8 +362,61 @@ Failed conditions:
 
 ```
 
-##### Case: No --fail-on arguments provided, json
+##### Case: One --fail-on argument provided
+
 Pass (exit code = 0):
+
+```
+$ detect-secrets audit --report --fail-on-live .secrets.baseline
+
+10 potential secrets in .secrets.baseline were reviewed. All checks have passed.
+
+        - No live secrets were found
+
+```
+
+Fail (exit code = 1):
+
+```
+$ detect-secrets audit --report --fail-on-live .secrets.baseline
+
+10 potential secrets in .secrets.baseline were reviewed. Found 1 live secret
+Failed Condition    Secret Type              Filename        Line
+------------------  -----------------------  ------------  ------
+Live                Hex High Entropy String  docs/scan.md      49
+
+Failed conditions:
+
+        - Live secrets were found
+
+                Revoke all live secrets and remove them from the codebase. Afterwards, run detect-secrets scan --update .secrets.baseline to re-scan.
+
+For additional help, run detect-secrets audit --help.
+
+```
+
+##### Case: One --fail-on argument provided, instructions omitted
+
+Fail (exit code = 1):
+
+```
+$ detect-secrets audit --report --fail-on-live --omit-instructions .secrets.baseline
+
+10 potential secrets in .secrets.baseline were reviewed. Found 1 live secret
+Failed Condition    Secret Type              Filename        Line
+------------------  -----------------------  ------------  ------
+Live                Hex High Entropy String  docs/scan.md      49
+
+Failed conditions:
+
+        - Live secrets were found
+
+```
+
+##### Case: No --fail-on arguments provided, json
+
+Pass (exit code = 0):
+
 ```
 $ detect-secrets audit --report --json .secrets.baseline
 {
@@ -365,6 +431,7 @@ $ detect-secrets audit --report --json .secrets.baseline
 ```
 
 Fail (exit code = 0):
+
 ```
 detect-secrets audit --report --json .secrets.baseline
 {
@@ -401,6 +468,7 @@ detect-secrets audit --report --json .secrets.baseline
 ##### Case: All --fail-on arguments provided, json
 
 Pass (exit code = 0):
+
 ```
 $ detect-secrets audit --report --json --fail-on-live --fail-on-unaudited --fail-on-audited-real .secrets.baseline
 {
@@ -415,6 +483,7 @@ $ detect-secrets audit --report --json --fail-on-live --fail-on-unaudited --fail
 ```
 
 Fail (exit code = 1):
+
 ```
 detect-secrets audit --report --json --fail-on-live --fail-on-unaudited --fail-on-audited-real .secrets.baseline
 {
@@ -442,6 +511,29 @@ detect-secrets audit --report --json --fail-on-live --fail-on-unaudited --fail-o
             "filename": "detect_secrets/plugins/private_key.py",
             "line": 52,
             "type": "Private Key"
+        }
+    ]
+}
+```
+
+
+##### Case: One --fail-on argument provided, json
+
+Fail (exit code = 1):
+
+```
+detect-secrets audit --report --json --fail-on-live .secrets.baseline
+{
+    "stats": {
+        "reviewed": 10,
+        "live": 1
+    },
+    "secrets": [
+        {
+            "failed_condition": "Live",
+            "filename": "docs/scan.md",
+            "line": 49,
+            "type": "Hex High Entropy String"
         }
     ]
 }
