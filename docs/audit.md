@@ -3,30 +3,30 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-- [What Is It?](#what-is-it)
-- [How to Audit a Baseline](#how-to-audit-a-baseline)
-  - [Windows Powershell and cmd](#windows-powershell-and-cmd)
-  - [Windows git bash](#windows-git-bash)
-  - [MacOS & Linux](#macos--linux)
-- [Manually Labelling Secrets](#manually-labelling-secrets)
-  - [Handling Developer Secrets](#handling-developer-secrets)
-- [What to do after marking an potential secret as a valid secret?](#what-to-do-after-marking-an-potential-secret-as-a-valid-secret)
-- [Comparing Baselines](#comparing-baselines)
-- [Report Generation](#report-generation)
-  - [Running in CI / CD](#running-in-ci--cd)
-  - [Output](#output)
-  - [Usage](#usage)
-    - [Instructions](#instructions)
-    - [Examples:](#examples)
-      - [Case: No --fail-on arguments provided](#case-no---fail-on-arguments-provided)
-      - [Case: No --fail-on arguments provided, instructions omitted](#case-no---fail-on-arguments-provided-instructions-omitted)
-      - [Case: All --fail-on arguments provided](#case-all---fail-on-arguments-provided)
-      - [Case: All --fail-on arguments provided, instructions omitted](#case-all---fail-on-arguments-provided-instructions-omitted)
-      - [Case: One --fail-on argument provided](#case-one---fail-on-argument-provided)
-      - [Case: One --fail-on argument provided, instructions omitted](#case-one---fail-on-argument-provided-instructions-omitted)
-      - [Case: No --fail-on arguments provided, json](#case-no---fail-on-arguments-provided-json)
-      - [Case: All --fail-on arguments provided, json](#case-all---fail-on-arguments-provided-json)
-      - [Case: One --fail-on argument provided, json](#case-one---fail-on-argument-provided-json)
+-   [What Is It?](#what-is-it)
+-   [How to Audit a Baseline](#how-to-audit-a-baseline)
+    -   [Windows Powershell and cmd](#windows-powershell-and-cmd)
+    -   [Windows git bash](#windows-git-bash)
+    -   [MacOS & Linux](#macos--linux)
+-   [Manually Labelling Secrets](#manually-labelling-secrets)
+    -   [Handling Developer Secrets](#handling-developer-secrets)
+-   [What to do after marking an potential secret as a valid secret?](#what-to-do-after-marking-an-potential-secret-as-a-valid-secret)
+-   [Comparing Baselines](#comparing-baselines)
+-   [Report Generation](#report-generation)
+    -   [Running in CI / CD](#running-in-ci--cd)
+    -   [Output](#output)
+    -   [Usage](#usage)
+        -   [Instructions](#instructions)
+        -   [Examples:](#examples)
+            -   [Case: No --fail-on arguments provided](#case-no---fail-on-arguments-provided)
+            -   [Case: No --fail-on arguments provided, instructions omitted](#case-no---fail-on-arguments-provided-instructions-omitted)
+            -   [Case: All --fail-on arguments provided](#case-all---fail-on-arguments-provided)
+            -   [Case: All --fail-on arguments provided, instructions omitted](#case-all---fail-on-arguments-provided-instructions-omitted)
+            -   [Case: One --fail-on argument provided](#case-one---fail-on-argument-provided)
+            -   [Case: One --fail-on argument provided, instructions omitted](#case-one---fail-on-argument-provided-instructions-omitted)
+            -   [Case: No --fail-on arguments provided, json](#case-no---fail-on-arguments-provided-json)
+            -   [Case: All --fail-on arguments provided, json](#case-all---fail-on-arguments-provided-json)
+            -   [Case: One --fail-on argument provided, json](#case-one---fail-on-argument-provided-json)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -185,7 +185,6 @@ In CI / CD, it is recommended to provide all `fail-on` args: `detect-secrets aud
 
 TODO: add instructions for setting up in CI / CD
 
-
 ### Output
 
 By default, a table will be displayed which lists secrets that failed the checks. There will also be a stats section at the top, and a report text summary at the bottom which contains instructions on how to pass the checks, if any are failing. Instructions can be omitted with `--omit-instructions`.
@@ -201,18 +200,18 @@ For usage help, run:
 ```bash
 $ detect-secrets audit --help
 ```
+
 ---
 
 Arguments available to be used with `detect-secrets audit --report`:
 
-| Argument | Description |
-| ----------- | ----------- |
-| `--fail-on-on-live`| This condition is met when a secret has been verified to be live. To pass this check, make sure that any secrets in the baseline file with a property of `"is_verified": true` have been remediated, afterwards re-scan. |
-| `--fail-on-on-unaudited` | This condition is met when there are potential secrets in the baseline file which have not been audited yet. To pass this check, run `detect-secrets audit .secrets.baseline` to audit any unaudited secrets. |
+| Argument                    | Description                                                                                                                                                                                                                                                                                                                            |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--fail-on-on-live`         | This condition is met when a secret has been verified to be live. To pass this check, make sure that any secrets in the baseline file with a property of `"is_verified": true` have been remediated, afterwards re-scan.                                                                                                               |
+| `--fail-on-on-unaudited`    | This condition is met when there are potential secrets in the baseline file which have not been audited yet. To pass this check, run `detect-secrets audit .secrets.baseline` to audit any unaudited secrets.                                                                                                                          |
 | `--fail-on-on-audited-real` | This condition is met when the baseline file contains one or more secrets which have been marked as actual secrets during the auditing stage. Secrets with a property of `"is_secret": true` meet this condition. To pass this check, remove those secrets from your code and re-scan so that they will be removed from your baseline. |
-| `--json` | Providing this flag will cause the report output to be formatted as JSON. Mutually exclusive with `--omit-instructions`. |
-| `--omit-instructions` | Providing this flag will omit instructions from the report. Mutually exclusive with `--json`. |
-
+| `--json`                    | Providing this flag will cause the report output to be formatted as JSON. Mutually exclusive with `--omit-instructions`.                                                                                                                                                                                                               |
+| `--omit-instructions`       | Providing this flag will omit instructions from the report. Mutually exclusive with `--json`.                                                                                                                                                                                                                                          |
 
 #### Examples:
 
@@ -292,6 +291,7 @@ Failed conditions:
 ##### Case: All --fail-on arguments provided
 
 Pass (exit code = 0):
+
 ```
 $ detect-secrets audit --report --fail-on-live --fail-on-unaudited --fail-on-audited-real .secrets.baseline
 
@@ -335,7 +335,6 @@ Failed conditions:
 For additional help, run detect-secrets audit --help.
 
 ```
-
 
 ##### Case: All --fail-on arguments provided, instructions omitted
 
@@ -464,7 +463,6 @@ detect-secrets audit --report --json .secrets.baseline
 }
 ```
 
-
 ##### Case: All --fail-on arguments provided, json
 
 Pass (exit code = 0):
@@ -515,7 +513,6 @@ detect-secrets audit --report --json --fail-on-live --fail-on-unaudited --fail-o
     ]
 }
 ```
-
 
 ##### Case: One --fail-on argument provided, json
 
