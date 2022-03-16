@@ -172,7 +172,7 @@ To determine the whether the CI / CD stage should pass, the report will also emi
 
 If a report is run without any `fail-on` arguments (`detect-secrets audit --report .secrets.baseline`), it will execute all the fail checks by default, but always emit a zero exit code even if checks fail.
 
-In CI / CD, it is recommended to provide all `fail-on` args: `detect-secrets audit --report --fail-on-unaudited fail-on-live --fail-on-audited-real .secrets.baseline`.
+In CI / CD, it is recommended to provide all `fail-on` args: `detect-secrets audit --report --fail-on-on-unaudited fail-on-live --fail-on-on-audited-real .secrets.baseline`.
 
 
 ### Output
@@ -196,16 +196,16 @@ Arguments to be used with `detect-secrets audit --report`:
 
 | Argument | Description |
 | ----------- | ----------- |
-| `--fail-on-live`| This condition is met when a secret has been verified to be live. To pass this check, make sure that any secrets in the baseline file with a property of `"is_verified": true` have been remediated, afterwards re-scan. |
-| `--fail-on-unaudited` | This condition is met when there are potential secrets in the baseline file which have not been audited yet. To pass this check, run `detect-secrets audit .secrets.baseline` to audit any unaudited secrets. |
-| `--fail-on-audited-real` | This condition is met when the baseline file contains one or more secrets which have been marked as actual secrets during the auditing stage. Secrets with a property of `"is_secret": true` meet this condition. To pass this check, remove those secrets from your code and re-scan so that they will be removed from your baseline. |
+| `--fail-on-on-live`| This condition is met when a secret has been verified to be live. To pass this check, make sure that any secrets in the baseline file with a property of `"is_verified": true` have been remediated, afterwards re-scan. |
+| `--fail-on-on-unaudited` | This condition is met when there are potential secrets in the baseline file which have not been audited yet. To pass this check, run `detect-secrets audit .secrets.baseline` to audit any unaudited secrets. |
+| `--fail-on-on-audited-real` | This condition is met when the baseline file contains one or more secrets which have been marked as actual secrets during the auditing stage. Secrets with a property of `"is_secret": true` meet this condition. To pass this check, remove those secrets from your code and re-scan so that they will be removed from your baseline. |
 | `--json` | Providing this flag will cause the report output to be formatted as JSON. Mutually exclusive with `--omit-instructions`. |
 | `--omit-instructions` | Providing this flag will omit instructions from the report. Mutually exclusive with `--json`. |
 
 
 #### Examples:
 
-##### Case: No --fail arguments provided (default)
+##### Case: No --fail-on arguments provided
 
 Pass (exit code = 0):
 
@@ -253,21 +253,7 @@ For additional help, run detect-secrets audit --help.
 
 ```
 
-##### Case: No --fail arguments provided (default), omit instructions
-
-Pass (exit code = 0):
-```
-$ detect-secrets audit --report .secrets.baseline --omit-instructions
-
-10 potential secrets in .secrets.baseline were reviewed. All checks have passed.
-
-        - No unaudited secrets were found
-
-        - No live secrets were found
-
-        - No secrets that were audited as real were found
-
-```
+##### Case: No --fail-on arguments provided, instructions omitted
 
 Fail (exit code = 0):
 
@@ -286,10 +272,176 @@ Failed conditions:
 
         - Unaudited secrets were found
 
-
         - Live secrets were found
-
 
         - Audited true secrets were found
 
+```
+
+##### Case: All --fail-on arguments provided
+
+Pass (exit code = 0):
+```
+$ detect-secrets audit --report --fail-on-live --fail-on-unaudited --fail-on-audited-real .secrets.baseline
+
+10 potential secrets in .secrets.baseline were reviewed. All checks have passed.
+
+        - No unaudited secrets were found
+
+        - No live secrets were found
+
+        - No secrets that were audited as real were found
+
+```
+
+Fail (exit code = 1):
+```
+$ detect-secrets audit --report --fail-on-live --fail-on-unaudited --fail-on-audited-real .secrets.baseline
+
+10 potential secrets in .secrets.baseline were reviewed. Found 1 live secret, 1 unaudited secret, and 1 secret that was audited as real.
+
+Failed Condition    Secret Type              Filename                                 Line
+------------------  -----------------------  -------------------------------------  ------
+Live                Hex High Entropy String  docs/scan.md                               49
+Unaudited           Private Key              detect_secrets/plugins/private_key.py      52
+Audited as real     Hex High Entropy String  docs/audit.md                              74
+
+Failed conditions:
+
+        - Unaudited secrets were found
+
+                Run detect-secrets audit .secrets.baseline, and audit all potential secrets.
+
+        - Live secrets were found
+
+                Revoke all live secrets and remove them from the codebase. Afterwards, run detect-secrets scan --update .secrets.baseline to re-scan.
+
+        - Audited true secrets were found
+
+                Remove secrets meeting this condition from the codebase, and run detect-secrets scan --update .secrets.baseline to re-scan.
+
+For additional help, run detect-secrets audit --help.
+
+```
+
+
+##### Case: All --fail-on arguments provided, instructions omitted
+
+Fail (exit code = 1):
+```
+$ detect-secrets audit --report --fail-on-live --fail-on-unaudited --fail-on-audited-real --omit-instructions  .secrets.baseline
+
+10 potential secrets in .secrets.baseline were reviewed. Found 1 live secret, 1 unaudited secret, and 1 secret that was audited as real.
+
+Failed Condition    Secret Type              Filename                                 Line
+------------------  -----------------------  -------------------------------------  ------
+Live                Hex High Entropy String  docs/audit.md                              74
+Unaudited           Hex High Entropy String  docs/scan.md                               49
+Audited as real     Private Key              detect_secrets/plugins/private_key.py      52
+
+Failed conditions:
+
+        - Unaudited secrets were found
+
+        - Live secrets were found
+
+        - Audited true secrets were found
+
+```
+
+##### Case: No --fail-on arguments provided, json
+Pass (exit code = 0):
+```
+$ detect-secrets audit --report --json .secrets.baseline
+{
+    "stats": {
+        "reviewed": 10,
+        "live": 0,
+        "unaudited": 0,
+        "audited_real": 0
+    },
+    "secrets": []
+}
+```
+
+Fail (exit code = 0):
+```
+detect-secrets audit --report --json .secrets.baseline
+{
+    "stats": {
+        "reviewed": 10,
+        "live": 1,
+        "unaudited": 1,
+        "audited_real": 1
+    },
+    "secrets": [
+        {
+            "failed_condition": "Live",
+            "filename": "docs/audit.md",
+            "line": 74,
+            "type": "Hex High Entropy String"
+        },
+        {
+            "failed_condition": "Unaudited",
+            "filename": "docs/scan.md",
+            "line": 49,
+            "type": "Hex High Entropy String"
+        },
+        {
+            "failed_condition": "Audited as real",
+            "filename": "detect_secrets/plugins/private_key.py",
+            "line": 52,
+            "type": "Private Key"
+        }
+    ]
+}
+```
+
+
+##### Case: All --fail-on arguments provided, json
+Pass (exit code = 0):
+```
+$ detect-secrets audit --report --json .secrets.baseline
+{
+    "stats": {
+        "reviewed": 10,
+        "live": 0,
+        "unaudited": 0,
+        "audited_real": 0
+    },
+    "secrets": []
+}
+```
+
+Fail (exit code = 1):
+```
+detect-secrets audit --report --json --fail-on-live --fail-on-unaudited --fail-on-audited-real --omit-instructions  .secrets.baseline
+{
+    "stats": {
+        "reviewed": 10,
+        "live": 1,
+        "unaudited": 1,
+        "audited_real": 1
+    },
+    "secrets": [
+        {
+            "failed_condition": "Live",
+            "filename": "docs/audit.md",
+            "line": 74,
+            "type": "Hex High Entropy String"
+        },
+        {
+            "failed_condition": "Unaudited",
+            "filename": "docs/scan.md",
+            "line": 49,
+            "type": "Hex High Entropy String"
+        },
+        {
+            "failed_condition": "Audited as real",
+            "filename": "detect_secrets/plugins/private_key.py",
+            "line": 52,
+            "type": "Private Key"
+        }
+    ]
+}
 ```
