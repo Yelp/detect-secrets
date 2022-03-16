@@ -60,14 +60,11 @@ def audited_real_secrets_fixture():
 class TestReportOutput:
     @contextmanager
     def mock_env(self, baseline=None):
-        if baseline is None:
-            baseline = self.baseline
-
         with mock.patch.object(
             # We mock this, so we don't need to do any file I/O.
             audit,
             '_get_baseline_from_file',
-            return_value=baseline,
+            return_value=baseline or self.baseline,
         ) as m:
             yield m
 
