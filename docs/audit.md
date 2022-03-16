@@ -173,21 +173,25 @@ Base64HighEntropyString: True  (4.089)
 
 ## Report Generation
 
-Maybe, you need to generate a full report with all the detect-secrets findings. IBM's reporting feature fulfills a different use case from [Yelp's](https://github.com/Yelp/detect-secrets/blob/master/docs/audit.md#report-generation). IBM's version is intended to be run in CI / CD pipelines for auditing purposes. Certain checks will be executed against the results of baseline file, and the outputted report will let you know if any checks failed.
+Maybe you must generate a report with all of the detect-secrets findings. While similarly named, IBM's reporting feature fulfills a *different* use case from [that of Yelp](https://github.com/Yelp/detect-secrets/blob/master/docs/audit.md#report-generation). IBM's implementation is intended be run in CI / CD pipelines for auditing purposes, or locally while testing. With it, certain checks would be executed against the results of a baseline file, and the resultant report would indicate any of those which failed.
 
 ### Running in CI / CD
 
-To determine the whether the CI / CD stage should pass, the report will emit an exit code.
+To determine whether the CI / CD stage should pass, the report will emit an exit code.
 
-If a report is run without any `fail-on` arguments (`detect-secrets audit --report .secrets.baseline`), it will execute all the fail checks by default, but always emit a zero exit code even if checks fail.
+If a report is run without any `fail-on` arguments (`detect-secrets audit --report .secrets.baseline`), it will execute all the fail checks by default, yet always emit a zero exit code—even if checks fail.
 
-In CI / CD, it is recommended to provide all `fail-on` args: `detect-secrets audit --report --fail-on-on-unaudited fail-on-live --fail-on-on-audited-real .secrets.baseline`.
+In CI / CD, it is recommended to provide all `fail-on` args:
+
+```shell
+detect-secrets audit --report --fail-on-on-unaudited fail-on-live --fail-on-on-audited-real .secrets.baseline
+```
 
 TODO: add instructions for setting up in CI / CD
 
 ### Output
 
-By default, a table will be displayed which lists secrets that failed the checks. There will also be a stats section at the top, and a report text summary at the bottom which contains instructions on how to pass the checks, if any are failing. Instructions can be omitted with `--omit-instructions`.
+By default, a table will be displayed listing secrets that failed the checks. There will also be a stats section at the top, and a summary at the bottom containing instructions on how to pass said checks. Instructions can be omitted with `--omit-instructions`.
 
 For pure JSON output, include the `--json` flag.
 
@@ -207,7 +211,7 @@ Arguments available to be used with `detect-secrets audit --report`:
 
 | Argument                    | Description                                                                                                                                                                                                                                                                                                                            |
 | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--fail-on-on-live`         | This condition is met when a secret has been verified to be live. To pass this check, make sure that any secrets in the baseline file with a property of `"is_verified": true` have been remediated, afterwards re-scan.                                                                                                               |
+| `--fail-on-on-live`         | This condition is met when a secret has been verified to be live. To pass this check, make sure any secrets in the baseline file with a property of `"is_verified": true` have been remediated, and re-scan afterward.                                                                                                               |
 | `--fail-on-on-unaudited`    | This condition is met when there are potential secrets in the baseline file which have not been audited yet. To pass this check, run `detect-secrets audit .secrets.baseline` to audit any unaudited secrets.                                                                                                                          |
 | `--fail-on-on-audited-real` | This condition is met when the baseline file contains one or more secrets which have been marked as actual secrets during the auditing stage. Secrets with a property of `"is_secret": true` meet this condition. To pass this check, remove those secrets from your code and re-scan so that they will be removed from your baseline. |
 | `--json`                    | Providing this flag will cause the report output to be formatted as JSON. Mutually exclusive with `--omit-instructions`.                                                                                                                                                                                                               |
@@ -232,7 +236,7 @@ $ detect-secrets audit --report .secrets.baseline
 
 ```
 
-Fail (exit code = 0):
+Fail (still exit code = 0 because of no provided `--fail-on` arguments!):
 
 ```
 $ detect-secrets audit --report .secrets.baseline
@@ -265,7 +269,7 @@ For additional help, run detect-secrets audit --help.
 
 ##### Case: No --fail-on arguments provided, instructions omitted
 
-Fail (exit code = 0):
+Fail (still exit code = 0 because of no provided `--fail-on` arguments!):
 
 ```
 $ detect-secrets audit --report .secrets.baseline --omit-instructions
@@ -429,7 +433,7 @@ $ detect-secrets audit --report --json .secrets.baseline
 }
 ```
 
-Fail (exit code = 0):
+Fail (still exit code = 0 because of no provided `--fail-on` arguments!):
 
 ```
 detect-secrets audit --report --json .secrets.baseline
