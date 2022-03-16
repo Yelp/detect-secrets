@@ -698,17 +698,17 @@ Audited as real     Test Type      filenameB       60\n"""
 
         captured = capsys.readouterr()
 
-        assert captured.out == '\nFailed conditions:\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n'.format(
-            colorize('\n\t- Unaudited secrets were found', AnsiColor.BOLD),
+        assert captured.out == '\nFailed conditions:\n\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n'.format(
+            colorize('\t- Unaudited secrets were found', AnsiColor.BOLD),
             '\n\t\tRun detect-secrets audit {}, and audit all potential secrets.'.format(
                 baseline_filename,
             ),
-            colorize('\n\t- Live secrets were found', AnsiColor.BOLD),
+            colorize('\t- Live secrets were found', AnsiColor.BOLD),
             '\n\t\tRevoke all live secrets and remove them from the codebase.'
             ' Afterwards, run detect-secrets scan --update {} to re-scan.'.format(
                 baseline_filename,
             ),
-            colorize('\n\t- Audited true secrets were found', AnsiColor.BOLD),
+            colorize('\t- Audited true secrets were found', AnsiColor.BOLD),
             '\n\t\tRemove secrets meeting this condition from the codebase,'
             ' and run detect-secrets scan --update {} to re-scan.'.format(
                 baseline_filename,
@@ -732,10 +732,10 @@ Audited as real     Test Type      filenameB       60\n"""
 
         captured = capsys.readouterr()
 
-        assert captured.out == '\nFailed conditions:\n{}\n\n{}\n\n{}\n\n'.format(
-            colorize('\n\t- Unaudited secrets were found', AnsiColor.BOLD),
-            colorize('\n\t- Live secrets were found', AnsiColor.BOLD),
-            colorize('\n\t- Audited true secrets were found', AnsiColor.BOLD),
+        assert captured.out == '\nFailed conditions:\n\n{}\n\n{}\n\n{}\n\n'.format(
+            colorize('\t- Unaudited secrets were found', AnsiColor.BOLD),
+            colorize('\t- Live secrets were found', AnsiColor.BOLD),
+            colorize('\t- Audited true secrets were found', AnsiColor.BOLD),
         )
 
     def test_print_summary_only_live_pass(self, capsys):
@@ -814,8 +814,8 @@ Audited as real     Test Type      filenameB       60\n"""
 
         captured = capsys.readouterr()
 
-        assert captured.out == '\nFailed conditions:\n{}\n{}\n{}\n'.format(
-            colorize('\n\t- Live secrets were found', AnsiColor.BOLD),
+        assert captured.out == '\nFailed conditions:\n\n{}\n{}\n{}\n'.format(
+            colorize('\t- Live secrets were found', AnsiColor.BOLD),
             '\n\t\tRevoke all live secrets and remove them from the codebase.'
             ' Afterwards, run detect-secrets scan --update {} to re-scan.'.format(
                 baseline_filename,
@@ -839,8 +839,8 @@ Audited as real     Test Type      filenameB       60\n"""
 
         captured = capsys.readouterr()
 
-        assert captured.out == '\nFailed conditions:\n{}\n\n'.format(
-            colorize('\n\t- Live secrets were found', AnsiColor.BOLD),
+        assert captured.out == '\nFailed conditions:\n\n{}\n\n'.format(
+            colorize('\t- Live secrets were found', AnsiColor.BOLD),
         )
 
     def test_print_summary_only_unaudited_fail(self, capsys):
@@ -859,8 +859,8 @@ Audited as real     Test Type      filenameB       60\n"""
 
         captured = capsys.readouterr()
 
-        assert captured.out == '\nFailed conditions:\n{}\n{}\n{}\n'.format(
-            colorize('\n\t- Unaudited secrets were found', AnsiColor.BOLD),
+        assert captured.out == '\nFailed conditions:\n\n{}\n{}\n{}\n'.format(
+            colorize('\t- Unaudited secrets were found', AnsiColor.BOLD),
             '\n\t\tRun detect-secrets audit {}, and audit all potential secrets.'.format(
                 baseline_filename,
             ),
@@ -883,8 +883,8 @@ Audited as real     Test Type      filenameB       60\n"""
 
         captured = capsys.readouterr()
 
-        assert captured.out == '\nFailed conditions:\n{}\n\n'.format(
-            colorize('\n\t- Unaudited secrets were found', AnsiColor.BOLD),
+        assert captured.out == '\nFailed conditions:\n\n{}\n\n'.format(
+            colorize('\t- Unaudited secrets were found', AnsiColor.BOLD),
         )
 
     def test_print_summary_only_audited_real_fail(self, capsys):
@@ -903,8 +903,8 @@ Audited as real     Test Type      filenameB       60\n"""
 
         captured = capsys.readouterr()
 
-        assert captured.out == '\nFailed conditions:\n{}\n{}\n{}\n'.format(
-            colorize('\n\t- Audited true secrets were found', AnsiColor.BOLD),
+        assert captured.out == '\nFailed conditions:\n\n{}\n{}\n{}\n'.format(
+            colorize('\t- Audited true secrets were found', AnsiColor.BOLD),
             '\n\t\tRemove secrets meeting this condition from the codebase,'
             ' and run detect-secrets scan --update {} to re-scan.'.format(
                 baseline_filename,
@@ -928,6 +928,6 @@ Audited as real     Test Type      filenameB       60\n"""
 
         captured = capsys.readouterr()
 
-        assert captured.out == '\nFailed conditions:\n{}\n\n'.format(
-            colorize('\n\t- Audited true secrets were found', AnsiColor.BOLD),
+        assert captured.out == '\nFailed conditions:\n\n{}\n\n'.format(
+            colorize('\t- Audited true secrets were found', AnsiColor.BOLD),
         )
