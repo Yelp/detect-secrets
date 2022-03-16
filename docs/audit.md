@@ -3,16 +3,21 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
--   [What Is It?](#what-is-it)
--   [How to Audit a Baseline](#how-to-audit-a-baseline)
-    -   [Windows Powershell and cmd](#windows-powershell-and-cmd)
-    -   [Windows git bash](#windows-git-bash)
-    -   [MacOS & Linux](#macos--linux)
--   [Manually Labelling Secrets](#manually-labelling-secrets)
-    -   [Handling Developer Secrets](#handling-developer-secrets)
--   [What to do after marking an potential secret as a valid secret?](#what-to-do-after-marking-an-potential-secret-as-a-valid-secret)
--   [Comparing Baselines](#comparing-baselines)
--   [Report Generation](#report-generation)
+- [What Is It?](#what-is-it)
+- [How to Audit a Baseline](#how-to-audit-a-baseline)
+  - [Windows Powershell and cmd](#windows-powershell-and-cmd)
+  - [Windows git bash](#windows-git-bash)
+  - [MacOS & Linux](#macos--linux)
+- [Manually Labelling Secrets](#manually-labelling-secrets)
+  - [Handling Developer Secrets](#handling-developer-secrets)
+- [What to do after marking an potential secret as a valid secret?](#what-to-do-after-marking-an-potential-secret-as-a-valid-secret)
+- [Comparing Baselines](#comparing-baselines)
+- [Report Generation](#report-generation)
+  - [Running in CI / CD](#running-in-ci--cd)
+  - [Output](#output)
+  - [Usage](#usage)
+    - [Instructions](#instructions)
+    - [Case:](#case)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -159,52 +164,50 @@ Base64HighEntropyString: True  (4.089)
 
 ## Report Generation
 
-Maybe, you need to generate a full report with all the detect-secrets findings. IBM's reporting feature fulfills a different use case from the [upstream version's](https://github.com/Yelp/detect-secrets/blob/master/docs/audit.md#report-generation). IBM's version is meant to be run in CI / CD pipelines for auditing purposes. It will execute certain checks against a baseline file, and produce either a table or JSON report output.
+Maybe, you need to generate a full report with all the detect-secrets findings. IBM's reporting feature fulfills a different use case from [Yelp's](https://github.com/Yelp/detect-secrets/blob/master/docs/audit.md#report-generation). IBM's version is intended to be run in CI / CD pipelines for auditing purposes. Certain checks will be executed against the results of baseline file, and the outputted report will let you know if any checks failed.
 
-In order to pass or fail CI / CD stage, this feature outputs an exit code. If a report is run without any `fail-on` arguments, it will execute all the fail checks, but always exit with code zero even if they fail. \*\*In CI / CD, is recommended to run the report with `detect-secrets audit --report --fail-on-unaudited fail-on-live --fail-on-audited-real`.\*\* If a `fail-on` argument is provided and the checks fails, the report will execute with a non-zero exit code.
+### Running in CI / CD
+
+To determine the whether the CI / CD stage should pass, the report will also emit an exit code.
+
+If a report is run without any `fail-on` arguments (`detect-secrets audit --report .secrets.baseline`), it will execute all the fail checks by default, but always emit a zero exit code even if checks fail.
+
+In CI / CD, it is recommended to provide all `fail-on` args: `detect-secrets audit --report --fail-on-unaudited fail-on-live --fail-on-audited-real .secrets.baseline`.
+
+
+### Output
+
+By default, a table will be displayed which lists secrets that failed the checks. There will also be a stats section at the top, and a report text summary at the bottom which contains instructions on how to pass the checks, if any are failing. Instructions can be omitted with the `--omit option`.
+
+For a pure JSON output, include the `--json` flag.
 
 ### Usage
 
-To see what each individual report argument does, run the following command:
+#### Instructions
+
+For usage help, run:
 
 ```bash
 $ detect-secrets audit --help
 ```
+---
 
-Output:
-```
+Arguments to be used with `detect-secrets audit --report`:
 
-usage: detect-secrets audit [-h] [--diff |  --display-results | --report [--fail-on-unaudited] [--fail-on-live] [--fail-on-audited-real] [--json | --omit-instructions]] filename [filename ...]
+| Argument | Description |
+| ----------- | ----------- |
+| `--fail-on-live`| This condition is met when a secret has been verified to be live. To pass this check, make sure that any secrets in the baseline file with a property of `"is_verified": true` have been remediated, afterwards re-scan. |
+| `--fail-on-unaudited` | This condition is met when there are potential secrets in the baseline file which have not been audited yet. To pass this check, run `detect-secrets audit .secrets.baseline` to audit any unaudited secrets. |
+| `--fail-on-audited-real` | This condition is met when the baseline file contains one or more secrets which have been marked as actual secrets during the auditing stage. Secrets with a property of `"is_secret": true` meet this condition. To pass this check, remove those secrets from your code and re-scan so that they will be removed from your baseline. |
+| `--json` | Providing this flag will cause the report output to be formatted as JSON. Mutually exclusive with `--omit-instructions`. |
+| `--omit-instructions` | Providing this flag will omit instructions from the report. Mutually exclusive with `--json`. |
 
-# ...
 
-reporting:
-  Displays a report with the secrets detected which fail certain conditions. To be used with the report mode (--report).
+#### Examples:
 
-  --fail-on-unaudited   This condition is met when there are potential secrets in the baseline file which have not been audited yet. To pass this check,
-                        run detect-secrets audit .secrets.baseline to audit any unaudited secrets.
-  --fail-on-live        This condition is met when a secret has been verified to be live. To pass this check, make sure that any secrets in the baseline
-                        file with a property of is_verified: true have been remediated, afterwards re-scan.
-  --fail-on-audited-real
-                        This condition is met when the baseline file contains one or more secrets which have been marked as actual secrets during the
-                        auditing stage. Secrets with a property of is_secret: true meet this condition. To pass this check, remove those secrets from your
-                        code and re-scan so that they will be removed from your baseline.
-  --json                Providing this flag will cause the report output to be formatted as JSON.
-  --omit-instructions   Providing this flag will omit instructions from the report.
-```
-### Table
+##### Case: No --fail arguments provided (default)
 
-By default, a table will be displayed which lists secrets that failed the checks. There will also be a stats section, and a report text summary which contains instructions on how to pass the checks, if any are failing. Instructions can be omitted with the `--omit option`.
-
-### JSON
-
-To produce a JSON output, pass in the `--json` flag.
-
-### Usage
-
-You can generate one with the --report flag: `detect-secrets audit --report`.
-
-#### Case:
+Pass (exit code = 0):
 
 ```bash
 $ detect-secrets audit --report .secrets.baseline
@@ -216,5 +219,77 @@ $ detect-secrets audit --report .secrets.baseline
         - No live secrets were found
 
         - No secrets that were audited as real were found
+
+```
+
+Fail (exit code = 0):
+
+```
+$ detect-secrets audit --report .secrets.baseline
+
+10 potential secrets in .secrets.baseline were reviewed. Found 1 live secret, 1 unaudited secret, and 1 secret that was audited as real.
+
+Failed Condition    Secret Type              Filename                                 Line
+------------------  -----------------------  -------------------------------------  ------
+Live                Hex High Entropy String  docs/scan.md                               49
+Unaudited           Private Key              detect_secrets/plugins/private_key.py      50
+Audited as real     Hex High Entropy String  docs/audit.md                              69
+
+Failed conditions:
+
+        - Unaudited secrets were found
+
+                Run detect-secrets audit .secrets.baseline, and audit all potential secrets.
+
+        - Live secrets were found
+
+                Revoke all live secrets and remove them from the codebase. Afterwards, run detect-secrets scan --update .secrets.baseline to re-scan.
+
+        - Audited true secrets were found
+
+                Remove secrets meeting this condition from the codebase, and run detect-secrets scan --update .secrets.baseline to re-scan.
+
+For additional help, run detect-secrets audit --help.
+
+```
+
+##### Case: No --fail arguments provided (default), omit instructions
+
+Pass (exit code = 0):
+```
+$ detect-secrets audit --report .secrets.baseline --omit-instructions
+
+10 potential secrets in .secrets.baseline were reviewed. All checks have passed.
+
+        - No unaudited secrets were found
+
+        - No live secrets were found
+
+        - No secrets that were audited as real were found
+
+```
+
+Fail (exit code = 0):
+
+```
+$ detect-secrets audit --report .secrets.baseline --omit-instructions
+
+10 potential secrets in .secrets.baseline were reviewed. Found 1 live secret, 1 unaudited secret, and 1 secret that was audited as real.
+
+Failed Condition    Secret Type              Filename                                 Line
+------------------  -----------------------  -------------------------------------  ------
+Live                Hex High Entropy String  docs/scan.md                               49
+Unaudited           Private Key              detect_secrets/plugins/private_key.py      52
+Audited as real     Hex High Entropy String  docs/audit.md                              69
+
+Failed conditions:
+
+        - Unaudited secrets were found
+
+
+        - Live secrets were found
+
+
+        - Audited true secrets were found
 
 ```
