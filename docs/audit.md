@@ -177,7 +177,7 @@ Maybe, you need to generate a full report with all the detect-secrets findings. 
 
 ### Running in CI / CD
 
-To determine the whether the CI / CD stage should pass, the report will also emit an exit code.
+To determine the whether the CI / CD stage should pass, the report will emit an exit code.
 
 If a report is run without any `fail-on` arguments (`detect-secrets audit --report .secrets.baseline`), it will execute all the fail checks by default, but always emit a zero exit code even if checks fail.
 
@@ -188,9 +188,9 @@ TODO: add instructions for setting up in CI / CD
 
 ### Output
 
-By default, a table will be displayed which lists secrets that failed the checks. There will also be a stats section at the top, and a report text summary at the bottom which contains instructions on how to pass the checks, if any are failing. Instructions can be omitted with the `--omit option`.
+By default, a table will be displayed which lists secrets that failed the checks. There will also be a stats section at the top, and a report text summary at the bottom which contains instructions on how to pass the checks, if any are failing. Instructions can be omitted with `--omit-instructions`.
 
-For a pure JSON output, include the `--json` flag.
+For pure JSON output, include the `--json` flag.
 
 ### Usage
 
@@ -203,7 +203,7 @@ $ detect-secrets audit --help
 ```
 ---
 
-Arguments to be used with `detect-secrets audit --report`:
+Arguments available to be used with `detect-secrets audit --report`:
 
 | Argument | Description |
 | ----------- | ----------- |
