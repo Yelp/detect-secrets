@@ -399,9 +399,10 @@ detect-secrets audit --report --json .secrets.baseline
 
 
 ##### Case: All --fail-on arguments provided, json
+
 Pass (exit code = 0):
 ```
-$ detect-secrets audit --report --json .secrets.baseline
+$ detect-secrets audit --report --json --fail-on-live --fail-on-unaudited --fail-on-audited-real .secrets.baseline
 {
     "stats": {
         "reviewed": 10,
@@ -415,7 +416,7 @@ $ detect-secrets audit --report --json .secrets.baseline
 
 Fail (exit code = 1):
 ```
-detect-secrets audit --report --json --fail-on-live --fail-on-unaudited --fail-on-audited-real --omit-instructions  .secrets.baseline
+detect-secrets audit --report --json --fail-on-live --fail-on-unaudited --fail-on-audited-real .secrets.baseline
 {
     "stats": {
         "reviewed": 10,
