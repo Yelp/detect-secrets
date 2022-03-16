@@ -272,7 +272,7 @@ For additional help, run detect-secrets audit --help.
 Fail (still exit code = 0 because of no provided `--fail-on` arguments!):
 
 ```
-$ detect-secrets audit --report .secrets.baseline --omit-instructions
+$ detect-secrets audit --report --omit-instructions .secrets.baseline
 
 10 potential secrets in .secrets.baseline were reviewed. Found 1 live secret, 1 unaudited secret, and 1 secret that was audited as real.
 
