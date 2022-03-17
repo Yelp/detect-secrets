@@ -173,7 +173,9 @@ Base64HighEntropyString: True  (4.089)
 
 ## Report Generation
 
-Maybe you must generate a report with all of the detect-secrets findings. While similarly named, IBM's reporting feature fulfills a _different_ use case from [that of Yelp](https://github.com/Yelp/detect-secrets/blob/master/docs/audit.md#report-generation). IBM's implementation is intended be run in CI / CD pipelines for auditing purposes, or locally while testing. With it, certain checks would be executed against the results of a baseline file, and the resultant report would indicate any of those which failed.
+Want to generate a report with all the detect-secrets findings? 
+
+While similarly named, IBM's reporting feature fulfills a _different_ use case from [that of Yelp](https://github.com/Yelp/detect-secrets/blob/master/docs/audit.md#report-generation). IBM's implementation is intended be run in CI / CD pipelines for auditing purposes, or locally while testing. With it, certain checks would be executed against the results of a baseline file, and the resultant report would indicate any of those which failed.
 
 ### Running in CI / CD
 
