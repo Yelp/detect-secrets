@@ -263,7 +263,7 @@ Failed conditions:
 
         - Audited true secrets were found
 
-                If any active secrets meet this condition, revoke them. Then, remove them from the codebase and run detect-secrets scan --update .secrets.baseline to re-scan.
+                If any active secrets meet this condition, revoke them. Then, remove secrets that were audited as real from the codebase and run detect-secrets scan --update .secrets.baseline to re-scan.
 
 For additional help, run detect-secrets audit --help.
 
@@ -336,7 +336,7 @@ Failed conditions:
 
         - Audited true secrets were found
 
-                If any active secrets meet this condition, revoke them. Then, remove them from the codebase and run detect-secrets scan --update .secrets.baseline to re-scan.
+                If any active secrets meet this condition, revoke them. Then, remove secrets that were audited as real from the codebase and run detect-secrets scan --update .secrets.baseline to re-scan.
 
 For additional help, run detect-secrets audit --help.
 

@@ -879,7 +879,7 @@ Audited as real     Test Type      filenameB       60\n"""
             ),
             colorize('\t- Audited true secrets were found', AnsiColor.BOLD),
             '\n\t\tIf any active secrets meet this condition, revoke them.',
-            ' Then, remove them from the codebase and',
+            ' Then, remove all secrets that were audited as real from the codebase and',
             ' run detect-secrets scan --update {} to re-scan.\n'.format(
                 baseline_filename,
             ),
@@ -1076,7 +1076,7 @@ Audited as real     Test Type      filenameB       60\n"""
         assert captured.out == '\nFailed conditions:\n\n{}\n{}{}{}\n{}\n'.format(
             colorize('\t- Audited true secrets were found', AnsiColor.BOLD),
             '\n\t\tIf any active secrets meet this condition, revoke them.',
-            ' Then, remove them from the codebase and',
+            ' Then, remove secrets that were audited as real them from the codebase and',
             ' run detect-secrets scan --update {} to re-scan.'.format(
                 baseline_filename,
             ),
