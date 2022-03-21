@@ -143,21 +143,24 @@ def print_stats(
     )
 
     if fail_on_live:
-        stats += ' {} live secret{}'.format(
+        stats += ' {} live secret{}{}'.format(
             colorize(len(live_secrets), AnsiColor.BOLD),
             's' if len(live_secrets) > 1 or len(live_secrets) == 0 else '',
+            '.\n' if not fail_on_unaudited and not fail_on_audited_real else '',
         )
 
     if fail_on_unaudited:
-        stats += '{} {} unaudited secret{},'.format(
-            ',' if fail_on_live else '',
+        stats += '{}{} {} unaudited secret{}{}'.format(
+            ',' if fail_on_audited_real and fail_on_live else '',
+            ' and' if not fail_on_audited_real and fail_on_live else '',
             colorize(len(unaudited_secrets), AnsiColor.BOLD),
             's' if len(unaudited_secrets) > 1 or len(unaudited_secrets) == 0 else '',
+            '.\n' if not fail_on_audited_real else '',
         )
 
     if fail_on_audited_real:
-        stats += ' {} {} secret{} that {} audited as real.\n'.format(
-            'and' if fail_on_live or fail_on_audited_real else '',
+        stats += ' {}{} secret{} that {} audited as real.\n'.format(
+            'and ' if fail_on_live or fail_on_unaudited else '',
             colorize(len(audited_real_secrets), AnsiColor.BOLD),
             's' if len(audited_real_secrets) > 1 or len(audited_real_secrets) == 0 else '',
             'were' if len(audited_real_secrets) > 1 or len(audited_real_secrets) == 0 else 'was',

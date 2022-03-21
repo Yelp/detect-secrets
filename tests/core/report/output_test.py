@@ -103,7 +103,6 @@ class TestReportOutput:
         unaudited_secrets_fixture,
         audited_real_secrets_fixture,
     ):
-
         with self.mock_env():
             stats = get_stats(
                 live_secrets_fixture,
@@ -129,7 +128,6 @@ class TestReportOutput:
         unaudited_secrets_fixture,
         audited_real_secrets_fixture,
     ):
-
         with self.mock_env():
             stats = get_stats(
                 live_secrets_fixture,
@@ -153,7 +151,6 @@ class TestReportOutput:
         unaudited_secrets_fixture,
         audited_real_secrets_fixture,
     ):
-
         with self.mock_env():
             stats = get_stats(
                 live_secrets_fixture,
@@ -177,7 +174,6 @@ class TestReportOutput:
         unaudited_secrets_fixture,
         audited_real_secrets_fixture,
     ):
-
         with self.mock_env():
             stats = get_stats(
                 live_secrets_fixture,
@@ -233,12 +229,7 @@ class TestReportOutput:
         unaudited_secrets_fixture,
         audited_real_secrets_fixture,
     ):
-        modified_baseline = deepcopy(self.baseline)
-        modified_baseline['results']['filenameA'][0]['is_secret'] = True
-        modified_baseline['results']['filenameA'][1]['is_secret'] = None
-        modified_baseline['results']['filenameB'][0]['is_verified'] = True
-
-        with self.mock_env(baseline=modified_baseline):
+        with self.mock_env():
             print_stats(
                 live_secrets_fixture,
                 unaudited_secrets_fixture,
@@ -255,7 +246,7 @@ class TestReportOutput:
         assert captured.out == '\n{} potential secrets in {} were reviewed.'.format(
             colorize(len(secrets), AnsiColor.BOLD),
             colorize(baseline_filename, AnsiColor.BOLD),
-        ) + ' Found {} live secret, {} unaudited secret,'.format(
+        ) + ' Found {} live secret, {} unaudited secret'.format(
             colorize(len(live_secrets_fixture), AnsiColor.BOLD),
             colorize(len(unaudited_secrets_fixture), AnsiColor.BOLD),
         ) + ' and {} secret that was audited as real.\n\n'.format(
@@ -340,7 +331,7 @@ class TestReportOutput:
         assert captured.out == '\n{} potential secrets in {} were reviewed.'.format(
             colorize(len(secrets), AnsiColor.BOLD),
             colorize(baseline_filename, AnsiColor.BOLD),
-        ) + ' Found {} live secrets, {} unaudited secrets,'.format(
+        ) + ' Found {} live secrets, {} unaudited secrets'.format(
             colorize(len(live_secrets_fixture), AnsiColor.BOLD),
             colorize(len(unaudited_secrets_fixture), AnsiColor.BOLD),
         ) + ' and {} secrets that were audited as real.\n\n'.format(
@@ -354,14 +345,9 @@ class TestReportOutput:
         unaudited_secrets_fixture,
         audited_real_secrets_fixture,
     ):
-        modified_baseline = deepcopy(self.baseline)
-        modified_baseline['results']['filenameA'][0]['is_secret'] = False
-        modified_baseline['results']['filenameA'][1]['is_secret'] = False
-        modified_baseline['results']['filenameB'][0]['is_verified'] = True
-
         unaudited_secrets_fixture = audited_real_secrets_fixture = []
 
-        with self.mock_env(baseline=modified_baseline):
+        with self.mock_env():
             print_stats(
                 live_secrets_fixture,
                 unaudited_secrets_fixture,
@@ -378,10 +364,193 @@ class TestReportOutput:
         assert captured.out == '\n{} potential secrets in {} were reviewed.'.format(
             colorize(len(secrets), AnsiColor.BOLD),
             colorize(baseline_filename, AnsiColor.BOLD),
-        ) + ' Found {} live secret, {} unaudited secrets,'.format(
+        ) + ' Found {} live secret, {} unaudited secrets'.format(
             colorize(len(live_secrets_fixture), AnsiColor.BOLD),
             colorize(len(unaudited_secrets_fixture), AnsiColor.BOLD),
         ) + ' and {} secrets that were audited as real.\n\n'.format(
+            colorize(len(audited_real_secrets_fixture), AnsiColor.BOLD),
+        )
+
+    def test_print_stats_only_unaudited(
+        self,
+        capsys,
+        live_secrets_fixture,
+        unaudited_secrets_fixture,
+        audited_real_secrets_fixture,
+    ):
+        live_secrets_fixture = audited_real_secrets_fixture = []
+
+        with self.mock_env():
+            print_stats(
+                live_secrets_fixture,
+                unaudited_secrets_fixture,
+                audited_real_secrets_fixture,
+                baseline_filename,
+                False,
+                True,
+                False,
+            )
+            secrets = audit.get_secrets_list_from_file(baseline_filename)
+
+        captured = capsys.readouterr()
+
+        assert captured.out == '\n{} potential secrets in {} were reviewed.'.format(
+            colorize(len(secrets), AnsiColor.BOLD),
+            colorize(baseline_filename, AnsiColor.BOLD),
+        ) + ' Found {} unaudited secret.\n\n'.format(
+            colorize(len(unaudited_secrets_fixture), AnsiColor.BOLD),
+        )
+
+    def test_print_stats_only_unaudited_and_live(
+        self,
+        capsys,
+        live_secrets_fixture,
+        unaudited_secrets_fixture,
+        audited_real_secrets_fixture,
+    ):
+        audited_real_secrets_fixture = []
+
+        with self.mock_env():
+            print_stats(
+                live_secrets_fixture,
+                unaudited_secrets_fixture,
+                audited_real_secrets_fixture,
+                baseline_filename,
+                True,
+                True,
+                False,
+            )
+            secrets = audit.get_secrets_list_from_file(baseline_filename)
+
+        captured = capsys.readouterr()
+
+        assert captured.out == '\n{} potential secrets in {} were reviewed.'.format(
+            colorize(len(secrets), AnsiColor.BOLD),
+            colorize(baseline_filename, AnsiColor.BOLD),
+        ) + ' Found {} live secret and {} unaudited secret.\n\n'.format(
+            colorize(len(live_secrets_fixture), AnsiColor.BOLD),
+            colorize(len(unaudited_secrets_fixture), AnsiColor.BOLD),
+        )
+
+    def test_print_stats_only_unaudited_and_audited_real(
+        self,
+        capsys,
+        live_secrets_fixture,
+        unaudited_secrets_fixture,
+        audited_real_secrets_fixture,
+    ):
+        live_secrets_fixture = []
+
+        with self.mock_env():
+            print_stats(
+                live_secrets_fixture,
+                unaudited_secrets_fixture,
+                audited_real_secrets_fixture,
+                baseline_filename,
+                False,
+                True,
+                True,
+            )
+            secrets = audit.get_secrets_list_from_file(baseline_filename)
+
+        captured = capsys.readouterr()
+
+        assert captured.out == '\n{} potential secrets in {} were reviewed.'.format(
+            colorize(len(secrets), AnsiColor.BOLD),
+            colorize(baseline_filename, AnsiColor.BOLD),
+        ) + ' Found {} unaudited secret and {} secret that was audited as real.\n\n'.format(
+            colorize(len(unaudited_secrets_fixture), AnsiColor.BOLD),
+            colorize(len(audited_real_secrets_fixture), AnsiColor.BOLD),
+        )
+
+    def test_print_stats_only_live(
+        self,
+        capsys,
+        live_secrets_fixture,
+        unaudited_secrets_fixture,
+        audited_real_secrets_fixture,
+    ):
+        unaudited_secrets_fixture = audited_real_secrets_fixture = []
+
+        with self.mock_env():
+            print_stats(
+                live_secrets_fixture,
+                unaudited_secrets_fixture,
+                audited_real_secrets_fixture,
+                baseline_filename,
+                True,
+                False,
+                False,
+            )
+            secrets = audit.get_secrets_list_from_file(baseline_filename)
+
+        captured = capsys.readouterr()
+
+        assert captured.out == '\n{} potential secrets in {} were reviewed.'.format(
+            colorize(len(secrets), AnsiColor.BOLD),
+            colorize(baseline_filename, AnsiColor.BOLD),
+        ) + ' Found {} live secret.\n\n'.format(
+            colorize(len(live_secrets_fixture), AnsiColor.BOLD),
+        )
+
+    def test_print_stats_only_live_and_audited_real(
+        self,
+        capsys,
+        live_secrets_fixture,
+        unaudited_secrets_fixture,
+        audited_real_secrets_fixture,
+    ):
+        unaudited_secrets_fixture = []
+
+        with self.mock_env():
+            print_stats(
+                live_secrets_fixture,
+                unaudited_secrets_fixture,
+                audited_real_secrets_fixture,
+                baseline_filename,
+                True,
+                False,
+                True,
+            )
+            secrets = audit.get_secrets_list_from_file(baseline_filename)
+
+        captured = capsys.readouterr()
+
+        assert captured.out == '\n{} potential secrets in {} were reviewed.'.format(
+            colorize(len(secrets), AnsiColor.BOLD),
+            colorize(baseline_filename, AnsiColor.BOLD),
+        ) + ' Found {} live secret and {} secret that was audited as real.\n\n'.format(
+            colorize(len(live_secrets_fixture), AnsiColor.BOLD),
+            colorize(len(audited_real_secrets_fixture), AnsiColor.BOLD),
+        )
+
+    def test_print_stats_only_audited_real(
+        self,
+        capsys,
+        live_secrets_fixture,
+        unaudited_secrets_fixture,
+        audited_real_secrets_fixture,
+    ):
+        unaudited_secrets_fixture = live_secrets_fixture = []
+
+        with self.mock_env():
+            print_stats(
+                live_secrets_fixture,
+                unaudited_secrets_fixture,
+                audited_real_secrets_fixture,
+                baseline_filename,
+                False,
+                False,
+                True,
+            )
+            secrets = audit.get_secrets_list_from_file(baseline_filename)
+
+        captured = capsys.readouterr()
+
+        assert captured.out == '\n{} potential secrets in {} were reviewed.'.format(
+            colorize(len(secrets), AnsiColor.BOLD),
+            colorize(baseline_filename, AnsiColor.BOLD),
+        ) + ' Found {} secret that was audited as real.\n\n'.format(
             colorize(len(audited_real_secrets_fixture), AnsiColor.BOLD),
         )
 

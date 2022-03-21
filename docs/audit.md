@@ -243,7 +243,7 @@ Fail (still exit code = 0 because of no provided `--fail-on` arguments!):
 ```
 $ detect-secrets audit --report .secrets.baseline
 
-10 potential secrets in .secrets.baseline were reviewed. Found 1 live secret, 1 unaudited secret, and 1 secret that was audited as real.
+10 potential secrets in .secrets.baseline were reviewed. Found 1 live secret, 1 unaudited secret and 1 secret that was audited as real.
 
 Failed Condition    Secret Type              Filename                                 Line
 ------------------  -----------------------  -------------------------------------  ------
@@ -276,7 +276,7 @@ Fail (still exit code = 0 because of no provided `--fail-on` arguments!):
 ```
 $ detect-secrets audit --report --omit-instructions .secrets.baseline
 
-10 potential secrets in .secrets.baseline were reviewed. Found 1 live secret, 1 unaudited secret, and 1 secret that was audited as real.
+10 potential secrets in .secrets.baseline were reviewed. Found 1 live secret, 1 unaudited secret and 1 secret that was audited as real.
 
 Failed Condition    Secret Type              Filename                                 Line
 ------------------  -----------------------  -------------------------------------  ------
@@ -316,7 +316,7 @@ Fail (exit code = 1):
 ```
 $ detect-secrets audit --report --fail-on-live --fail-on-unaudited --fail-on-audited-real .secrets.baseline
 
-10 potential secrets in .secrets.baseline were reviewed. Found 1 live secret, 1 unaudited secret, and 1 secret that was audited as real.
+10 potential secrets in .secrets.baseline were reviewed. Found 1 live secret, 1 unaudited secret and 1 secret that was audited as real.
 
 Failed Condition    Secret Type              Filename                                 Line
 ------------------  -----------------------  -------------------------------------  ------
@@ -349,7 +349,7 @@ Fail (exit code = 1):
 ```
 $ detect-secrets audit --report --fail-on-live --fail-on-unaudited --fail-on-audited-real --omit-instructions  .secrets.baseline
 
-10 potential secrets in .secrets.baseline were reviewed. Found 1 live secret, 1 unaudited secret, and 1 secret that was audited as real.
+10 potential secrets in .secrets.baseline were reviewed. Found 1 live secret, 1 unaudited secret and 1 secret that was audited as real.
 
 Failed Condition    Secret Type              Filename                                 Line
 ------------------  -----------------------  -------------------------------------  ------
@@ -385,7 +385,7 @@ Fail (exit code = 1):
 ```
 $ detect-secrets audit --report --fail-on-live .secrets.baseline
 
-10 potential secrets in .secrets.baseline were reviewed. Found 1 live secret
+10 potential secrets in .secrets.baseline were reviewed. Found 1 live secret.
 Failed Condition    Secret Type              Filename        Line
 ------------------  -----------------------  ------------  ------
 Live                Hex High Entropy String  docs/scan.md      49
@@ -407,7 +407,7 @@ Fail (exit code = 1):
 ```
 $ detect-secrets audit --report --fail-on-live --omit-instructions .secrets.baseline
 
-10 potential secrets in .secrets.baseline were reviewed. Found 1 live secret
+10 potential secrets in .secrets.baseline were reviewed. Found 1 live secret.
 Failed Condition    Secret Type              Filename        Line
 ------------------  -----------------------  ------------  ------
 Live                Hex High Entropy String  docs/scan.md      49
