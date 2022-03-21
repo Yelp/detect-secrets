@@ -219,7 +219,7 @@ def print_summary(
         )
         if omit_instructions is False:
             print(
-                '\t\tRun detect-secrets audit {}, and audit all potential secrets.'.format(
+                '\t\tRun detect-secrets audit {}, and audit all potential secrets.\n'.format(
                     baseline_filename,
                 ),
             )
@@ -232,7 +232,7 @@ def print_summary(
         if omit_instructions is False:
             print(
                 '\t\tRevoke all live secrets and remove them from the codebase.'
-                ' Afterwards, run detect-secrets scan --update {} to re-scan.'.format(
+                ' Afterwards, run detect-secrets scan --update {} to re-scan.\n'.format(
                     baseline_filename,
                 ),
             )
@@ -246,8 +246,8 @@ def print_summary(
         if omit_instructions is False:
             print(
                 '\t\tRemove secrets meeting this condition from the codebase,'
-                ' and run detect-secrets scan --update {} to re-scan.'.format(baseline_filename),
+                ' and run detect-secrets scan --update {} to re-scan.\n'.format(baseline_filename),
             )
 
     if omit_instructions is False:
-        print('\nFor additional help, run detect-secrets audit --help.\n')
+        print('For additional help, run detect-secrets audit --help.\n')

@@ -869,20 +869,20 @@ Audited as real     Test Type      filenameB       60\n"""
 
         assert captured.out == '\nFailed conditions:\n\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n'.format(
             colorize('\t- Unaudited secrets were found', AnsiColor.BOLD),
-            '\n\t\tRun detect-secrets audit {}, and audit all potential secrets.'.format(
+            '\n\t\tRun detect-secrets audit {}, and audit all potential secrets.\n'.format(
                 baseline_filename,
             ),
             colorize('\t- Live secrets were found', AnsiColor.BOLD),
             '\n\t\tRevoke all live secrets and remove them from the codebase.'
-            ' Afterwards, run detect-secrets scan --update {} to re-scan.'.format(
+            ' Afterwards, run detect-secrets scan --update {} to re-scan.\n'.format(
                 baseline_filename,
             ),
             colorize('\t- Audited true secrets were found', AnsiColor.BOLD),
             '\n\t\tRemove secrets meeting this condition from the codebase,'
-            ' and run detect-secrets scan --update {} to re-scan.'.format(
+            ' and run detect-secrets scan --update {} to re-scan.\n'.format(
                 baseline_filename,
             ),
-            '\nFor additional help, run detect-secrets audit --help.\n',
+            'For additional help, run detect-secrets audit --help.\n',
         )
 
     def test_print_summary_all_failed_conditions_omit_instructions(self, capsys):
