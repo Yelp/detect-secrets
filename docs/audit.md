@@ -196,6 +196,7 @@ There are different methods you can follow to add the detect-secrets reporting s
 Using the `detect-secrets` Docker image to call detect-secrets allows you to skip the pesky Python installation process, since this image comes packaged with a Python ecosystem:
 
 ```
+TODO
 ```
 
 #### Installing via pip
