@@ -189,8 +189,47 @@ In CI / CD, it is recommended to provide all `fail-on` args:
 detect-secrets audit --report --fail-on-on-unaudited fail-on-live --fail-on-on-audited-real .secrets.baseline
 ```
 
-TODO: add instructions for setting up in CI / CD
+There are different methods you can follow to add the detect-secrets reporting stage to your CI / CD pipeline. While all methods are documented, it is recommended to [use the `detect-secrets` Docker image](#using-detect-secrets-docker-image).
 
+#### Using `detect-secrets` Docker Image
+
+Using the `detect-secrets` Docker image to call detect-secrets allows you to skip the pesky Python installation process, since this image comes packaged with a Python ecosystem:
+
+```
+```
+
+#### Installing via pip
+
+##### Travis
+
+Add this code to your `travis.yml` file:
+```
+language: generic
+sudo: required
+addons:
+    apt:
+        packages:
+            - python3
+            - python3-pip
+            - python3-setuptools
+install:
+    # Required to install detect-secrets
+    - sudo chmod o+rwx /usr/lib/python3/dist-packages/
+    - python3 -m pip install -U pip
+    # Temporarily install from feature branch, until changes are merged to master
+    - python3 -m pip install --upgrade "git+https://github.com/ibm/detect-secrets.git@master#egg=detect-secrets"
+script:
+    # Update the baseline file
+    - detect-secrets scan --update .secrets.baseline
+    # Report with all fail checks
+    - detect-secrets audit --report --fail-on-unaudited --fail-on-live --fail-on-audited-real .secrets.baseline
+```
+
+#### Using `detect-secrets-redhat-ubi` Docker Image
+
+The `detect-secrets-redhat-ubi` offers some of the same benefits of the [`detect-secrets` Docker image](#using-detect-secrets-docker-image), but you cannot directly pass in detect-secrets commands. Instead, reporting arguments should be passed in as environment variables. The [run-in-pipeline](./scripts/../../scripts/run-in-pipeline.sh) comes packaged with this image.
+
+TODO
 ### Output
 
 By default, a table will be displayed listing secrets that failed the checks. There will also be a stats section at the top, and a summary at the bottom containing instructions on how to pass said checks. Instructions can be omitted with `--omit-instructions`.
