@@ -867,7 +867,7 @@ Audited as real     Test Type      filenameB       60\n"""
 
         captured = capsys.readouterr()
 
-        assert captured.out == '\nFailed conditions:\n\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n'.format(
+        assert captured.out == '\nFailed conditions:\n\n{}\n{}\n{}\n{}\n{}\n{}{}{}\n{}\n'.format(
             colorize('\t- Unaudited secrets were found', AnsiColor.BOLD),
             '\n\t\tRun detect-secrets audit {}, and audit all potential secrets.\n'.format(
                 baseline_filename,
@@ -878,8 +878,9 @@ Audited as real     Test Type      filenameB       60\n"""
                 baseline_filename,
             ),
             colorize('\t- Audited true secrets were found', AnsiColor.BOLD),
-            '\n\t\tRemove secrets meeting this condition from the codebase,'
-            ' and run detect-secrets scan --update {} to re-scan.\n'.format(
+            '\n\t\tIf any active secrets meet this condition, revoke them.',
+            ' Then, remove secrets that were audited as real from the codebase and',
+            ' run detect-secrets scan --update {} to re-scan.\n'.format(
                 baseline_filename,
             ),
             'For additional help, run detect-secrets audit --help.\n',
@@ -1072,10 +1073,11 @@ Audited as real     Test Type      filenameB       60\n"""
 
         captured = capsys.readouterr()
 
-        assert captured.out == '\nFailed conditions:\n\n{}\n{}\n{}\n'.format(
+        assert captured.out == '\nFailed conditions:\n\n{}\n{}{}{}\n{}\n'.format(
             colorize('\t- Audited true secrets were found', AnsiColor.BOLD),
-            '\n\t\tRemove secrets meeting this condition from the codebase,'
-            ' and run detect-secrets scan --update {} to re-scan.'.format(
+            '\n\t\tIf any active secrets meet this condition, revoke them.',
+            ' Then, remove secrets that were audited as real from the codebase and',
+            ' run detect-secrets scan --update {} to re-scan.'.format(
                 baseline_filename,
             ),
             '\nFor additional help, run detect-secrets audit --help.\n',

@@ -245,7 +245,8 @@ def print_summary(
         )
         if omit_instructions is False:
             print(
-                '\t\tRemove secrets meeting this condition from the codebase,'
+                '\t\tIf any active secrets meet this condition, revoke them.'
+                ' Then, remove secrets that were audited as real from the codebase'
                 ' and run detect-secrets scan --update {} to re-scan.\n'.format(baseline_filename),
             )
 
