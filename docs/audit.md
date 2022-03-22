@@ -184,21 +184,21 @@ While similarly named, IBM's reporting feature fulfills a _different_ use case f
 
 ### Running in CI / CD
 
-Reporting has been designed with CI / CD in mind. By adding it to your pipeline, you will get a secrets report upon each build. If a given set of `fail-on` [conditions](#usage) aren't met, the build will fail because detect-secrets will emit exit code `1`. To fix it, simply follow the outputted instructions, and push your changes to your remote branch.
+Reporting has been designed with CI / CD in mind. By adding it to your pipeline, you will get a secrets report upon each build. If a given set of `fail-on` [conditions](#usage) aren't met, the build will fail because detect-secrets will emit exit code `1`. To fix the build, follow the outputted instructions, and push your changes to your remote branch.
 
 If a report is run without any `fail-on` arguments (`detect-secrets audit --report .secrets.baseline`), it will execute all the fail checks by default, yet always emit a `0` exit code—even if checks fail.
 
-In CI / CD, it's recommended to provide all `fail-on` args:
+In CI / CD, it is recommended to provide all `fail-on` arguments:
 
 ```shell
-detect-secrets audit --report --fail-on-on-unaudited fail-on-live --fail-on-on-audited-real .secrets.baseline
+detect-secrets audit --report --fail-on-on-unaudited --fail-on-live --fail-on-on-audited-real .secrets.baseline
 ```
 
-There are three ways to add a detect-secrets reporting stage to your pipeline. It is recommended to [use the `detect-secrets` Docker image](#using-detect-secrets-docker-image).
+Below are three documented methods for adding detect-secrets reporting to your pipeline. It is recommended to [use the `detect-secrets` Docker image](#using-detect-secrets-docker-image).
 
 #### Using `detect-secrets` Docker Image
 
-Using the general-purpose Docker image allows you to skip the Python installation process, since it comes pre-packaged with Python.
+The general-purpose Docker image comes pre-packaged with Python, allowing you to skip the Python installation process.
 
 To use this image in your pipeline, add the following commands to your pipeline script:
 
