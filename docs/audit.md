@@ -238,9 +238,9 @@ script:
 
 ##### Other pipelines
 
-For other pipelines, you'll want to repurpose the above code to work in that pipeline. The general stages are:
+For other pipelines, repurpose the commands from the [Travis example](#travis). The steps are:
 
-1. Install Python 3 and Pip 3 (see `addons` in the [Travis example](#travis))
+1. Install Python 3 and Pip 3
 2. Install detect-secrets
 3. Scan and update the baseline
 4. Run a report against the baseline
@@ -251,7 +251,7 @@ This Docker image offers the same benefits as the general-purpose [`detect-secre
 
 Instead, reporting arguments should be passed in as environment variables. The [run-in-pipeline](./scripts/../../scripts/run-in-pipeline.sh) script comes packaged with this image.
 
-Please refer to this script for a list of environment variables it takes in and what they do.
+Please refer to this script for a documented list of inputted environment variables.
 
 Note that this script will update your baseline by default, unless `--env SKIP_SCAN=true` is passed in after `docker run`. Also, the default value for the baseline file is `.secrets.baseline`. If your baseline is named differently, the default value can be overridden with `--env BASELINE=your_baseline_filename`. Additionally, all `fail-on` options will be used by default.
 
