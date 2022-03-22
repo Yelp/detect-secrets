@@ -1,4 +1,5 @@
 import codecs
+import errno
 import io
 import json
 import os
@@ -345,11 +346,16 @@ def get_secrets_list_from_file(baseline_filename: str) -> list:
 
 def _get_baseline_from_file(filename):  # pragma: no cover
     try:
+        if not os.path.exists(filename):
+            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), filename)
         with open(filename) as f:
             return json.loads(f.read())
+    except (FileNotFoundError):
+        print('File not found: {}'.format(filename), file=sys.stderr)
+        sys.exit(errno.ENOENT)
     except (IOError, json.decoder.JSONDecodeError):
-        print('Not a valid baseline file!', file=sys.stderr)
-        return
+        print('Not a valid baseline file: {}'.format(filename), file=sys.stderr)
+        sys.exit(errno.EIO)
 
 
 def _remove_nonexistent_files_from_baseline(baseline):
