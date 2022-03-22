@@ -42,7 +42,7 @@ a pre-generated baseline. Some common use cases of this include:
 
 This is an optional step to label the results in your baseline. It can be used to narrow down your checklist of secrets to migrate, or to better configure your plugins to improve its signal-to-noise ratio.
 
-```bash
+```shell
 $ detect-secrets audit .secrets.baseline
 ```
 
@@ -68,7 +68,7 @@ docker run -it --rm -v $(pwd):/code ibmcom/detect-secrets:latest audit .secrets.
 
 ## Manually Labelling Secrets
 
-```bash
+```shell
 $ detect-secrets scan --update .secrets.baseline
 $ detect-secrets audit .secrets.baseline
 Secret:      1 of 80
@@ -131,7 +131,7 @@ When auditing potential secrets in a codebase, users should be marking existing 
 
 ## Comparing Baselines
 
-```bash
+```shell
 $ detect-secrets scan test_data --base64-limit 4 > limit4
 $ detect-secrets scan test_data --base64-limit 5 > limit5
 $ detect-secrets audit --diff limit4 limit5
@@ -164,7 +164,7 @@ help highlight the difference), the string "`Base64HighEntropyString`" is flagge
 using a limit of 4, but ignored when using a limit of 5 (hence, the `REMOVED` status).
 We can verify this through inline string scanning:
 
-```bash
+```shell
 $ detect-secrets scan --string 'Base64HighEntropyString' --base64-limit 4
 ...
 Base64HighEntropyString: True  (4.089)
@@ -179,24 +179,31 @@ While similarly named, IBM's reporting feature fulfills a _different_ use case f
 
 ### Running in CI / CD
 
-To determine whether the CI / CD stage should pass, the report will emit an exit code.
+Audit reporting has been designed with CI / CD in mind. The benefit of adding it as a stage to your pipeline is that you will get a secrets report upon each build. If a given set of `fail-on` [conditions](###usage) aren't met, the build will fail - exit code `1` will be emitted. To fix it, simply follow the outputted instructions, and commit the changes to your remote branch.
 
-If a report is run without any `fail-on` arguments (`detect-secrets audit --report .secrets.baseline`), it will execute all the fail checks by default, yet always emit a zero exit code—even if checks fail.
+If a report is run without any `fail-on` arguments (`detect-secrets audit --report .secrets.baseline`), it will execute all the fail checks by default, yet always emit a `0` exit code—even if checks fail.
 
-In CI / CD, it is recommended to provide all `fail-on` args:
+In CI / CD, it's recommended to provide all `fail-on` args:
 
 ```shell
 detect-secrets audit --report --fail-on-on-unaudited fail-on-live --fail-on-on-audited-real .secrets.baseline
 ```
 
-There are different methods you can follow to add the detect-secrets reporting stage to your CI / CD pipeline. While all methods are documented, it is recommended to [use the `detect-secrets` Docker image](#using-detect-secrets-docker-image).
+There are three ways to add a detect-secrets reporting stage to your pipeline. While all methods are documented, it is recommended to [use the `detect-secrets` Docker image](#using-detect-secrets-docker-image).
 
 #### Using `detect-secrets` Docker Image
 
-Using the `detect-secrets` Docker image to call detect-secrets allows you to skip the pesky Python installation process, since this image comes packaged with a Python ecosystem:
+Calling `detect-secrets` via the Docker image allows you to skip the Python installation process, since this image comes pre-packaged with Python:
 
+```shell
+# Mount to /code folder is important since it's the workdir for detect-secrets
+docker run -it --rm -v c:/replace/with/your/folder/containing/git/repo:/code ibmcom/detect-secrets:latest scan
+
+# generate or update baseline
+#
+# Note: please do NOT use "> .secrets.baseline" to generat new baseline on Windows platform as it will generate Linux line ending format from docker output.
+docker run -it --rm -v c:/replace/with/your/folder/containing/git/repo:/code ibmcom/detect-secrets:latest scan --update .secrets.baseline
 ```
-TODO
 ```
 
 #### Installing via pip
@@ -204,6 +211,7 @@ TODO
 ##### Travis
 
 Add this code to your `travis.yml` file:
+
 ```
 language: generic
 sudo: required
@@ -231,6 +239,7 @@ script:
 The `detect-secrets-redhat-ubi` offers some of the same benefits of the [`detect-secrets` Docker image](#using-detect-secrets-docker-image), but you cannot directly pass in detect-secrets commands. Instead, reporting arguments should be passed in as environment variables. The [run-in-pipeline](./scripts/../../scripts/run-in-pipeline.sh) comes packaged with this image.
 
 TODO
+
 ### Output
 
 By default, a table will be displayed listing secrets that failed the checks. There will also be a stats section at the top, and a summary at the bottom containing instructions on how to pass said checks. Instructions can be omitted with `--omit-instructions`.
@@ -243,7 +252,7 @@ For pure JSON output, include the `--json` flag.
 
 For usage help, run:
 
-```bash
+```shell
 $ detect-secrets audit --help
 ```
 
@@ -265,7 +274,7 @@ Arguments available to be used with `detect-secrets audit --report`:
 
 Pass (exit code = 0):
 
-```bash
+```shell
 $ detect-secrets audit --report .secrets.baseline
 
 10 potential secrets in .secrets.baseline were reviewed. All checks have passed.
