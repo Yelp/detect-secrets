@@ -249,7 +249,7 @@ For other pipelines, repurpose the commands from the [Travis example](#travis). 
 
 This Docker image offers the same benefits as the general-purpose [`detect-secrets` Docker image](#using-detect-secrets-docker-image), but you cannot directly pass in detect-secrets commands.
 
-Instead, reporting arguments should be passed in as environment variables. The [run-in-pipeline](./scripts/../../scripts/run-in-pipeline.sh) script comes pre-packaged with this image, and takes in environment variables as input.
+Instead, reporting arguments should be passed in as environment variables. The [run-in-pipeline](./scripts/../../scripts/run-in-pipeline.sh) script comes pre-packaged with this image, and takes these arguments in as input.
 
 Please refer to this script for a documented list of inputted environment variables.
 
