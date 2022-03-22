@@ -204,7 +204,7 @@ To use this image in your pipeline, add the following commands to your pipeline 
 
 1. Get the latest image:
     - `docker pull ibmcom/detect-secrets:latest`
-2. Mount the directory containing your code to the Docker image's `/code` folder, since it's the working directory for `detect-secrets`. Additionally pass in the `scan` command to update the baseline file. This file should be up-to-date before a report is run:
+2. Mount the directory containing your code to the Docker image's `/code` folder, since it's the working directory for `detect-secrets`. Pass in the `scan` command to update the baseline file. This file should be up-to-date before a report is run:
     - `docker run -it --rm -v $(pwd):/code ibmcom/detect-secrets:latest scan --update .secrets.baseline`
 3. Run a report against the updated baseline file:
     - `docker run -it --rm -v $(pwd):/code ibmcom/detect-secrets:latest audit --report --fail-on-unaudited --fail-on-live --fail-on-audited-real .secrets.baseline`
@@ -240,7 +240,7 @@ script:
 
 For other pipelines, you'll want to repurpose the above code to work in that pipeline. The general stages are:
 
-1. Install Python 3 (see `addons` in the [Travis example](#travis))
+1. Install Python 3 and Pip 3 (see `addons` in the [Travis example](#travis))
 2. Install detect-secrets
 3. Scan and update the baseline
 4. Run a report against the baseline
