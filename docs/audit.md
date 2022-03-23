@@ -14,6 +14,11 @@
 -   [Comparing Baselines](#comparing-baselines)
 -   [Report Generation](#report-generation)
     -   [Running in CI / CD](#running-in-ci--cd)
+        -   [Using `detect-secrets` Docker Image](#using-detect-secrets-docker-image)
+        -   [Installing via pip](#installing-via-pip)
+            -   [Travis](#travis)
+            -   [Other pipelines](#other-pipelines)
+        -   [Using `detect-secrets-redhat-ubi` Docker Image](#using-detect-secrets-redhat-ubi-docker-image)
     -   [Output](#output)
     -   [Usage](#usage)
         -   [Instructions](#instructions)
@@ -42,7 +47,7 @@ a pre-generated baseline. Some common use cases of this include:
 
 This is an optional step to label the results in your baseline. It can be used to narrow down your checklist of secrets to migrate, or to better configure your plugins to improve its signal-to-noise ratio.
 
-```bash
+```shell
 $ detect-secrets audit .secrets.baseline
 ```
 
@@ -68,7 +73,7 @@ docker run -it --rm -v $(pwd):/code ibmcom/detect-secrets:latest audit .secrets.
 
 ## Manually Labelling Secrets
 
-```bash
+```shell
 $ detect-secrets scan --update .secrets.baseline
 $ detect-secrets audit .secrets.baseline
 Secret:      1 of 80
@@ -131,7 +136,7 @@ When auditing potential secrets in a codebase, users should be marking existing 
 
 ## Comparing Baselines
 
-```bash
+```shell
 $ detect-secrets scan test_data --base64-limit 4 > limit4
 $ detect-secrets scan test_data --base64-limit 5 > limit5
 $ detect-secrets audit --diff limit4 limit5
@@ -164,7 +169,7 @@ help highlight the difference), the string "`Base64HighEntropyString`" is flagge
 using a limit of 4, but ignored when using a limit of 5 (hence, the `REMOVED` status).
 We can verify this through inline string scanning:
 
-```bash
+```shell
 $ detect-secrets scan --string 'Base64HighEntropyString' --base64-limit 4
 ...
 Base64HighEntropyString: True  (4.089)
@@ -179,17 +184,83 @@ While similarly named, IBM's reporting feature fulfills a _different_ use case f
 
 ### Running in CI / CD
 
-To determine whether the CI / CD stage should pass, the report will emit an exit code.
+Reporting has been designed with CI / CD in mind. By adding it to your pipeline, you will get a secrets report upon each build. If a given set of `fail-on` [conditions](#usage) aren't met, the build will fail because detect-secrets will emit exit code `1`. To fix the build, follow the outputted instructions, and push your changes to your remote branch.
 
-If a report is run without any `fail-on` arguments (`detect-secrets audit --report .secrets.baseline`), it will execute all the fail checks by default, yet always emit a zero exit code—even if checks fail.
+If a report is run without any `fail-on` arguments (`detect-secrets audit --report .secrets.baseline`), it will execute all the fail checks by default, yet always emit a `0` exit code—even if checks fail.
 
-In CI / CD, it is recommended to provide all `fail-on` args:
+In CI / CD, it is recommended to provide all `fail-on` arguments:
 
 ```shell
-detect-secrets audit --report --fail-on-on-unaudited fail-on-live --fail-on-on-audited-real .secrets.baseline
+detect-secrets audit --report --fail-on-unaudited --fail-on-live --fail-on-audited-real .secrets.baseline
 ```
 
-TODO: add instructions for setting up in CI / CD
+Below are three documented methods for adding detect-secrets reporting to your pipeline. It is recommended to [use the `detect-secrets` Docker image](#using-detect-secrets-docker-image).
+
+#### Using `detect-secrets` Docker Image
+
+The general-purpose Docker image comes pre-packaged with Python, allowing you to skip the Python installation process.
+
+To use this image in your pipeline, add the following commands to your pipeline script:
+
+1. Get the latest image:
+    - `docker pull ibmcom/detect-secrets:latest`
+2. Mount the directory containing your code to the Docker image's `/code` folder, since it's the working directory for detect-secrets. Pass in the `scan` command to update the baseline file. This file should be up-to-date before a report is run:
+    - `docker run -it --rm -v $(pwd):/code ibmcom/detect-secrets:latest scan --update .secrets.baseline`
+3. Run a report against the updated baseline file:
+    - `docker run -it --rm -v $(pwd):/code ibmcom/detect-secrets:latest audit --report --fail-on-unaudited --fail-on-live --fail-on-audited-real .secrets.baseline`
+
+#### Installing via pip
+
+##### Travis
+
+Add this code to your `travis.yml` file:
+
+```yaml
+language: generic
+sudo: required
+addons:
+    apt:
+        packages:
+            - python3
+            - python3-pip
+            - python3-setuptools
+install:
+    # Required to install detect-secrets
+    - sudo chmod o+rwx /usr/lib/python3/dist-packages/
+    - python3 -m pip install -U pip
+    - python3 -m pip install --upgrade "git+https://github.com/ibm/detect-secrets.git@master#egg=detect-secrets"
+script:
+    # Update the baseline file
+    - detect-secrets scan --update .secrets.baseline
+    # Report with all fail checks
+    - detect-secrets audit --report --fail-on-unaudited --fail-on-live --fail-on-audited-real .secrets.baseline
+```
+
+##### Other pipelines
+
+For other pipelines, repurpose the commands from the [Travis example](#travis). The steps are:
+
+1. Install Python 3 and Pip 3
+2. Install detect-secrets
+3. Scan and update the baseline
+4. Run a report against the baseline
+
+#### Using `detect-secrets-redhat-ubi` Docker Image
+
+This Docker image offers additional benefits over the general-purpose [`detect-secrets` Docker image](#using-detect-secrets-docker-image). One being additional security, and the other is that the Red Hat Universal Base Image is [OCI-compliant](https://opencontainers.org/faq/).
+
+Note that you cannot directly pass in detect-secrets commands. Instead, reporting arguments should be passed in as environment variables. The [run-in-pipeline](./scripts/../../scripts/run-in-pipeline.sh) script comes pre-packaged with this image, and takes these arguments in as input.
+
+Please refer to this script for a documented list of inputted environment variables.
+
+Note that this script will update your baseline by default, unless `--env SKIP_SCAN=true` is passed in after `docker run`. Also, the default value for the baseline file is `.secrets.baseline`. If your baseline is named differently, the default value can be overridden with `--env BASELINE=your_baseline_filename`. Additionally, all `fail-on` options will be used by default.
+
+To use the image in your pipeline, add the following commands to your pipeline script:
+
+1. Get the latest image:
+    - `docker pull ibmcom/detect-secrets-redhat-ubi:latest`
+2. Mount the directory containing your code to the Docker image's `/code` folder, since it's the working directory for detect-secrets. The image will automatically update your baseline file and run a report against it:
+    - `docker run -it -a stdout --rm -v $(pwd):/code ibmcom/detect-secrets-redhat-ubi`
 
 ### Output
 
@@ -203,7 +274,7 @@ For pure JSON output, include the `--json` flag.
 
 For usage help, run:
 
-```bash
+```shell
 $ detect-secrets audit --help
 ```
 
@@ -225,7 +296,7 @@ Arguments available to be used with `detect-secrets audit --report`:
 
 Pass (exit code = 0):
 
-```bash
+```shell
 $ detect-secrets audit --report .secrets.baseline
 
 10 potential secrets in .secrets.baseline were reviewed. All checks have passed.
