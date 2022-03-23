@@ -191,7 +191,7 @@ If a report is run without any `fail-on` arguments (`detect-secrets audit --repo
 In CI / CD, it is recommended to provide all `fail-on` arguments:
 
 ```shell
-detect-secrets audit --report --fail-on-on-unaudited --fail-on-live --fail-on-on-audited-real .secrets.baseline
+detect-secrets audit --report --fail-on-unaudited --fail-on-live --fail-on-audited-real .secrets.baseline
 ```
 
 Below are three documented methods for adding detect-secrets reporting to your pipeline. It is recommended to [use the `detect-secrets` Docker image](#using-detect-secrets-docker-image).
