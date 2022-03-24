@@ -207,8 +207,10 @@ To use this image in your pipeline, add the following commands to your pipeline 
 
 1. Get the latest image:
     - `docker pull ibmcom/detect-secrets-redhat-ubi:latest`
-2. Mount the directory containing your code to the Docker image's `/code` folder, since it's the working directory for detect-secrets. The image will automatically update your baseline file and run a report against it:
-    - `docker run -it -a stdout --rm -v $(pwd):/code ibmcom/detect-secrets-redhat-ubi`
+2. Mount the directory containing your code to the Docker image's `/code` folder, since it's the working directory for detect-secrets. Then, update your baseline file.
+    - `docker run -it -a stdout --rm -v $(pwd):/code ibmcom/detect-secrets-redhat-ubi scan --update .secrets.baseline`
+2.With the same directory mounted, run a report.
+    - `docker run -it -a stdout --rm -v $(pwd):/code ibmcom/detect-secrets-redhat-ubi audit --report --fail-on-unaudited --fail-on-live --fail-on-audited-real .secrets.baseline`
 
 #### Using `detect-secrets-redhat-ubi-custom` Docker Image
 
