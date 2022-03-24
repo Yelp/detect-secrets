@@ -195,7 +195,7 @@ In CI / CD, it is recommended to provide all `fail-on` arguments:
 detect-secrets audit --report --fail-on-unaudited --fail-on-live --fail-on-audited-real .secrets.baseline
 ```
 
-Below are three documented methods for adding detect-secrets reporting to your pipeline. **It is recommended to [use the `detect-secrets-redhat-ubi` Docker image](#using-detect-secrets-redhat-ubi-docker-image)**.
+Below are four documented methods for adding detect-secrets reporting to your pipeline. **It is recommended to [use the `detect-secrets-redhat-ubi` Docker image](#using-detect-secrets-redhat-ubi-docker-image)**.
 
 #### Using `detect-secrets-redhat-ubi` Docker Image
 
