@@ -7,5 +7,10 @@ COPY detect_secrets /code/detect_secrets
 
 RUN pip install /code
 
-COPY scripts/run-in-pipeline.sh /
+# Ensure no trivy violation for pip
+RUN pip install --upgrade pip
+
 WORKDIR /code
+
+ENTRYPOINT [ "detect-secrets" ]
+CMD [ "scan", "/code" ]
