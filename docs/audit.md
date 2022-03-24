@@ -194,7 +194,33 @@ In CI / CD, it is recommended to provide all `fail-on` arguments:
 detect-secrets audit --report --fail-on-unaudited --fail-on-live --fail-on-audited-real .secrets.baseline
 ```
 
-Below are three documented methods for adding detect-secrets reporting to your pipeline. It is recommended to [use the `detect-secrets` Docker image](#using-detect-secrets-docker-image).
+Below are three documented methods for adding detect-secrets reporting to your pipeline. **It is recommended to [use the `detect-secrets-redhat-ubi` Docker image](#using-detect-secrets-redhat-ubi-docker-image)**.
+
+#### Using `detect-secrets-redhat-ubi` Docker Image
+
+This Docker image offers additional benefits over the general-purpose [`detect-secrets` Docker image](#using-detect-secrets-docker-image). One being additional security, and the other is that the Red Hat Universal Base Image is [OCI-compliant](https://opencontainers.org/faq/).
+
+To use this image in your pipeline, add the following commands to your pipeline script:
+
+1. Get the latest image:
+    - `docker pull ibmcom/detect-secrets-redhat-ubi-custom:latest`
+2. Mount the directory containing your code to the Docker image's `/code` folder, since it's the working directory for detect-secrets. The image will automatically update your baseline file and run a report against it:
+    - `docker run -it -a stdout --rm -v $(pwd):/code ibmcom/detect-secrets-redhat-ubi-custom`
+
+#### Using `detect-secrets-redhat-ubi-custom` Docker Image
+
+This image uses the same base as [`detect-secrets-red-hat-ubi`](#using-detect-secrets-redhat-ubi-docker-image), but instead of passing in detect-secrets commands directly, only certain arguments can be passed in as environment variables. The [run-in-pipeline](./scripts/../../scripts/run-in-pipeline.sh) script comes pre-packaged with this image, and takes these arguments in as input.
+
+Please refer to this script for a documented list of inputted environment variables.
+
+Note that this script will update your baseline by default, unless `--env SKIP_SCAN=true` is passed in after `docker run`. Also, the default value for the baseline file is `.secrets.baseline`. If your baseline is named differently, the default value can be overridden with `--env BASELINE=your_baseline_filename`. Additionally, all `fail-on` options will be used by default.
+
+To use the image in your pipeline, add the following commands to your pipeline script:
+
+1. Get the latest image:
+    - `docker pull ibmcom/detect-secrets-redhat-ubi-custom:latest`
+2. Mount the directory containing your code to the Docker image's `/code` folder, since it's the working directory for detect-secrets. The image will automatically update your baseline file and run a report against it:
+    - `docker run -it -a stdout --rm -v $(pwd):/code ibmcom/detect-secrets-redhat-ubi-custom`
 
 #### Using `detect-secrets` Docker Image
 
@@ -244,23 +270,6 @@ For other pipelines, repurpose the commands from the [Travis example](#travis). 
 2. Install detect-secrets
 3. Scan and update the baseline
 4. Run a report against the baseline
-
-#### Using `detect-secrets-redhat-ubi` Docker Image
-
-This Docker image offers additional benefits over the general-purpose [`detect-secrets` Docker image](#using-detect-secrets-docker-image). One being additional security, and the other is that the Red Hat Universal Base Image is [OCI-compliant](https://opencontainers.org/faq/).
-
-Note that you cannot directly pass in detect-secrets commands. Instead, reporting arguments should be passed in as environment variables. The [run-in-pipeline](./scripts/../../scripts/run-in-pipeline.sh) script comes pre-packaged with this image, and takes these arguments in as input.
-
-Please refer to this script for a documented list of inputted environment variables.
-
-Note that this script will update your baseline by default, unless `--env SKIP_SCAN=true` is passed in after `docker run`. Also, the default value for the baseline file is `.secrets.baseline`. If your baseline is named differently, the default value can be overridden with `--env BASELINE=your_baseline_filename`. Additionally, all `fail-on` options will be used by default.
-
-To use the image in your pipeline, add the following commands to your pipeline script:
-
-1. Get the latest image:
-    - `docker pull ibmcom/detect-secrets-redhat-ubi:latest`
-2. Mount the directory containing your code to the Docker image's `/code` folder, since it's the working directory for detect-secrets. The image will automatically update your baseline file and run a report against it:
-    - `docker run -it -a stdout --rm -v $(pwd):/code ibmcom/detect-secrets-redhat-ubi`
 
 ### Output
 
