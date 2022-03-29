@@ -5,6 +5,7 @@ from detect_secrets.core import audit
 from detect_secrets.core import baseline
 from detect_secrets.core.common import write_baseline_to_file
 from detect_secrets.core.log import log
+from detect_secrets.core.report import report
 from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.core.usage import ParserBuilder
 from detect_secrets.plugins.common import initialize
@@ -12,10 +13,8 @@ from detect_secrets.util import build_automaton
 from detect_secrets.util import version_check
 
 
-def parse_args(argv):
-    return ParserBuilder()\
-        .add_console_use_arguments()\
-        .parse_args(argv)
+def parse_args(argv, parserBuilder):
+    return parserBuilder.add_console_use_arguments().parse_args(argv)
 
 
 def main(argv=None):
@@ -25,7 +24,9 @@ def main(argv=None):
     if len(sys.argv) == 1:  # pragma: no cover
         sys.argv.append('-h')
 
-    args = parse_args(argv)
+    parserBuilder = ParserBuilder()
+    args = parse_args(argv, parserBuilder)
+
     if args.verbose:  # pragma: no cover
         log.set_debug_level(args.verbose)
 
@@ -73,6 +74,11 @@ def main(argv=None):
                 )
 
     elif args.action == 'audit':
+        if args.report:
+            report.execute(args)
+
+        report.validate_args(args, parserBuilder.subparser.choices['audit'])
+
         if not args.diff and not args.display_results:
             audit.audit_baseline(args.filename[0])
             return 0
@@ -92,7 +98,7 @@ def main(argv=None):
             audit.compare_baselines(args.filename[0], args.filename[1])
         except audit.RedundantComparisonError:
             print(
-                'No difference, because it\'s the same file!',
+                "No difference, because it's the same file!",
                 file=sys.stderr,
             )
 
@@ -161,16 +167,10 @@ def _perform_scan(args, plugins, automaton, word_list_hash):
         if not args.exclude_files:
             args.exclude_files = _get_exclude_files(old_baseline)
 
-        if (
-            not args.exclude_lines
-            and old_baseline.get('exclude')
-        ):
+        if not args.exclude_lines and old_baseline.get('exclude'):
             args.exclude_lines = old_baseline['exclude']['lines']
 
-        if (
-            not args.word_list_file
-            and old_baseline.get('word_list')
-        ):
+        if not args.word_list_file and old_baseline.get('word_list'):
             args.word_list_file = old_baseline['word_list']['file']
 
     # If we have knowledge of an existing baseline file, we should use

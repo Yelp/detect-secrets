@@ -186,7 +186,7 @@ Fail pre-commit if there are non-auditied entries in baseline file, even if the 
                 --baseline,
                 .secrets.baseline,
                 --use-all-plugins,
-                --fail-on-non-audited,
+                --fail-on-unaudited,
             ]
 ```
 

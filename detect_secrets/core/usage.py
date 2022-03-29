@@ -51,15 +51,14 @@ def add_output_verified_false_flag(parser):
 
 
 class ParserBuilder(object):
-
     def __init__(self):
         self.parser = argparse.ArgumentParser()
+        self.subparser = None
 
         self.add_default_arguments()
 
     def add_default_arguments(self):
-        self._add_verbosity_argument()\
-            ._add_version_argument()
+        self._add_verbosity_argument()._add_version_argument()
 
     def add_pre_commit_arguments(self):
         self._add_filenames_argument()\
@@ -67,21 +66,21 @@ class ParserBuilder(object):
             ._add_exclude_lines_argument()\
             ._add_word_list_argument()\
             ._add_use_all_plugins_argument()\
-            ._add_no_verify_flag() \
+            ._add_no_verify_flag()\
             ._add_output_verified_false_flag()\
-            ._add_fail_on_non_audited_flag()
+            ._add_fail_on_unaudited_flag()
 
         PluginOptions(self.parser).add_arguments()
 
         return self
 
     def add_console_use_arguments(self):
-        subparser = self.parser.add_subparsers(
+        self.subparser = self.parser.add_subparsers(
             dest='action',
         )
 
         for action_parser in (ScanOptions, AuditOptions):
-            action_parser(subparser).add_arguments()
+            action_parser(self.subparser).add_arguments()
 
         return self
 
@@ -146,9 +145,9 @@ class ParserBuilder(object):
         add_output_verified_false_flag(self.parser)
         return self
 
-    def _add_fail_on_non_audited_flag(self):
+    def _add_fail_on_unaudited_flag(self):
         self.parser.add_argument(
-            '--fail-on-non-audited',
+            '--fail-on-unaudited',
             action='store_true',
             help='Fail check if there are entries have not been audited in baseline.',
         )
@@ -156,9 +155,8 @@ class ParserBuilder(object):
 
 
 class ScanOptions:
-
     def __init__(self, subparser):
-        self.parser = subparser.add_parser(
+        self.parser: argparse.ArgumentParser = subparser.add_parser(
             'scan',
         )
 
@@ -229,10 +227,7 @@ class ScanOptions:
             '--string',
             nargs='?',
             const=True,
-            help=(
-                'Scans an individual string, and displays configured '
-                'plugins\' verdict.'
-            ),
+            help=('Scans an individual string, and displays configured ' 'plugins\' verdict.'),
         )
         return self
 
@@ -250,22 +245,78 @@ class ScanOptions:
 
 
 class AuditOptions:
-
     def __init__(self, subparser):
-        self.parser = subparser.add_parser(
+        # Override the default audit parser usage message since the arguments within
+        # the _add_report_module group should only be permitted when the --report
+        # arg is included. argparse does not have built-in mutual inclusion functionality,
+        # so we had to add our own custom validation function, validate_args,
+        # in detect-secrets/core/report/report.py.
+        # docs: https://docs.python.org/3/library/argparse.html#usage
+        self.parser: argparse.ArgumentParser = subparser.add_parser(
             'audit',
+            usage='%(prog)s [-h] [--diff |  --display-results | --report [--fail-on-unaudited]'
+            ' [--fail-on-live] [--fail-on-audited-real] [--json | --omit-instructions]]'
+            ' [filename ...]',
         )
 
-    def add_arguments(self):
-        self.parser.add_argument(
-            'filename',
-            nargs='+',
-            help=(
-                'Audit a given baseline file to distinguish the difference '
-                'between false and true positives.'
+    def _add_report_module(self):
+        report_parser = self.parser.add_argument_group(
+            title='reporting',
+            description=(
+                'Displays a report with the secrets detected which fail certain conditions. '
+                'To be used with the report mode (--report).'
             ),
         )
 
+        report_parser.add_argument(
+            '--fail-on-unaudited',
+            action='store_true',
+            help=(
+                'This condition is met when there are potential secrets'
+                ' in the baseline file which have not yet been audited.'
+                ' To pass this check, run detect-secrets audit <BASELINE_FILE> to'
+                ' audit all unaudited secrets.'
+            ),
+        )
+
+        report_parser.add_argument(
+            '--fail-on-live',
+            action='store_true',
+            help=(
+                'This condition is met when a secret has been verified'
+                ' to be live. To pass this check, make sure that any'
+                ' secrets in the baseline file with a property of'
+                ' is_verified: true have been remediated, afterwards re-scan.'
+            ),
+        )
+
+        report_parser.add_argument(
+            '--fail-on-audited-real',
+            action='store_true',
+            help=(
+                'This condition is met when the baseline file contains'
+                ' one or more secrets which have been marked as actual'
+                ' secrets during the auditing process. Secrets with a'
+                ' property of is_secret: true meet this condition.'
+                ' To pass this check, remove these secrets from your'
+                ' code and re-scan so that they will be removed from your baseline.'
+            ),
+        )
+        report_parser_exclusive = report_parser.add_mutually_exclusive_group()
+
+        report_parser_exclusive.add_argument(
+            '--json',
+            action='store_true',
+            help=('Causes the report output to be formatted as JSON.'),
+        )
+
+        report_parser_exclusive.add_argument(
+            '--omit-instructions',
+            action='store_true',
+            help=('Omits instructions from the report.'),
+        )
+
+    def add_arguments(self):
         action_parser = self.parser.add_mutually_exclusive_group()
 
         action_parser.add_argument(
@@ -287,6 +338,23 @@ class AuditOptions:
             ),
         )
 
+        action_parser.add_argument(
+            '--report',
+            action='store_true',
+            help=('Displays a report with the secrets detected'),
+        )
+
+        self._add_report_module()
+
+        self.parser.add_argument(
+            'filename',
+            nargs='+',
+            help=(
+                'Audit a given baseline file to distinguish the difference '
+                'between false and true positives.'
+            ),
+        )
+
         return self
 
 
@@ -296,13 +364,10 @@ class PluginDescriptor(
         [
             # Classname of plugin; used for initialization
             'classname',
-
             # Flag to disable plugin. e.g. `--no-hex-string-scan`
             'flag_text',
-
             # Description for disable flag.
             'help_text',
-
             # type: list
             # Allows the bundling of all related command line provided
             # arguments together, under one plugin name.
@@ -315,19 +380,13 @@ class PluginDescriptor(
             # Therefore, only populate the default value upon consolidation
             # (rather than relying on argparse default).
             'related_args',
-
             # The name of the plugin file
             'filename',
         ],
     ),
 ):
-
     def __new__(cls, related_args=None, **kwargs):
-        return super(PluginDescriptor, cls).__new__(
-            cls,
-            related_args=related_args or [],
-            **kwargs
-        )
+        return super(PluginDescriptor, cls).__new__(cls, related_args=related_args or [], **kwargs)
 
     @classmethod
     def from_plugin_class(cls, plugin, name):
@@ -339,10 +398,12 @@ class PluginDescriptor(
         if plugin.default_options:
             related_args = []
             for arg_name, value in plugin.default_options.items():
-                related_args.append((
-                    '--{}'.format(arg_name.replace('_', '-')),
-                    value,
-                ))
+                related_args.append(
+                    (
+                        '--{}'.format(arg_name.replace('_', '-')),
+                        value,
+                    ),
+                )
 
         return cls(
             classname=name,
@@ -597,9 +658,11 @@ class PluginOptions:
                     related_args[arg_name] = default_value
                     is_using_default_value[arg_name] = True
 
-            active_plugins.update({
-                plugin.classname: related_args,
-            })
+            active_plugins.update(
+                {
+                    plugin.classname: related_args,
+                },
+            )
 
         for plugin in PluginOptions.all_plugins:
             if getattr(plugin, 'classname') in list(active_plugins):
