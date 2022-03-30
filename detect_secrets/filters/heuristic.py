@@ -68,7 +68,7 @@ def is_likely_id_string(secret: str, line: str) -> bool:
 
 @lru_cache(maxsize=1)
 def _get_id_detector_regex() -> Pattern:
-    return re.compile(r'^(id|myid|userid)|_id[^a-z0-9]', re.IGNORECASE)
+    return re.compile(r'(^(id|myid|userid)|_id)[^a-z0-9]', re.IGNORECASE)
 
 
 def is_non_text_file(filename: str) -> bool:
