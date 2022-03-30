@@ -263,7 +263,6 @@ script:
     - detect-secrets scan --update .secrets.baseline
     # Report with all fail checks
     - detect-secrets audit --report --fail-on-unaudited --fail-on-live --fail-on-audited-real .secrets.baseline
-
 ```
 
 ##### Other pipelines
