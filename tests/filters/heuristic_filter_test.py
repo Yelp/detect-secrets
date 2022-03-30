@@ -86,7 +86,7 @@ class TestIsLikelyIdString:
             # fail silently if the secret isn't even on the line
             ('SOME_RANDOM_STRING', 'id: SOME_OTHER_RANDOM_STRING'),
 
-            # fail if the word david ends in id
+            # fail although the word david ends in id
             ('RANDOM_STRING', 'postgres://david:RANDOM_STRING'),
         ],
     )
