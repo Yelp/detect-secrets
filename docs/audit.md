@@ -234,7 +234,7 @@ The general-purpose Docker image comes pre-packaged with Python, allowing you to
 To use this image in your pipeline, add the following commands to your pipeline script:
 
 1. Pull the image:
-    - `docker pull ibmcom/detect-secrets:latest`
+    - `docker pull ibmcom/detect-secrets`
 2. Mount the directory containing your code to the Docker image's `/code` folder, since it's the working directory for detect-secrets. Pass in the `scan` command to update the baseline file. This file should be up-to-date before a report is run:
     - `docker run -it --rm -v $(pwd):/code ibmcom/detect-secrets:latest scan --update .secrets.baseline`
 3. Run a report against the updated baseline file:
