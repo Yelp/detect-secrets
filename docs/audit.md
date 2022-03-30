@@ -247,24 +247,16 @@ To use this image in your pipeline, add the following commands to your pipeline 
 Add this code to your `travis.yml` file:
 
 ```yaml
-language: generic
-sudo: required
-addons:
-    apt:
-        packages:
-            - python3
-            - python3-pip
-            - python3-setuptools
+language: python
+python:
+    - "3.8"
 install:
-    # Required to install detect-secrets
-    - sudo chmod o+rwx /usr/lib/python3/dist-packages/
-    - python3 -m pip install -U pip
-    - python3 -m pip install --upgrade "git+https://github.com/ibm/detect-secrets.git@master#egg=detect-secrets"
+    - python -m pip install --upgrade "git+https://github.com/ibm/detect-secrets.git@staging#egg=detect-secrets"
 script:
     # Update the baseline file
     - detect-secrets scan --update .secrets.baseline
     # Report with all fail checks
-    - detect-secrets audit --report --fail-on-unaudited --fail-on-live --fail-on-audited-real .secrets.baseline
+    - detect-secrets audit --report --fail-on-live --fail-on-unaudited --fail-on-audited-real .secrets.baseline
 ```
 
 ##### Other pipelines
