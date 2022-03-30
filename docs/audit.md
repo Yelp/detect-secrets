@@ -14,8 +14,8 @@
 -   [Comparing Baselines](#comparing-baselines)
 -   [Report Generation](#report-generation)
     -   [Running in CI / CD](#running-in-ci--cd)
-        -   [Using `detect-secrets-redhat-ubi` Docker Image](#using-detect-secrets-redhat-ubi-docker-image)
-        -   [Using `detect-secrets-redhat-ubi-custom` Docker Image](#using-detect-secrets-redhat-ubi-custom-docker-image)
+        -   [Using `detect-secrets:redhat-ubi` Docker Image](#using-detect-secretsredhat-ubi-docker-image)
+        -   [Using `detect-secrets:redhat-ubi-custom` Docker Image](#using-detect-secretsredhat-ubi-custom-docker-image)
         -   [Using `detect-secrets` Docker Image](#using-detect-secrets-docker-image)
         -   [Installing via pip](#installing-via-pip)
             -   [Travis](#travis)
@@ -197,24 +197,24 @@ detect-secrets audit --report --fail-on-unaudited --fail-on-live --fail-on-audit
 
 Below are four documented methods for adding detect-secrets reporting to your pipeline.
 
-**It is recommended to [use the `detect-secrets-redhat-ubi` Docker image](#using-detect-secrets-redhat-ubi-docker-image)**.
+**It is recommended to [use the `detect-secrets:redhat-ubi` Docker image](#using-detect-secrets:redhat-ubi-docker-image)**.
 
-#### Using `detect-secrets-redhat-ubi` Docker Image
+#### Using `detect-secrets:redhat-ubi` Docker Image
 
 This Docker image offers additional benefits over the general-purpose [`detect-secrets` Docker image](#using-detect-secrets-docker-image). One being additional security, and the other is that the Red Hat Universal Base Image is [OCI-compliant](https://opencontainers.org/faq/).
 
 To use this image in your pipeline, add the following commands to your pipeline script:
 
-1. Get the latest image:
-    - `docker pull ibmcom/detect-secrets-redhat-ubi:latest`
+1. Pull the image:
+    - `docker pull ibmcom/detect-secrets:redhat-ubi`
 2. Mount the directory containing your code to the Docker image's `/code` folder, since it's the working directory for detect-secrets. Then, update your baseline file.
-    - `docker run -it -a stdout --rm -v $(pwd):/code ibmcom/detect-secrets-redhat-ubi scan --update .secrets.baseline`
+    - `docker run -it -a stdout --rm -v $(pwd):/code ibmcom/detect-secrets:redhat-ubi scan --update .secrets.baseline`
 3. With the same directory mounted, run a report.
-    - `docker run -it -a stdout --rm -v $(pwd):/code ibmcom/detect-secrets-redhat-ubi audit --report --fail-on-unaudited --fail-on-live --fail-on-audited-real .secrets.baseline`
+    - `docker run -it -a stdout --rm -v $(pwd):/code ibmcom/detect-secrets:redhat-ubi audit --report --fail-on-unaudited --fail-on-live --fail-on-audited-real .secrets.baseline`
 
-#### Using `detect-secrets-redhat-ubi-custom` Docker Image
+#### Using `detect-secrets:redhat-ubi-custom` Docker Image
 
-This image uses the same base as [`detect-secrets-red-hat-ubi`](#using-detect-secrets-redhat-ubi-docker-image), but instead of passing in detect-secrets commands directly, only certain arguments can be passed in as environment variables. The [run-in-pipeline](./scripts/../../scripts/run-in-pipeline.sh) script comes pre-packaged with this image, and takes these arguments in as input.
+This image uses the same base as [`detect-secrets:red-hat-ubi`](#using-detect-secrets:redhat-ubi-docker-image), but instead of passing in detect-secrets commands directly, only certain arguments can be passed in as environment variables. The [run-in-pipeline](./scripts/../../scripts/run-in-pipeline.sh) script comes pre-packaged with this image, and takes these arguments in as input.
 
 Please refer to this script for a documented list of inputted environment variables.
 
@@ -222,10 +222,10 @@ Note that this script will update your baseline by default, unless `--env SKIP_S
 
 To use the image in your pipeline, add the following commands to your pipeline script:
 
-1. Get the latest image:
-    - `docker pull ibmcom/detect-secrets-redhat-ubi-custom:latest`
+1. Pull the image:
+    - `docker pull ibmcom/detect-secrets:redhat-ubi-custom`
 2. Mount the directory containing your code to the Docker image's `/code` folder, since it's the working directory for detect-secrets. The image will automatically update your baseline file and run a report against it:
-    - `docker run -it -a stdout --rm -v $(pwd):/code ibmcom/detect-secrets-redhat-ubi-custom`
+    - `docker run -it -a stdout --rm -v $(pwd):/code ibmcom/detect-secrets:redhat-ubi-custom`
 
 #### Using `detect-secrets` Docker Image
 
@@ -233,8 +233,8 @@ The general-purpose Docker image comes pre-packaged with Python, allowing you to
 
 To use this image in your pipeline, add the following commands to your pipeline script:
 
-1. Get the latest image:
-    - `docker pull ibmcom/detect-secrets:latest`
+1. Pull the image:
+    - `docker pull ibmcom/detect-secrets`
 2. Mount the directory containing your code to the Docker image's `/code` folder, since it's the working directory for detect-secrets. Pass in the `scan` command to update the baseline file. This file should be up-to-date before a report is run:
     - `docker run -it --rm -v $(pwd):/code ibmcom/detect-secrets:latest scan --update .secrets.baseline`
 3. Run a report against the updated baseline file:
