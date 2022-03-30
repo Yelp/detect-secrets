@@ -248,7 +248,6 @@ Add this code to your `travis.yml` file:
 
 ```yaml
 language: generic
-sudo: required
 addons:
     apt:
         packages:
@@ -257,7 +256,6 @@ addons:
             - python3-setuptools
 install:
     # Required to install detect-secrets
-    - sudo chmod o+rwx /usr/lib/python3/dist-packages/
     - python3 -m pip install -U pip
     - python3 -m pip install --upgrade "git+https://github.com/ibm/detect-secrets.git@master#egg=detect-secrets"
 script:
