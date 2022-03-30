@@ -251,7 +251,7 @@ language: python
 python:
     - "3.8"
 install:
-    - python -m pip install --upgrade "git+https://github.com/ibm/detect-secrets.git@staging#egg=detect-secrets"
+    - python -m pip install --upgrade "git+https://github.com/ibm/detect-secrets.git@master#egg=detect-secrets"
 script:
     # Update the baseline file
     - detect-secrets scan --update .secrets.baseline
