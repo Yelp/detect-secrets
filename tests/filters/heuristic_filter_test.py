@@ -69,6 +69,8 @@ class TestIsLikelyIdString:
             ('RANDOM_STRING', 'data test_id: RANDOM_STRING'),
             ('RANDOM_STRING', 'data test_id=RANDOM_STRING'),
             ('RANDOM_STRING', 'data test_id = RANDOM_STRING'),
+            ('RANDOM_STRING', 'ids = RANDOM_STRING, RANDOM_STRING'),
+            ('RANDOM_STRING', 'my_ids: RANDOM_STRING, RANDOM_STRING'),
         ],
     )
     def test_success(self, secret, line):
