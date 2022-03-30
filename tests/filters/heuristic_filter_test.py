@@ -63,6 +63,12 @@ class TestIsLikelyIdString:
             ('RANDOM_STRING', 'myid: RANDOM_STRING'),
             ('RANDOM_STRING', 'myid=RANDOM_STRING'),
             ('RANDOM_STRING', 'myid = RANDOM_STRING'),
+            ('RANDOM_STRING', 'userid: RANDOM_STRING'),
+            ('RANDOM_STRING', 'userid=RANDOM_STRING'),
+            ('RANDOM_STRING', 'userid = RANDOM_STRING'),
+            ('RANDOM_STRING', 'data test_id: RANDOM_STRING'),
+            ('RANDOM_STRING', 'data test_id=RANDOM_STRING'),
+            ('RANDOM_STRING', 'data test_id = RANDOM_STRING'),
         ],
     )
     def test_success(self, secret, line):
@@ -79,6 +85,9 @@ class TestIsLikelyIdString:
 
             # fail silently if the secret isn't even on the line
             ('SOME_RANDOM_STRING', 'id: SOME_OTHER_RANDOM_STRING'),
+
+            # fail if the word david ends in id
+            ('RANDOM_STRING', 'postgres://david:RANDOM_STRING'),
         ],
     )
     def test_failure(self, secret, line):
