@@ -57,6 +57,7 @@ class BasePlugin(metaclass=ABCMeta):
                     filename=filename,
                     secret=match,
                     line_number=line_number,
+                    occurrences=1,
                 ),
             )
 

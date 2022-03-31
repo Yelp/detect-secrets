@@ -105,6 +105,13 @@ class TestScanFile:
         ]
 
     @staticmethod
+    def test_jp():
+        secrets = SecretsCollection()
+        secrets.scan_file('docs/design.md')
+
+        print(secrets)
+
+    @staticmethod
     def test_file_based_yaml_only_comments():
         secrets = SecretsCollection()
         secrets.scan_file('test_data/only_comments.yaml')
@@ -332,11 +339,11 @@ class TestEqual:
     def test_strict_equality():
         secret = potential_secret_factory()
         secretsA = SecretsCollection()
-        secretsA[secret.filename].add(secret)
+        secretsA[secret.filename].append(secret)
 
         secret = potential_secret_factory(line_number=2)
         secretsB = SecretsCollection()
-        secretsB[secret.filename].add(secret)
+        secretsB[secret.filename].append(secret)
 
         assert secretsA == secretsB
         assert not secretsA.exactly_equals(secretsB)

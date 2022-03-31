@@ -58,7 +58,7 @@ def test_basic_statistics_json(printer):
 )
 def test_no_divide_by_zero(secret):
     secrets = SecretsCollection()
-    secrets['file'].add(secret)
+    secrets['file'].append(secret)
     with tempfile.NamedTemporaryFile() as f:
         baseline.save_to_file(secrets, f.name)
         f.seek(0)
