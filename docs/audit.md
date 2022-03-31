@@ -213,7 +213,7 @@ To use **redhat-ubi** image in your pipeline, add the following commands to your
 
 #### Using the `detect-secrets:redhat-ubi-custom` Docker Image
 
-This image uses the same base as [`detect-secrets:red-hat-ubi`](#using-detect-secrets:redhat-ubi-docker-image). Instead of requiring the user to provide detect-secrets commands, it automatically updates the baseline before report with opinionated fail-on options.
+This image uses the same base as [`detect-secrets:red-hat-ubi`](#using-detect-secrets:redhat-ubi-docker-image). Instead of requiring the user to provide detect-secrets commands, it automatically updates the baseline before reporting with opinionated fail-on options.
 
 Please refer to [this](./scripts/../../scripts/run-in-pipeline.sh) script for a documented list of inputted environment variables.
 
