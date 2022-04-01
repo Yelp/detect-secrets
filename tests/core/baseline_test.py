@@ -38,8 +38,9 @@ class TestCreate:
     def test_basic_usage(path):
         secrets = baseline.create(path)
 
-        assert len(secrets.data.keys()) == 2
+        assert len(secrets.data.keys()) == 3
         assert len(secrets['test_data/files/file_with_secrets.py']) == 1
+        assert len(secrets['test_data/files/file_with_duplicate_secrets.py']) == 1
         assert len(secrets['test_data/files/tmp/file_with_secrets.py']) == 2
 
     @staticmethod
