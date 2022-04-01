@@ -168,7 +168,7 @@ class SecretsCollection:
 
         # Unfortunately, we can't merely do a set intersection since we want to update the line
         # numbers (if applicable). Therefore, this does it manually.
-        result: Dict[str, Set[PotentialSecret]] = defaultdict(set)
+        result: Dict[str, List[PotentialSecret]] = defaultdict(list)
 
         for filename in scanned_results.files:
             if filename not in self.files:
@@ -191,7 +191,7 @@ class SecretsCollection:
                     # Only update occurences if we're tracking them.
                     existing_secret.occurrences = secret.occurrences
 
-                result[filename].add(existing_secret)
+                result[filename].append(existing_secret)
 
         for filename in self.files:
             # If this is already populated by scanned_results, then the set intersection
