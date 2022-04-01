@@ -105,13 +105,6 @@ class TestScanFile:
         ]
 
     @staticmethod
-    def test_jp():
-        secrets = SecretsCollection()
-        secrets.scan_file('docs/design.md')
-
-        print(secrets)
-
-    @staticmethod
     def test_file_based_yaml_only_comments():
         secrets = SecretsCollection()
         secrets.scan_file('test_data/only_comments.yaml')
@@ -135,6 +128,15 @@ class TestScanFile:
         secrets.scan_file(filename)
 
         assert bool(secrets)
+
+    @staticmethod
+    def test_duplicate_secrets_occurrences():
+        secrets = SecretsCollection()
+        secrets.scan_file('test_data/files/file_with_duplicate_secrets.py')
+
+        secret = next(iter(secrets['test_data/files/file_with_duplicate_secrets.py']))
+        assert len(secrets['test_data/files/file_with_duplicate_secrets.py']) == 1
+        assert secret.occurrences == 2
 
 
 class TestScanDiff:

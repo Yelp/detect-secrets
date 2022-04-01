@@ -104,7 +104,6 @@ class PotentialSecret:
             'filename': self.filename,
             'hashed_secret': self.secret_hash,
             'is_verified': self.is_verified,
-            'occurrences': self.occurrences,
         }
 
         if self.line_number:
@@ -112,6 +111,9 @@ class PotentialSecret:
 
         if self.is_secret is not None:
             attributes['is_secret'] = self.is_secret
+
+        if self.occurrences:
+            attributes['occurrences'] = self.occurrences
 
         return attributes
 
