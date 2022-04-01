@@ -13,7 +13,7 @@ WHITES_SECRET = 'value with quotes and spaces'
 LETTER_SECRET = 'A,.:-¨@*¿?!'
 SYMBOL_SECRET = ',.:-¨@*¿?!'
 
-LONG_LINE = '<img src="data:image/png;base64,{}\n"\n>'.format(base64.b64encode((str(randint(0, 9)) * 30500).encode()))  # noqa: E501
+LONG_LINE = '<img src="data:image/png;base64,{}\n"\n>'.format(base64.b64encode((str(randint(0, 9)) * 24000).encode()))  # noqa: E501
 
 CONFIG_TEST_CASES = [
     ('password = "{}"'.format(WHITES_SECRET), WHITES_SECRET),

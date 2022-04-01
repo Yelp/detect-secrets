@@ -1,5 +1,4 @@
 import json
-import tempfile
 
 import pytest
 
@@ -7,6 +6,7 @@ from detect_secrets.core import plugins
 from detect_secrets.core.plugins.util import get_mapping_from_secret_type_to_class
 from detect_secrets.core.usage import ParserBuilder
 from detect_secrets.settings import get_settings
+from testing.mocks import mock_named_temporary_file
 
 
 @pytest.fixture
@@ -15,7 +15,7 @@ def parser():
 
 
 def test_force_use_all_plugins(parser):
-    with tempfile.NamedTemporaryFile() as f:
+    with mock_named_temporary_file() as f:
         f.write(
             json.dumps({
                 'version': '0.0.1',

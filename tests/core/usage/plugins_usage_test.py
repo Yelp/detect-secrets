@@ -1,6 +1,5 @@
 import json
 import os
-import tempfile
 
 import pytest
 
@@ -9,6 +8,7 @@ from detect_secrets.core import plugins
 from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.core.usage import ParserBuilder
 from detect_secrets.settings import get_settings
+from testing.mocks import mock_named_temporary_file
 
 
 @pytest.fixture
@@ -48,7 +48,7 @@ class TestAddCustomLimits:
 
     @staticmethod
     def test_precedence_with_only_baseline(parser):
-        with tempfile.NamedTemporaryFile() as f:
+        with mock_named_temporary_file() as f:
             f.write(
                 json.dumps({
                     'version': '0.0.1',
@@ -69,7 +69,7 @@ class TestAddCustomLimits:
 
     @staticmethod
     def test_precedence_with_baseline_and_explicit_value(parser):
-        with tempfile.NamedTemporaryFile() as f:
+        with mock_named_temporary_file() as f:
             f.write(
                 json.dumps({
                     'version': '0.0.1',
@@ -115,7 +115,7 @@ class TestAddDisableFlag:
 
     @staticmethod
     def test_precedence_with_baseline(parser):
-        with tempfile.NamedTemporaryFile() as f:
+        with mock_named_temporary_file() as f:
             f.write(
                 json.dumps({
                     'version': '0.0.1',
@@ -148,7 +148,7 @@ class TestCustomPlugins:
         # Ensure it serializes accordingly.
         parser.parse_args(['-p', 'testing/plugins.py'])
 
-        with tempfile.NamedTemporaryFile() as f:
+        with mock_named_temporary_file() as f:
             baseline.save_to_file(SecretsCollection(), f.name)
             f.seek(0)
 

@@ -1,5 +1,4 @@
 import json
-import tempfile
 from contextlib import contextmanager
 from functools import partial
 from typing import List
@@ -12,6 +11,7 @@ from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.pre_commit_hook import main
 from detect_secrets.settings import transient_settings
 from testing.mocks import disable_gibberish_filter
+from testing.mocks import mock_named_temporary_file
 
 
 @pytest.fixture(autouse=True)
@@ -54,7 +54,7 @@ def test_baseline_filters_out_known_secrets():
     assert secrets
 
     with disable_gibberish_filter():
-        with tempfile.NamedTemporaryFile() as f:
+        with mock_named_temporary_file() as f:
             baseline.save_to_file(secrets, f.name)
             f.seek(0)
 
@@ -68,7 +68,7 @@ def test_baseline_filters_out_known_secrets():
         # Remove one arbitrary secret, so that it won't be the full set.
         secrets.data['test_data/each_secret.py'].pop()
 
-        with tempfile.NamedTemporaryFile() as f:
+        with mock_named_temporary_file() as f:
             baseline.save_to_file(secrets, f.name)
             f.seek(0)
 
@@ -128,7 +128,7 @@ class TestModifiesBaselineFromVersionChange:
         secrets = SecretsCollection()
         secrets.scan_file(self.FILENAME)
 
-        with tempfile.NamedTemporaryFile() as f:
+        with mock_named_temporary_file() as f:
             with mock.patch('detect_secrets.core.baseline.VERSION', '0.0.1'):
                 data = formatter(secrets)
 
@@ -143,7 +143,7 @@ class TestLineNumberChanges:
     FILENAME = 'test_data/files/file_with_secrets.py'
 
     def test_modifies_baseline(self, modified_baseline):
-        with tempfile.NamedTemporaryFile() as f:
+        with mock_named_temporary_file() as f:
             baseline.save_to_file(modified_baseline, f.name)
 
             assert_commit_blocked_with_diff_exit_code([
@@ -153,7 +153,7 @@ class TestLineNumberChanges:
             ])
 
     def test_does_not_modify_slim_baseline(self, modified_baseline):
-        with tempfile.NamedTemporaryFile() as f:
+        with mock_named_temporary_file() as f:
             baseline.save_to_file(
                 baseline.format_for_output(modified_baseline, is_slim_mode=True),
                 f.name,
