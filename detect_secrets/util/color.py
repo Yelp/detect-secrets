@@ -3,7 +3,7 @@ from os import getenv
 from sys import stdout
 
 
-def support_ansi_colors():
+def support_ansi_colors() -> bool:
     return (getenv('CLICOLOR', '1') != '0' and stdout.isatty())\
         or getenv('CLICOLOR_FORCE', '0') != '0'
 
