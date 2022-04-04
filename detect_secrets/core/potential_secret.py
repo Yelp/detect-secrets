@@ -103,10 +103,10 @@ class PotentialSecret:
             'is_verified': self.is_verified,
         }
 
-        if self.line_number:
+        if hasattr(self, 'line_number') and self.line_number:
             attributes['line_number'] = self.line_number
 
-        if self.is_secret is not None:
+        if hasattr(self, 'is_secret') and self.is_secret is not None:
             attributes['is_secret'] = self.is_secret
 
         return attributes
