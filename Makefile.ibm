@@ -54,10 +54,15 @@ setup-trivy:
 	tar zxvf /tmp/trivy.tar.gz -C $(dir $(TRIVY)) trivy
 
 docker-quality-image-%:
+	# TODO: remove bottom line. Why would we need to tag w/ trivy anyways?
 	docker tag $(DOCKER_DOMAIN_LOCAL)/$* $(DOCKER_DOMAIN_LOCAL)/$*:trivy
 	$(TRIVY) image --exit-code 1 --ignore-unfixed $(DOCKER_DOMAIN_LOCAL)/$*:trivy
 
 docker-quality-images: $(patsubst %,docker-quality-image-%,$(DOCKER_IMAGES))
+	for image_name in $(DOCKER_IMAGES) ; do
+		$(TRIVY) image --exit-code 1 --ignore-unfixed $(DOCKER_DOMAIN_LOCAL)/$*$${image_name}
+		# TODO: have special conditions for detect-secrets, need to check redhat-ubi and redhat-ubi-custom tags
+
 
 docker-test-images:
 	docker run -it $(DOCKER_DOMAIN_LOCAL)/detect-secrets --version
@@ -73,7 +78,7 @@ docker-login:
 	@echo $(DOCKER_PASS_DOCKERHUB) | docker login -u $(DOCKER_USER_DOCKERHUB) --password-stdin;
 	@echo $(DOCKER_PASS_ART) | docker login -u $(DOCKER_USER_ART) --password-stdin $(DOCKER_REGISTRY_ART);
 
-docker-publish-images: docker-login
+docker-publish-images:
 	for image_name in $(DOCKER_IMAGES) ; do                                               \
 		for registry in $(DOCKER_REGISTRIES) ; do                                         \
 			for tag in $(IMAGE_TAGS) ; do                                                 \
@@ -86,10 +91,8 @@ docker-publish-images: docker-login
 docker-publish-image:
 	if [ "$(DOCKER_REGISTRY)" = "$(DOCKER_REGISTRY_DOCKERHUB)" ]; then                                                  \
 		docker tag $(DOCKER_DOMAIN_LOCAL)/$(IMAGE_NAME) $(DOCKERHUB_DOMAIN)/$(IMAGE_NAME):$(IMAGE_TAG);                 \
-		docker push $(DOCKERHUB_DOMAIN)/$(IMAGE_NAME):$(IMAGE_TAG);                                                     \
 	else                                                                                                                \
 		docker tag $(DOCKER_DOMAIN_LOCAL)/$(IMAGE_NAME) $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME):$(IMAGE_TAG); \
-		docker push $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME):$(IMAGE_TAG);                                     \
 	fi
 
 publish-cos:
