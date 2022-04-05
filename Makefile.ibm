@@ -86,8 +86,10 @@ docker-publish-images: docker-login
 docker-publish-image:
 	if [ "$(DOCKER_REGISTRY)" = "$(DOCKER_REGISTRY_DOCKERHUB)" ]; then                                     \
 		docker tag $(DOCKER_DOMAIN_LOCAL)/$(IMAGE_NAME) $(DOCKERHUB_DOMAIN)/$(IMAGE_NAME);                 \
+		docker push $(DOCKERHUB_DOMAIN)/$(IMAGE_NAME); 													   \
 	else                                                                                                   \
 		docker tag $(DOCKER_DOMAIN_LOCAL)/$(IMAGE_NAME) $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME); \
+		docker push $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME);									   \
 	fi
 
 publish-cos:
