@@ -58,7 +58,7 @@ docker-quality-image-%:
 	docker tag $(DOCKER_DOMAIN_LOCAL)/$* $(DOCKER_DOMAIN_LOCAL)/$*:trivy
 	$(TRIVY) image --exit-code 1 --ignore-unfixed $(DOCKER_DOMAIN_LOCAL)/$*:trivy
 
-docker-quality-images: $(patsubst %,docker-quality-image-%,$(DOCKER_IMAGES))
+docker-quality-images:
 	for image_name in $(DOCKER_IMAGES) ; do
 		$(TRIVY) image --exit-code 1 --ignore-unfixed $(DOCKER_DOMAIN_LOCAL)/$*$${image_name}
 		# TODO: have special conditions for detect-secrets, need to check redhat-ubi and redhat-ubi-custom tags
@@ -71,8 +71,21 @@ docker-test-images:
 docker-build-images:
 	for dockerfile in Dockerfiles/*/*.Dockerfile; do                                   \
 		image_name=$$(echo -e $$(basename $${dockerfile}) | cut -d\. -f2);           \
-		docker build -f "$${dockerfile}" -t $(DOCKER_DOMAIN_LOCAL)/$${image_name} .; \
-	done
+		# TODO: if image is detect-secrets and specific Dockerfiles are used, tag w/ specific name \
+		if [ "$${image_name}}" == "detect-secrets" ]: \
+			# if the dockerfile is detect-secrets cli, don't tag (automatically tagged w/ latest) \
+			# do nothing \
+		elif [ "$${image_name}}" == "detect-secrets-redhat-ubi" ]: \
+			image_name="$${image_name} :redhat-ubi" ;\
+			# if the dockerfile is detect-secrets-redhat-ubi, tag with redhat-ubi \
+		elif [ "$${image_name}}" == "detect-secrets-redhat-ubi-custom" ]: \
+			# if the dockerfile is detect-secrets-redhat-ubi-custom, tag with redhat-ubi-custom \
+			image_name="$${image_name} :redhat-ubi-custom" ;\
+		fi \
+		echo "image name is: $${image_name}" ;\
+		# docker build -f "$${dockerfile}" -t $(DOCKER_DOMAIN_LOCAL)/$${image_name} .; \
+		# TODO: dynamically build list of images? \
+	done \
 
 docker-login:
 	@echo $(DOCKER_PASS_DOCKERHUB) | docker login -u $(DOCKER_USER_DOCKERHUB) --password-stdin;
