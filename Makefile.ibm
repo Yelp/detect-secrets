@@ -60,35 +60,33 @@ docker-test-images:
 	docker run -it $(DOCKER_DOMAIN_LOCAL)/detect-secrets --version
 	docker run -it $(DOCKER_DOMAIN_LOCAL)/detect-secrets-hook --version
 
-# Done: Docker images tagged correctly
 docker-build-images:
 	for dockerfile in Dockerfiles/*/*.Dockerfile; do                                            \
 		image_name=$$(echo -e $$(basename $${dockerfile}) | cut -d\. -f2);                      \
-		if [ "$${image_name}" == "detect-secrets-redhat-ubi" ]; then						\
-			image_name="detect-secrets:redhat-ubi";             \
-		elif [ "$${image_name}" == "detect-secrets-redhat-ubi-custom" ]; then \
-			image_name="detect-secrets:redhat-ubi-custom"; \
-		fi ;\
-		docker build -f "$${dockerfile}" -t $(DOCKER_DOMAIN_LOCAL)/$${image_name} .;  \
+		if [ "$${image_name}" == "detect-secrets-redhat-ubi" ]; then							\
+			image_name="detect-secrets:redhat-ubi";     								        \
+		elif [ "$${image_name}" == "detect-secrets-redhat-ubi-custom" ]; then				    \
+			image_name="detect-secrets:redhat-ubi-custom"; 										\
+		fi ;																					\
+		docker build -f "$${dockerfile}" -t $(DOCKER_DOMAIN_LOCAL)/$${image_name} .;  			\
 	done
 
 docker-login:
 	@echo $(DOCKER_PASS_DOCKERHUB) | docker login -u $(DOCKER_USER_DOCKERHUB) --password-stdin;
 	@echo $(DOCKER_PASS_ART) | docker login -u $(DOCKER_USER_ART) --password-stdin $(DOCKER_REGISTRY_ART);
 
-docker-publish-images:
-	for image_name in $(DOCKER_IMAGES_TAGGED) ; do                                               \
-		for registry in $(DOCKER_REGISTRIES) ; do                                         \
-			$(MAKE) docker-publish-image                                              \
-			IMAGE_NAME=$${image_name} DOCKER_REGISTRY=$${registry}; \
-		done                                                                              \
+docker-publish-images: docker-login
+	for image_name in $(DOCKER_IMAGES_TAGGED) ; do                                             \
+		for registry in $(DOCKER_REGISTRIES) ; do                                         	   \
+			$(MAKE) docker-publish-image                                              		   \
+			IMAGE_NAME=$${image_name} DOCKER_REGISTRY=$${registry}; 						   \
+		done                                                                              	   \
 	done
 
-# if images are pre-tagged, create special case for them
 docker-publish-image:
-	if [ "$(DOCKER_REGISTRY)" = "$(DOCKER_REGISTRY_DOCKERHUB)" ]; then                                                  \
+	if [ "$(DOCKER_REGISTRY)" = "$(DOCKER_REGISTRY_DOCKERHUB)" ]; then                                     \
 		docker tag $(DOCKER_DOMAIN_LOCAL)/$(IMAGE_NAME) $(DOCKERHUB_DOMAIN)/$(IMAGE_NAME);                 \
-	else                                                                                                                \
+	else                                                                                                   \
 		docker tag $(DOCKER_DOMAIN_LOCAL)/$(IMAGE_NAME) $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME); \
 	fi
 
