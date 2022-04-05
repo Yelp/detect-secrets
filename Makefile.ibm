@@ -20,11 +20,10 @@ DOCKER_USER_DOCKERHUB := $(DOCKER_HUB_USERNAME)
 DOCKER_PASS_DOCKERHUB := $(DOCKER_HUB_API_KEY)
 
 DOCKER_IMAGES := detect-secrets detect-secrets-hook
+DOCKER_IMAGES_TAGGED := detect-secrets detect-secrets:redhat-ubi detect-secrets:redhat-ubi-custom detect-secrets-hook
 DOCKER_REGISTRIES := $(DOCKER_REGISTRY_ART) $(DOCKER_REGISTRY_DOCKERHUB)
 
 IMAGE_NAME :=
-IMAGE_TAG :=
-IMAGE_TAGS := latest
 DOCKER_REGISTRY :=
 DOCKER_DOMAIN_LOCAL := $(DOCKER_DOMAIN)
 
@@ -53,16 +52,9 @@ setup-trivy:
 	curl -sSfL https://github.com/aquasecurity/trivy/releases/download/v$(TRIVY_VERSION)/trivy_$(TRIVY_VERSION)_$(TRIVY_OS)-$(TRIVY_ARCH)bit.tar.gz -o /tmp/trivy.tar.gz
 	tar zxvf /tmp/trivy.tar.gz -C $(dir $(TRIVY)) trivy
 
-docker-quality-image-%:
-	# TODO: remove bottom line. Why would we need to tag w/ trivy anyways?
-	docker tag $(DOCKER_DOMAIN_LOCAL)/$* $(DOCKER_DOMAIN_LOCAL)/$*:trivy
-	$(TRIVY) image --exit-code 1 --ignore-unfixed $(DOCKER_DOMAIN_LOCAL)/$*:trivy
-
 docker-quality-images:
-	for image_name in $(DOCKER_IMAGES) ; do
+	for image_name in $(DOCKER_IMAGES_TAGGED) ; do
 		$(TRIVY) image --exit-code 1 --ignore-unfixed $(DOCKER_DOMAIN_LOCAL)/$*$${image_name}
-		# TODO: have special conditions for detect-secrets, need to check redhat-ubi and redhat-ubi-custom tags
-
 
 docker-test-images:
 	docker run -it $(DOCKER_DOMAIN_LOCAL)/detect-secrets --version
@@ -72,13 +64,11 @@ docker-test-images:
 docker-build-images:
 	for dockerfile in Dockerfiles/*/*.Dockerfile; do                                            \
 		image_name=$$(echo -e $$(basename $${dockerfile}) | cut -d\. -f2);                      \
-		echo "before: $${image_name}";												\
 		if [ "$${image_name}" == "detect-secrets-redhat-ubi" ]; then						\
 			image_name="detect-secrets:redhat-ubi";             \
 		elif [ "$${image_name}" == "detect-secrets-redhat-ubi-custom" ]; then \
 			image_name="detect-secrets:redhat-ubi-custom"; \
 		fi ;\
-		echo docker build -f "$${dockerfile}" -t $(DOCKER_DOMAIN_LOCAL)/$${image_name} .""; \
 		docker build -f "$${dockerfile}" -t $(DOCKER_DOMAIN_LOCAL)/$${image_name} .;  \
 	done
 
@@ -87,20 +77,19 @@ docker-login:
 	@echo $(DOCKER_PASS_ART) | docker login -u $(DOCKER_USER_ART) --password-stdin $(DOCKER_REGISTRY_ART);
 
 docker-publish-images:
-	for image_name in $(DOCKER_IMAGES) ; do                                               \
+	for image_name in $(DOCKER_IMAGES_TAGGED) ; do                                               \
 		for registry in $(DOCKER_REGISTRIES) ; do                                         \
-			for tag in $(IMAGE_TAGS) ; do                                                 \
-				$(MAKE) docker-publish-image                                              \
-				IMAGE_NAME=$${image_name} DOCKER_REGISTRY=$${registry} IMAGE_TAG=$${tag}; \
-			done                                                                          \
+			$(MAKE) docker-publish-image                                              \
+			IMAGE_NAME=$${image_name} DOCKER_REGISTRY=$${registry}; \
 		done                                                                              \
 	done
 
+# if images are pre-tagged, create special case for them
 docker-publish-image:
 	if [ "$(DOCKER_REGISTRY)" = "$(DOCKER_REGISTRY_DOCKERHUB)" ]; then                                                  \
-		docker tag $(DOCKER_DOMAIN_LOCAL)/$(IMAGE_NAME) $(DOCKERHUB_DOMAIN)/$(IMAGE_NAME):$(IMAGE_TAG);                 \
+		docker tag $(DOCKER_DOMAIN_LOCAL)/$(IMAGE_NAME) $(DOCKERHUB_DOMAIN)/$(IMAGE_NAME);                 \
 	else                                                                                                                \
-		docker tag $(DOCKER_DOMAIN_LOCAL)/$(IMAGE_NAME) $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME):$(IMAGE_TAG); \
+		docker tag $(DOCKER_DOMAIN_LOCAL)/$(IMAGE_NAME) $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME); \
 	fi
 
 publish-cos:
