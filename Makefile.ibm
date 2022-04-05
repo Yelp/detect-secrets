@@ -53,8 +53,9 @@ setup-trivy:
 	tar zxvf /tmp/trivy.tar.gz -C $(dir $(TRIVY)) trivy
 
 docker-quality-images:
-	for image_name in $(DOCKER_IMAGES_TAGGED) ; do
-		$(TRIVY) image --exit-code 1 --ignore-unfixed $(DOCKER_DOMAIN_LOCAL)/$*$${image_name}
+	for image_name in $(DOCKER_IMAGES_TAGGED) ; do												\
+		$(TRIVY) image --exit-code 1 --ignore-unfixed $(DOCKER_DOMAIN_LOCAL)/$*$${image_name};  \
+	done																						\
 
 docker-test-images:
 	docker run -it $(DOCKER_DOMAIN_LOCAL)/detect-secrets --version
