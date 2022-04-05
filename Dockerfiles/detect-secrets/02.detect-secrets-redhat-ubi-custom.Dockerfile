@@ -1,4 +1,4 @@
-FROM git-defenders/detect-secrets-redhat-ubi
+FROM git-defenders/detect-secrets:redhat-ubi
 
 COPY scripts/run-in-pipeline.sh /
 
