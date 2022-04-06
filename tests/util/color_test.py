@@ -23,7 +23,7 @@ def expect_disabled(text: str):
         assert colorize(text, color) == text
 
 
-def test_colorize_1(monkeypatch):
+def test_colorize_enabled_terminal_disabled_piped(monkeypatch):
     monkeypatch.setenv('CLICOLOR', '1')
 
     if stdout.isatty():
@@ -32,13 +32,13 @@ def test_colorize_1(monkeypatch):
         expect_disabled('abc')
 
 
-def test_colorize_2(monkeypatch):
+def test_colorize_enabled_force(monkeypatch):
     monkeypatch.setenv('CLICOLOR_FORCE', '1')
 
     expect_enabled('abc')
 
 
-def test_colorize_3(monkeypatch):
+def test_colorize_disabled(monkeypatch):
     monkeypatch.setenv('CLICOLOR', '0')
 
     expect_disabled('abc')
