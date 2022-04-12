@@ -1,4 +1,4 @@
-attrs==21.2.0
+attrs==21.4.0
 backports.entry-points-selectable==1.1.1
 certifi==2021.10.8
 cfgv==3.2.0
