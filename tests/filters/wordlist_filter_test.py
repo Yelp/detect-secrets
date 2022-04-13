@@ -1,6 +1,9 @@
+from pathlib import Path
+
 import pytest
 
 from detect_secrets import filters
+from detect_secrets.filters.util import compute_file_hash
 from detect_secrets.settings import get_settings
 from detect_secrets.settings import transient_settings
 
@@ -17,6 +20,9 @@ class TestShouldExcludeSecret:
 
     @staticmethod
     def test_success():
+        # Compute file_hash manually due to file path operating system differences
+        file_hash = compute_file_hash(Path('test_data/word_list.txt'))
+
         # case-insensitivity
         assert filters.wordlist.should_exclude_secret('testPass') is True
 
@@ -25,9 +31,7 @@ class TestShouldExcludeSecret:
 
         assert get_settings().filters['detect_secrets.filters.wordlist.should_exclude_secret'] == {
             'min_length': 8,
-
-            # Manually computed with `sha1sum test_data/word_list.txt`
-            'file_hash': '116598304e5b33667e651025bcfed6b9a99484c7',
+            'file_hash': file_hash,
             'file_name': 'test_data/word_list.txt',
         }
 

@@ -1,6 +1,5 @@
 import random
 import string
-import tempfile
 import textwrap
 from contextlib import contextmanager
 
@@ -14,6 +13,7 @@ from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.plugins.basic_auth import BasicAuthDetector
 from detect_secrets.plugins.jwt import JwtTokenDetector
 from detect_secrets.settings import transient_settings
+from testing.mocks import mock_named_temporary_file
 
 
 url_format = 'http://username:{}@www.example.com/auth'
@@ -166,7 +166,7 @@ def count_results(data):
 
 @contextmanager
 def create_file_with_content(content):
-    with tempfile.NamedTemporaryFile() as f:
+    with mock_named_temporary_file() as f:
         f.write(content.encode())
         f.seek(0)
         yield f.name
@@ -187,7 +187,7 @@ def baseline_file():
 
     with create_file_with_content(first_content) as first_file, \
             create_file_with_content(second_content) as second_file, \
-            tempfile.NamedTemporaryFile() as baseline_file, \
+            mock_named_temporary_file() as baseline_file, \
             transient_settings({
                 'plugins_used': [
                     {'name': 'BasicAuthDetector'},

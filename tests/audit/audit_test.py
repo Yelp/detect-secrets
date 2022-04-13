@@ -1,6 +1,5 @@
 import json
 import random
-import tempfile
 from typing import List
 from typing import Optional
 from unittest import mock
@@ -12,6 +11,7 @@ from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.main import main
 from detect_secrets.settings import transient_settings
 from testing.factories import potential_secret_factory
+from testing.mocks import mock_named_temporary_file
 
 
 def test_nothing_to_audit(printer):
@@ -166,7 +166,7 @@ def run_logic(
     :param input: if provided, will automatically quit at the end of input string.
         otherwise, will assert that no user input is requested.
     """
-    with tempfile.NamedTemporaryFile() as f:
+    with mock_named_temporary_file() as f:
         baseline.save_to_file(secrets, f.name)
         f.seek(0)
 

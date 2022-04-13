@@ -1,4 +1,3 @@
-import tempfile
 import uuid
 
 import pytest
@@ -10,11 +9,12 @@ from detect_secrets.core.usage import ParserBuilder
 from detect_secrets.settings import default_settings
 from detect_secrets.settings import get_settings
 from detect_secrets.settings import transient_settings
+from testing.mocks import mock_named_temporary_file
 
 
 def test_no_verify_overrides_baseline_settings(parser):
     secrets = SecretsCollection()
-    with tempfile.NamedTemporaryFile() as f, transient_settings({
+    with mock_named_temporary_file() as f, transient_settings({
         'filters_used': [{
             'path': 'detect_secrets.filters.common.is_ignored_due_to_verification_policies',
             'min_level': VerifiedResult.UNVERIFIED.value,
@@ -30,7 +30,7 @@ def test_no_verify_overrides_baseline_settings(parser):
 
 def test_only_verified_overrides_baseline_settings(parser):
     secrets = SecretsCollection()
-    with tempfile.NamedTemporaryFile() as f, transient_settings({
+    with mock_named_temporary_file() as f, transient_settings({
         'filters_used': [{
             'path': 'detect_secrets.filters.common.is_ignored_due_to_verification_policies',
             'min_level': VerifiedResult.UNVERIFIED.value,
@@ -134,7 +134,7 @@ class TestCustomFilters:
 
 
 def test_disable_filter(parser):
-    with tempfile.NamedTemporaryFile() as f:
+    with mock_named_temporary_file() as f:
         f.write(f'secret = "{uuid.uuid4()}"'.encode())
 
         # First, make sure that we actually catch it.
