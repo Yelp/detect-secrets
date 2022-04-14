@@ -21,7 +21,7 @@ DOCKER_PASS_DOCKERHUB := $(DOCKER_HUB_API_KEY)
 
 DOCKER_IMAGES := detect-secrets detect-secrets-hook
 DOCKER_IMAGES_TAGGED := detect-secrets detect-secrets:redhat-ubi detect-secrets:redhat-ubi-custom detect-secrets-hook
-DOCKER_REGISTRIES := $(DOCKER_REGISTRY_ART) $(DOCKER_REGISTRY_DOCKERHUB)
+DOCKER_REGISTRIES := $(DOCKER_REGISTRY_ICR) $(DOCKER_REGISTRY_ART) $(DOCKER_REGISTRY_DOCKERHUB)
 
 IMAGE_NAME :=
 DOCKER_REGISTRY :=
@@ -75,6 +75,7 @@ docker-build-images:
 docker-login:
 	@echo $(DOCKER_PASS_DOCKERHUB) | docker login -u $(DOCKER_USER_DOCKERHUB) --password-stdin;
 	@echo $(DOCKER_PASS_ART) | docker login -u $(DOCKER_USER_ART) --password-stdin $(DOCKER_REGISTRY_ART);
+	@echo $(DOCKER_PASS_ICR) | docker login -u $(DOCKER_USER_ICR) --password-stdin $(DOCKER_REGISTRY_ICR);
 
 docker-publish-images: docker-login
 	for image_name in $(DOCKER_IMAGES_TAGGED) ; do                                             \
