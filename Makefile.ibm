@@ -19,8 +19,9 @@ DOCKER_REGISTRY_DOCKERHUB := registry.hub.docker.com
 DOCKER_USER_DOCKERHUB := $(DOCKER_HUB_USERNAME)
 DOCKER_PASS_DOCKERHUB := $(DOCKER_HUB_API_KEY)
 
-DOCKER_IMAGES := detect-secrets detect-secrets-hook
-DOCKER_IMAGES_TAGGED := detect-secrets detect-secrets:redhat-ubi detect-secrets:redhat-ubi-custom detect-secrets-hook
+DOCKER_IMAGES_TO_TAG := detect-secrets detect-secrets-hook
+DOCKER_IMAGES_TO_SCAN := detect-secrets detect-secrets-hook detect-secrets:redhat-ubi detect-secrets:redhat-ubi-custom
+DOCKER_IMAGES_TO_PUBLISH :=
 DOCKER_REGISTRIES := $(DOCKER_REGISTRY_ICR) $(DOCKER_REGISTRY_ART) $(DOCKER_REGISTRY_DOCKERHUB)
 
 IMAGE_NAME :=
@@ -53,7 +54,7 @@ setup-trivy:
 	tar zxvf /tmp/trivy.tar.gz -C $(dir $(TRIVY)) trivy
 
 docker-quality-images:
-	for image_name in $(DOCKER_IMAGES_TAGGED) ; do												\
+	for image_name in $(DOCKER_IMAGES_TO_SCAN) ; do												\
 		$(TRIVY) image --exit-code 1 --ignore-unfixed $(DOCKER_DOMAIN_LOCAL)/$*$${image_name};  \
 	done																						\
 
@@ -78,11 +79,25 @@ docker-login:
 	@echo $(DOCKER_PASS_ICR) | docker login -u $(DOCKER_USER_ICR) --password-stdin $(DOCKER_REGISTRY_ICR);
 
 docker-publish-images: docker-login
-	for image_name in $(DOCKER_IMAGES_TAGGED) ; do                                             \
-		for registry in $(DOCKER_REGISTRIES) ; do                                         	   \
-			$(MAKE) docker-publish-image                                              		   \
-			IMAGE_NAME=$${image_name} DOCKER_REGISTRY=$${registry}; 						   \
-		done                                                                              	   \
+	# Tagged UBI images in special way (since they are pre-tagged); these will be the frozen versions for UBI images
+	if [ -n "$(TRAVIS_TAG)" ]; then \
+		docker tag $(DOCKER_DOMAIN_LOCAL)/detect-secrets:redhat-ubi $(DOCKER_DOMAIN_LOCAL)/detect-secrets:$(subst +,.,$(TRAVIS_TAG))-redhat-ubi ;  \
+		docker tag $(DOCKER_DOMAIN_LOCAL)/detect-secrets:redhat-ubi-custom $(DOCKER_DOMAIN_LOCAL)/detect-secrets:$(subst +,.,$(TRAVIS_TAG))-redhat-ubi-custom ;  \
+	fi
+
+	# Tagged non-UBI images with tags specificied within deploy target based each deploy type
+	for image_name in $(DOCKER_IMAGES_TO_TAG) ; do   \
+		for image_tag in $(IMAGE_TAGS) ; do   \
+			docker tag $(DOCKER_DOMAIN_LOCAL)/$${image_name} $(DOCKER_DOMAIN_LOCAL)/$${image_name}:$${image_tag} ;  \
+		done  \
+	done
+
+	# Publish images to the different Registries; publish list is built within deploy target
+	for image_name in $(DOCKER_IMAGES_TO_PUBLISH) ; do  \
+		for registry in $(DOCKER_REGISTRIES) ; do   \
+			$(MAKE) docker-publish-image    \
+			IMAGE_NAME=$${image_name} DOCKER_REGISTRY=$${registry}; \
+		done   \
 	done
 
 docker-publish-image:
@@ -116,18 +131,29 @@ release:
 	fi
 
 deploy:
-	# TRAVIS_TAG needs to be replaced with . to avoid docker tag warning
+	# TRAVIS_TAG, ex: 0.13.1+ibm.46.dss, the + needs to be replaced with . to avoid docker tag warning
 	if [ -n "$(TRAVIS_TAG)" ]; then \
-		$(MAKE) docker-publish-images push-tag publish-cos IMAGE_TAGS="$(subst +,.,$(TRAVIS_TAG))"; \
+		$(MAKE) docker-publish-images push-tag publish-cos IMAGE_TAGS="$(subst +,.,$(TRAVIS_TAG))" \
+		DOCKER_IMAGES_TO_PUBLISH="detect-secrets:$(subst +,.,$(TRAVIS_TAG)) \
+		                      	  detect-secrets-hook:$(subst +,.,$(TRAVIS_TAG)) \
+								  detect-secrets:$(subst +,.,$(TRAVIS_TAG))-redhat-ubi \
+								  detect-secrets:$(subst +,.,$(TRAVIS_TAG))-redhat-ubi-custom" ; \
 	fi
 
+	# DEBUG_IMAGE_TAG, ex: master-420-id-248741968-time-1648742240
 	if [ "$(TRAVIS_BRANCH)" == "master" ]; then \
-		$(MAKE) docker-publish-images sync-branches IMAGE_TAGS="latest $(DEBUG_IMAGE_TAG)"; \
+		$(MAKE) docker-publish-images sync-branches IMAGE_TAGS="$(DEBUG_IMAGE_TAG)" \
+		DOCKER_IMAGES_TO_PUBLISH="detect-secrets detect-secrets-hook \
+		                      	  detect-secrets:redhat-ubi detect-secrets:redhat-ubi-custom \
+							  	  detect-secrets:$(DEBUG_IMAGE_TAG) detect-secrets-hook:$(DEBUG_IMAGE_TAG)" ; \
 		$(MAKE) release; \
 	fi
 
+	# DEBUG_IMAGE_TAG, ex: dss-416-id-248693152-time-1648674570
 	if [ "$(TRAVIS_BRANCH)" == "dss" ]; then \
-		$(MAKE) docker-publish-images IMAGE_TAGS="dss-latest $(DEBUG_IMAGE_TAG)"; \
+		$(MAKE) docker-publish-images IMAGE_TAGS="dss-latest $(DEBUG_IMAGE_TAG)" \
+		DOCKER_IMAGES_TO_PUBLISH="detect-secrets:$(DEBUG_IMAGE_TAG) detect-secrets-hook:$(DEBUG_IMAGE_TAG) \
+							  	  detect-secrets:dss-latest detect-secrets-hook:dss-latest" ; \
 	fi
 
 push-tag:
