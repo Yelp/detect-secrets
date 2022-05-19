@@ -1,4 +1,3 @@
-import itertools
 from typing import Generator
 from typing import List
 
