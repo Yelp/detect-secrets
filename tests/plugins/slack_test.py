@@ -36,6 +36,9 @@ class TestSlackDetector:
             (
                 'https://hooks.slack.com/services/Txxxxxxxx/Bxxxxxxxxxx/xxxxxxxxxxxxxxxxxxxxxxxx'
             ),
+            (
+                'https://hooks.slack.com/services/Txxxxxxxxxx/Bxxxxxxxxxx/xxxxxxxxxxxxxxxxxxxxxxxx'
+            ),
         ],
     )
     def test_analyze(self, file_content):
