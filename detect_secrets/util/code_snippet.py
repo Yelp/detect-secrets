@@ -27,7 +27,7 @@ def get_code_snippet(
         target_line_index = lines_of_context
 
     return CodeSnippet(
-        snippet=list(itertools.islice(lines, start_line_index, end_line_index)),
+        snippet=lines[start_line_index:end_line_index],
         start_line=start_line_index,
         target_index=target_line_index,
     )
