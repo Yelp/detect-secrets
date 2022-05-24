@@ -13,5 +13,5 @@ class NpmDetector(RegexBasedDetector):
     denylist = [
         # npmrc authToken
         # ref. https://stackoverflow.com/questions/53099434/using-auth-tokens-in-npmrc
-        re.compile(r'\/\/.+\/:_authToken=.+'),
+        re.compile(r'\/\/.+\/:_authToken=\s*((npm_.+)|([A-Fa-f0-9-]{36})).*'),
     ]
