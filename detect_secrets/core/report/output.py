@@ -219,7 +219,15 @@ def print_summary(
         )
         if omit_instructions is False:
             print(
-                '\t\tRun detect-secrets audit {}, and audit all potential secrets.\n'.format(
+                '\t\tRun detect-secrets audit {}, and audit all potential secrets.'
+                ' It is recommended to configure the pre-commit hook (https://'
+                'github.com/IBM/detect-secrets/blob/master/docs/developer-tool-faq'
+                'md#how-do-i-set-up-the-pre-commit-hook). It automatically scans'
+                ' your code for secrets and blocks local commits if potential'
+                'secrets are found. The --fail-on-unaudited option can be added to'
+                'prevent unaudited secrets from being committed locally (https://'
+                'github.com/IBM/detect-secrets/blob/master/docs/cheat-sheet'
+                'md#fail-pre-commit-if-there-are-non-audited-entries).\n'.format(
                     baseline_filename,
                 ),
             )
