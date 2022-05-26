@@ -219,18 +219,19 @@ def print_summary(
         )
         if omit_instructions is False:
             print(
-                '\t\tRun detect-secrets audit {}, and audit all potential secrets.'
-                '\n\n\t\tIt is recommended to configure the pre-commit hook for your project:'
-                ' https://github.com/IBM/detect-secrets/blob/master/docs/developer-tool-faq'
-                'md#how-do-i-set-up-the-pre-commit-hook. It will automatically scan'
-                ' your code for secrets and blocks local commits if potential'
-                ' secrets are found.'
-                '\n\n\t\tThe --fail-on-unaudited option can be added to'
-                ' prevent unaudited secrets from being committed locally (https://'
-                'github.com/IBM/detect-secrets/blob/master/docs/cheat-sheet'
-                'md#fail-pre-commit-if-there-are-non-audited-entries).\n'.format(
+                '\t\tRun detect-secrets audit {}, and audit all potential secrets.'.format(
                     baseline_filename,
-                ),
+                ) +
+                '\n\n\t\tIt is recommended to configure the pre-commit hook for your project:',
+                'https://github.com/IBM/detect-secrets/blob/master/docs/developer-tool-faq'
+                'md#how-do-i-set-up-the-pre-commit-hook - it automatically scans',
+                'your code for secrets and blocks local commits if potential',
+                'secrets are found.'
+                '\n\n\t\tThe --fail-on-unaudited option can be added to',
+                'your pre-commit config file to prevent unaudited secrets',
+                'from being committed locally:',
+                'https://github.com/IBM/detect-secrets/blob/master/docs/'
+                'cheat-sheetmd#fail-pre-commit-if-there-are-non-audited-entries\n',
             )
     if fail_on_live and live_return_code != 0:
         print(
