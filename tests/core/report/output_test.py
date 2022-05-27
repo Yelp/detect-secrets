@@ -881,7 +881,7 @@ Audited as real     Test Type      filenameB       60\n"""
             ' your pre-commit config file to prevent unaudited secrets',
             ' from being committed locally:',
             ' https://github.com/IBM/detect-secrets/blob/master/docs/',
-            'cheat-sheetmd#fail-pre-commit-if-there-are-non-audited-entries\n',
+            'cheat-sheetmd#fail-pre-commit-if-there-are-unaudited-entries\n',
             colorize('\t- Live secrets were found', AnsiColor.BOLD),
             '\n\t\tRevoke all live secrets and remove them from the codebase.'
             ' Afterwards, run detect-secrets scan --update {} to re-scan.\n'.format(
@@ -1053,7 +1053,7 @@ Audited as real     Test Type      filenameB       60\n"""
             ' your pre-commit config file to prevent unaudited secrets',
             ' from being committed locally:',
             ' https://github.com/IBM/detect-secrets/blob/master/docs/',
-            'cheat-sheetmd#fail-pre-commit-if-there-are-non-audited-entries\n',
+            'cheat-sheetmd#fail-pre-commit-if-there-are-unaudited-entries\n',
             '\nFor additional help, run detect-secrets audit --help.\n',
         )
 

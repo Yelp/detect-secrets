@@ -231,7 +231,7 @@ def print_summary(
                 'your pre-commit config file to prevent unaudited secrets',
                 'from being committed locally:',
                 'https://github.com/IBM/detect-secrets/blob/master/docs/'
-                'cheat-sheetmd#fail-pre-commit-if-there-are-non-audited-entries\n',
+                'cheat-sheetmd#fail-pre-commit-if-there-are-unaudited-entries\n',
             )
     if fail_on_live and live_return_code != 0:
         print(
