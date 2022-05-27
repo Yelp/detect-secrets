@@ -113,7 +113,7 @@ def main(argv=None):
         pretty_print_diagnostics_for_verified_non_audited(verified_non_audited)
         return 2
 
-    # check if there are non-audited secrets
+    # check if there are unaudited secrets
     if args.fail_on_unaudited:
         non_audited = get_non_audited_secrets_from_baseline(
             baseline_collection,

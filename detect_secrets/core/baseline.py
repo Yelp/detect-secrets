@@ -104,7 +104,7 @@ def get_secrets_from_baseline(baseline, filter_func=lambda secret: True):
                         return all secrets
 
     :rtype: SecretsCollection
-    :returns: SecretsCollection of non-audited results
+    :returns: SecretsCollection of unaudited results
     """
     if not isinstance(filter_func, types.FunctionType):
         return baseline
@@ -131,7 +131,7 @@ def get_verified_non_audited_secrets_from_baseline(baseline):
                      This will be updated accordingly (by reference)
 
     :rtype: SecretsCollection
-    :returns: SecretsCollection of non-audited and verified results
+    :returns: SecretsCollection of unaudtied and verified results
     """
     return get_secrets_from_baseline(
         baseline, lambda secret:
@@ -146,7 +146,7 @@ def get_non_audited_secrets_from_baseline(baseline):
                      This will be updated accordingly (by reference)
 
     :rtype: SecretsCollection
-    :returns: SecretsCollection of non-audited results
+    :returns: SecretsCollection of unaudtied results
     """
     return get_secrets_from_baseline(
         baseline, lambda secret:
