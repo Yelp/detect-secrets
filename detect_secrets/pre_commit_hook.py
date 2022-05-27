@@ -3,9 +3,9 @@ import sys
 import textwrap
 
 from detect_secrets import VERSION
-from detect_secrets.core.baseline import get_non_audited_secrets_from_baseline
 from detect_secrets.core.baseline import get_secrets_not_in_baseline
-from detect_secrets.core.baseline import get_verified_non_audited_secrets_from_baseline
+from detect_secrets.core.baseline import get_unaudited_secrets_from_baseline
+from detect_secrets.core.baseline import get_verified_unaudited_secrets_from_baseline
 from detect_secrets.core.baseline import trim_baseline_of_removed_secrets
 from detect_secrets.core.common import write_baseline_to_file
 from detect_secrets.core.log import get_logger
@@ -105,22 +105,22 @@ def main(argv=None):
         return 3
 
     # check if there are verified but haven't been audited secrets
-    verified_non_audited = get_verified_non_audited_secrets_from_baseline(
+    verified_unaudited = get_verified_unaudited_secrets_from_baseline(
         baseline_collection,
     )
 
-    if len(verified_non_audited.data) > 0:
-        pretty_print_diagnostics_for_verified_non_audited(verified_non_audited)
+    if len(verified_unaudited.data) > 0:
+        pretty_print_diagnostics_for_verified_unaudited(verified_unaudited)
         return 2
 
     # check if there are unaudited secrets
     if args.fail_on_unaudited:
-        non_audited = get_non_audited_secrets_from_baseline(
+        unaudited = get_unaudited_secrets_from_baseline(
             baseline_collection,
         )
 
-        if len(non_audited.data) > 0:
-            pretty_print_diagnostics_for_non_audited(non_audited)
+        if len(unaudited.data) > 0:
+            pretty_print_diagnostics_for_unaudited(unaudited)
             return 4
 
     return 0
@@ -210,7 +210,7 @@ def find_secrets_in_files(args, plugins):
     return collection
 
 
-def pretty_print_diagnostics_for_verified_non_audited(secrets):
+def pretty_print_diagnostics_for_verified_unaudited(secrets):
     """Prints a helpful error message for existed verified and non audited secrets
 
     :type secrets: SecretsCollection
@@ -232,7 +232,7 @@ def pretty_print_diagnostics_for_verified_non_audited(secrets):
     _print_warning_footer()
 
 
-def pretty_print_diagnostics_for_non_audited(secrets):
+def pretty_print_diagnostics_for_unaudited(secrets):
     """Prints a helpful error message for existed non audited secrets
 
     :type secrets: SecretsCollection

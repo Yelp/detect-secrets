@@ -124,7 +124,7 @@ def get_secrets_from_baseline(baseline, filter_func=lambda secret: True):
     return new_secrets
 
 
-def get_verified_non_audited_secrets_from_baseline(baseline):
+def get_verified_unaudited_secrets_from_baseline(baseline):
     """
     :type baseline: SecretsCollection
     :param baseline: SecretsCollection of baseline results.
@@ -139,7 +139,7 @@ def get_verified_non_audited_secrets_from_baseline(baseline):
     )
 
 
-def get_non_audited_secrets_from_baseline(baseline):
+def get_unaudited_secrets_from_baseline(baseline):
     """
     :type baseline: SecretsCollection
     :param baseline: SecretsCollection of baseline results.
