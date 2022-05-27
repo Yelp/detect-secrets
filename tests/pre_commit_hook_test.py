@@ -96,19 +96,19 @@ class TestPreCommitHook:
                 True, False, None, True, '--baseline will_be_mocked '
                 + '--use-all-plugins test_data/files/file_with_no_secrets.py', 2,
             ),
-            # fail when clean file non audited secret with fail-on-unaudtied option
+            # fail when clean file non audited secret with fail-on-unaudited option
             (
                 True, False, None, None, '--baseline will_be_mocked '
                 + '--use-all-plugins test_data/files/file_with_no_secrets.py '
                 + '--fail-on-unaudited', 4,
             ),
-            # pass when clean file no non audited secret with fail-on-unaudtied option
+            # pass when clean file no non audited secret with fail-on-unaudited option
             (
                 True, False, True, None, '--baseline will_be_mocked '
                 + '--use-all-plugins test_data/files/file_with_no_secrets.py '
                 + '--fail-on-unaudited', 0,
             ),
-            # pass when clean file non audited secret without fail-on-unaudtied option
+            # pass when clean file non audited secret without fail-on-unaudited option
             (
                 True, False, None, None, '--baseline will_be_mocked '
                 + '--use-all-plugins test_data/files/file_with_no_secrets.py', 0,

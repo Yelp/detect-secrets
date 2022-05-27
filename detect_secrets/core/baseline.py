@@ -131,7 +131,7 @@ def get_verified_non_audited_secrets_from_baseline(baseline):
                      This will be updated accordingly (by reference)
 
     :rtype: SecretsCollection
-    :returns: SecretsCollection of unaudtied and verified results
+    :returns: SecretsCollection of unaudited and verified results
     """
     return get_secrets_from_baseline(
         baseline, lambda secret:
@@ -146,7 +146,7 @@ def get_non_audited_secrets_from_baseline(baseline):
                      This will be updated accordingly (by reference)
 
     :rtype: SecretsCollection
-    :returns: SecretsCollection of unaudtied results
+    :returns: SecretsCollection of unaudited results
     """
     return get_secrets_from_baseline(
         baseline, lambda secret:
