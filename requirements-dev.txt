@@ -1,4 +1,3 @@
-# coveragepy==5.0 fails with `Safety level may not be changed inside a transaction
 # on python 3.6.0 (xenial)
 pip>=21.1
 urllib3>=1.26.4
@@ -17,5 +16,4 @@ responses
 ibm_db
 boxsdk[jwt]
 pyahocorasick
-safety
 tabulate

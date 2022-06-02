@@ -53,6 +53,16 @@ setup-trivy:
 	curl -sSfL https://github.com/aquasecurity/trivy/releases/download/v$(TRIVY_VERSION)/trivy_$(TRIVY_VERSION)_$(TRIVY_OS)-$(TRIVY_ARCH)bit.tar.gz -o /tmp/trivy.tar.gz
 	tar zxvf /tmp/trivy.tar.gz -C $(dir $(TRIVY)) trivy
 
+trivy-scan-python-vulnerabilities:
+	PIPENV_YES=True # If set, Pipenv automatically assumes “yes” at all prompts. This prevents the build from hanging.
+	PIPENV_IGNORE_VIRTUALENVS=True # Forces Pipenv to ignore the existing virtual environment and create its own instead
+
+	# Generate a Pipfile.lock, Trivy does not auto-detect requirements-dev.txt (https://aquasecurity.github.io/trivy/v0.28.1/docs/vulnerability/detection/language/)
+	./scripts/gen-pipfile.sh > Pipfile
+	pipenv --python `which python3`
+	pipenv lock
+	$(TRIVY) fs --exit-code 1 --ignore-unfixed --security-checks vuln ./
+
 docker-quality-images:
 	for image_name in $(DOCKER_IMAGES_TO_SCAN) ; do												\
 		$(TRIVY) image --exit-code 1 --ignore-unfixed $(DOCKER_DOMAIN_LOCAL)/$*$${image_name};  \
