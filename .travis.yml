@@ -9,7 +9,7 @@ addons:
 deploy:
     - provider: script
       script: >-
-          set -e; make docker-build-images docker-test-images setup-trivy docker-quality-images deploy
+          set -e; make docker-build-images docker-test-images docker-quality-images deploy
       on:
           all_branches: true
           # only build docker image and push once
@@ -21,9 +21,9 @@ matrix:
         # - env: TOXENV=py35
         #   python: 3.5
         - env: TOXENV=py36
-          python: 3.6.10 # We're targeting a specific patch version; if set to 3.6, the GitHub Travis build will use Python 3.6.7 and will fail due to a cryptography installation error
+          python: 3.6.15 # We're targeting a specific patch version; if set to 3.6, the GitHub Travis build will use Python 3.6.7 and will fail due to a cryptography installation error
         - env: TOXENV=py37
-          python: 3.7.11
+          python: 3.7.13
           dist: xenial # Required for Python >= 3.7 (travis-ci/travis-ci#9069), the GitHub Travis build will use Python 3.7.1 by default if you provide 3.7 without a patch version and the build will fail with AttributeError: 'str' object has no attribute 'name'
         - env: TOXENV=py38
           python: 3.8
@@ -34,8 +34,8 @@ before_install:
     - echo -e "machine github.com\n  login $GH_ACCESS_TOKEN" >> ~/.netrc # Login to GitHub
     - echo -e "machine github.ibm.com\n  login $GHE_ACCESS_TOKEN" >> ~/.netrc # Login to GitHub Enterprise
 install:
-    - pip install tox
-script: make test
+    - pip install tox pipenv
+script: make setup-trivy && make trivy-scan-python-vulnerabilities && make test
 cache:
     directories:
         - $HOME/.cache/pre-commit
