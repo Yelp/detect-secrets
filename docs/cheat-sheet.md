@@ -20,7 +20,7 @@
     - [Update baseline](#update-baseline)
     - [Update baseline with all plugins](#update-baseline-with-all-plugins)
     - [Update baseline while skipping some plugins](#update-baseline-while-skipping-some-plugins)
-    - [Fail pre-commit if there are non-audited entries](#fail-pre-commit-if-there-are-non-audited-entries)
+    - [Fail pre-commit if there are unaudited entries](#fail-pre-commit-if-there-are-unaudited-entries)
   - [Husky](#husky)
   - [CLI](#cli)
 
@@ -171,7 +171,7 @@ Supports most options from `detect-secrets scan`
             ]
 ```
 
-#### Fail pre-commit if there are non-audited entries
+#### Fail pre-commit if there are unaudited entries
 
 Fail pre-commit if there are non-auditied entries in baseline file, even if the entries are in files not part of current commit.
 

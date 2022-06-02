@@ -867,11 +867,21 @@ Audited as real     Test Type      filenameB       60\n"""
 
         captured = capsys.readouterr()
 
-        assert captured.out == '\nFailed conditions:\n\n{}\n{}\n{}\n{}\n{}\n{}{}{}\n{}\n'.format(
+        assert captured.out == '\nFailed conditions:\n\n{}\n{}{}{}{}{}{}{}{}{}{}\n{}\n{}\n{}\n{}{}{}\n{}\n'.format(  # noqa: E501
             colorize('\t- Unaudited secrets were found', AnsiColor.BOLD),
             '\n\t\tRun detect-secrets audit {}, and audit all potential secrets.\n'.format(
                 baseline_filename,
             ),
+            '\n\t\tIt is recommended to configure the pre-commit hook for your project:'
+            ' https://github.com/IBM/detect-secrets/blob/master/docs/developer-tool-faq',
+            'md#how-do-i-set-up-the-pre-commit-hook - it automatically scans',
+            ' your code for secrets and blocks local commits if potential',
+            ' secrets are found.',
+            '\n\n\t\tThe --fail-on-unaudited option can be added to',
+            ' your pre-commit config file to prevent unaudited secrets',
+            ' from being committed locally:',
+            ' https://github.com/IBM/detect-secrets/blob/master/docs/',
+            'cheat-sheetmd#fail-pre-commit-if-there-are-unaudited-entries\n',
             colorize('\t- Live secrets were found', AnsiColor.BOLD),
             '\n\t\tRevoke all live secrets and remove them from the codebase.'
             ' Afterwards, run detect-secrets scan --update {} to re-scan.\n'.format(
@@ -1029,11 +1039,21 @@ Audited as real     Test Type      filenameB       60\n"""
 
         captured = capsys.readouterr()
 
-        assert captured.out == '\nFailed conditions:\n\n{}\n{}\n{}\n'.format(
+        assert captured.out == '\nFailed conditions:\n\n{}\n{}\n{}{}{}{}{}{}{}{}{}{}\n'.format(
             colorize('\t- Unaudited secrets were found', AnsiColor.BOLD),
             '\n\t\tRun detect-secrets audit {}, and audit all potential secrets.'.format(
                 baseline_filename,
             ),
+            '\n\t\tIt is recommended to configure the pre-commit hook for your project:'
+            ' https://github.com/IBM/detect-secrets/blob/master/docs/developer-tool-faq',
+            'md#how-do-i-set-up-the-pre-commit-hook - it automatically scans',
+            ' your code for secrets and blocks local commits if potential',
+            ' secrets are found.',
+            '\n\n\t\tThe --fail-on-unaudited option can be added to',
+            ' your pre-commit config file to prevent unaudited secrets',
+            ' from being committed locally:',
+            ' https://github.com/IBM/detect-secrets/blob/master/docs/',
+            'cheat-sheetmd#fail-pre-commit-if-there-are-unaudited-entries\n',
             '\nFor additional help, run detect-secrets audit --help.\n',
         )
 

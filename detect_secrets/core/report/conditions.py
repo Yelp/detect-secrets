@@ -13,7 +13,7 @@ def fail_on_unaudited(baseline_filename: str) -> ReportCheckResult:
     value.
     """
     secrets = get_secrets_list_from_file(baseline_filename)
-    non_audited_secrets = []
+    unaudited_secrets = []
 
     for filename, secret in secrets:
         if 'is_secret' not in secret or secret['is_secret'] is None:
@@ -24,10 +24,10 @@ def fail_on_unaudited(baseline_filename: str) -> ReportCheckResult:
                 'type': secret['type'],
             }
 
-            non_audited_secrets.append(unaudited_secret)
+            unaudited_secrets.append(unaudited_secret)
 
-    if len(non_audited_secrets) > 0:
-        return ReportCheckResult(ReportExitCode.FAIL.value, non_audited_secrets)
+    if len(unaudited_secrets) > 0:
+        return ReportCheckResult(ReportExitCode.FAIL.value, unaudited_secrets)
 
     return ReportCheckResult(ReportExitCode.PASS.value, [])
 
