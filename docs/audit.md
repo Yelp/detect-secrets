@@ -338,9 +338,9 @@ Failed conditions:
 
                 Run detect-secrets audit .secrets.baseline, and audit all potential secrets.
 
-                It is recommended to configure the pre-commit hook for your project: https://github.com/IBM/detect-secrets/blob/master/docs/developer-tool-faqmd#how-do-i-set-up-the-pre-commit-hook - it automatically scans your code for secrets and blocks local commits if potential secrets are found.
+                It is recommended to configure the pre-commit hook for your project: https://github.com/IBM/detect-secrets/blob/master/docs/developer-tool-faq.md#how-do-i-set-up-the-pre-commit-hook - it automatically scans your code for secrets and blocks local commits if potential secrets are found.
 
-                The --fail-on-unaudited option can be added to your pre-commit config file to prevent unaudited secrets from being committed locally: https://github.com/IBM/detect-secrets/blob/master/docs/cheat-sheetmd#fail-pre-commit-if-there-are-unaudited-entries
+                The --fail-on-unaudited option can be added to your pre-commit config file to prevent unaudited secrets from being committed locally: https://github.com/IBM/detect-secrets/blob/master/docs/cheat-sheet.md#fail-pre-commit-if-there-are-unaudited-entries
 
         - Live secrets were found
 
@@ -415,9 +415,9 @@ Failed conditions:
 
                 Run detect-secrets audit .secrets.baseline, and audit all potential secrets.
 
-                It is recommended to configure the pre-commit hook for your project: https://github.com/IBM/detect-secrets/blob/master/docs/developer-tool-faqmd#how-do-i-set-up-the-pre-commit-hook - it automatically scans your code for secrets and blocks local commits if potential secrets are found.
+                It is recommended to configure the pre-commit hook for your project: https://github.com/IBM/detect-secrets/blob/master/docs/developer-tool-faq.md#how-do-i-set-up-the-pre-commit-hook - it automatically scans your code for secrets and blocks local commits if potential secrets are found.
 
-                The --fail-on-unaudited option can be added to your pre-commit config file to prevent unaudited secrets from being committed locally: https://github.com/IBM/detect-secrets/blob/master/docs/cheat-sheetmd#fail-pre-commit-if-there-are-unaudited-entries
+                The --fail-on-unaudited option can be added to your pre-commit config file to prevent unaudited secrets from being committed locally: https://github.com/IBM/detect-secrets/blob/master/docs/cheat-sheet.md#fail-pre-commit-if-there-are-unaudited-entries
 
         - Live secrets were found
 
