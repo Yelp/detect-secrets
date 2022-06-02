@@ -19,7 +19,7 @@ class SlackDetector(RegexBasedDetector):
         # Slack Webhooks
         re.compile(
             r"""
-            https://hooks.slack.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8,10}/[a-zA-Z0-9_]{24}
+            https://hooks.slack.com/services/T[a-zA-Z0-9_]+/B[a-zA-Z0-9_]+/[a-zA-Z0-9_]+
             """,
             flags=re.IGNORECASE | re.VERBOSE,
         ),
