@@ -253,8 +253,9 @@ If the false positive hits are overwhelming, you can tune the tool in several wa
 Detect Secrets supports regex-based file and folder exclusions. The excludes file list will be recorded in the outputted baseline file. In future scans, if no `--exclude-files` option is provided, the existing exclude list in the baseline file will be respected. If a new exclude list is supplied through the command line, it will overwrite the existing exclude list in the baseline file.
 
 ```sh
-detect-secrets scan --exclude-files '<folder_to_ignore>|<file_to_ignore>'
+detect-secrets scan --update .secrets.baseline --exclude-files '<folder_to_ignore>|<file_to_ignore>'
 ```
+Example: `detect-secrets scan --update .secrets.baseline --exclude-files "package-lock.json"`
 
 #### Tune the threshold for the entropy based scanner
 
