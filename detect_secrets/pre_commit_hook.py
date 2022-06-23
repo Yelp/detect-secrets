@@ -34,7 +34,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         new_secrets = secrets - args.baseline
 
     if new_secrets:
-        if args.json:            
+        if args.json:
             print(json.dumps(baseline.format_for_output(new_secrets), indent=2))
         else:
             pretty_print_diagnostics(new_secrets)

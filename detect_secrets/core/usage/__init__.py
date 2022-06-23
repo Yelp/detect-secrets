@@ -94,7 +94,7 @@ class ParserBuilder:
         self._parser.add_argument(
             '--json',
             action='store_true',
-            help='Print detect-secrets-hook output as JSON'
+            help='Print detect-secrets-hook output as JSON',
         )
         self.add_baseline_options(
             help=(
