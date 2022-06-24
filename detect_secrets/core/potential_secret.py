@@ -1,4 +1,5 @@
 import hashlib
+import os
 from typing import Any
 from typing import Dict
 from typing import Optional
@@ -75,7 +76,7 @@ class PotentialSecret:
         """Custom JSON decoder"""
         kwargs: Dict[str, Any] = {
             'type': str(data['type']),
-            'filename': str(data['filename']),
+            'filename': str(os.path.normpath(data['filename'])),
             'secret': 'will be replaced',
         }
 

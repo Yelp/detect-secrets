@@ -40,7 +40,7 @@ class SecretsCollection:
         for filename in baseline['results']:
             for item in baseline['results'][filename]:
                 secret = PotentialSecret.load_secret_from_dict({'filename': filename, **item})
-                output[filename].add(secret)
+                output[os.path.normpath(filename)].add(secret)
 
         return output
 
