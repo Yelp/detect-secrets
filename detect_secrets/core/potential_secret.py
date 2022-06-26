@@ -1,5 +1,4 @@
 import hashlib
-import os
 from typing import Any
 from typing import Dict
 from typing import Optional
@@ -7,6 +6,7 @@ from typing import Union
 
 from ..util.color import AnsiColor
 from ..util.color import colorize
+from ..util.path import convert_local_os_path
 
 
 class PotentialSecret:
@@ -76,7 +76,7 @@ class PotentialSecret:
         """Custom JSON decoder"""
         kwargs: Dict[str, Any] = {
             'type': str(data['type']),
-            'filename': str(os.path.normpath(data['filename'])),
+            'filename': str(convert_local_os_path(data['filename'])),
             'secret': 'will be replaced',
         }
 

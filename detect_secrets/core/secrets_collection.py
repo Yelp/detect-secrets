@@ -10,6 +10,7 @@ from typing import Set
 from typing import Tuple
 
 from . import scan
+from ..util.path import convert_local_os_path
 from .potential_secret import PotentialSecret
 from detect_secrets.settings import configure_settings_from_baseline
 from detect_secrets.settings import get_settings
@@ -40,7 +41,7 @@ class SecretsCollection:
         for filename in baseline['results']:
             for item in baseline['results'][filename]:
                 secret = PotentialSecret.load_secret_from_dict({'filename': filename, **item})
-                output[os.path.normpath(filename)].add(secret)
+                output[convert_local_os_path(filename)].add(secret)
 
         return output
 
