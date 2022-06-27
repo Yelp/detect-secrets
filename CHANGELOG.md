@@ -287,7 +287,7 @@ the ["User Facing Changes"](https://github.com/Yelp/detect-secrets/pull/355) for
 
 #### :bug: Bugfixes
 
-- Display helpful eror message when scanning a baseline from a newer `detect-secrets` version ([#293], [#269])
+- Display helpful error message when scanning a baseline from a newer `detect-secrets` version ([#293], [#269])
 
 #### :snake: Miscellaneous
 
