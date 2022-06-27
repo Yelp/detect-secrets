@@ -222,7 +222,7 @@ def _display_difference_to_user(
             )
 
         if decision == io.InputOptions.QUIT:
-            io.print_message('Qutting...')
+            io.print_message('Quitting...')
             break
         elif decision == io.InputOptions.BACK:
             iterator.step_back_on_next_iteration()
