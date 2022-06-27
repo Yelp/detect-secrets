@@ -335,7 +335,7 @@ the ["User Facing Changes"](https://github.com/Yelp/detect-secrets/pull/355) for
 - Rationale for the minor version bump:
     - Some accuracy changes that might change baselines significantly
     - @OiCMudkips' first release increases spookiness
-    - It being almost Halloweeen increases spookiness
+    - It being almost Halloween increases spookiness
 
 #### :tada: New Features
 
