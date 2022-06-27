@@ -33,7 +33,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 ##### February 16th, 2022
 
 #### :mega: Release Highlights
-- Continous integration github action added ([#506])
+- Continuous integration github action added ([#506])
 - Release pipeline github action added ([#513])
 
 #### :tada: New Features
