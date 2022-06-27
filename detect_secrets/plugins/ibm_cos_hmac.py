@@ -156,7 +156,7 @@ def query_ibm_cos_hmac(
 
     # create and send the request
     headers = {'x-amz-date': timestamp, 'Authorization': v4auth_header}
-    # the 'requests' package autmatically adds the required 'host' header
+    # the 'requests' package automatically adds the required 'host' header
     request_url = endpoint + standardized_resource + standardized_querystring
 
     request = requests.get(request_url, headers=headers)
