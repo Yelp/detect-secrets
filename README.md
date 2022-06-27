@@ -470,7 +470,7 @@ There are three different strategies we employ to try and find secrets in code:
 
 2. Entropy Detector
 
-   This searches for "secret-looking" strings through a variety of heuristical approaches. This
+   This searches for "secret-looking" strings through a variety of heuristic approaches. This
    is great for non-structured secrets, but may require tuning to adjust the scanning precision.
 
 3. Keyword Detector
