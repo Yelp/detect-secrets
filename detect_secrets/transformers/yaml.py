@@ -70,7 +70,7 @@ class YAMLTransformer(BaseTransformer):
                 comment = matches.group(0)
 
             # YAML does the parsing for us, and the value we'll receive is a string proper
-            # (rather than the raw value, like `ConfigFileTransformer`). We want to artifically
+            # (rather than the raw value, like `ConfigFileTransformer`). We want to artificially
             # add quotes here since we know they are strings, HighEntropyString will benefit
             # from this, and all other plugins don't care.
             #
