@@ -76,7 +76,7 @@ class PotentialSecret:
         """Custom JSON decoder"""
         kwargs: Dict[str, Any] = {
             'type': str(data['type']),
-            'filename': str(convert_local_os_path(data['filename'])),
+            'filename': convert_local_os_path(str(data['filename'])),
             'secret': 'will be replaced',
         }
 
