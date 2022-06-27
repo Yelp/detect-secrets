@@ -211,7 +211,7 @@ the ["User Facing Changes"](https://github.com/Yelp/detect-secrets/pull/355) for
 #### :mortar_board: Walkthrough / Help
 
 - The README now includes examples of common usages, features, and an FAQ section for
-  the common questions we often receive as Github issues.
+  the common questions we often receive as GitHub issues.
 - So much better [technical documentation](./docs)!
 - Type support added
 
