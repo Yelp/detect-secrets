@@ -23,7 +23,7 @@ This way, you create a
 [separation of concern](https://en.wikipedia.org/wiki/Separation_of_concerns):
 accepting that there may *currently* be secrets hiding in your large repository
 (this is what we refer to as a _baseline_), but preventing this issue from getting any larger,
-without dealing with the potentially gargantuous effort of moving existing secrets away.
+without dealing with the potentially gargantuan effort of moving existing secrets away.
 
 It does this by running periodic diff outputs against heuristically crafted regex statements,
 to identify whether any *new* secret has been committed. This way, it avoids the overhead of
