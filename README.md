@@ -443,7 +443,7 @@ reporting:
 
 analytics:
   Quantify the success of your plugins based on the labelled results in your
-  baseline. To be used with the statisitcs mode (--stats).
+  baseline. To be used with the statistics mode (--stats).
 
   --json        Outputs results in a machine-readable format.
 ```
