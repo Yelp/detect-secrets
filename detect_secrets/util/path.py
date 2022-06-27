@@ -18,7 +18,7 @@ def get_relative_path_if_in_cwd(path: str) -> Optional[str]:
     return None
 
 
-def convert_local_os_path(path: str):
+def convert_local_os_path(path: str) -> str:
     # Linux filesystem, replace \\ with /
     if os.sep == '/':
         path = path.replace('\\', '/')
