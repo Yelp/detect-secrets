@@ -164,7 +164,7 @@ class HexHighEntropyString(HighEntropyStringsPlugin):
         the number of false positives we get greatly exceeds realistic true
         positive scenarios.
 
-        Therefore, this tries to capture this heuristic mathemetically.
+        Therefore, this tries to capture this heuristic mathematically.
 
         We do this by noting that the maximum shannon entropy for this charset
         is ~3.32 (e.g. "0123456789", with every digit different), and we want
