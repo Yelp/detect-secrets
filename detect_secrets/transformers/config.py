@@ -232,7 +232,7 @@ def _construct_values_list(values: str) -> List[str]:
     return values_list
 
 
-def _is_allowlist_nextline_secret_comment(line):
+def _is_allowlist_nextline_secret_comment(line: str) -> bool:
     # Valid tuples for config file comments (start_char, end_char)
     comment_tuple = [('#', ''), (';', '')]
 
