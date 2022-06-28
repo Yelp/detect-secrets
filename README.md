@@ -336,6 +336,7 @@ optional arguments:
   -h, --help            show this help message and exit
   -v, --verbose         Verbose mode.
   --version             Display version information.
+  --json                Print detect-secrets-hook output as JSON
   --baseline FILENAME   Explicitly ignore secrets through a baseline generated
                         by `detect-secrets scan`
 
