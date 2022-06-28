@@ -221,7 +221,7 @@ class Settings:
         for plugin in get_plugins():
             # NOTE: We use the initialized plugin's JSON representation (rather than using
             # the configured settings) to deal with cases where plugins define their own
-            # default variables, that is not necessarily carried through through the
+            # default variables, that is not necessarily carried through the
             # settings object.
             serialized_plugin = plugin.json()
 

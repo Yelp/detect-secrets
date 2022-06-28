@@ -23,7 +23,7 @@ This way, you create a
 [separation of concern](https://en.wikipedia.org/wiki/Separation_of_concerns):
 accepting that there may *currently* be secrets hiding in your large repository
 (this is what we refer to as a _baseline_), but preventing this issue from getting any larger,
-without dealing with the potentially gargantuous effort of moving existing secrets away.
+without dealing with the potentially gargantuan effort of moving existing secrets away.
 
 It does this by running periodic diff outputs against heuristically crafted regex statements,
 to identify whether any *new* secret has been committed. This way, it avoids the overhead of
@@ -444,7 +444,7 @@ reporting:
 
 analytics:
   Quantify the success of your plugins based on the labelled results in your
-  baseline. To be used with the statisitcs mode (--stats).
+  baseline. To be used with the statistics mode (--stats).
 
   --json        Outputs results in a machine-readable format.
 ```
@@ -471,7 +471,7 @@ There are three different strategies we employ to try and find secrets in code:
 
 2. Entropy Detector
 
-   This searches for "secret-looking" strings through a variety of heuristical approaches. This
+   This searches for "secret-looking" strings through a variety of heuristic approaches. This
    is great for non-structured secrets, but may require tuning to adjust the scanning precision.
 
 3. Keyword Detector

@@ -101,7 +101,7 @@ def query_ibm_cos_hmac(
     # request elements
     http_method = 'GET'
     # region is a wildcard value that takes the place of the AWS region value
-    # as COS doen't use the same conventions for regions, this parameter can accept any string
+    # as COS doesn't use the same conventions for regions, this parameter can accept any string
     region = 'us-standard'
     endpoint = 'https://{}'.format(host)
     bucket = ''  # add a '/' before the bucket name to list buckets
@@ -156,7 +156,7 @@ def query_ibm_cos_hmac(
 
     # create and send the request
     headers = {'x-amz-date': timestamp, 'Authorization': v4auth_header}
-    # the 'requests' package autmatically adds the required 'host' header
+    # the 'requests' package automatically adds the required 'host' header
     request_url = endpoint + standardized_resource + standardized_querystring
 
     request = requests.get(request_url, headers=headers)
