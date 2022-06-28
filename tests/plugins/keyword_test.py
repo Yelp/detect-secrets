@@ -17,6 +17,8 @@ LONG_LINE = '<img src="data:image/png;base64,{}\n"\n>'.format(base64.b64encode((
 
 CONFIG_TEST_CASES = [
     ('password = "{}"'.format(WHITES_SECRET), WHITES_SECRET),
+    ('requirepass {}'.format(COMMON_SECRET),COMMON_SECRET),
+    ('requirepass {}'.format(WHITES_SECRET),WHITES_SECRET),
     ('password_super_secure = "{}"'.format(WHITES_SECRET), WHITES_SECRET),  # Suffix
     ('my_password_super_secure = "{}"'.format(WHITES_SECRET), WHITES_SECRET),  # Prefix/suffix
     ('apikey = {}'.format(COMMON_SECRET), COMMON_SECRET),
