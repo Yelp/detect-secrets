@@ -12,6 +12,7 @@ from ..util.filetype import determine_file_type
 from ..util.filetype import FileType
 from .base import BaseTransformer
 from .exceptions import ParsingError
+from detect_secrets.filters.allowlist import get_allowlist_regexes
 
 
 class ConfigFileTransformer(BaseTransformer):
@@ -48,6 +49,11 @@ def _parse_file(file: NamedIO, add_header: bool = False) -> List[str]:
     for key, value, line_number in IniFileParser(file, add_header=add_header):
         while len(lines) < line_number - 1:
             lines.append('')
+
+        # Always add 'pragma: allowlist nextline secret' comments
+        if _is_allowlist_nextline_secret_comment(value):
+            lines.append(value)
+            continue
 
         # We artificially add quotes here because we know they are strings
         # (because it's a config file), HighEntropyString will benefit from this,
@@ -135,6 +141,16 @@ class IniFileParser:
         output = []
 
         for line_offset, line in enumerate(self.lines):
+            # Check 'pragma: allowlist nextline secret' comment on a single line
+            # The IniFileParser strips out comments however it is important to
+            # persist this speific comment type so filtering works properly.
+            if _is_allowlist_nextline_secret_comment(line):
+                output.append((
+                    line,
+                    self.line_offset + line_offset + 1,
+                ))
+                continue
+
             # Check ignored lines before checking values, because
             # you can write comments *after* the value.
             if not line or self._comment_regex.match(line):
@@ -214,3 +230,14 @@ def _construct_values_list(values: str) -> List[str]:
     values_list = lines[:1]
     values_list.extend(filter(None, lines[1:]))
     return values_list
+
+
+def _is_allowlist_nextline_secret_comment(line):
+    # Valid tuples for config file comments (start_char, end_char)
+    comment_tuple = [('#', ''), (';', '')]
+
+    for t in comment_tuple:
+        if get_allowlist_regexes(comment_tuple=t, nextline=True).search(line):
+            return True
+
+    return False
