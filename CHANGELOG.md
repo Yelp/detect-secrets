@@ -33,7 +33,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 ##### February 16th, 2022
 
 #### :mega: Release Highlights
-- Continous integration github action added ([#506])
+- Continuous integration github action added ([#506])
 - Release pipeline github action added ([#513])
 
 #### :tada: New Features
@@ -46,7 +46,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 - Fixes catastrophic backtracking for indirect reference heuristic ([#509])
 - Fixes pre-commit hook secret equality checking causing updates to baseline with no real changes - only a timestamp update ([#507])
 - Fixes python 3.8 failing to load plugins on windows and macos ([#505])
-- Fixes yaml transformer inline dicitonary index out of bounds exceptions ([#501])
+- Fixes yaml transformer inline dictionary index out of bounds exceptions ([#501])
 - Fixes regex for slack url ([#477])
 - Fixes `AttributeError: 'PotentialSecret' object has no attribute 'line_number'` by safely falling back to 0 if line_number isn't present. ([#476])([#472])
 - Fixes gibberish-detector current version
@@ -211,7 +211,7 @@ the ["User Facing Changes"](https://github.com/Yelp/detect-secrets/pull/355) for
 #### :mortar_board: Walkthrough / Help
 
 - The README now includes examples of common usages, features, and an FAQ section for
-  the common questions we often receive as Github issues.
+  the common questions we often receive as GitHub issues.
 - So much better [technical documentation](./docs)!
 - Type support added
 
@@ -287,7 +287,7 @@ the ["User Facing Changes"](https://github.com/Yelp/detect-secrets/pull/355) for
 
 #### :bug: Bugfixes
 
-- Display helpful eror message when scanning a baseline from a newer `detect-secrets` version ([#293], [#269])
+- Display helpful error message when scanning a baseline from a newer `detect-secrets` version ([#293], [#269])
 
 #### :snake: Miscellaneous
 
@@ -335,7 +335,7 @@ the ["User Facing Changes"](https://github.com/Yelp/detect-secrets/pull/355) for
 - Rationale for the minor version bump:
     - Some accuracy changes that might change baselines significantly
     - @OiCMudkips' first release increases spookiness
-    - It being almost Halloweeen increases spookiness
+    - It being almost Halloween increases spookiness
 
 #### :tada: New Features
 

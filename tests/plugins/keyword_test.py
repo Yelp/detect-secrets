@@ -142,12 +142,16 @@ QUOTES_REQUIRED_TEST_CASES = [
     ('if (db_pass !== "{}") {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('password "{}";'.format(COMMON_SECRET), COMMON_SECRET),
     ('password = {}'.format(COMMON_SECRET), None),  # Secret without quotes
+    ('password = "{}"'.format(COMMON_SECRET), COMMON_SECRET),
+    ('password => "{}"'.format(COMMON_SECRET), COMMON_SECRET),
     ('api_key = ""', None),              # Nothing in the quotes
     ("secret: ''", None),                # Nothing in the quotes
     ('password: ${link}', None),         # Has a ${ followed by a }
     ('some_key = "real_secret"', None),  # We cannot make 'key' a Keyword, too noisy)
     ('private_key "hopenobodyfindsthisone\';', None),  # Double-quote does not match single-quote)
     (LONG_LINE, None),  # Long line test
+    ('password => ""', None),
+    ('password => {}'.format(COMMON_SECRET), None),
 ]
 
 

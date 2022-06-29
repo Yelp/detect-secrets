@@ -193,7 +193,7 @@ def scan_for_allowlisted_secrets_in_file(filename: str) -> Generator[PotentialSe
     ):
         return
 
-    # NOTE: Unlike `scan_file`, we don't ever have to use eager file transfomers, since we already
+    # NOTE: Unlike `scan_file`, we don't ever have to use eager file transformers, since we already
     # know which lines we want to scan.
     try:
         for lines in _get_lines_from_file(filename):

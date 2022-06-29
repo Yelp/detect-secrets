@@ -169,18 +169,18 @@ class RegexBasedDetector(BasePlugin, metaclass=ABCMeta):
         opt_quote = r'(?:"|\'|)'
         opt_open_square_bracket = r'(?:\[|)'
         opt_close_square_bracket = r'(?:\]|)'
-        opt_dash_undrscr = r'(?:_|-|)'
+        opt_dash_underscore = r'(?:_|-|)'
         opt_space = r'(?: *)'
         assignment = r'(?:=|:|:=|=>| +|::)'
         return re.compile(
-            r'{begin}{opt_open_square_bracket}{opt_quote}{prefix_regex}{opt_dash_undrscr}'
+            r'{begin}{opt_open_square_bracket}{opt_quote}{prefix_regex}{opt_dash_underscore}'
             '{secret_keyword_regex}{opt_quote}{opt_close_square_bracket}{opt_space}'
             '{assignment}{opt_space}{opt_quote}{secret_regex}{opt_quote}'.format(
                 begin=begin,
                 opt_open_square_bracket=opt_open_square_bracket,
                 opt_quote=opt_quote,
                 prefix_regex=prefix_regex,
-                opt_dash_undrscr=opt_dash_undrscr,
+                opt_dash_underscore=opt_dash_underscore,
                 secret_keyword_regex=secret_keyword_regex,
                 opt_close_square_bracket=opt_close_square_bracket,
                 opt_space=opt_space,

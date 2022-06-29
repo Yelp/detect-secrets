@@ -87,7 +87,7 @@ def _add_statistics_module(parent: argparse.ArgumentParser) -> None:
         title='analytics',
         description=(
             'Quantify the success of your plugins based on the labelled results '
-            'in your baseline. To be used with the statisitcs mode (--stats).'
+            'in your baseline. To be used with the statistics mode (--stats).'
         ),
     )
 
