@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import tempfile
 from pathlib import Path
@@ -93,7 +94,27 @@ def test_load_and_output():
         item.pop('generated_at')
 
     # We perform string matching because we want to ensure stable sorts.
-    assert json.dumps(output) == json.dumps(data)
+
+    # Modify JSON object as the baseline file is Linux in the repo.
+    # if Linux
+    if os.sep == '/':
+        assert json.dumps(output) == json.dumps(data)
+    else:
+        # Rebuild JSON object by replacing filenames with Windows path seperators
+        windows_data = {}
+        secret_list = []
+        windows_data['version'] = data['version']
+        windows_data['plugins_used'] = data['plugins_used']
+        windows_data['filters_used'] = data['filters_used']
+        windows_data['results'] = {}
+        for result in data['results']:
+            for result_secret in data['results'][result]:
+                result_secret['filename'] = result_secret['filename'].replace('/', '\\')
+                secret_list.append(result_secret)
+            windows_data['results'][result.replace('/', '\\')] = secret_list[:]
+            secret_list.clear()
+
+        assert json.dumps(output) == json.dumps(windows_data)
 
     # We need to make sure that default values carry through, for future backwards compatibility.
     for plugin in output['plugins_used']:
