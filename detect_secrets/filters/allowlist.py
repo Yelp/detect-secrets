@@ -58,18 +58,18 @@ def _get_allowlist_regexes_for_file(filename: str) -> Iterable[List[Pattern]]:
         comment_tuples = [comment_tuples[_get_file_to_index_dict()[ext[1:]]]]
 
     yield [
-        _get_allowlist_regexes(comment_tuple=t, nextline=False)
+        get_allowlist_regexes(comment_tuple=t, nextline=False)
         for t in comment_tuples
     ]
     yield [
-        _get_allowlist_regexes(comment_tuple=t, nextline=True)
+        get_allowlist_regexes(comment_tuple=t, nextline=True)
         for t in comment_tuples
     ]
 
 
 # Note: Cache size should be 2x the number of comment types
 @lru_cache(maxsize=12)
-def _get_allowlist_regexes(comment_tuple: Tuple[str, str], nextline: bool) -> Pattern:
+def get_allowlist_regexes(comment_tuple: Tuple[str, str], nextline: bool) -> Pattern:
     start = comment_tuple[0]
     end = comment_tuple[1]
     return re.compile(

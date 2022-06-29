@@ -42,6 +42,43 @@ def test_transformer(transformer):
     ]
 
 
+@pytest.mark.parametrize(
+    'transformer',
+    (
+        ConfigFileTransformer,
+        EagerConfigFileTransformer,
+    ),
+)
+def test_transformer_persist_pragma_comments(transformer):
+    file = mock_file_object(
+        textwrap.dedent("""
+            [section]
+            keyA = value
+
+            # pragma: allowlist nextline secret
+            keyB = "double"
+            keyC = 'single'
+
+            # pragma: allowlist nextline secret
+            keyD = o'brian
+            keyE = "chai" tea
+        """)[1:-1],
+    )
+
+    assert transformer().parse_file(file) == [
+        '',
+        'keyA = "value"',
+        '',
+        '# pragma: allowlist nextline secret',
+        'keyB = "double"',
+        'keyC = "single"',
+        '',
+        '# pragma: allowlist nextline secret',
+        'keyD = "o\'brian"',
+        'keyE = "\\\"chai\\\" tea"',
+    ]
+
+
 def test_basic():
     file = mock_file_object(
         textwrap.dedent("""
@@ -63,6 +100,64 @@ def test_basic():
         ('rice', 'fried', 3),
         ('tea', 'chai', 6),
         ('water', 'unflavored', 10),
+    ]
+
+
+def test_basic_persist_pragma_comments_pound():
+    file = mock_file_object(
+        textwrap.dedent("""
+            [section]
+            # pragma: allowlist nextline secret
+            key = value
+            # pragma: allowlist nextline secret
+            rice = fried
+
+            # comment
+            tea = chai
+
+            [other]
+            # pragma: allowlist nextline secret
+            water = unflavored
+        """)[1:-1],
+    )
+
+    assert list(IniFileParser(file)) == [
+        ('key', '# pragma: allowlist nextline secret', 2),
+        ('key', 'value', 3),
+        ('key', '# pragma: allowlist nextline secret', 4),
+        ('rice', 'fried', 5),
+        ('tea', 'chai', 8),
+        ('water', '# pragma: allowlist nextline secret', 11),
+        ('water', 'unflavored', 12),
+    ]
+
+
+def test_basic_persist_pragma_comments_semi_colon():
+    file = mock_file_object(
+        textwrap.dedent("""
+            [section]
+            ; pragma: allowlist nextline secret
+            key = value
+            ; pragma: allowlist nextline secret
+            rice = fried
+
+            ; comment
+            tea = chai
+
+            [other]
+            ; pragma: allowlist nextline secret
+            water = unflavored
+        """)[1:-1],
+    )
+
+    assert list(IniFileParser(file)) == [
+        ('key', '; pragma: allowlist nextline secret', 2),
+        ('key', 'value', 3),
+        ('key', '; pragma: allowlist nextline secret', 4),
+        ('rice', 'fried', 5),
+        ('tea', 'chai', 8),
+        ('water', '; pragma: allowlist nextline secret', 11),
+        ('water', 'unflavored', 12),
     ]
 
 
@@ -144,4 +239,27 @@ class TestMultipleValues:
         assert list(IniFileParser(file)) == [
             ('key', 'value1', 3),
             ('key', 'value2', 6),
+        ]
+
+    @staticmethod
+    def test_pragma_comments():
+        file = mock_file_object(
+            textwrap.dedent("""
+                [section]
+                # pragma: allowlist nextline secret
+                key = value0
+                    # pragma: allowlist nextline secret
+                    value1
+
+                    # comment
+                    value2
+            """)[1:-1],
+        )
+
+        assert list(IniFileParser(file)) == [
+            ('key', '# pragma: allowlist nextline secret', 2),
+            ('key', 'value0', 3),
+            ('key', '# pragma: allowlist nextline secret', 4),
+            ('key', 'value1', 5),
+            ('key', 'value2', 8),
         ]
