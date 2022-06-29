@@ -79,14 +79,15 @@ class TestScanFile:
             },
         ])
         secrets = SecretsCollection()
-        secrets.scan_file('test_data/config.ini')
+        test_config = os.path.join('test_data', 'config.ini')
+        secrets.scan_file(test_config)
 
         assert [str(secret).splitlines()[1] for _, secret in secrets] == [
-            'Location:    test_data/config.ini:2',
-            'Location:    test_data/config.ini:10',
-            'Location:    test_data/config.ini:21',
-            'Location:    test_data/config.ini:22',
-            'Location:    test_data/config.ini:32',
+            'Location:    %s:2' % test_config,
+            'Location:    %s:10' % test_config,
+            'Location:    %s:21' % test_config,
+            'Location:    %s:22' % test_config,
+            'Location:    %s:32' % test_config,
         ]
 
     @staticmethod
@@ -98,12 +99,13 @@ class TestScanFile:
             },
         ])
         secrets = SecretsCollection()
-        secrets.scan_file('test_data/config.yaml')
+        test_yaml = os.path.join('test_data', 'config.yaml')
+        secrets.scan_file(test_yaml)
 
         assert [str(secret).splitlines()[1] for _, secret in secrets] == [
-            'Location:    test_data/config.yaml:3',
-            'Location:    test_data/config.yaml:5',
-            'Location:    test_data/config.yaml:13',
+            'Location:    %s:3' % test_yaml,
+            'Location:    %s:5' % test_yaml,
+            'Location:    %s:13' % test_yaml,
         ]
 
     @staticmethod

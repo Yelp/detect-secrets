@@ -1,4 +1,5 @@
 import json
+import os
 import random
 from typing import List
 from typing import Optional
@@ -135,7 +136,7 @@ def test_ensure_file_transformers_are_used(printer):
         run_logic(secrets, 'y')
         assert not m.called
 
-    line_number = list(secrets['test_data/config.env'])[0].line_number
+    line_number = list(secrets[os.path.join('test_data', 'config.env')])[0].line_number
     assert lines[line_number - 1] in printer.message
 
 
