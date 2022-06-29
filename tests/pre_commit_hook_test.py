@@ -3,7 +3,7 @@ from contextlib import contextmanager
 from functools import partial
 from typing import List
 from unittest import mock
-
+import os
 import pytest
 
 from detect_secrets.core import baseline
@@ -23,16 +23,16 @@ def configure_settings():
 
 
 def test_file_with_secrets():
-    assert_commit_blocked(['test_data/files/file_with_secrets.py'])
+    assert_commit_blocked([os.path.join('test_data','files','file_with_secrets.py')])
 
 
 def test_file_with_no_secrets():
-    assert_commit_succeeds(['test_data/files/file_with_no_secrets.py'])
+    assert_commit_succeeds([os.path.join('test_data','files','file_with_no_secrets.py')])
 
 
 def test_quit_early_if_bad_baseline():
     with pytest.raises(SystemExit):
-        main(['test_data/files/file_with_secrets.py', '--baseline', 'does-not-exist'])
+        main([os.path.join('test_data','files','file_with_secrets.py'), '--baseline', 'does-not-exist'])
 
 
 def test_quit_if_baseline_is_changed_but_not_staged():
@@ -41,7 +41,7 @@ def test_quit_if_baseline_is_changed_but_not_staged():
     ) as m:
         m.side_effect = ValueError
         assert_commit_blocked([
-            'test_data/files/file_with_no_secrets.py',
+            os.path.join('test_data','files','file_with_secrets.py'),
             '--baseline',
             '.secrets.baseline',
         ])
@@ -49,7 +49,7 @@ def test_quit_if_baseline_is_changed_but_not_staged():
 
 def test_baseline_filters_out_known_secrets():
     secrets = SecretsCollection()
-    secrets.scan_file('test_data/each_secret.py')
+    secrets.scan_file(os.path.join('test_data','each_secret.py'))
 
     assert secrets
 
@@ -60,13 +60,13 @@ def test_baseline_filters_out_known_secrets():
 
             # This succeeds, because all the secrets are known.
             assert_commit_succeeds([
-                'test_data/each_secret.py',
+                os.path.join('test_data','each_secret.py'),
                 '--baseline',
                 f.name,
             ])
 
         # Remove one arbitrary secret, so that it won't be the full set.
-        secrets.data['test_data/each_secret.py'].pop()
+        secrets.data[os.path.join('test_data','each_secret.py')].pop()
 
         with mock_named_temporary_file() as f:
             baseline.save_to_file(secrets, f.name)
@@ -74,21 +74,21 @@ def test_baseline_filters_out_known_secrets():
 
             # Test that it isn't the case that a baseline is provided, and everything passes.
             assert_commit_blocked([
-                'test_data/each_secret.py',
+                os.path.join('test_data','each_secret.py'),
                 '--baseline',
                 f.name,
             ])
 
 
 class TestModifiesBaselineFromVersionChange:
-    FILENAME = 'test_data/files/file_with_secrets.py'
+    FILENAME = os.path.join('test_data','files','file_with_secrets.py')
 
     def test_success(self):
         with self.get_baseline_file() as f:
             assert_commit_blocked_with_diff_exit_code([
                 # We use file_with_no_secrets so that we can be certain that the commit is blocked
                 # due to the version change only.
-                'test_data/files/file_with_no_secrets.py',
+                os.path.join('test_data','files','file_with_no_secrets.py'),
                 '--baseline',
                 f.name,
             ])
@@ -100,7 +100,7 @@ class TestModifiesBaselineFromVersionChange:
 
         with self.get_baseline_file(formatter=label_secret) as f:
             assert_commit_blocked_with_diff_exit_code([
-                'test_data/files/file_with_no_secrets.py',
+                os.path.join('test_data','files','file_with_no_secrets.py'),
                 '--baseline',
                 f.name,
             ])
@@ -115,7 +115,7 @@ class TestModifiesBaselineFromVersionChange:
             formatter=partial(baseline.format_for_output, is_slim_mode=True),
         ) as f:
             assert_commit_blocked_with_diff_exit_code([
-                'test_data/files/file_with_no_secrets.py',
+                os.path.join('test_data','files','file_with_no_secrets.py'),
                 '--baseline',
                 f.name,
             ])
@@ -140,7 +140,7 @@ class TestModifiesBaselineFromVersionChange:
 
 
 class TestLineNumberChanges:
-    FILENAME = 'test_data/files/file_with_secrets.py'
+    FILENAME = os.path.join('test_data','files','file_with_secrets.py')
 
     def test_modifies_baseline(self, modified_baseline):
         with mock_named_temporary_file() as f:

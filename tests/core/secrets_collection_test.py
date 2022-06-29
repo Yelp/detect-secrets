@@ -1,7 +1,7 @@
 from unittest import mock
 
 import pytest
-
+import os
 from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.settings import get_settings
 from detect_secrets.settings import transient_settings
@@ -41,9 +41,9 @@ class TestScanFile:
             'detect_secrets.core.scan.open',
             side_effect=IOError,
         ):
-            SecretsCollection().scan_file('test_data/config.env')
+            SecretsCollection().scan_file(os.path.join('test_data','config.env'))
 
-        assert 'Unable to open file: test_data/config.env' in mock_log_warning.warning_messages
+        assert 'Unable to open file: ' + str(os.path.join('test_data','config.env')) in mock_log_warning.warning_messages
 
     @staticmethod
     def test_line_based_success():
@@ -62,11 +62,11 @@ class TestScanFile:
         ])
 
         secrets = SecretsCollection()
-        secrets.scan_file('test_data/each_secret.py')
+        secrets.scan_file(os.path.join('test_data','each_secret.py'))
 
-        secret = next(iter(secrets['test_data/each_secret.py']))
+        secret = next(iter(secrets[os.path.join('test_data','each_secret.py')]))
         assert secret.secret_value.startswith('c2VjcmV0IG1lc')
-        assert len(secrets['test_data/each_secret.py']) == 1
+        assert len(secrets[os.path.join('test_data','each_secret.py')]) == 1
 
     @staticmethod
     def test_file_based_success_config():
@@ -115,7 +115,7 @@ class TestScanFile:
     @pytest.mark.parametrize(
         'filename',
         (
-            'test_data/config.env',
+            os.path.join('test_data','config.env'),
 
             # Markdown files with colons and unicode characters preceding the colon on the line
             # would have caused the scanner to fail and exit on python2.7.
@@ -172,7 +172,7 @@ class TestScanDiff:
 
 def test_merge():
     old_secrets = SecretsCollection()
-    old_secrets.scan_file('test_data/each_secret.py')
+    old_secrets.scan_file(os.path.join('test_data','each_secret.py'))
     assert len(list(old_secrets)) >= 3      # otherwise, this test won't work.
 
     index = 0
@@ -187,7 +187,7 @@ def test_merge():
         index += 1
 
     new_secrets = SecretsCollection()
-    new_secrets.scan_file('test_data/each_secret.py')
+    new_secrets.scan_file(os.path.join('test_data','each_secret.py'))
     list(new_secrets)[-1][1].is_secret = True
 
     new_secrets.merge(old_secrets)
@@ -211,25 +211,25 @@ class TestTrim:
     @staticmethod
     def test_deleted_secret():
         secrets = SecretsCollection()
-        secrets.scan_file('test_data/each_secret.py')
+        secrets.scan_file(os.path.join('test_data','each_secret.py'))
 
         results = SecretsCollection.load_from_baseline({'results': secrets.json()})
-        results.data['test_data/each_secret.py'].pop()
+        results.data[os.path.join('test_data','each_secret.py')].pop()
 
-        original_size = len(secrets['test_data/each_secret.py'])
+        original_size = len(secrets[os.path.join('test_data','each_secret.py')])
         secrets.trim(results)
 
-        assert len(secrets['test_data/each_secret.py']) < original_size
+        assert len(secrets[os.path.join('test_data','each_secret.py')]) < original_size
 
     @staticmethod
     def test_deleted_secret_file():
         secrets = SecretsCollection()
-        secrets.scan_file('test_data/each_secret.py')
+        secrets.scan_file(os.path.join('test_data','each_secret.py'))
 
         secrets.trim(SecretsCollection())
         assert secrets
 
-        secrets.trim(SecretsCollection(), filelist=['test_data/each_secret.py'])
+        secrets.trim(SecretsCollection(), filelist=[os.path.join('test_data','each_secret.py')])
         assert not secrets
 
     @staticmethod
@@ -282,10 +282,10 @@ class TestTrim:
     @staticmethod
     def test_remove_non_existent_files():
         secrets = SecretsCollection()
-        secrets.scan_file('test_data/each_secret.py')
+        secrets.scan_file(os.path.join('test_data','each_secret.py'))
         assert bool(secrets)
 
-        secrets.data['does-not-exist'] = secrets.data.pop('test_data/each_secret.py')
+        secrets.data['does-not-exist'] = secrets.data.pop(os.path.join('test_data','each_secret.py'))
         secrets.trim()
 
         assert not bool(secrets)
@@ -293,13 +293,13 @@ class TestTrim:
     @staticmethod
     def test_maintains_labels():
         labelled_secrets = SecretsCollection()
-        labelled_secrets.scan_file('test_data/each_secret.py')
+        labelled_secrets.scan_file(os.path.join('test_data','each_secret.py'))
         for _, secret in labelled_secrets:
             secret.is_secret = True
             break
 
         secrets = SecretsCollection()
-        secrets.scan_file('test_data/each_secret.py')
+        secrets.scan_file(os.path.join('test_data','each_secret.py'))
 
         labelled_secrets.trim(scanned_results=secrets)
 
@@ -310,10 +310,10 @@ def test_bool():
     secrets = SecretsCollection()
     assert not secrets
 
-    secrets.scan_file('test_data/each_secret.py')
+    secrets.scan_file(os.path.join('test_data','each_secret.py'))
     assert secrets
 
-    secrets['test_data/each_secret.py'].clear()
+    secrets[os.path.join('test_data','each_secret.py')].clear()
     assert not secrets
 
 
@@ -321,7 +321,7 @@ class TestEqual:
     @staticmethod
     def test_mismatch_files():
         secretsA = SecretsCollection()
-        secretsA.scan_file('test_data/each_secret.py')
+        secretsA.scan_file(os.path.join('test_data','each_secret.py'))
 
         secretsB = SecretsCollection()
         secretsB.scan_file('test_data/files/file_with_secrets.py')
@@ -347,7 +347,7 @@ class TestSubtraction:
     def test_basic(configure_plugins):
         with transient_settings({**configure_plugins, 'filters_used': []}):
             secrets = SecretsCollection()
-            secrets.scan_file('test_data/each_secret.py')
+            secrets.scan_file(os.path.join('test_data','each_secret.py'))
 
         # This baseline will have less secrets, since it filtered out some.
         with transient_settings({
@@ -362,7 +362,7 @@ class TestSubtraction:
             ],
         }):
             baseline = SecretsCollection()
-            baseline.scan_file('test_data/each_secret.py')
+            baseline.scan_file(os.path.join('test_data','each_secret.py'))
 
         # This tests the != operator for same file, different number of secrets.
         # It's hidden in a different test, but I didn't want to set up the boilerplate
@@ -370,16 +370,16 @@ class TestSubtraction:
         assert secrets != baseline
 
         result = secrets - baseline
-        assert len(result['test_data/each_secret.py']) == 2
-        assert len(secrets['test_data/each_secret.py']) == 4
+        assert len(result[os.path.join('test_data','each_secret.py')]) == 2
+        assert len(secrets[os.path.join('test_data','each_secret.py')]) == 4
 
     @staticmethod
     def test_no_overlapping_files(configure_plugins):
         secrets_a = SecretsCollection()
         secrets_b = SecretsCollection()
         with transient_settings({**configure_plugins, 'filters_used': []}):
-            secrets_a.scan_file('test_data/each_secret.py')
-            secrets_b.scan_file('test_data/config.env')
+            secrets_a.scan_file(os.path.join('test_data','each_secret.py'))
+            secrets_b.scan_file(os.path.join('test_data','config.env'))
 
-        assert (secrets_a - secrets_b).files == {'test_data/each_secret.py'}
-        assert (secrets_b - secrets_a).files == {'test_data/config.env'}
+        assert (secrets_a - secrets_b).files == {os.path.join('test_data','each_secret.py')}
+        assert (secrets_b - secrets_a).files == {os.path.join('test_data','config.env')}
