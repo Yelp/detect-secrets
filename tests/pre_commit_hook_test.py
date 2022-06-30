@@ -1,4 +1,6 @@
+import io
 import json
+import sys
 from contextlib import contextmanager
 from functools import partial
 from typing import List
@@ -78,6 +80,44 @@ def test_baseline_filters_out_known_secrets():
                 '--baseline',
                 f.name,
             ])
+
+
+def test_console_output():
+    command = ['test_data/files/file_with_secrets.py']
+
+    # Redirect stdout
+    capturedOutput = io.StringIO()
+    sys.stdout = capturedOutput
+
+    main(command)
+
+    # Reset redirect stdout
+    sys.stdout = sys.__stdout__
+
+    # Assert formatting
+    output = capturedOutput.getvalue()
+    assert output.startswith('ERROR: Potential secrets about to be committed to git repo!')
+
+
+def test_console_output_json_formatting():
+    command = ['--json', 'test_data/files/file_with_secrets.py']
+
+    # Redirect stdout
+    capturedOutput = io.StringIO()
+    sys.stdout = capturedOutput
+
+    main(command)
+
+    # Reset redirect stdout
+    sys.stdout = sys.__stdout__
+
+    # Assert formatting
+    data = json.loads(capturedOutput.getvalue())
+    assert(data['version'])
+    assert(data['plugins_used'])
+    assert(data['filters_used'])
+    assert(data['results'])
+    assert(data['generated_at'])
 
 
 class TestModifiesBaselineFromVersionChange:
