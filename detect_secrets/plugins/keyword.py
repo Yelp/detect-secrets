@@ -36,6 +36,7 @@ from ..core.potential_secret import PotentialSecret
 from ..util.filetype import determine_file_type
 from ..util.filetype import FileType
 from .base import BasePlugin
+from detect_secrets.util.code_snippet import CodeSnippet
 
 
 # Note: All values here should be lowercase
@@ -306,6 +307,7 @@ class KeywordDetector(BasePlugin):
         filename: str,
         line: str,
         line_number: int = 0,
+        context: CodeSnippet = None,
         **kwargs: Any,
     ) -> Set[PotentialSecret]:
         filetype = determine_file_type(filename)
@@ -314,6 +316,7 @@ class KeywordDetector(BasePlugin):
             filename=filename,
             line=line,
             line_number=line_number,
+            context=context,
             denylist_regex_to_group=denylist_regex_to_group,
         )
 

@@ -1,4 +1,5 @@
 import re
+from unittest import mock
 
 import pytest
 import requests
@@ -44,7 +45,12 @@ class TestVerify:
         # NOTE: This test case relies on the fact that this file contains a multi-factor
         # AWS KeyPair.
         with register_plugin(ContextAwareMockPlugin()):
-            main_module.main(['scan', 'test_data/each_secret.py'])
+            with mock.patch(
+                'detect_secrets.plugins.aws.verify_aws_secret_access_key',
+                return_value=False,
+            ):
+
+                main_module.main(['scan', 'test_data/each_secret.py'])
 
     @staticmethod
     def test_handles_request_error_gracefully():
