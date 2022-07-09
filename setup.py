@@ -35,6 +35,9 @@ setup(
         'requests',
     ],
     include_package_data=True,
+    package_data={
+        "detect_secrets": ["py.typed"],
+    },
     extras_require={
         'word_list': [
             'pyahocorasick',
@@ -58,5 +61,6 @@ setup(
         'Environment :: Console',
         'Operating System :: OS Independent',
         'Development Status :: 5 - Production/Stable',
+        "Typing :: Typed",
     ],
 )
