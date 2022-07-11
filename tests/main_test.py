@@ -84,7 +84,6 @@ class TestScan:
 class TestSlimScan:
     @staticmethod
     def test_basic():
-        os.environ['no_proxy'] = '*'
         with mock_printer(main_module) as printer:
             main_module.main(['scan', '--slim', 'test_data'])
 
