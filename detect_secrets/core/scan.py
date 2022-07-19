@@ -17,6 +17,7 @@ from ..transformers import get_transformed_file
 from ..types import NamedIO
 from ..types import SelfAwareCallable
 from ..util import git
+from ..util.code_snippet import CodeSnippet
 from ..util.code_snippet import get_code_snippet
 from ..util.inject import call_function_with_arguments
 from ..util.path import get_relative_path
@@ -112,6 +113,7 @@ def scan_line(line: str) -> Generator[PotentialSecret, None, None]:
         'detect_secrets.filters.common.is_invalid_file',
     )
     get_filters.cache_clear()
+    context = get_code_snippet(lines=[line], line_number=1)
 
     yield from (
         secret
@@ -122,6 +124,7 @@ def scan_line(line: str) -> Generator[PotentialSecret, None, None]:
             line=line,
             line_number=0,
             enable_eager_search=True,
+            context=context,
         )
         if not _is_filtered_out(
             required_filter_parameters=['context'],
@@ -129,10 +132,7 @@ def scan_line(line: str) -> Generator[PotentialSecret, None, None]:
             secret=secret.secret_value,
             plugin=plugin,
             line=line,
-            context=get_code_snippet(
-                lines=[line],
-                line_number=1,
-            ),
+            context=context,
         )
     )
 
@@ -225,10 +225,11 @@ def _scan_for_allowlisted_secrets_in_lines(
     line_numbers, lines = zip(*lines)
     line_content = [line.rstrip() for line in lines]
     for line_number, line in zip(line_numbers, line_content):
+        context = get_code_snippet(line_content, line_number)
         if not is_line_allowlisted(
-            filename,
-            line,
-            context=get_code_snippet(line_content, line_number),
+            filename=filename,
+            line=line,
+            context=context,
         ):
             continue
 
@@ -236,7 +237,13 @@ def _scan_for_allowlisted_secrets_in_lines(
             continue
 
         for plugin in get_plugins():
-            yield from _scan_line(plugin, filename, line, line_number)
+            yield from _scan_line(
+                plugin=plugin,
+                filename=filename,
+                line=line,
+                line_number=line_number,
+                context=context,
+            )
 
 
 def _get_lines_from_file(filename: str) -> Generator[List[str], None, None]:
@@ -323,7 +330,13 @@ def _process_line_based_plugins(
         yield from (
             secret
             for plugin in get_plugins()
-            for secret in _scan_line(plugin, filename, line, line_number)
+            for secret in _scan_line(
+                plugin=plugin,
+                filename=filename,
+                line=line,
+                line_number=line_number,
+                context=code_snippet,
+            )
             if not _is_filtered_out(
                 required_filter_parameters=['context'],
                 filename=secret.filename,
@@ -340,6 +353,7 @@ def _scan_line(
     filename: str,
     line: str,
     line_number: int,
+    context: CodeSnippet,
     **kwargs: Any,
 ) -> Generator[PotentialSecret, None, None]:
     # NOTE: We don't apply filter functions here yet, because we don't have any filters
@@ -349,6 +363,7 @@ def _scan_line(
         filename=filename,
         line=line,
         line_number=line_number,
+        context=context,
         **kwargs,
     )
     if not secrets:

@@ -21,6 +21,8 @@ import requests
 from ..constants import VerifiedResult
 from ..core.potential_secret import PotentialSecret
 from ..settings import get_settings
+from detect_secrets.util.code_snippet import CodeSnippet
+from detect_secrets.util.inject import call_function_with_arguments
 
 
 class BasePlugin(metaclass=ABCMeta):
@@ -46,17 +48,36 @@ class BasePlugin(metaclass=ABCMeta):
         filename: str,
         line: str,
         line_number: int = 0,
+        context: CodeSnippet = None,
         **kwargs: Any
     ) -> Set[PotentialSecret]:
         """This examines a line and finds all possible secret values in it."""
         output = set()
         for match in self.analyze_string(line, **kwargs):   # type: ignore
+            is_verified: bool = False
+            # If the filter is disabled it means --no-verify flag was passed
+            # We won't run verification in that case
+            if(
+                'detect_secrets.filters.common.is_ignored_due_to_verification_policies'
+                in get_settings().filters
+            ):
+                try:
+                    verified_result = call_function_with_arguments(
+                        self.verify,
+                        secret=match,
+                        context=context,
+                    )
+                    is_verified = True if verified_result == VerifiedResult.VERIFIED_TRUE else False
+                except requests.exceptions.RequestException:
+                    is_verified = False
+
             output.add(
                 PotentialSecret(
                     type=self.secret_type,
                     filename=filename,
                     secret=match,
                     line_number=line_number,
+                    is_verified=is_verified,
                 ),
             )
 
