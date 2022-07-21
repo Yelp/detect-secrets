@@ -30,7 +30,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 -->
 
 ### v1.3.0
-##### July 21st, 2022
+##### July 22st, 2022
 
 #### :mega: Release Highlights
 - Add Windows operating system to Github CI Action ([#528])
