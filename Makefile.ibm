@@ -12,7 +12,7 @@ DOCKER_USER_ICR := iamapikey
 DOCKER_PASS_ICR := $(IBM_CLOUD_API_KEY)
 
 DOCKER_REGISTRY_ART := txo-toolbox-team-docker-local.artifactory.swg-devops.com
-DOCKER_USER_ART := dssadmin@us.ibm.com
+DOCKER_USER_ART := $(ART_USER_ID)
 DOCKER_PASS_ART := $(ART_API_KEY)
 
 DOCKER_REGISTRY_DOCKERHUB := registry.hub.docker.com
