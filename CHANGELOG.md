@@ -29,6 +29,59 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 ### Unreleased
 -->
 
+### v1.3.0
+##### July 22nd, 2022
+
+#### :mega: Release Highlights
+- Add Windows operating system to Github CI Action ([#528])
+- Enable dependabot for automated dependency updates built into GitHub ([#531])
+- Improve performance for array slice ([#555])
+
+#### :tada: New Features
+- Improve keyword plugin to detect arrow key assignment ([#567])
+- Add command line argument for `detect-secrets-hook` to return output as json ([#569])
+
+#### :bug: Bugfixes
+- Fix regex matching for `npm` plugin ([#551])
+- Fix `audit` crashing when secret is not found on specified line ([#568])
+- Fix `# pragma: allowlist nextline secret` secrets not filtered out of result set ([#575])
+- Fix `is_verified` flag not stored in `PotentialSecret` ([#578])
+
+#### :snake: Miscellaneous
+- Only use ANSI color code in environments that support it ([#523])
+- Multiple dependency updates
+- Make `is_likely_id_string` heuristic filter more strict to avoid eliminating true positives ([#526])
+- Refactor AWS access key regex to minimize false positives ([#571])
+- Correct spelling errors in code repository ([#574])
+- Add `py.typed` to enable type hints for package consumers ([#579])
+
+[#523]: https://github.com/Yelp/detect-secrets/pull/523
+[#526]: https://github.com/Yelp/detect-secrets/pull/526
+[#528]: https://github.com/Yelp/detect-secrets/pull/528
+[#529]: https://github.com/Yelp/detect-secrets/pull/529
+[#530]: https://github.com/Yelp/detect-secrets/pull/530
+[#531]: https://github.com/Yelp/detect-secrets/pull/531
+[#532]: https://github.com/Yelp/detect-secrets/pull/532
+[#533]: https://github.com/Yelp/detect-secrets/pull/533
+[#535]: https://github.com/Yelp/detect-secrets/pull/535
+[#537]: https://github.com/Yelp/detect-secrets/pull/537
+[#538]: https://github.com/Yelp/detect-secrets/pull/538
+[#542]: https://github.com/Yelp/detect-secrets/pull/542
+[#543]: https://github.com/Yelp/detect-secrets/pull/543
+[#545]: https://github.com/Yelp/detect-secrets/pull/545
+[#546]: https://github.com/Yelp/detect-secrets/pull/546
+[#551]: https://github.com/Yelp/detect-secrets/pull/551
+[#555]: https://github.com/Yelp/detect-secrets/pull/555
+[#567]: https://github.com/Yelp/detect-secrets/pull/567
+[#568]: https://github.com/Yelp/detect-secrets/pull/568
+[#569]: https://github.com/Yelp/detect-secrets/pull/569
+[#571]: https://github.com/Yelp/detect-secrets/pull/571
+[#574]: https://github.com/Yelp/detect-secrets/pull/574
+[#575]: https://github.com/Yelp/detect-secrets/pull/575
+[#576]: https://github.com/Yelp/detect-secrets/pull/576
+[#578]: https://github.com/Yelp/detect-secrets/pull/578
+[#579]: https://github.com/Yelp/detect-secrets/pull/579
+
 ### v1.2.0
 ##### February 16th, 2022
 
