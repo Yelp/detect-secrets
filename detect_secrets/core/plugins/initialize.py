@@ -21,7 +21,7 @@ def from_secret_type(secret_type: str) -> Plugin:
         raise TypeError
 
     try:
-        return plugin_type(**_get_config(plugin_type.__name__))     # type: ignore
+        return plugin_type(**_get_config(plugin_type.__name__))
     except TypeError:
         log.error('Unable to initialize plugin!')
         raise
@@ -44,7 +44,7 @@ def from_plugin_classname(classname: str) -> Plugin:
         raise TypeError
 
     try:
-        return plugin_type(**_get_config(classname))        # type: ignore
+        return plugin_type(**_get_config(classname))
     except TypeError:
         log.error('Unable to initialize plugin!')
         raise

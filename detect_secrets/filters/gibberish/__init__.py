@@ -32,7 +32,7 @@ def initialize(model_path: Optional[str] = None, limit: float = 3.7) -> None:
     """
     path = model_path
     if not path:
-        path = os.path.join(__path__[0], 'rfc.model')   # type: ignore  # mypy issue #1422
+        path = os.path.join(__path__[0], 'rfc.model')
 
     model = get_model()
 
