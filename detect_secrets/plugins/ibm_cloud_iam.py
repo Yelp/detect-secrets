@@ -1,4 +1,3 @@
-from typing import cast
 from typing import Union
 
 import requests
