@@ -93,7 +93,7 @@ $ git ls-files -z | xargs -0 detect-secrets-hook --baseline .secrets.baseline
 $ detect-secrets scan --list-all-plugins
 ArtifactoryDetector
 AWSKeyDetector
-AzureStorageKeyDetector
+AzureKeyDetector
 BasicAuthDetector
 CloudantDetector
 Base64HighEntropyString

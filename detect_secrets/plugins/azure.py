@@ -1,5 +1,23 @@
 """
 This plugin searches for Azure keys/connection strings.
+
+These Azure services are supported:
+
+Azure Storage
+Azure SQL Database
+Azure Database for PostgreSQL
+Azure Database for MySQL
+Azure Database for MariaDB
+Azure Cache for Redis
+Azure Cosmos DB
+Azure Synapse Analytics
+Azure Service Bus
+Azure Event Hubs
+Azure IoT Hub
+Azure Monitor
+Azure Functions
+Azure Web PubSub
+Azure SignalR Service
 """
 import re
 
@@ -14,7 +32,7 @@ class AzureKeyDetector(RegexBasedDetector):
         # Azure Storage - account access key
         # Example: DefaultEndpointsProtocol=https;AccountName=<account_name>;AccountKey=<account_key>;EndpointSuffix=core.windows.net
         # https://docs.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string
-        re.compile(r'AccountName=.+;.*AccountKey=[a-zA-Z0-9+/=]{88}'),
+        re.compile(r'AccountName=.+;.*AccountKey=[a-zA-Z0-9+/]{86}=='),
 
         # Azure SQL Database - ADO.NET connection string
         # Example: Server=tcp:<server_name>.database.windows.net,1433;Initial Catalog=<database_name>;Persist Security Info=False;User ID=<user_name>;Password=<password>;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
@@ -24,7 +42,7 @@ class AzureKeyDetector(RegexBasedDetector):
 
         # Azure SQL Database - JDBC connection string
         # Example: jdbc:sqlserver://<server_name>.database.windows.net:1433;database=<database_name>;user=<user_name>@<server_name>;password=<password>;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;
-        re.compile(r'jdbc:sqlserver://.+\.database\.windows\.net.+password=[^;]{8,128};'),
+        re.compile(r'.*jdbc:sqlserver://.+\.database\.windows\.net.+password=[^;]{8,128};'),
 
         # Azure SQL Database - ODBC connection string
         # Example: Driver={ODBC Driver 13 for SQL Server};Server=tcp:<server_name>.database.windows.net,1433;Database=<database_name>;Uid=<user_name>;Pwd=<password>;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;
@@ -61,14 +79,14 @@ class AzureKeyDetector(RegexBasedDetector):
         # Azure Cache for Redis - StackExchange.Redis connection string
         # Example: <server_name>.redis.cache.windows.net:6380,password=<access_key>,ssl=True,abortConnect=False
         # https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-web-app-howto
-        re.compile(r'.+\.redis\.cache\.windows\.net.+password=[a-zA-Z0-9=]{44}'),
+        re.compile(r'.+\.redis\.cache\.windows\.net.+password=[a-zA-Z0-9]{43}='),
 
         # Azure Cosmos DB - SQL/Core API - connection string
         # Example: AccountEndpoint=https://<server_name>.documents.azure.com:443/;AccountKey=<account_key>;
         # Azure Cosmos DB - Gremlin API - connection string
         # Example: AccountEndpoint=https://<server_name>.documents.azure.com:443/;AccountKey=<account_key>;ApiKind=Gremlin;
         # https://docs.microsoft.com/en-us/azure/cosmos-db/secure-access-to-data
-        re.compile(r'AccountEndpoint=https://.+\.documents\.azure\.com.+AccountKey=[a-zA-Z0-9=]{88};'),
+        re.compile(r'AccountEndpoint=https://.+\.documents\.azure\.com.+AccountKey=[a-zA-Z0-9]{86}==;'),
 
         # Azure Cosmos DB - MongoDB API - connection string
         # Example: mongodb://<user_name>:<password>@<server_name>.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@mongoneo@
@@ -96,16 +114,16 @@ class AzureKeyDetector(RegexBasedDetector):
         # Example: Endpoint=sb://<server_name>.servicebus.windows.net/;SharedAccessKeyName=<shared_access_key_name>;SharedAccessKey=<shared_access_key>;EntityPath=<event_hub_name>
         # https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-dotnet-get-started-with-queues
         # https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string
-        re.compile(r'Endpoint=sb://.+\.servicebus\.windows\.net/;.*SharedAccessKey=[a-zA-Z0-9+/=]{44}'),
+        re.compile(r'Endpoint=sb://.+\.servicebus\.windows\.net/;.*SharedAccessKey=[a-zA-Z0-9+/]{43}='),
 
         # Azure IoT Hub - device connection string
         # Example: HostName=<server_name>.azure-devices.net;DeviceId=<device_id>;SharedAccessKey=<shared_access_key>
         # https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-dev-guide-sas
-        re.compile(r'HostName=.+\.azure-devices\.net;DeviceId=.+;SharedAccessKey=[a-zA-Z0-9+/=]{44}'),
+        re.compile(r'HostName=.+\.azure-devices\.net;DeviceId=.+;SharedAccessKey=[a-zA-Z0-9+/]{43}='),
 
         # Azure IoT Hub - service connection string
         # Example: HostName=<server_name>.azure-devices.net;SharedAccessKeyName=<share_access_key_name>;SharedAccessKey=<share_access_key>
-        re.compile(r'HostName=.+\.azure-devices\.net;SharedAccessKeyName=.+;SharedAccessKey=[a-zA-Z0-9+/=]{44}'),
+        re.compile(r'HostName=.+\.azure-devices\.net;.+;SharedAccessKey=[a-zA-Z0-9+/]{43}='),
 
         # Azure Monitor - Application Insights - connection string
         # Example: InstrumentationKey=343d6e27-f0e4-415c-ba09-afc023c61a45;IngestionEndpoint=<ingestion_endpoint_url>;LiveEndpoint=<live_endpoint_url>
@@ -116,15 +134,15 @@ class AzureKeyDetector(RegexBasedDetector):
         # Example: https://<app_name>.azurewebsites.net/api/<function_name>?code=<api_key>
         # https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-http-webhook-trigger#api-key-authorization
         # https://docs.microsoft.com/en-us/azure/azure-functions/security-concepts#function-access-keys
-        re.compile(r'https://[a-zA-Z0-9\-]{2,60}.azurewebsites.net/api/[a-zA-Z0-9_\-]{1,128}\?code=[a-zA-Z0-9_=\-]{56}'),
+        re.compile(r'https://.+\.azurewebsites\.net/api/.+\?code=[a-zA-Z0-9_\-]{54}=='),
 
         # Azure Web PubSub - connection string
         # Example: Endpoint=https://<server_name>.webpubsub.azure.com;AccessKey=<access_key>;Version=1.0;
         # https://docs.microsoft.com/en-us/azure/azure-web-pubsub/quickstart-use-sdk
-        re.compile(r'Endpoint=https://.+webpubsub\.azure\.com;.*AccessKey=[a-zA-Z0-9+/=]{44}'),
+        re.compile(r'Endpoint=https://.+\.webpubsub\.azure\.com;.*AccessKey=[a-zA-Z0-9+/]{43}='),
 
         # Azure SignalR Service - connection string
         # Example: Endpoint=https://<server_name>.service.signalr.net;AccessKey=<access_key>;Version=1.0;
         # https://docs.microsoft.com/en-us/azure/azure-signalr/concept-connection-string
-        re.compile(r'Endpoint=https://.+\.service\.signalr\.net;.*AccessKey=[a-zA-Z0-9+/=]{44}'),
+        re.compile(r'Endpoint=https://.+\.service\.signalr\.net;.*AccessKey=[a-zA-Z0-9+/]{43}='),
     ]
