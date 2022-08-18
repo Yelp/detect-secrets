@@ -27,6 +27,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 <!--
 ### Unreleased
+#### :tada: Added Grafana tokens
 -->
 
 ### v1.3.0
