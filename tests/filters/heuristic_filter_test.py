@@ -135,8 +135,9 @@ def test_is_indirect_reference(line, result):
 
 
 def test_is_lock_file():
-    # Basic test
+    # Basic tests
     assert filters.heuristic.is_lock_file('composer.lock')
+    assert filters.heuristic.is_lock_file('packages.lock.json')
 
     # file path
     assert filters.heuristic.is_lock_file('path/yarn.lock')

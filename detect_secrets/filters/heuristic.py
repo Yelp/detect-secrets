@@ -208,6 +208,7 @@ def is_lock_file(filename: str) -> bool:
         'Pipfile.lock',
         'poetry.lock',
         'Cargo.lock',
+        'packages.lock.json',
     }
 
 
