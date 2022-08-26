@@ -1,47 +1,54 @@
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.3.0
-    hooks:
-    -   id: check-builtin-literals
-        args: ['--no-allow-dict-kwargs']
-        exclude: bumpity.py$
-    -   id: check-docstring-first
-    -   id: debug-statements
-        exclude: bumpity.py$
-    -   id: double-quote-string-fixer
-    -   id: end-of-file-fixer
-    -   id: name-tests-test
-    -   id: trailing-whitespace
--   repo: https://github.com/pycqa/flake8
-    rev: 3.9.2
-    hooks:
-    -   id: flake8
-        args: ['--max-line-length', '100']
-        exclude: ^test_data/|bumpity.py$
--   repo: https://github.com/asottile/reorder_python_imports
-    rev: v2.3.6
-    hooks:
-    -   id: reorder-python-imports
-        language_version: python3
-        exclude: bumpity.py$
--   repo: https://github.com/asottile/add-trailing-comma
-    rev: v2.0.1
-    hooks:
-    -   id: add-trailing-comma
--   repo: https://github.com/pre-commit/mirrors-autopep8
-    rev: v1.5.4
-    hooks:
-    -   id: autopep8
-- repo: https://github.com/ibm/detect-secrets
-  # If you desire to use a specific version of detect-secrets, you can replace `master` with other git revisions such as branch, tag or commit sha.
-  # You are encouraged to use static refs such as tags, instead of branch name
-  #
-  # Running "pre-commit autoupdate" would automatically updates rev to latest tag
-  rev: 0.13.1+ibm.48.dss
-  hooks:
-    -   id: detect-secrets # pragma: whitelist secret
-        # Add options for detect-secrets-hook binary. You can run `detect-secrets-hook --help` to list out all possible options.
-        # You may also run `pre-commit run detect-secrets` to preview the scan result.
-        # when "--baseline" without "--use-all-plugins", pre-commit scan with just plugins in baseline file
-        # when "--baseline" with "--use-all-plugins", pre-commit scan with all available plugins
-        args: [--baseline, .secrets.baseline, --use-all-plugins, --no-keyword-scan, --fail-on-unaudited ]
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v3.3.0
+      hooks:
+          - id: check-builtin-literals
+            args: ["--no-allow-dict-kwargs"]
+            exclude: bumpity.py$
+          - id: check-docstring-first
+          - id: debug-statements
+            exclude: bumpity.py$
+          - id: double-quote-string-fixer
+          - id: end-of-file-fixer
+          - id: name-tests-test
+          - id: trailing-whitespace
+    - repo: https://github.com/pycqa/flake8
+      rev: 3.9.2
+      hooks:
+          - id: flake8
+            args: ["--max-line-length", "100"]
+            exclude: ^test_data/|bumpity.py$
+    - repo: https://github.com/asottile/reorder_python_imports
+      rev: v2.3.6
+      hooks:
+          - id: reorder-python-imports
+            language_version: python3
+            exclude: bumpity.py$
+    - repo: https://github.com/asottile/add-trailing-comma
+      rev: v2.0.1
+      hooks:
+          - id: add-trailing-comma
+    - repo: https://github.com/pre-commit/mirrors-autopep8
+      rev: v1.5.4
+      hooks:
+          - id: autopep8
+    - repo: https://github.com/ibm/detect-secrets
+      # If you desire to use a specific version of detect-secrets, you can replace `master` with other git revisions such as branch, tag or commit sha.
+      # You are encouraged to use static refs such as tags, instead of branch name
+      #
+      # Running "pre-commit autoupdate" would automatically updates rev to latest tag
+      rev: 0.13.1+ibm.50.dss
+      hooks:
+          - id: detect-secrets # pragma: whitelist secret
+            # Add options for detect-secrets-hook binary. You can run `detect-secrets-hook --help` to list out all possible options.
+            # You may also run `pre-commit run detect-secrets` to preview the scan result.
+            # when "--baseline" without "--use-all-plugins", pre-commit scan with just plugins in baseline file
+            # when "--baseline" with "--use-all-plugins", pre-commit scan with all available plugins
+            args:
+                [
+                    --baseline,
+                    .secrets.baseline,
+                    --use-all-plugins,
+                    --no-keyword-scan,
+                    --fail-on-unaudited,
+                ]

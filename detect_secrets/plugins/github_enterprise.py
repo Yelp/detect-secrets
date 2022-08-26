@@ -17,11 +17,19 @@ class GheDetector(RegexBasedDetector):
         super(GheDetector, self).__init__(*args, **kwargs)
         self.ghe_instance = ghe_instance
 
-        opt_github_prefix = r'(?:github|gh|ghe|git|)(?:_|-|)(?:api|)'
+        opt_github_prefix = r'(?:github|gh|ghe|git|auth|)(?:_|-|)(?:api|)'
         opt_space = r'(?: *)'
         opt_quote = r'(?:"|\'|)'
         header_keyword = r'(?:token|bearer|Basic)'
-        key_or_pass = r'(?:key|pwd|password|pass|token|oauth|creds|credentials|cred|auth)'
+        credential_keywords = 'cred|creds|credentials|credential|cred'
+        key_or_pass_values = 'key|pwd|password|pass|token|oauth|auth|pat|ghe|gh|secret'
+        key_or_pass_misspelt = 'ky|pw|pasword|pas|tkn|ath|secert|secrete'
+        key_or_pass = r'(?:{key_or_pass}|{credential_keywords}|{key_or_pass_misspelt})'\
+            .format(
+                key_or_pass=key_or_pass_values,
+                credential_keywords=credential_keywords,
+                key_or_pass_misspelt=key_or_pass_misspelt,
+            )
         api_endpoint = r'(?:{ghe_instance}|api.{ghe_instance})'\
             .format(ghe_instance=self.ghe_instance)
         forty_hex = r'(?:(?<=\W)|(?<=^))([0-9a-f]{40})(?:(?=\W)|(?=$))'
