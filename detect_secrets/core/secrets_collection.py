@@ -88,6 +88,10 @@ class SecretsCollection:
                 'installing that package, and try again.',
             )
 
+    def scan_line(self, filename: str, line: str) -> None:
+        for secret in scan.scan_line(filename, line):
+            self[secret.filename].add(secret)           
+
     def merge(self, old_results: 'SecretsCollection') -> None:
         """
         We operate under an assumption that the latest results are always more accurate,

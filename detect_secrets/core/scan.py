@@ -174,6 +174,37 @@ def scan_diff(diff: str) -> Generator[PotentialSecret, None, None]:
         yield from _process_line_based_plugins(lines, filename=filename)
 
 
+def scan_line(filename: str, line: str) -> Generator[PotentialSecret, None, None]:
+    """
+    :raises: ImportError
+    """
+    if not get_plugins():   # pragma: no cover
+        log.error('No plugins to scan with!')
+        return
+    context = get_code_snippet(lines=[line], line_number=1)
+    yield from (
+            secret
+            for plugin in get_plugins()
+            for secret in _scan_line(
+                plugin=plugin,
+                filename=filename,
+                line=line,
+                line_number=1,
+                context=context,
+            )
+            if not _is_filtered_out(
+                required_filter_parameters=['context'],
+                filename=secret.filename,
+                secret=secret.secret_value,
+                plugin=plugin,
+                line=line,
+                context=context,
+            )
+    )
+    
+    # yield from _process_line_based_plugins(line, filename=filename)
+
+
 def scan_for_allowlisted_secrets_in_file(filename: str) -> Generator[PotentialSecret, None, None]:
     """
     Developers are able to add individual lines to the allowlist using
