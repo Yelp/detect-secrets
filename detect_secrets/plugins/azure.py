@@ -49,6 +49,7 @@ class AzureKeyDetector(RegexBasedDetector):
         re.compile(r'Driver=\{ODBC Driver.+SQL Server\};.+\.database\.windows\.net.+Pwd=[^;]{8,128};'),
 
         # Azure Database for PostgreSQL - PostgreSQL connection URL
+        # pragma: allowlist nextline secret
         # Example: postgresql://<user_name>:<password>@<server_name>.postgres.database.azure.com/<database_name>?sslmode=require
         # Example: postgres://<user_name>:<password>@<server_name>.postgres.database.azure.com/<database_name>?sslmode=require
         # https://docs.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-servers
