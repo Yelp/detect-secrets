@@ -75,7 +75,7 @@ class AzureKeyDetector(RegexBasedDetector):
         re.compile(r'jdbc:postgresql://.+\.postgres\.database\.azure\.com.+password=[^&]{8,128}'),
 
         # Azure Database for PostgreSQL - Node.js, Python, Ruby, PHP, C++ (libpq) connection string
-        # Example: host=<server>.postgres.database.azure.com port=5432 dbname=<database_name> 
+        # Example: host=<server>.postgres.database.azure.com port=5432 dbname=<database_name>
         #          user=<user_name> password=<password> sslmode=require
         re.compile(r'host=.+\.postgres\.database\.azure\.com.+password=\S{8,128}'),
 
@@ -93,8 +93,8 @@ class AzureKeyDetector(RegexBasedDetector):
         re.compile(r'Server=.+\.mysql\.database\.azure\.com.+Password="[^"]{8,128}";'),
 
         # Azure Database for MariaDB - ADO.NET connection string
-        # Example: Server=<server_name>.mariadb.database.azure.com; Port=3306; 
-        #          Database=<database_name>; Uid=<user_name>@<server_name>; Pwd=<password>; 
+        # Example: Server=<server_name>.mariadb.database.azure.com; Port=3306;
+        #          Database=<database_name>; Uid=<user_name>@<server_name>; Pwd=<password>;
         #          SslMode=Preferred;
         # https://docs.microsoft.com/en-us/azure/mariadb/howto-connection-string
         re.compile(r'Server=.+\.mariadb\.database\.azure\.com.+Pwd=[^;]{8,128};'),
