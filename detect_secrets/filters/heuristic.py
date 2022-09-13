@@ -2,9 +2,9 @@ import os
 import re
 import string
 from functools import lru_cache
-from typing import Pattern
+from typing import Pattern, Optional
 
-from detect_secrets.plugins.base import BasePlugin
+from detect_secrets.plugins.base import BasePlugin, RegexBasedDetector
 
 
 def is_sequential_string(secret: str) -> bool:
@@ -59,13 +59,14 @@ def _get_uuid_regex() -> Pattern:
     )
 
 
-def is_likely_id_string(secret: str, line: str, plugin: BasePlugin) -> bool:
+def is_likely_id_string(secret: str, line: str, plugin: Optional[BasePlugin] = None) -> bool:
     try:
         index = line.index(secret)
     except ValueError:
         return False
 
-    return plugin.secret_type != 'AWS Access Key' and bool(_get_id_detector_regex().search(line, pos=0, endpos=index))
+    return (not plugin or not isinstance(plugin, RegexBasedDetector)) \
+        and bool(_get_id_detector_regex().search(line, pos=0, endpos=index))
 
 
 @lru_cache(maxsize=1)
