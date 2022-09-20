@@ -96,6 +96,8 @@ AWSKeyDetector
 AzureStorageKeyDetector
 BasicAuthDetector
 CloudantDetector
+DiscordBotTokenDetector
+GitHubTokenDetector
 Base64HighEntropyString
 HexHighEntropyString
 IbmCloudIamDetector
@@ -105,8 +107,10 @@ KeywordDetector
 MailchimpDetector
 NpmDetector
 PrivateKeyDetector
+SendGridDetector
 SlackDetector
 SoftlayerDetector
+SquareOAuthDetector
 StripeDetector
 TwilioKeyDetector
 ```
