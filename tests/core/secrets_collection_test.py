@@ -182,7 +182,7 @@ class TestScanDiff:
 def test_merge():
     old_secrets = SecretsCollection()
     old_secrets.scan_file('test_data/each_secret.py')
-    assert len(list(old_secrets)) >= 3      # otherwise, this test won't work.
+    assert len(list(old_secrets)) >= 4      # otherwise, this test won't work.
 
     index = 0
     for _, secret in old_secrets:
@@ -197,7 +197,7 @@ def test_merge():
 
     new_secrets = SecretsCollection()
     new_secrets.scan_file('test_data/each_secret.py')
-    list(new_secrets)[-1][1].is_secret = True
+    list(new_secrets)[-2][1].is_secret = True
 
     new_secrets.merge(old_secrets)
 
@@ -212,6 +212,9 @@ def test_merge():
         elif index == 2:
             assert secret.is_secret is True
             assert secret.is_verified is True
+        elif index == 3:
+            assert secret.is_secret is None
+            assert secret.is_verified is False
 
         index += 1
 
@@ -379,8 +382,8 @@ class TestSubtraction:
         assert secrets != baseline
 
         result = secrets - baseline
-        assert len(result['test_data/each_secret.py']) == 2
-        assert len(secrets['test_data/each_secret.py']) == 4
+        assert len(result['test_data/each_secret.py']) == 3
+        assert len(secrets['test_data/each_secret.py']) == 5
 
     @staticmethod
     def test_no_overlapping_files(configure_plugins):

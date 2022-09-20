@@ -1,10 +1,14 @@
 import json
 import os
 import subprocess
+import sys
 import tempfile
 from contextlib import contextmanager
 from contextlib import redirect_stdout
+from pathlib import Path
 from unittest import mock
+
+import pytest
 
 from detect_secrets import main as main_module
 from detect_secrets.core import baseline
@@ -12,6 +16,7 @@ from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.main import scan_adhoc_string
 from detect_secrets.settings import transient_settings
 from testing.mocks import disable_gibberish_filter
+from testing.mocks import mock_named_temporary_file
 from testing.mocks import mock_printer
 
 
@@ -39,7 +44,7 @@ class TestScan:
             secrets = SecretsCollection()
             old_secrets = baseline.format_for_output(secrets)
 
-        with mock_printer(main_module) as printer, tempfile.NamedTemporaryFile() as f:
+        with mock_printer(main_module) as printer, mock_named_temporary_file() as f:
             baseline.save_to_file(old_secrets, f.name)
             f.seek(0)
 
@@ -58,6 +63,10 @@ class TestScan:
             assert not printer.message
 
     @staticmethod
+    @pytest.mark.xfail(
+        sys.version_info < (3, 8) and sys.platform == 'win32',
+        reason='TemporaryDirectory correct tear-down requires python 3.8 or higher on windows',
+    )
     def test_works_from_different_directory():
         with tempfile.TemporaryDirectory() as d:
             subprocess.call(['git', '-C', d, 'init'])
@@ -83,26 +92,28 @@ class TestSlimScan:
 
     @staticmethod
     def test_restores_line_numbers():
-        with tempfile.NamedTemporaryFile('w+') as f:
-            with redirect_stdout(f):
-                main_module.main(['scan', '--slim', 'test_data/config.env'])
+        with mock_named_temporary_file(mode='w+') as f, redirect_stdout(f):
+            file_a = str(Path('test_data/config.env'))
+            file_b = str(Path('test_data/config.md'))
+
+            main_module.main(['scan', '--slim', file_a])
 
             f.seek(0)
             main_module.main([
                 'scan',
-                '--slim', 'test_data/config.md', 'test_data/config.env',
+                '--slim', file_a, file_b,
                 '--baseline', f.name,
             ])
 
             f.seek(0)
             secrets = baseline.load(baseline.load_from_file(f.name))
 
-        # Make sure both old and new files exist
-        assert secrets.files == {'test_data/config.env', 'test_data/config.md'}
+            # Make sure both old and new files exist
+            assert secrets.files == {file_a, file_b}
 
-        # Make sure they both have line numbers
-        assert list(secrets['test_data/config.env'])[0].line_number
-        assert list(secrets['test_data/config.md'])[0].line_number
+            # Make sure they both have line numbers
+            assert list(secrets[file_a])[0].line_number
+            assert list(secrets[file_b])[0].line_number
 
 
 class TestScanString:
@@ -183,7 +194,7 @@ class TestScanOnlyAllowlisted:
             for item in output['filters_used']
         }
 
-        with tempfile.NamedTemporaryFile() as f, mock.patch(
+        with mock_named_temporary_file() as f, mock.patch(
             'detect_secrets.audit.io.get_user_decision',
             return_value='s',
         ):

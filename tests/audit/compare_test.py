@@ -1,5 +1,4 @@
 import re
-import tempfile
 from contextlib import contextmanager
 from unittest import mock
 
@@ -11,6 +10,7 @@ from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.main import main
 from detect_secrets.plugins.basic_auth import BasicAuthDetector
 from testing.factories import potential_secret_factory as original_potential_secret_factory
+from testing.mocks import mock_named_temporary_file
 
 
 def potential_secret_factory(secret: str, **kwargs):
@@ -139,7 +139,7 @@ def test_fails_when_no_line_number(printer):
 
 
 def run_logic(secretsA: SecretsCollection, secretsB: SecretsCollection):
-    with tempfile.NamedTemporaryFile() as f, tempfile.NamedTemporaryFile() as g:
+    with mock_named_temporary_file() as f, mock_named_temporary_file() as g:
         baseline.save_to_file(secretsA, f.name)
         baseline.save_to_file(secretsB, g.name)
 

@@ -129,7 +129,7 @@ def parse_args(args: argparse.Namespace) -> None:
         for filename in args.plugin:
             # NOTE: Technically, we could just configure the settings, and have
             # `detect_secrets.core.plugins.util.get_mapping_from_secret_type_to_class`
-            # to initialze them. However, if it's in the baseline / settings, we can
+            # to initialize them. However, if it's in the baseline / settings, we can
             # assume it works -- therefore, let's initialize it to discover any errors early
             # on, before storing it in settings.
             try:

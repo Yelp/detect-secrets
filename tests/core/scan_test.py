@@ -1,6 +1,6 @@
 import os
-import tempfile
 import textwrap
+from pathlib import Path
 
 import pytest
 
@@ -8,6 +8,7 @@ from detect_secrets.core import scan
 from detect_secrets.settings import transient_settings
 from detect_secrets.util import git
 from detect_secrets.util.path import get_relative_path_if_in_cwd
+from testing.mocks import mock_named_temporary_file
 
 
 class TestGetFilesToScan:
@@ -53,16 +54,16 @@ class TestGetFilesToScan:
 
     @staticmethod
     def test_handles_multiple_directories():
-        directories = ['test_data/short_files', 'test_data/files']
+        directories = [Path('test_data/short_files'), Path('test_data/files')]
         results = list(scan.get_files_to_scan(*directories))
 
         for prefix in directories:
-            assert len(list(filter(lambda x: x.startswith(prefix), results))) > 1
+            assert len(list(filter(lambda x: x.startswith(str(prefix)), results))) > 1
 
     @staticmethod
     @pytest.fixture(autouse=True, scope='class')
     def non_tracked_file():
-        with tempfile.NamedTemporaryFile(
+        with mock_named_temporary_file(
             prefix=os.path.join(git.get_root_directory(), 'test_data/'),
         ) as f:
             f.write(b'content does not matter')
@@ -74,7 +75,7 @@ class TestGetFilesToScan:
 class TestScanFile:
     @staticmethod
     def test_handles_broken_yaml_gracefully():
-        with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
+        with mock_named_temporary_file(suffix='.yaml') as f:
             f.write(
                 textwrap.dedent("""
                 metadata:
@@ -89,7 +90,7 @@ class TestScanFile:
     def test_handles_binary_files_gracefully():
         # NOTE: This suffix needs to be something that isn't in the known file types, as determined
         # by `detect_secrets.util.filetype.determine_file_type`.
-        with tempfile.NamedTemporaryFile(suffix='.woff2') as f:
+        with mock_named_temporary_file(suffix='.woff2') as f:
             f.write(b'\x86')
             f.seek(0)
 

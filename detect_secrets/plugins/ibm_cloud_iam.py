@@ -15,13 +15,13 @@ class IbmCloudIamDetector(RegexBasedDetector):
     # opt means optional
     opt_ibm_cloud_iam = r'(?:ibm(?:_|-|)cloud(?:_|-|)iam|cloud(?:_|-|)iam|' + \
         r'ibm(?:_|-|)cloud|ibm(?:_|-|)iam|ibm|iam|cloud|)'
-    opt_dash_undrscr = r'(?:_|-|)'
+    opt_dash_underscore = r'(?:_|-|)'
     opt_api = r'(?:api|)'
     key_or_pass = r'(?:key|pwd|password|pass|token)'
     secret = r'([a-zA-Z0-9_\-]{44}(?![a-zA-Z0-9_\-]))'
     denylist = [
         RegexBasedDetector.build_assignment_regex(
-            prefix_regex=opt_ibm_cloud_iam + opt_dash_undrscr + opt_api,
+            prefix_regex=opt_ibm_cloud_iam + opt_dash_underscore + opt_api,
             secret_keyword_regex=key_or_pass,
             secret_regex=secret,
         ),

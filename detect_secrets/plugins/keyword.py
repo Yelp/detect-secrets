@@ -36,6 +36,7 @@ from ..core.potential_secret import PotentialSecret
 from ..util.filetype import determine_file_type
 from ..util.filetype import FileType
 from .base import BasePlugin
+from detect_secrets.util.code_snippet import CodeSnippet
 
 
 # Note: All values here should be lowercase
@@ -202,6 +203,17 @@ FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX = re.compile(
     ),
     flags=re.IGNORECASE,
 )
+FOLLOWED_BY_ARROW_FUNCTION_SIGN_QUOTES_REQUIRED_REGEX = re.compile(
+    # e.g. my_password => "bar" or my_password => bar
+    r'{denylist}({closing})?{whitespace}=>?{whitespace}({quote})({secret})(\3)'.format(
+        denylist=DENYLIST_REGEX,
+        closing=CLOSING,
+        quote=QUOTE,
+        whitespace=OPTIONAL_WHITESPACE,
+        secret=SECRET,
+    ),
+    flags=re.IGNORECASE,
+)
 CONFIG_DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_COLON_REGEX: 4,
     PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX: 2,
@@ -226,6 +238,7 @@ QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP = {
     PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX: 2,
     FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 5,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
+    FOLLOWED_BY_ARROW_FUNCTION_SIGN_QUOTES_REQUIRED_REGEX: 4,
 }
 REGEX_BY_FILETYPE = {
     FileType.GO: GOLANG_DENYLIST_REGEX_TO_GROUP,
@@ -294,6 +307,7 @@ class KeywordDetector(BasePlugin):
         filename: str,
         line: str,
         line_number: int = 0,
+        context: CodeSnippet = None,
         **kwargs: Any,
     ) -> Set[PotentialSecret]:
         filetype = determine_file_type(filename)
@@ -302,6 +316,7 @@ class KeywordDetector(BasePlugin):
             filename=filename,
             line=line,
             line_number=line_number,
+            context=context,
             denylist_regex_to_group=denylist_regex_to_group,
         )
 
