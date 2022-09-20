@@ -22,6 +22,19 @@ class TestDiscordBotTokenDetector:
                 'MZ1yGvKTjE0rY0cV8i47CjAa.uRHQPq.Xb1Mk2nEhe-4iUcrGOuegj57zMC',
                 True,
             ),
+            # Random values to fail
+            (
+                'MZ1yGvKTj0rY0cV8i47CjAa.uHQPq.Xb1Mk2nEhe-4icrGOuegj57zMC',
+                False,
+            ),
+            (
+                'SZ1yGvKTj0rY0cV8i47CjAa.uHQPq.Xb1Mk2nEhe-4icrGOuegj57zMC',
+                False,
+            ),
+            (
+                'MZ1yGvKTj0rY0cV8i47CjAa.uHQPq.Xb1Mk2nEhe-4icrGOuegj57zM',
+                False,
+            ),
         ],
     )
     def test_analyze(self, payload, should_flag):
