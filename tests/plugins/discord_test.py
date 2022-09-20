@@ -40,4 +40,4 @@ class TestDiscordBotTokenDetector:
     def test_analyze(self, payload, should_flag):
         logic = DiscordBotTokenDetector()
         output = logic.analyze_line(filename='mock_filename', line=payload)
-        assert len(output) == (1 if should_flag else 0)
+        assert len(output) == int(should_flag)
