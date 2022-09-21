@@ -1,23 +1,27 @@
-# This workflow will upload a Python Package using Twine when a new tag is created
-# For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
-
-name: detect-secrets-pypi
+name: release
 
 on:
+  workflow_dispatch:
   push:
-    tags:
-      - v*
+    branches:
+      - master
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
+      - 'CHANGELOG.md'
+      - '.github/**'
+
+permissions: read-all
 
 jobs:
-
   tox:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python: ['3.6', '3.7', '3.8', '3.9']
+        python: ['3.7', '3.8', '3.9']
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
     - uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python }}
@@ -27,21 +31,60 @@ jobs:
     - run: tox -e py
     - run: tox -e mypy
 
-  deploy:
-    # Run tests beforing deploying to pypi
+  bump-version:
+    # Run tests before bumping
     needs: tox
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, public, linux, x64]
+    permissions:
+      contents: write
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
-    - name: Install dependencies
-      run: pip install wheel
-    - name: Build package
-      run: python setup.py sdist bdist_wheel
-    - name: Publish package
-      uses: pypa/gh-action-pypi-publish@v1.5.0
-      with:
-        password: ${{ secrets.pypi_password }}
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
+      - name: bump version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git fetch --tags
+          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          echo "latest tag: $latest_tag"
+          new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b , $3+1)}')
+          echo "new tag: $new_tag"
+
+          ## update package version
+          echo "VERSION = '$new_tag'" >> 'detect_secrets/__version__.py'
+
+          git commit --reuse-message=HEAD@{1} detect_secrets/__version__.py || echo "No changes to commit"
+          git push origin
+          git tag $new_tag
+          git push origin $new_tag
+
+  publish-package:
+    needs: bump-version
+    runs-on: [self-hosted, public, linux, x64]
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
+      - name: Set up Python 3.7
+        uses: actions/setup-python@98f2ad02fd48d057ee3b4d4f66525b231c3e52b6  # v3
+        with:
+          python-version: 3.7
+      - name: create python package
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git fetch --tags
+          git pull
+          
+          python -m pip install wheel
+          python setup.py sdist bdist_wheel
+      - name: Publish a Python distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@717ba43cfbb0387f6ce311b169a825772f54d295  # v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}
+      - name: sleep and wait for package to refresh
+        run: |
+          sleep 2m
+

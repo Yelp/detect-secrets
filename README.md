@@ -1,10 +1,12 @@
-[![Build Status](https://github.com/Yelp/detect-secrets/actions/workflows/ci.yml/badge.svg)](https://github.com/Yelp/detect-secrets/actions/workflows/ci.yml?query=branch%3Amaster++)
-[![PyPI version](https://badge.fury.io/py/detect-secrets.svg)](https://badge.fury.io/py/detect-secrets)
-[![Homebrew](https://img.shields.io/badge/dynamic/json.svg?url=https://formulae.brew.sh/api/formula/detect-secrets.json&query=$.versions.stable&label=homebrew)](https://formulae.brew.sh/formula/detect-secrets)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg)](https://github.com/Yelp/detect-secrets/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+)
-[![AMF](https://img.shields.io/badge/Donate-Charity-orange.svg)](https://www.againstmalaria.com/donation.aspx)
+[![Build Status](https://github.com/bridgecrewio/detect-secrets/actions/workflows/ci.yml/badge.svg)](https://github.com/bridgecrewio/detect-secrets/actions/workflows/ci.yml?query=branch%3Amaster++)
+[![PyPI version](https://badge.fury.io/py/bc-detect-secrets.svg)](https://badge.fury.io/py/bc-detect-secrets)
 
 # detect-secrets
+
+# Notice
+
+This is a fork of the [detect-secrets](https://github.com/Yelp/detect-secrets) repo by Yelp and is 
+officially supported by Bridgecrew.
 
 ## About
 

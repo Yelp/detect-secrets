@@ -18,17 +18,17 @@ with open('README.md', encoding='utf-8') as f:
 
 
 setup(
-    name='detect_secrets',
+    name='bc-detect-secrets',
+    python_requires='>=3.7',
     packages=find_packages(exclude=(['test*', 'tmp*'])),
     version=VERSION,
     description='Tool for detecting secrets in the codebase',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    license='Copyright Yelp, Inc. 2020',
-    author='Aaron Loo',
-    author_email='aaronloo@yelp.com',
-    url='https://github.com/Yelp/detect-secrets',
-    download_url='https://github.com/Yelp/detect-secrets/archive/{}.tar.gz'.format(VERSION),
+    license='Apache License 2.0',
+    author='bridgecrew',
+    author_email='meet@bridgecrew.io',
+    url='https://github.com/bridgecrewio/detect-secrets',
     keywords=['secret-management', 'pre-commit', 'security', 'entropy-checks'],
     install_requires=[
         'pyyaml',
