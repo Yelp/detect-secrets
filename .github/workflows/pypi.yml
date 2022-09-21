@@ -76,7 +76,7 @@ jobs:
           git config --local user.name "GitHub Action"
           git fetch --tags
           git pull
-          
+
           python -m pip install wheel
           python setup.py sdist bdist_wheel
       - name: Publish a Python distribution to PyPI
@@ -87,4 +87,3 @@ jobs:
       - name: sleep and wait for package to refresh
         run: |
           sleep 2m
-

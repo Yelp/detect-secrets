@@ -5,7 +5,7 @@
 
 # Notice
 
-This is a fork of the [detect-secrets](https://github.com/Yelp/detect-secrets) repo by Yelp and is 
+This is a fork of the [detect-secrets](https://github.com/Yelp/detect-secrets) repo by Yelp and is
 officially supported by Bridgecrew.
 
 ## About
