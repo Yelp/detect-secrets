@@ -29,10 +29,3 @@ repos:
     rev: v1.4.4
     hooks:
     -   id: autopep8
--   repo: local
-    hooks:
-    -   id: detect-secrets
-        name: Detect secrets
-        language: python
-        entry: detect-secrets-hook
-        args: ['--baseline', '.secrets.baseline']
