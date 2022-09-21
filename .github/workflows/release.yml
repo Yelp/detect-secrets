@@ -29,17 +29,22 @@ jobs:
     # Run tox only for the installed py version on the runner as outlined in the python matrix
     # Ensures the correct py version is installed and tested as opposed to 'tox' which attempts to run for all py versions in tox.ini
     - run: tox -e py
-    - run: tox -e mypy
 
   bump-version:
     # Run tests before bumping
     needs: tox
     runs-on: [self-hosted, public, linux, x64]
+    environment: release
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
+      - name: Set up Python 3.7
+        uses: actions/setup-python@98f2ad02fd48d057ee3b4d4f66525b231c3e52b6  # v3
+        with:
+          python-version: 3.7
       - name: bump version
+        id: version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -52,37 +57,21 @@ jobs:
           echo "new tag: $new_tag"
 
           ## update package version
-          echo "VERSION = '$new_tag'" >> 'detect_secrets/__version__.py'
+          echo "VERSION = '$new_tag'" > 'detect_secrets/__version__.py'
 
           git commit --reuse-message=HEAD@{1} detect_secrets/__version__.py || echo "No changes to commit"
           git push origin
           git tag $new_tag
           git push origin $new_tag
-
-  publish-package:
-    needs: bump-version
-    runs-on: [self-hosted, public, linux, x64]
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
-      - name: Set up Python 3.7
-        uses: actions/setup-python@98f2ad02fd48d057ee3b4d4f66525b231c3e52b6  # v3
-        with:
-          python-version: 3.7
+          
+          echo "::set-output name=version::$new_tag"
       - name: create python package
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git fetch --tags
-          git pull
-
           python -m pip install wheel
           python setup.py sdist bdist_wheel
       - name: Publish a Python distribution to PyPI
         uses: pypa/gh-action-pypi-publish@717ba43cfbb0387f6ce311b169a825772f54d295  # v1
         with:
-          user: __token__
           password: ${{ secrets.PYPI_TOKEN }}
       - name: sleep and wait for package to refresh
         run: |
