@@ -38,7 +38,7 @@ typed-ast==1.5.4
 types-PyYAML==6.0.11
 types-requests==2.28.9
 typing-extensions==3.10.0.2
-unidiff==0.7.3
+unidiff==0.7.4
 urllib3==1.26.9
 virtualenv==20.6.0
 zipp==3.6.0
