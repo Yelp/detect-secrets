@@ -210,25 +210,28 @@ class YAMLFileParser:
         self,
         parent: Optional[yaml.nodes.Node],
         index: Optional[yaml.nodes.Node],
-    ) -> yaml.nodes.Node:
+    ) -> Optional[yaml.nodes.Node]:
         line = (
             self.loader.marks[-1].line
             if self.is_inline_flow_mapping_key
             else self.loader.line
         )
 
-        node = yaml.composer.Composer.compose_node(self.loader, parent, index)
-        node.__line__ = line + 1
+        node = yaml.composer.Composer.compose_node(self.loader, parent, index)  # type: ignore
+        if node is None:
+            return None
+
+        node.__line__ = line + 1    # type: ignore
 
         if node.tag.endswith(':map'):
             # Reset the inline flow mapping key when the end of a mapping is reached
             # to avoid complications with empty mappings
             self.is_inline_flow_mapping_key = False
-            return _tag_dict_values(node)
+            return _tag_dict_values(cast(yaml.nodes.MappingNode, node))
 
         # TODO: Not sure if need to do :seq
 
-        return cast(yaml.nodes.Node, node)
+        return node
 
     def _parse_flow_mapping_key_shim(
         self,
