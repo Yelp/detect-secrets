@@ -4,13 +4,13 @@ certifi==2021.10.8
 cfgv==3.2.0
 charset-normalizer==2.0.7
 coverage==4.5.4
-distlib==0.3.4
+distlib==0.3.6
 filelock==3.0.12
 flake8==3.5.0
 gibberish-detector==0.1.1
 identify==2.3.0
 idna==3.3
-importlib-metadata==4.8.1
+importlib-metadata==4.12.0
 iniconfig==1.1.1
 mccabe==0.6.1
 monotonic==1.6
