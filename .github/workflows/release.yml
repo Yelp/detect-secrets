@@ -63,7 +63,7 @@ jobs:
           git push origin
           git tag $new_tag
           git push origin $new_tag
-          
+
           echo "::set-output name=version::$new_tag"
       - name: create python package
         run: |
