@@ -108,7 +108,7 @@ def get_modules_from_package(root: ModuleType) -> Iterable[str]:
     return [
         module
         for _, module, is_package in pkgutil.walk_packages(
-            root.__path__, prefix=f'{root.__name__}.',    # type: ignore  # mypy issue #1422
+            root.__path__, prefix=f'{root.__name__}.',
         )
         if not is_package
     ]

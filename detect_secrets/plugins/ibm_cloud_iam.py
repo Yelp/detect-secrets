@@ -1,4 +1,3 @@
-from typing import cast
 from typing import Union
 
 import requests
@@ -36,7 +35,7 @@ class IbmCloudIamDetector(RegexBasedDetector):
 
 def verify_cloud_iam_api_key(apikey: Union[str, bytes]) -> requests.Response:  # pragma: no cover
     if type(apikey) == bytes:
-        apikey = cast(bytes, apikey).decode('UTF-8')
+        apikey = apikey.decode('UTF-8')
 
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded',

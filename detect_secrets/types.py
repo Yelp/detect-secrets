@@ -26,7 +26,7 @@ except ImportError:     # pragma: no cover
         def __subclasscheck__(self, cls: Any) -> None:
             raise TypeError('NoReturn cannot be used with issubclass().')
 
-    NoReturn = _NoReturn(_root=True)    # type: ignore
+    NoReturn = _NoReturn(_root=True)
 
 
 class SelfAwareCallable:

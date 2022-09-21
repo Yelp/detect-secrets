@@ -128,7 +128,7 @@ def upgrade(baseline: Dict[str, Any]) -> Dict[str, Any]:
 
     new_baseline = {**baseline}
     for module in modules:
-        module.upgrade(new_baseline)    # type: ignore
+        module.upgrade(new_baseline)
 
     new_baseline['version'] = VERSION
     return new_baseline
