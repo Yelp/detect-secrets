@@ -4,6 +4,7 @@ import pytest
 
 from detect_secrets import filters
 from detect_secrets.core.scan import scan_line
+from detect_secrets.plugins.aws import AWSKeyDetector
 from detect_secrets.settings import transient_settings
 
 
@@ -90,10 +91,15 @@ class TestIsLikelyIdString:
 
             # fail although the word david ends in id
             ('RANDOM_STRING', 'postgres://david:RANDOM_STRING'),
+
+            # fail since this is an aws access key id, a real secret
+            ('AKIA4NACSIJMDDNSEDTE', 'aws_access_key_id=AKIA4NACSIJMDDNSEDTE'),
         ],
     )
-    def test_failure(self, secret, line):
-        assert not filters.heuristic.is_likely_id_string(secret, line)
+    def test_failure(self, secret, line, plugin=None):
+        if secret.startswith('AKIA'):
+            plugin = AWSKeyDetector()
+        assert not filters.heuristic.is_likely_id_string(secret, line, plugin)
 
 
 @pytest.mark.parametrize(
