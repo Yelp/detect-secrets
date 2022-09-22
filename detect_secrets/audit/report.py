@@ -28,7 +28,7 @@ def generate_report(
     baseline_file: str,
     class_to_print: SecretClassToPrint = None,
     line_getter_factory: Callable[[str], 'LineGetter'] = open_file,
-) -> Dict[str, List[Any]]:
+) -> Dict[str, List[Dict[str, Any]]]:
 
     secrets: Dict[Tuple[str, str], Any] = {}
     for filename, secret in get_baseline_from_file(baseline_file):
