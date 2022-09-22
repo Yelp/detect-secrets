@@ -93,7 +93,7 @@ class TestIsLikelyIdString:
             ('RANDOM_STRING', 'postgres://david:RANDOM_STRING'),
 
             # fail since this is an aws access key id, a real secret
-            ('AKIA4NACSIJMDDNSEDTE', 'aws_access_key_id=AKIA4NACSIJMDDNSEDTE')
+            ('AKIA4NACSIJMDDNSEDTE', 'aws_access_key_id=AKIA4NACSIJMDDNSEDTE'),
         ],
     )
     def test_failure(self, secret, line, plugin=None):
