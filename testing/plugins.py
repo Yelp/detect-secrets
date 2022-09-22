@@ -2,6 +2,7 @@ import re
 from contextlib import contextmanager
 from typing import Any
 from typing import Generator
+from unittest import mock
 
 from detect_secrets.core.plugins import Plugin
 from detect_secrets.core.plugins.util import get_mapping_from_secret_type_to_class
@@ -19,9 +20,16 @@ def register_plugin(plugin: Plugin) -> Generator[None, None, None]:
     # registered plugins, this shimmed function will be known as the underlying plugin class.
     get_instance.__name__ = plugin.__class__.__name__
 
+    get_mapping_from_secret_type_to_class.cache_clear()
+    mapping = get_mapping_from_secret_type_to_class()
+    mapping[plugin.secret_type] =  get_instance  # type: ignore
+
     try:
-        get_mapping_from_secret_type_to_class()[plugin.secret_type] = get_instance  # type: ignore
-        yield
+        with mock.patch(
+            'detect_secrets.core.plugins.util.get_mapping_from_secret_type_to_class',
+            return_value = mapping
+        ):
+            yield
     finally:
         # On next run, it should re-initialize to base state.
         get_mapping_from_secret_type_to_class.cache_clear()
