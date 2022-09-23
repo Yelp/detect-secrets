@@ -1,6 +1,4 @@
-# coveragepy==5.0 fails with `Safety level may not be changed inside a transaction
-# on python 3.6.0 (xenial)
-coverage<5
+coverage
 flake8==3.5.0
 gibberish-detector>=0.1.1
 monotonic
@@ -10,6 +8,5 @@ pyahocorasick
 pytest
 pyyaml
 responses
-tox-pip-extensions
 tox
 unidiff

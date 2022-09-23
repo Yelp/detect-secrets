@@ -15,10 +15,9 @@ permissions: read-all
 
 jobs:
   tox:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
         python: ['3.7', '3.8', '3.9']
     steps:
     - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
@@ -37,6 +36,8 @@ jobs:
     environment: release
     permissions:
       contents: write
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
       - name: Set up Python 3.7
@@ -76,3 +77,39 @@ jobs:
       - name: sleep and wait for package to refresh
         run: |
           sleep 2m
+
+  create-pr:
+    needs: bump-version
+    runs-on: [self-hosted, public, linux, x64]
+    environment: release
+    steps:
+      - name: Checkout checkov
+        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          repository: bridgecrewio/checkov
+      - uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
+        with:
+          python-version: "3.7"
+      - name: Prepare PR
+        run: |
+          # install needed tools
+          pip install pipenv "pipenv-setup[black]"
+
+          # update Pipfile
+          pipenv install bc-detect-secrets==${{ needs.bump-version.outputs.version }} --selective-upgrade
+
+          # update setup.py
+          pipenv-setup sync --pipfile
+      - name: Create PR
+        uses: peter-evans/create-pull-request@18f90432bedd2afd6a825469ffd38aa24712a91d  # v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          branch: update-detect-secrets-dep
+          delete-branch: true
+          commit-message: update bc-detect-secrets version
+          title: "chore: update bc-detect-secrets version to ${{ needs.bump-version.outputs.version }}"
+          body: |
+            - Automatic update of bc-detect-secrets
+
+            powered by [create-pull-request](https://github.com/peter-evans/create-pull-request) GHA
