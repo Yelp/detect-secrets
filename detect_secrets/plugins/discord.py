@@ -11,7 +11,7 @@ class DiscordBotTokenDetector(RegexBasedDetector):
     secret_type = 'Discord Bot Token'
 
     denylist = [
-        # Discord Bot Token (MXXXXXXXXXXXXXXXXXXXXXXX.XXXXXX.XXXXXXXXXXXXXXXXXXXXXXXXXXX)
+        # Discord Bot Token ([M|N]XXXXXXXXXXXXXXXXXXXXXXX.XXXXXX.XXXXXXXXXXXXXXXXXXXXXXXXXXX)
         # Reference: https://discord.com/developers/docs/reference#authentication
         re.compile(r'[MN][a-zA-Z\d_-]{23}\.[a-zA-Z\d_-]{6}\.[a-zA-Z\d_-]{27}'),
     ]
