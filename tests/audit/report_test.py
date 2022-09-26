@@ -26,109 +26,118 @@ random_secret = ''.join(random.choice(string.ascii_letters) for _ in range(8))
     'class_to_print, expected_real, expected_false, expected_output',
     [
         (
-            None, 3, 1, [
-                {
-                    'category': 'VERIFIED_TRUE',
-                    'lines': {
-                        1: 'url = {}'.format(url_format.format(first_secret)),
-                        3: 'link = {}'.format(url_format.format(first_secret)),
+            None, 3, 1,
+            {
+                'results': [
+                    {
+                        'category': 'VERIFIED_TRUE',
+                        'lines': {
+                            1: 'url = {}'.format(url_format.format(first_secret)),
+                            3: 'link = {}'.format(url_format.format(first_secret)),
+                        },
+                        'secrets': first_secret,
+                        'types': [
+                            BasicAuthDetector.secret_type,
+                        ],
                     },
-                    'secrets': first_secret,
-                    'types': [
-                        BasicAuthDetector.secret_type,
-                    ],
-                },
-                {
-                    'category': 'UNVERIFIED',
-                    'lines': {
-                        2: 'example = {}'.format(url_format.format(random_secret)),
+                    {
+                        'category': 'UNVERIFIED',
+                        'lines': {
+                            2: 'example = {}'.format(url_format.format(random_secret)),
+                        },
+                        'secrets': random_secret,
+                        'types': [
+                            BasicAuthDetector.secret_type,
+                        ],
                     },
-                    'secrets': random_secret,
-                    'types': [
-                        BasicAuthDetector.secret_type,
-                    ],
-                },
-                {
-                    'category': 'VERIFIED_TRUE',
-                    'lines': {
-                        1: 'url = {}'.format(url_format.format(second_secret)),
+                    {
+                        'category': 'VERIFIED_TRUE',
+                        'lines': {
+                            1: 'url = {}'.format(url_format.format(second_secret)),
+                        },
+                        'secrets': second_secret,
+                        'types': [
+                            BasicAuthDetector.secret_type,
+                            JwtTokenDetector.secret_type,
+                        ],
                     },
-                    'secrets': second_secret,
-                    'types': [
-                        BasicAuthDetector.secret_type,
-                        JwtTokenDetector.secret_type,
-                    ],
-                },
-                {
-                    'category': 'VERIFIED_FALSE',
-                    'lines': {
-                        2: 'example = {}'.format(url_format.format(random_secret)),
+                    {
+                        'category': 'VERIFIED_FALSE',
+                        'lines': {
+                            2: 'example = {}'.format(url_format.format(random_secret)),
+                        },
+                        'secrets': random_secret,
+                        'types': [
+                            BasicAuthDetector.secret_type,
+                        ],
                     },
-                    'secrets': random_secret,
-                    'types': [
-                        BasicAuthDetector.secret_type,
-                    ],
-                },
-            ],
+                ],
+            },
         ),
         (
-            SecretClassToPrint.REAL_SECRET, 3, 0, [
-                {
-                    'category': 'VERIFIED_TRUE',
-                    'lines': {
-                        1: 'url = {}'.format(url_format.format(first_secret)),
-                        3: 'link = {}'.format(url_format.format(first_secret)),
+            SecretClassToPrint.REAL_SECRET, 3, 0,
+            {
+                'results': [
+                    {
+                        'category': 'VERIFIED_TRUE',
+                        'lines': {
+                            1: 'url = {}'.format(url_format.format(first_secret)),
+                            3: 'link = {}'.format(url_format.format(first_secret)),
+                        },
+                        'secrets': first_secret,
+                        'types': [
+                            BasicAuthDetector.secret_type,
+                        ],
                     },
-                    'secrets': first_secret,
-                    'types': [
-                        BasicAuthDetector.secret_type,
-                    ],
-                },
-                {
-                    'category': 'UNVERIFIED',
-                    'lines': {
-                        2: 'example = {}'.format(url_format.format(random_secret)),
+                    {
+                        'category': 'UNVERIFIED',
+                        'lines': {
+                            2: 'example = {}'.format(url_format.format(random_secret)),
+                        },
+                        'secrets': random_secret,
+                        'types': [
+                            BasicAuthDetector.secret_type,
+                        ],
                     },
-                    'secrets': random_secret,
-                    'types': [
-                        BasicAuthDetector.secret_type,
-                    ],
-                },
-                {
-                    'category': 'VERIFIED_TRUE',
-                    'lines': {
-                        1: 'url = {}'.format(url_format.format(second_secret)),
+                    {
+                        'category': 'VERIFIED_TRUE',
+                        'lines': {
+                            1: 'url = {}'.format(url_format.format(second_secret)),
+                        },
+                        'secrets': second_secret,
+                        'types': [
+                            JwtTokenDetector.secret_type,
+                        ],
                     },
-                    'secrets': second_secret,
-                    'types': [
-                        JwtTokenDetector.secret_type,
-                    ],
-                },
-            ],
+                ],
+            },
         ),
         (
-            SecretClassToPrint.FALSE_POSITIVE, 0, 2, [
-                {
-                    'category': 'VERIFIED_FALSE',
-                    'lines': {
-                        1: 'url = {}'.format(url_format.format(second_secret)),
+            SecretClassToPrint.FALSE_POSITIVE, 0, 2,
+            {
+                'results': [
+                    {
+                        'category': 'VERIFIED_FALSE',
+                        'lines': {
+                            1: 'url = {}'.format(url_format.format(second_secret)),
+                        },
+                        'secrets': second_secret,
+                        'types': [
+                            BasicAuthDetector.secret_type,
+                        ],
                     },
-                    'secrets': second_secret,
-                    'types': [
-                        BasicAuthDetector.secret_type,
-                    ],
-                },
-                {
-                    'category': 'VERIFIED_FALSE',
-                    'lines': {
-                        2: 'example = {}'.format(url_format.format(random_secret)),
+                    {
+                        'category': 'VERIFIED_FALSE',
+                        'lines': {
+                            2: 'example = {}'.format(url_format.format(random_secret)),
+                        },
+                        'secrets': random_secret,
+                        'types': [
+                            BasicAuthDetector.secret_type,
+                        ],
                     },
-                    'secrets': random_secret,
-                    'types': [
-                        BasicAuthDetector.secret_type,
-                    ],
-                },
-            ],
+                ],
+            },
         ),
     ],
 )
@@ -143,9 +152,9 @@ def test_generate_report(
     real, false = count_results(output)
     assert real == expected_real
     assert false == expected_false
-    for expected in expected_output:
+    for expected in expected_output['results']:
         found = False
-        for item in output:
+        for item in output['results']:
             if expected['secrets'] == item['secrets'] and expected['category'] == item['category']:
                 for key in expected.keys():
                     assert item[key] == expected[key]
@@ -156,7 +165,7 @@ def test_generate_report(
 def count_results(data):
     real_secrets = 0
     false_secrets = 0
-    for secret in data:
+    for secret in data['results']:
         if SecretClassToPrint.from_class(VerifiedResult[secret['category']]) == SecretClassToPrint.REAL_SECRET:  # noqa: E501
             real_secrets += 1
         else:
