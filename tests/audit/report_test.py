@@ -10,6 +10,7 @@ from detect_secrets.audit.report import SecretClassToPrint
 from detect_secrets.constants import VerifiedResult
 from detect_secrets.core import baseline
 from detect_secrets.core.secrets_collection import SecretsCollection
+from detect_secrets.plugins.aws import AWSKeyDetector
 from detect_secrets.plugins.basic_auth import BasicAuthDetector
 from detect_secrets.plugins.jwt import JwtTokenDetector
 from detect_secrets.settings import transient_settings
@@ -20,13 +21,14 @@ url_format = 'http://username:{}@www.example.com/auth'
 first_secret = 'value1'
 second_secret = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ'  # noqa: E501
 random_secret = ''.join(random.choice(string.ascii_letters) for _ in range(8))
+aws_secret = 'AKIAZZZZZZZZZZZZZZZZ'
 
 
 @pytest.mark.parametrize(
     'class_to_print, expected_real, expected_false, expected_output',
     [
         (
-            None, 3, 1,
+            None, 4, 1,
             {
                 'results': [
                     {
@@ -71,11 +73,21 @@ random_secret = ''.join(random.choice(string.ascii_letters) for _ in range(8))
                             BasicAuthDetector.secret_type,
                         ],
                     },
+                    {
+                        'category': 'VERIFIED_TRUE',
+                        'lines': {
+                            1: 'aws_access_key = {}'.format(aws_secret),
+                        },
+                        'secrets': aws_secret,
+                        'types': [
+                            AWSKeyDetector.secret_type,
+                        ],
+                    },
                 ],
             },
         ),
         (
-            SecretClassToPrint.REAL_SECRET, 3, 0,
+            SecretClassToPrint.REAL_SECRET, 4, 0,
             {
                 'results': [
                     {
@@ -107,6 +119,16 @@ random_secret = ''.join(random.choice(string.ascii_letters) for _ in range(8))
                         'secrets': second_secret,
                         'types': [
                             JwtTokenDetector.secret_type,
+                        ],
+                    },
+                    {
+                        'category': 'VERIFIED_TRUE',
+                        'lines': {
+                            1: 'aws_access_key = {}'.format(aws_secret),
+                        },
+                        'secrets': aws_secret,
+                        'types': [
+                            AWSKeyDetector.secret_type,
                         ],
                     },
                 ],
@@ -193,20 +215,33 @@ def baseline_file():
         url = {url_format.format(second_secret)}
         example = {url_format.format(random_secret)}
     """)[1:]
+    third_content = textwrap.dedent(f"""
+        aws_access_key = {aws_secret}
+    """)[1:]
 
     with create_file_with_content(first_content) as first_file, \
             create_file_with_content(second_content) as second_file, \
+            create_file_with_content(third_content) as third_file, \
             mock_named_temporary_file() as baseline_file, \
             transient_settings({
                 'plugins_used': [
                     {'name': 'BasicAuthDetector'},
                     {'name': 'JwtTokenDetector'},
+                    {'name': 'AWSKeyDetector'},
 
+                ],
+                'filters_used': [
+                    {
+                        'path':
+                            'detect_secrets.filters.common.is_ignored_due_to_verification_policies',
+                        'min_level': 2,
+                    },
                 ],
             }):
         secrets = SecretsCollection()
         secrets.scan_file(first_file)
         secrets.scan_file(second_file)
+        secrets.scan_file(third_file)
         labels = {
             (first_file, BasicAuthDetector.secret_type, 1): True,
             (first_file, BasicAuthDetector.secret_type, 2): None,
@@ -214,6 +249,7 @@ def baseline_file():
             (second_file, JwtTokenDetector.secret_type, 1): True,
             (second_file, BasicAuthDetector.secret_type, 1): False,
             (second_file, BasicAuthDetector.secret_type, 2): False,
+            (third_file, AWSKeyDetector.secret_type, 1): True,
         }
         for item in secrets:
             _, secret = item

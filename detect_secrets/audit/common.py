@@ -92,7 +92,7 @@ def get_raw_secrets_from_file(
             line_numbers = list(range(len(lines_to_scan)))
 
         for line_number, line in zip(line_numbers, lines_to_scan):
-            context = get_code_snippet(lines=lines_to_scan, line_number=line_number)
+            context = get_code_snippet(lines=line_getter.lines, line_number=line_number + 1)
             identified_secrets = call_function_with_arguments(
                 plugin.analyze_line,
                 filename=secret.filename,
