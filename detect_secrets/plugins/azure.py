@@ -57,8 +57,10 @@ class AzureKeyDetector(RegexBasedDetector):
         #          Server=tcp:<server_name>.database.windows.net,1433;Database=<database_name>;
         #          Uid=<user_name>;Pwd=<password>;Encrypt=yes;TrustServerCertificate=no;
         #          Connection Timeout=30;
-        re.compile(r'Driver=\{ODBC Driver.+SQL Server\};.+\.database\.windows\.net.+' \
-                   r'Pwd=[^;]{8,128};'),
+        re.compile(
+            r'Driver=\{ODBC Driver.+SQL Server\};.+\.database\.windows\.net.+' \
+            r'Pwd=[^;]{8,128};',
+        ),
 
         # Azure Database for PostgreSQL - PostgreSQL connection URL
         # pragma: allowlist nextline secret
@@ -112,8 +114,10 @@ class AzureKeyDetector(RegexBasedDetector):
         # Example: AccountEndpoint=https://<server_name>.documents.azure.com:443/;
         #          AccountKey=<account_key>;ApiKind=Gremlin;
         # https://docs.microsoft.com/en-us/azure/cosmos-db/secure-access-to-data
-        re.compile(r'AccountEndpoint=https://.+\.documents\.azure\.com.+' \
-                   r'AccountKey=[a-zA-Z0-9]{86}==;'),
+        re.compile(
+            r'AccountEndpoint=https://.+\.documents\.azure\.com.+' \
+            r'AccountKey=[a-zA-Z0-9]{86}==;',
+        ),
 
         # Azure Cosmos DB - MongoDB API - connection string
         # Example: mongodb://<user_name>:<password>@<server_name>.mongo.cosmos.azure.com:10255/
@@ -158,15 +162,19 @@ class AzureKeyDetector(RegexBasedDetector):
         # https://docs.microsoft.com/en-us/azure/service-bus-messaging/
         #   service-bus-dotnet-get-started-with-queues
         # https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string
-        re.compile(r'Endpoint=sb://.+\.servicebus\.windows\.net/;.*' \
-                   r'SharedAccessKey=[a-zA-Z0-9+/]{43}='),
+        re.compile(
+            r'Endpoint=sb://.+\.servicebus\.windows\.net/;.*' \
+            r'SharedAccessKey=[a-zA-Z0-9+/]{43}=',
+        ),
 
         # Azure IoT Hub - device connection string
         # Example: HostName=<server_name>.azure-devices.net;DeviceId=<device_id>;
         #          SharedAccessKey=<shared_access_key>
         # https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-dev-guide-sas
-        re.compile(r'HostName=.+\.azure-devices\.net;DeviceId=.+;' \
-                   r'SharedAccessKey=[a-zA-Z0-9+/]{43}='),
+        re.compile(
+            r'HostName=.+\.azure-devices\.net;DeviceId=.+;' \
+            r'SharedAccessKey=[a-zA-Z0-9+/]{43}=',
+        ),
 
         # Azure IoT Hub - service connection string
         # Example: HostName=<server_name>.azure-devices.net;
@@ -177,8 +185,10 @@ class AzureKeyDetector(RegexBasedDetector):
         # Example: InstrumentationKey=<instrumentation_key_guid>;
         #          IngestionEndpoint=<ingestion_endpoint_url>;LiveEndpoint=<live_endpoint_url>
         # https://docs.microsoft.com/en-us/azure/azure-monitor/app/sdk-connection-string
-        re.compile(r'InstrumentationKey=[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-' \
-                   r'[a-f0-9]{12}'),
+        re.compile(
+            r'InstrumentationKey=[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-' \
+            r'[a-f0-9]{12}',
+        ),
 
         # Azure Functions - HTTP trigger - API key
         # Example: https://<app_name>.azurewebsites.net/api/<function_name>?code=<api_key>
