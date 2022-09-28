@@ -12,7 +12,7 @@ class GrafanaDetector(RegexBasedDetector):
 
     denylist = [
         # Grafana Cloud API Token & Grafana API Key
-        # Merging the two as there is an issue in the engine which will false-positive any 
+        # Merging the two as there is an issue in the engine which will false-positive any
         # Grafana Cloud API Token as the actual data resembles the Grafana API Key
         # e.g. contains eyJrIjoi, but does not match the rest of the pattern
         re.compile(r'glc_[A-Za-z0-9+/]{32,}={0,2}|eyJrIjoi[A-Za-z0-9]{70,}={0,2}'),
