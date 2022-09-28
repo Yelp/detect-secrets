@@ -1,5 +1,6 @@
-[![Build Status](https://travis-ci.com/Yelp/detect-secrets.svg?branch=master)](https://travis-ci.com/Yelp/detect-secrets)
+[![Build Status](https://github.com/Yelp/detect-secrets/actions/workflows/ci.yml/badge.svg)](https://github.com/Yelp/detect-secrets/actions/workflows/ci.yml?query=branch%3Amaster++)
 [![PyPI version](https://badge.fury.io/py/detect-secrets.svg)](https://badge.fury.io/py/detect-secrets)
+[![Homebrew](https://img.shields.io/badge/dynamic/json.svg?url=https://formulae.brew.sh/api/formula/detect-secrets.json&query=$.versions.stable&label=homebrew)](https://formulae.brew.sh/formula/detect-secrets)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg)](https://github.com/Yelp/detect-secrets/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22+)
 [![AMF](https://img.shields.io/badge/Donate-Charity-orange.svg)](https://www.againstmalaria.com/donation.aspx)
 
@@ -22,7 +23,7 @@ This way, you create a
 [separation of concern](https://en.wikipedia.org/wiki/Separation_of_concerns):
 accepting that there may *currently* be secrets hiding in your large repository
 (this is what we refer to as a _baseline_), but preventing this issue from getting any larger,
-without dealing with the potentially gargantuous effort of moving existing secrets away.
+without dealing with the potentially gargantuan effort of moving existing secrets away.
 
 It does this by running periodic diff outputs against heuristically crafted regex statements,
 to identify whether any *new* secret has been committed. This way, it avoids the overhead of
@@ -83,7 +84,7 @@ $ git diff --staged --name-only -z | xargs -0 detect-secrets-hook --baseline .se
 **Scanning All Tracked Files:**
 
 ```bash
-$ git ls-files -z | xargs -0 detect-secrets-hook --baseline .secrets.baseline 
+$ git ls-files -z | xargs -0 detect-secrets-hook --baseline .secrets.baseline
 ```
 
 ### Viewing All Enabled Plugins:
@@ -95,6 +96,8 @@ AWSKeyDetector
 AzureStorageKeyDetector
 BasicAuthDetector
 CloudantDetector
+DiscordBotTokenDetector
+GitHubTokenDetector
 Base64HighEntropyString
 HexHighEntropyString
 IbmCloudIamDetector
@@ -104,8 +107,10 @@ KeywordDetector
 MailchimpDetector
 NpmDetector
 PrivateKeyDetector
+SendGridDetector
 SlackDetector
 SoftlayerDetector
+SquareOAuthDetector
 StripeDetector
 TwilioKeyDetector
 ```
@@ -200,6 +205,12 @@ with transient_settings({
 ```bash
 $ pip install detect-secrets
 ✨🍰✨
+```
+
+Install via [brew](https://brew.sh/):
+
+```bash
+$ brew install detect-secrets
 ```
 
 ## Usage
@@ -329,6 +340,7 @@ optional arguments:
   -h, --help            show this help message and exit
   -v, --verbose         Verbose mode.
   --version             Display version information.
+  --json                Print detect-secrets-hook output as JSON
   --baseline FILENAME   Explicitly ignore secrets through a baseline generated
                         by `detect-secrets scan`
 
@@ -380,7 +392,7 @@ We recommend setting this up as a pre-commit hook. One way to do this is by usin
 # .pre-commit-config.yaml
 repos:
 -   repo: https://github.com/Yelp/detect-secrets
-    rev: v1.0.0
+    rev: v1.3.0
     hooks:
     -   id: detect-secrets
         args: ['--baseline', '.secrets.baseline']
@@ -436,7 +448,7 @@ reporting:
 
 analytics:
   Quantify the success of your plugins based on the labelled results in your
-  baseline. To be used with the statisitcs mode (--stats).
+  baseline. To be used with the statistics mode (--stats).
 
   --json        Outputs results in a machine-readable format.
 ```
@@ -463,7 +475,7 @@ There are three different strategies we employ to try and find secrets in code:
 
 2. Entropy Detector
 
-   This searches for "secret-looking" strings through a variety of heuristical approaches. This
+   This searches for "secret-looking" strings through a variety of heuristic approaches. This
    is great for non-structured secrets, but may require tuning to adjust the scanning precision.
 
 3. Keyword Detector

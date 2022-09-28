@@ -11,6 +11,7 @@ from typing import Set
 
 from ..core.potential_secret import PotentialSecret
 from .base import BasePlugin
+from detect_secrets.util.code_snippet import CodeSnippet
 
 
 class HighEntropyStringsPlugin(BasePlugin, metaclass=ABCMeta):
@@ -45,10 +46,16 @@ class HighEntropyStringsPlugin(BasePlugin, metaclass=ABCMeta):
         filename: str,
         line: str,
         line_number: int = 0,
+        context: CodeSnippet = None,
         enable_eager_search: bool = False,
         **kwargs: Any,
     ) -> Set[PotentialSecret]:
-        output = super().analyze_line(filename=filename, line=line, line_number=line_number)
+        output = super().analyze_line(
+            filename=filename,
+            line=line,
+            line_number=line_number,
+            context=context,
+        )
         if output or not enable_eager_search:
             # NOTE: We perform the limit filter at this layer (rather than analyze_string) so
             # that we can surface secrets that do not meet the limit criteria when
@@ -164,7 +171,7 @@ class HexHighEntropyString(HighEntropyStringsPlugin):
         the number of false positives we get greatly exceeds realistic true
         positive scenarios.
 
-        Therefore, this tries to capture this heuristic mathemetically.
+        Therefore, this tries to capture this heuristic mathematically.
 
         We do this by noting that the maximum shannon entropy for this charset
         is ~3.32 (e.g. "0123456789", with every digit different), and we want

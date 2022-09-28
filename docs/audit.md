@@ -146,7 +146,7 @@ TODO: Example when this feature is written up.
 Maybe, you need to generate a full report with all the detect-secrets findings. You can generate
 one with the `--report` flag:
 
-'''bash
+```bash
 $ detect-secrets audit --report .secret.baseline
 [
     {
@@ -198,11 +198,11 @@ $ detect-secrets audit --report .secret.baseline
         ]
     }
 ]
-'''
+```
 
 You can also select only the real secrets with the option `--only-real`:
 
-'''bash
+```bash
 $ detect-secrets audit --report --only-real .secret.baseline
 [
     {
@@ -243,11 +243,11 @@ $ detect-secrets audit --report --only-real .secret.baseline
         ]
     }
 ]
-'''
+```
 
 Or include only the false positives with `--only-false`:
 
-'''bash
+```bash
 $ detect-secrets audit --report --only-false .secret.baseline
 [
     {
@@ -262,4 +262,4 @@ $ detect-secrets audit --report --only-false .secret.baseline
         ]
     }
 ]
-'''
+```

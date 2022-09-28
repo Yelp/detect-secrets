@@ -22,13 +22,21 @@ class AWSKeyDetector(RegexBasedDetector):
     """Scans for AWS keys."""
     secret_type = 'AWS Access Key'
 
+    secret_keyword = r'(?:key|pwd|pw|password|pass|token)'
+
     denylist = (
         re.compile(r'AKIA[0-9A-Z]{16}'),
 
         # This examines the variable name to identify AWS secret tokens.
         # The order is important since we want to prefer finding `AKIA`-based
         # keys (since they can be verified), rather than the secret tokens.
-        re.compile(r'aws.{0,20}?[\'\"]([0-9a-zA-Z/+]{40})[\'\"]'),
+
+        re.compile(
+            r'aws.{{0,20}}?{secret_keyword}.{{0,20}}?[\'\"]([0-9a-zA-Z/+]{{40}})[\'\"]'.format(
+                secret_keyword=secret_keyword,
+            ),
+            flags=re.IGNORECASE,
+        ),
     )
 
     def verify(       # type: ignore[override]  # noqa: F821

@@ -29,6 +29,102 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 ### Unreleased
 -->
 
+### v1.3.0
+##### July 22nd, 2022
+
+#### :mega: Release Highlights
+- Add Windows operating system to Github CI Action ([#528])
+- Enable dependabot for automated dependency updates built into GitHub ([#531])
+- Improve performance for array slice ([#555])
+
+#### :tada: New Features
+- Improve keyword plugin to detect arrow key assignment ([#567])
+- Add command line argument for `detect-secrets-hook` to return output as json ([#569])
+
+#### :bug: Bugfixes
+- Fix regex matching for `npm` plugin ([#551])
+- Fix `audit` crashing when secret is not found on specified line ([#568])
+- Fix `# pragma: allowlist nextline secret` secrets not filtered out of result set ([#575])
+- Fix `is_verified` flag not stored in `PotentialSecret` ([#578])
+
+#### :snake: Miscellaneous
+- Only use ANSI color code in environments that support it ([#523])
+- Multiple dependency updates
+- Make `is_likely_id_string` heuristic filter more strict to avoid eliminating true positives ([#526])
+- Refactor AWS access key regex to minimize false positives ([#571])
+- Correct spelling errors in code repository ([#574])
+- Add `py.typed` to enable type hints for package consumers ([#579])
+
+[#523]: https://github.com/Yelp/detect-secrets/pull/523
+[#526]: https://github.com/Yelp/detect-secrets/pull/526
+[#528]: https://github.com/Yelp/detect-secrets/pull/528
+[#529]: https://github.com/Yelp/detect-secrets/pull/529
+[#530]: https://github.com/Yelp/detect-secrets/pull/530
+[#531]: https://github.com/Yelp/detect-secrets/pull/531
+[#532]: https://github.com/Yelp/detect-secrets/pull/532
+[#533]: https://github.com/Yelp/detect-secrets/pull/533
+[#535]: https://github.com/Yelp/detect-secrets/pull/535
+[#537]: https://github.com/Yelp/detect-secrets/pull/537
+[#538]: https://github.com/Yelp/detect-secrets/pull/538
+[#542]: https://github.com/Yelp/detect-secrets/pull/542
+[#543]: https://github.com/Yelp/detect-secrets/pull/543
+[#545]: https://github.com/Yelp/detect-secrets/pull/545
+[#546]: https://github.com/Yelp/detect-secrets/pull/546
+[#551]: https://github.com/Yelp/detect-secrets/pull/551
+[#555]: https://github.com/Yelp/detect-secrets/pull/555
+[#567]: https://github.com/Yelp/detect-secrets/pull/567
+[#568]: https://github.com/Yelp/detect-secrets/pull/568
+[#569]: https://github.com/Yelp/detect-secrets/pull/569
+[#571]: https://github.com/Yelp/detect-secrets/pull/571
+[#574]: https://github.com/Yelp/detect-secrets/pull/574
+[#575]: https://github.com/Yelp/detect-secrets/pull/575
+[#576]: https://github.com/Yelp/detect-secrets/pull/576
+[#578]: https://github.com/Yelp/detect-secrets/pull/578
+[#579]: https://github.com/Yelp/detect-secrets/pull/579
+
+### v1.2.0
+##### February 16th, 2022
+
+#### :mega: Release Highlights
+- Continuous integration github action added ([#506])
+- Release pipeline github action added ([#513])
+
+#### :tada: New Features
+
+- New GitHub token plugin added ([#465])
+- New SendGrid plugin added ([#463])
+- More new ignored file extensions
+
+#### :bug: Bugfixes
+- Fixes catastrophic backtracking for indirect reference heuristic ([#509])
+- Fixes pre-commit hook secret equality checking causing updates to baseline with no real changes - only a timestamp update ([#507])
+- Fixes python 3.8 failing to load plugins on windows and macos ([#505])
+- Fixes yaml transformer inline dictionary index out of bounds exceptions ([#501])
+- Fixes regex for slack url ([#477])
+- Fixes `AttributeError: 'PotentialSecret' object has no attribute 'line_number'` by safely falling back to 0 if line_number isn't present. ([#476])([#472])
+- Fixes gibberish-detector current version
+- Fixes filtering ordering in .secrets.baseline
+
+#### :snake: Miscellaneous
+
+- Updated README due hook failing to interpret filenames with spaces ([#470])
+- Add CI github action badge to README
+- Development dependency bumps ([#519])
+
+[#463]: https://github.com/Yelp/detect-secrets/pull/463
+[#465]: https://github.com/Yelp/detect-secrets/pull/465
+[#470]: https://github.com/Yelp/detect-secrets/pull/470
+[#472]: https://github.com/Yelp/detect-secrets/pull/472
+[#476]: https://github.com/Yelp/detect-secrets/pull/476
+[#477]: https://github.com/Yelp/detect-secrets/pull/477
+[#501]: https://github.com/Yelp/detect-secrets/pull/501
+[#505]: https://github.com/Yelp/detect-secrets/pull/505
+[#506]: https://github.com/Yelp/detect-secrets/pull/506
+[#507]: https://github.com/Yelp/detect-secrets/pull/507
+[#509]: https://github.com/Yelp/detect-secrets/pull/509
+[#513]: https://github.com/Yelp/detect-secrets/pull/513
+[#519]: https://github.com/Yelp/detect-secrets/pull/519
+
 ### v1.1.0
 ##### April 14th, 2021
 
@@ -168,7 +264,7 @@ the ["User Facing Changes"](https://github.com/Yelp/detect-secrets/pull/355) for
 #### :mortar_board: Walkthrough / Help
 
 - The README now includes examples of common usages, features, and an FAQ section for
-  the common questions we often receive as Github issues.
+  the common questions we often receive as GitHub issues.
 - So much better [technical documentation](./docs)!
 - Type support added
 
@@ -244,7 +340,7 @@ the ["User Facing Changes"](https://github.com/Yelp/detect-secrets/pull/355) for
 
 #### :bug: Bugfixes
 
-- Display helpful eror message when scanning a baseline from a newer `detect-secrets` version ([#293], [#269])
+- Display helpful error message when scanning a baseline from a newer `detect-secrets` version ([#293], [#269])
 
 #### :snake: Miscellaneous
 
@@ -292,7 +388,7 @@ the ["User Facing Changes"](https://github.com/Yelp/detect-secrets/pull/355) for
 - Rationale for the minor version bump:
     - Some accuracy changes that might change baselines significantly
     - @OiCMudkips' first release increases spookiness
-    - It being almost Halloweeen increases spookiness
+    - It being almost Halloween increases spookiness
 
 #### :tada: New Features
 

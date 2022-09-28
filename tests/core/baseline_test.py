@@ -1,6 +1,7 @@
 import json
 import subprocess
 import tempfile
+from pathlib import Path
 from unittest import mock
 
 import pytest
@@ -8,6 +9,7 @@ import pytest
 from detect_secrets.core import baseline
 from detect_secrets.settings import get_settings
 from detect_secrets.util.path import get_relative_path_if_in_cwd
+from testing.mocks import mock_named_temporary_file
 
 
 @pytest.fixture(autouse=True)
@@ -39,8 +41,8 @@ class TestCreate:
         secrets = baseline.create(path)
 
         assert len(secrets.data.keys()) == 2
-        assert len(secrets['test_data/files/file_with_secrets.py']) == 1
-        assert len(secrets['test_data/files/tmp/file_with_secrets.py']) == 2
+        assert len(secrets[str(Path('test_data/files/file_with_secrets.py'))]) == 1
+        assert len(secrets[str(Path('test_data/files/tmp/file_with_secrets.py'))]) == 2
 
     @staticmethod
     def test_error_when_getting_git_tracked_files():
@@ -59,7 +61,7 @@ class TestCreate:
     def test_no_files_in_git_repo():
         with tempfile.TemporaryDirectory() as d:
             # Create a new directory, so scanning is sandboxed.
-            with tempfile.NamedTemporaryFile(dir=d, suffix='.py') as f:
+            with mock_named_temporary_file(dir=d, suffix='.py') as f:
                 f.write(b'"2b00042f7481c7b056c4b410d28f33cf"')
                 f.seek(0)
 
@@ -69,7 +71,7 @@ class TestCreate:
 
     @staticmethod
     def test_scan_all_files():
-        with tempfile.NamedTemporaryFile(dir='test_data/files/tmp', suffix='.py') as f:
+        with mock_named_temporary_file(dir='test_data/files/tmp', suffix='.py') as f:
             f.write(b'"2b00042f7481c7b056c4b410d28f33cf"')
             f.seek(0)
 

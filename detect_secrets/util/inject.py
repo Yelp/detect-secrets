@@ -27,7 +27,7 @@ def call_function_with_arguments(
     if inspect.ismethod(func) and not inspect.ismethod(function):
         # We also use get_injectable_variables (instead of hardcoding "self") to make sure that
         # this also handles cases where the developer doesn't name the first parameter `self`.
-        kwargs[get_injectable_variables(func)[0]] = func.__self__   # type: ignore
+        kwargs[get_injectable_variables(func)[0]] = func.__self__
 
     variables_to_inject = set(kwargs.keys())
     values = {
@@ -49,7 +49,7 @@ def make_function_self_aware(func: Callable) -> SelfAwareCallable:
     # We can't add arbitrary attributes to methods, but we can to functions. Therefore,
     # we need to reference the underlying function itself.
     if inspect.ismethod(func):
-        klass = func.__self__.__class__     # type: ignore
+        klass = func.__self__.__class__
         function = getattr(klass, func.__name__)
         function.injectable_variables = set(get_injectable_variables(func))
 

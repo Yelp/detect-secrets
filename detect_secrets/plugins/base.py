@@ -21,6 +21,8 @@ import requests
 from ..constants import VerifiedResult
 from ..core.potential_secret import PotentialSecret
 from ..settings import get_settings
+from detect_secrets.util.code_snippet import CodeSnippet
+from detect_secrets.util.inject import call_function_with_arguments
 
 
 class BasePlugin(metaclass=ABCMeta):
@@ -46,17 +48,36 @@ class BasePlugin(metaclass=ABCMeta):
         filename: str,
         line: str,
         line_number: int = 0,
+        context: CodeSnippet = None,
         **kwargs: Any
     ) -> Set[PotentialSecret]:
         """This examines a line and finds all possible secret values in it."""
         output = set()
-        for match in self.analyze_string(line, **kwargs):   # type: ignore
+        for match in self.analyze_string(line, **kwargs):
+            is_verified: bool = False
+            # If the filter is disabled it means --no-verify flag was passed
+            # We won't run verification in that case
+            if (
+                'detect_secrets.filters.common.is_ignored_due_to_verification_policies'
+                in get_settings().filters
+            ):
+                try:
+                    verified_result = call_function_with_arguments(
+                        self.verify,
+                        secret=match,
+                        context=context,
+                    )
+                    is_verified = True if verified_result == VerifiedResult.VERIFIED_TRUE else False
+                except requests.exceptions.RequestException:
+                    is_verified = False
+
             output.add(
                 PotentialSecret(
                     type=self.secret_type,
                     filename=filename,
                     secret=match,
                     line_number=line_number,
+                    is_verified=is_verified,
                 ),
             )
 
@@ -146,7 +167,7 @@ class RegexBasedDetector(BasePlugin, metaclass=ABCMeta):
         for regex in self.denylist:
             for match in regex.findall(string):
                 if isinstance(match, tuple):
-                    for submatch in filter(bool, tuple):
+                    for submatch in filter(bool, match):
                         # It might make sense to paste break after yielding
                         yield submatch
                 else:
@@ -169,18 +190,18 @@ class RegexBasedDetector(BasePlugin, metaclass=ABCMeta):
         opt_quote = r'(?:"|\'|)'
         opt_open_square_bracket = r'(?:\[|)'
         opt_close_square_bracket = r'(?:\]|)'
-        opt_dash_undrscr = r'(?:_|-|)'
+        opt_dash_underscore = r'(?:_|-|)'
         opt_space = r'(?: *)'
         assignment = r'(?:=|:|:=|=>| +|::)'
         return re.compile(
-            r'{begin}{opt_open_square_bracket}{opt_quote}{prefix_regex}{opt_dash_undrscr}'
+            r'{begin}{opt_open_square_bracket}{opt_quote}{prefix_regex}{opt_dash_underscore}'
             '{secret_keyword_regex}{opt_quote}{opt_close_square_bracket}{opt_space}'
             '{assignment}{opt_space}{opt_quote}{secret_regex}{opt_quote}'.format(
                 begin=begin,
                 opt_open_square_bracket=opt_open_square_bracket,
                 opt_quote=opt_quote,
                 prefix_regex=prefix_regex,
-                opt_dash_undrscr=opt_dash_undrscr,
+                opt_dash_underscore=opt_dash_underscore,
                 secret_keyword_regex=secret_keyword_regex,
                 opt_close_square_bracket=opt_close_square_bracket,
                 opt_space=opt_space,

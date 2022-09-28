@@ -1,4 +1,5 @@
 import argparse
+from typing import cast
 
 
 def add_audit_action(parent: argparse._SubParsersAction) -> argparse.ArgumentParser:
@@ -23,7 +24,7 @@ def add_audit_action(parent: argparse._SubParsersAction) -> argparse.ArgumentPar
     _add_mode_parser(parser)
     _add_report_module(parser)
     _add_statistics_module(parser)
-    return parser
+    return cast(argparse.ArgumentParser, parser)
 
 
 def _add_mode_parser(parser: argparse.ArgumentParser) -> None:
@@ -87,7 +88,7 @@ def _add_statistics_module(parent: argparse.ArgumentParser) -> None:
         title='analytics',
         description=(
             'Quantify the success of your plugins based on the labelled results '
-            'in your baseline. To be used with the statisitcs mode (--stats).'
+            'in your baseline. To be used with the statistics mode (--stats).'
         ),
     )
 

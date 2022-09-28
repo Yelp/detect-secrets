@@ -13,7 +13,7 @@ WHITES_SECRET = 'value with quotes and spaces'
 LETTER_SECRET = 'A,.:-¨@*¿?!'
 SYMBOL_SECRET = ',.:-¨@*¿?!'
 
-LONG_LINE = '<img src="data:image/png;base64,{}\n"\n>'.format(base64.b64encode((str(randint(0, 9)) * 30500).encode()))  # noqa: E501
+LONG_LINE = '<img src="data:image/png;base64,{}\n"\n>'.format(base64.b64encode((str(randint(0, 9)) * 24000).encode()))  # noqa: E501
 
 CONFIG_TEST_CASES = [
     ('password = "{}"'.format(WHITES_SECRET), WHITES_SECRET),
@@ -142,12 +142,16 @@ QUOTES_REQUIRED_TEST_CASES = [
     ('if (db_pass !== "{}") {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('password "{}";'.format(COMMON_SECRET), COMMON_SECRET),
     ('password = {}'.format(COMMON_SECRET), None),  # Secret without quotes
+    ('password = "{}"'.format(COMMON_SECRET), COMMON_SECRET),
+    ('password => "{}"'.format(COMMON_SECRET), COMMON_SECRET),
     ('api_key = ""', None),              # Nothing in the quotes
     ("secret: ''", None),                # Nothing in the quotes
     ('password: ${link}', None),         # Has a ${ followed by a }
     ('some_key = "real_secret"', None),  # We cannot make 'key' a Keyword, too noisy)
     ('private_key "hopenobodyfindsthisone\';', None),  # Double-quote does not match single-quote)
     (LONG_LINE, None),  # Long line test
+    ('password => ""', None),
+    ('password => {}'.format(COMMON_SECRET), None),
 ]
 
 

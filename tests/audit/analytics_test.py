@@ -1,7 +1,6 @@
 import json
 import random
 import string
-import tempfile
 from contextlib import contextmanager
 
 import pytest
@@ -11,6 +10,7 @@ from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.main import main
 from detect_secrets.plugins.basic_auth import BasicAuthDetector
 from testing.factories import potential_secret_factory as original_potential_secret_factory
+from testing.mocks import mock_named_temporary_file
 
 
 def potential_secret_factory(**kwargs):
@@ -59,7 +59,7 @@ def test_basic_statistics_json(printer):
 def test_no_divide_by_zero(secret):
     secrets = SecretsCollection()
     secrets['file'].add(secret)
-    with tempfile.NamedTemporaryFile() as f:
+    with mock_named_temporary_file() as f:
         baseline.save_to_file(secrets, f.name)
         f.seek(0)
 
@@ -84,7 +84,7 @@ def labelled_secrets():
         potential_secret_factory(is_secret=False),
     }
 
-    with tempfile.NamedTemporaryFile() as f:
+    with mock_named_temporary_file() as f:
         baseline.save_to_file(secrets, f.name)
         f.seek(0)
 

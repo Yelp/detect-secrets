@@ -2,7 +2,11 @@ import os
 import re
 import string
 from functools import lru_cache
+from typing import Optional
 from typing import Pattern
+
+from detect_secrets.plugins.base import BasePlugin
+from detect_secrets.plugins.base import RegexBasedDetector
 
 
 def is_sequential_string(secret: str) -> bool:
@@ -57,18 +61,26 @@ def _get_uuid_regex() -> Pattern:
     )
 
 
-def is_likely_id_string(secret: str, line: str) -> bool:
+def is_likely_id_string(secret: str, line: str, plugin: Optional[BasePlugin] = None) -> bool:
     try:
         index = line.index(secret)
     except ValueError:
         return False
 
-    return bool(_get_id_detector_regex().search(line, pos=0, endpos=index))
+    return (not plugin or not isinstance(plugin, RegexBasedDetector)) \
+        and bool(_get_id_detector_regex().search(line, pos=0, endpos=index))
 
 
 @lru_cache(maxsize=1)
 def _get_id_detector_regex() -> Pattern:
-    return re.compile(r'id[^a-z0-9]', re.IGNORECASE)
+    """
+    Regex Details:
+    ^(id|myid|userid) -> Common id identifiers with no prefix
+    _id               -> id identifier with prefixes allowed
+    s?                -> Optional plural id identifier
+    [^a-z0-9]         -> Non-letter/numeric character
+    """
+    return re.compile(r'(^(id|myid|userid)|_id)s?[^a-z0-9]', re.IGNORECASE)
 
 
 def is_non_text_file(filename: str) -> bool:
@@ -165,6 +177,10 @@ def is_indirect_reference(line: str) -> bool:
 
         secret = request.headers['apikey']
     """
+    # Constrain line length as the heuristic's intention is to target lines that resemble
+    # function calls. The constraint avoids catastrophic backtracking failures of the regex.
+    if len(line) > 1000:
+        return False
     return bool(_get_indirect_reference_regex().search(line))
 
 
@@ -195,6 +211,9 @@ def is_lock_file(filename: str) -> bool:
         'Podfile.lock',
         'yarn.lock',
         'Pipfile.lock',
+        'poetry.lock',
+        'Cargo.lock',
+        'packages.lock.json',
     }
 
 

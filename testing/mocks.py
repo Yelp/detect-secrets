@@ -1,5 +1,7 @@
 """This is a collection of utility functions for easier, DRY testing."""
 import io
+import os
+import tempfile
 from collections import defaultdict
 from contextlib import contextmanager
 from types import ModuleType
@@ -88,3 +90,22 @@ def disable_gibberish_filter() -> Iterator[None]:
         return_value=False,
     ):
         yield
+
+
+@contextmanager
+def mock_named_temporary_file(
+    mode: str = 'w+b', dir: str = None,
+    suffix: str = None, prefix: str = None,
+) -> Iterator[IO[Any]]:
+    """
+    Used to create a mock temporary named file to write baseline files and secret files in
+    test. To avoid platform differences on how "NamedTemporaryFile" operates, we will perform
+    the creation and cleanup of the temporary file here.
+    """
+    with tempfile.NamedTemporaryFile(
+        mode=mode, dir=dir, suffix=suffix, prefix=prefix, delete=False,
+    ) as f:
+        yield f
+
+    f.close()
+    os.unlink(f.name)

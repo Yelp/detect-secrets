@@ -1,9 +1,8 @@
-import tempfile
-
 import pytest
 
 from detect_secrets.core.secrets_collection import SecretsCollection
 from detect_secrets.settings import transient_settings
+from testing.mocks import mock_named_temporary_file
 
 
 @pytest.mark.parametrize(
@@ -22,7 +21,7 @@ from detect_secrets.settings import transient_settings
     ],
 )
 def test_basic(file_content):
-    with tempfile.NamedTemporaryFile() as f:
+    with mock_named_temporary_file() as f:
         f.write(file_content.encode())
         f.seek(0)
 
