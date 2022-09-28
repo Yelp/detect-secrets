@@ -9,7 +9,7 @@ class ArtifactoryDetector(RegexBasedDetector):
 
     denylist = [
         # Artifactory tokens begin with AKC
-        re.compile(r'(?:\s|=|:|"|^)AKC[a-zA-Z0-9]{10,}$'),  # API token
+        re.compile(r'(?:\s|=|:|"|^)AKC[a-zA-Z0-9]{10,}(?:\s|"|$)'),  # API token
         # Artifactory encrypted passwords begin with AP[A-Z]
-        re.compile(r'(?:\s|=|:|"|^)AP[\dABCDEF][a-zA-Z0-9]{8,}$'),  # Password
+        re.compile(r'(?:\s|=|:|"|^)AP[\dABCDEF][a-zA-Z0-9]{8,}(?:\s|"|$)'),  # Password
     ]
