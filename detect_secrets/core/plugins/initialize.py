@@ -4,6 +4,7 @@ from typing import Iterable
 from typing import List
 from typing import Type
 
+from ...plugins.base import BasePlugin
 from ...settings import get_settings
 from ..log import log
 from .util import get_mapping_from_secret_type_to_class
@@ -11,7 +12,7 @@ from .util import get_plugins_from_file
 from .util import Plugin
 
 
-def from_secret_type(secret_type: str) -> Plugin:
+def from_secret_type(secret_type: str) -> BasePlugin:
     """
     :raises: TypeError
     """
@@ -21,13 +22,13 @@ def from_secret_type(secret_type: str) -> Plugin:
         raise TypeError
 
     try:
-        return plugin_type(**_get_config(plugin_type.__name__))     # type: ignore
+        return plugin_type(**_get_config(plugin_type.__name__))
     except TypeError:
         log.error('Unable to initialize plugin!')
         raise
 
 
-def from_plugin_classname(classname: str) -> Plugin:
+def from_plugin_classname(classname: str) -> BasePlugin:
     """
     :raises: TypeError
     """
@@ -44,7 +45,7 @@ def from_plugin_classname(classname: str) -> Plugin:
         raise TypeError
 
     try:
-        return plugin_type(**_get_config(classname))        # type: ignore
+        return plugin_type(**_get_config(classname))
     except TypeError:
         log.error('Unable to initialize plugin!')
         raise

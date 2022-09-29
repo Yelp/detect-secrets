@@ -32,12 +32,12 @@ def initialize(model_path: Optional[str] = None, limit: float = 3.7) -> None:
     """
     path = model_path
     if not path:
-        path = os.path.join(__path__[0], 'rfc.model')   # type: ignore  # mypy issue #1422
+        path = os.path.join(__path__[0], 'rfc.model')
 
     model = get_model()
 
-    from gibberish_detector import serializer
-    from gibberish_detector.exceptions import ParsingError
+    from gibberish_detector import serializer  # type:ignore[import]
+    from gibberish_detector.exceptions import ParsingError  # type:ignore[import]
     with open(path) as f:
         try:
             model.update(serializer.deserialize(f.read()))
@@ -74,7 +74,7 @@ def should_exclude_secret(secret: str, plugin: Optional[Plugin] = None) -> bool:
     if not get_model().data or not get_model().charset:
         raise AssertionError('Attempting to use uninitialized gibberish model.')
 
-    from gibberish_detector.detector import Detector
+    from gibberish_detector.detector import Detector  # type:ignore[import]
     detector = Detector(
         model=get_model(),
         threshold=get_settings().filters[f'{__name__}.should_exclude_secret']['limit'],
@@ -91,5 +91,5 @@ def should_exclude_secret(secret: str, plugin: Optional[Plugin] = None) -> bool:
 
 @lru_cache(maxsize=1)
 def get_model() -> 'Model':
-    from gibberish_detector.model import Model
+    from gibberish_detector.model import Model  # type:ignore[import]
     return Model(charset='')

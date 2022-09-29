@@ -99,7 +99,7 @@ def scan_adhoc_string(line: str) -> str:
 
     for secret in scan_line(line):
         results[secret.type] = (
-            plugins.initialize.from_secret_type(secret.type)    # type: ignore
+            plugins.initialize.from_secret_type(secret.type)
             .format_scan_result(secret)
         )
 

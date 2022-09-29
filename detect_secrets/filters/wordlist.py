@@ -68,5 +68,5 @@ def should_exclude_secret(secret: str) -> bool:
 
 @lru_cache(maxsize=1)
 def get_automaton() -> Automaton:
-    import ahocorasick
+    import ahocorasick  # type:ignore[import]
     return ahocorasick.Automaton()

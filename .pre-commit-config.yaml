@@ -1,6 +1,6 @@
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.3.0
+    rev: v4.3.0
     hooks:
     -   id: check-builtin-literals
         args: ['--no-allow-dict-kwargs']
@@ -11,10 +11,11 @@ repos:
     -   id: double-quote-string-fixer
     -   id: end-of-file-fixer
     -   id: name-tests-test
-    -   id: flake8
-        args: ['--max-line-length', '100']
-        exclude: ^test_data/|bumpity.py$
     -   id: trailing-whitespace
+-   repo: https://github.com/PyCQA/flake8
+    rev: 5.0.4
+    hooks:
+    -   id: flake8
 -   repo: https://github.com/asottile/reorder_python_imports
     rev: v1.6.1
     hooks:

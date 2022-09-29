@@ -18,16 +18,24 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: ['3.7', '3.8', '3.9']
+        python: ['3.7', '3.8', '3.9', '3.10']
     steps:
     - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
     - uses: actions/setup-python@98f2ad02fd48d057ee3b4d4f66525b231c3e52b6  # v3
       with:
         python-version: ${{ matrix.python }}
-    - run: python -m pip install --upgrade setuptools pip tox virtualenv
-    # Run tox only for the installed py version on the runner as outlined in the python matrix
-    # Ensures the correct py version is installed and tested as opposed to 'tox' which attempts to run for all py versions in tox.ini
-    - run: tox -e py
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements-dev.txt
+    - name: Sets env var for release
+      if: ${{ matrix.os == 'macos-latest' && matrix.python == '3.7' }}
+      run: |
+        # NO_PROXY is needed to call requests API within a forked process
+        # when using macOS and python version 3.7
+        echo "NO_PROXY='*'" >> $GITHUB_ENV
+    - name: Run tests
+      run: pytest --strict-markers tests
 
   bump-version:
     # Run tests before bumping
@@ -71,7 +79,7 @@ jobs:
           python -m pip install wheel
           python setup.py sdist bdist_wheel
       - name: Publish a Python distribution to PyPI
-        uses: pypa/gh-action-pypi-publish@717ba43cfbb0387f6ce311b169a825772f54d295  # v1
+        uses: pypa/gh-action-pypi-publish@37f50c210e3d2f9450da2cd423303d6a14a6e29f  # v1
         with:
           password: ${{ secrets.PYPI_TOKEN }}
       - name: sleep and wait for package to refresh
@@ -90,7 +98,7 @@ jobs:
           repository: bridgecrewio/checkov
       - uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
         with:
-          python-version: "3.7"
+          python-version: "3.8"
       - name: Prepare PR
         run: |
           # install needed tools
@@ -102,7 +110,7 @@ jobs:
           # update setup.py
           pipenv-setup sync --pipfile
       - name: Create PR
-        uses: peter-evans/create-pull-request@18f90432bedd2afd6a825469ffd38aa24712a91d  # v4
+        uses: peter-evans/create-pull-request@171dd555b9ab6b18fa02519fdfacbb8bf671e1b4  # v4
         with:
           token: ${{ secrets.PAT_TOKEN }}
           branch: update-detect-secrets-dep

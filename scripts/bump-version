@@ -76,7 +76,7 @@ function getLatestTagName() {
 }
 
 function installDependency() {
-    # NOTE: We don't specify this in requirements-dev-minimal, since not all developers need
+    # NOTE: We don't specify this in requirements-dev, since not all developers need
     # to bump the version.
     venv/bin/pip install bump2version
 }

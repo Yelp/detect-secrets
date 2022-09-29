@@ -15,7 +15,6 @@ from ..core.secrets_collection import SecretsCollection
 from ..exceptions import InvalidBaselineError
 from ..exceptions import NoLineNumberError
 from ..exceptions import SecretNotFoundOnSpecifiedLineError
-from ..plugins.base import BasePlugin
 from ..transformers import get_transformed_file
 from ..types import NamedIO
 from ..util.inject import call_function_with_arguments
@@ -75,7 +74,7 @@ def get_raw_secrets_from_file(
     :raises: SecretNotFoundOnSpecifiedLineError
     :raises: NoLineNumberError
     """
-    plugin = cast(BasePlugin, plugins.initialize.from_secret_type(secret.type))
+    plugin = plugins.initialize.from_secret_type(secret.type)
     line_getter = line_getter_factory(secret.filename)
     is_first_time_opening_file = not line_getter.has_cached_lines
     all_secrets = []
