@@ -102,10 +102,10 @@ jobs:
       - name: Prepare PR
         run: |
           # install needed tools
-          pip install --no-cache-dir --upgrade pipenv "pipenv-setup[black]"
+          python -m pip install --no-cache-dir --upgrade pipenv "pipenv-setup[black]"
 
           # update Pipfile
-          pipenv install --no-cache-dir bc-detect-secrets==${{ needs.bump-version.outputs.version }} --selective-upgrade
+          pipenv install bc-detect-secrets==${{ needs.bump-version.outputs.version }} --selective-upgrade
 
           # update setup.py
           pipenv-setup sync --pipfile
