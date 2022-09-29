@@ -1,4 +1,4 @@
-coverage==5.0.4
+coverage==6.4.4
 flake8==5.0.4
 gibberish-detector==0.1.1
 monotonic==1.6
