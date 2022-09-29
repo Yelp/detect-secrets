@@ -68,7 +68,7 @@ jobs:
           ## update package version
           echo "VERSION = '$new_tag'" > 'detect_secrets/__version__.py'
 
-          git commit --reuse-message=HEAD@{1} detect_secrets/__version__.py || echo "No changes to commit"
+          git commit -m "publish version ${new_tag}" detect_secrets/__version__.py || echo "No changes to commit"
           git push origin
           git tag $new_tag
           git push origin $new_tag
@@ -102,10 +102,10 @@ jobs:
       - name: Prepare PR
         run: |
           # install needed tools
-          pip install pipenv "pipenv-setup[black]"
+          pip install --no-cache-dir --upgrade pipenv "pipenv-setup[black]"
 
           # update Pipfile
-          pipenv install bc-detect-secrets==${{ needs.bump-version.outputs.version }} --selective-upgrade
+          pipenv install --no-cache-dir bc-detect-secrets==${{ needs.bump-version.outputs.version }} --selective-upgrade
 
           # update setup.py
           pipenv-setup sync --pipfile
