@@ -39,7 +39,7 @@ jobs:
 
   bump-version:
     # Run tests before bumping
-    needs: tox
+    needs: tests
     runs-on: [self-hosted, public, linux, x64]
     environment: release
     permissions:
