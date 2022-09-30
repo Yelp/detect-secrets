@@ -30,7 +30,7 @@ jobs:
         run: |
           mypy
 
-  main:
+  tests:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:

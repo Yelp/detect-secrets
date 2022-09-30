@@ -14,7 +14,7 @@ on:
 permissions: read-all
 
 jobs:
-  tox:
+  tests:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -90,6 +90,8 @@ jobs:
     needs: bump-version
     runs-on: [self-hosted, public, linux, x64]
     environment: release
+    env:
+      PYTHON_VERSION: "3.8"
     steps:
       - name: Checkout checkov
         uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
@@ -98,13 +100,14 @@ jobs:
           repository: bridgecrewio/checkov
       - uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
         with:
-          python-version: "3.8"
+          python-version: ${{ env.PYTHON_VERSION }}
       - name: Prepare PR
         run: |
           # install needed tools
           python -m pip install --no-cache-dir --upgrade pipenv "pipenv-setup[black]"
 
           # update Pipfile
+          pipenv --python ${{ env.PYTHON_VERSION }}
           pipenv install bc-detect-secrets==${{ needs.bump-version.outputs.version }} --selective-upgrade
 
           # update setup.py
