@@ -1,6 +1,10 @@
-from enum import Enum
+from __future__ import annotations
 
-from .core.potential_secret import PotentialSecret
+from enum import Enum
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .core.potential_secret import PotentialSecret
 
 
 class VerifiedResult(Enum):

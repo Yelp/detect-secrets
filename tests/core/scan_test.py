@@ -1,6 +1,7 @@
 import os
 import textwrap
 from pathlib import Path
+from unittest import mock
 
 import pytest
 
@@ -95,6 +96,18 @@ class TestScanFile:
             f.seek(0)
 
             assert not list(scan.scan_file(f.name))
+
+    @staticmethod
+    def test_skip_whitespace_lines():
+        with mock_named_temporary_file(suffix='.txt') as f:
+            f.write(
+                '\n'.join(['          '] * 10000).encode(),
+            )
+            f.seek(0)
+
+            with mock.patch('detect_secrets.core.scan.get_code_snippet') as m:
+                assert not list(scan.scan_file(f.name))
+                assert not m.called
 
 
 @pytest.fixture(autouse=True)

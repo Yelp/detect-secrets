@@ -25,6 +25,8 @@ from .log import log
 from .plugins import Plugin
 from .potential_secret import PotentialSecret
 
+MIN_LINE_LENGTH = int(os.getenv('CHECKOV_MIN_LINE_LENGTH', '5'))
+
 
 def get_files_to_scan(
     *paths: str,
@@ -311,8 +313,11 @@ def _process_line_based_plugins(
     # NOTE: We iterate through lines *then* plugins, because we want to quit early if any of the
     # filters return True.
     for line_number, line in lines:
-        log.debug(f'Processing {filename}:{line_number}')
-        line = line.rstrip()
+        line = line.strip()
+        if len(line) < MIN_LINE_LENGTH:
+            # skip lines which have too few none whitespace chars
+            continue
+
         code_snippet = get_code_snippet(
             lines=line_content,
             line_number=line_number,
