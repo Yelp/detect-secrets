@@ -29,6 +29,41 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 ### Unreleased
 -->
 
+### v1.4.0
+##### October 4th, 2022
+
+#### :newspaper: News
+- We're dropping support for Python 3.6 starting v1.5.0! Python 3.6 reached EOL on December 23, 2021 and, therefore, is currently unsupported. We hope this announcement gives you plenty of time to upgrade your project, if needed.
+
+#### :mega: Release Highlights
+- Improved filtering by excluding secrets that have already been detected by a regex-based detector ([#612])
+#### :tada: New Features
+- Added a detector for Discord bot tokens ([#614])
+
+#### :sparkles: Usability
+- Improved the audit report to make it easier to parse programmatically ([#619])
+#### :telescope: Accuracy
+- Improve ArtifactoryDetector plugin to reduce false positives ([#499])
+
+#### :bug: Bugfixes
+- Fixed the verify flow in audit report by adding the code snippet of the verified secret ([#620])
+
+#### :snake: Miscellaneous
+- Added support for .NET packages.lock.json files in the heuristic filter ([#593])
+- Multiple dependency updates
+
+[#499]: https://github.com/Yelp/detect-secrets/pull/499
+[#556]: https://github.com/Yelp/detect-secrets/pull/556
+[#589]: https://github.com/Yelp/detect-secrets/pull/589
+[#593]: https://github.com/Yelp/detect-secrets/pull/593
+[#598]: https://github.com/Yelp/detect-secrets/pull/598
+[#612]: https://github.com/Yelp/detect-secrets/pull/612
+[#614]: https://github.com/Yelp/detect-secrets/pull/614
+[#615]: https://github.com/Yelp/detect-secrets/pull/615
+[#616]: https://github.com/Yelp/detect-secrets/pull/616
+[#619]: https://github.com/Yelp/detect-secrets/pull/619
+[#620]: https://github.com/Yelp/detect-secrets/pull/620
+
 ### v1.3.0
 ##### July 22nd, 2022
 
