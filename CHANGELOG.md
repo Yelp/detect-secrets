@@ -47,6 +47,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 #### :bug: Bugfixes
 - Fixed the verify flow in audit report by adding the code snippet of the verified secret ([#620])
+- Fixed deploy process to be environment configuration independent ([#625])
 
 #### :snake: Miscellaneous
 - Added support for .NET packages.lock.json files in the heuristic filter ([#593])
@@ -63,6 +64,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [#616]: https://github.com/Yelp/detect-secrets/pull/616
 [#619]: https://github.com/Yelp/detect-secrets/pull/619
 [#620]: https://github.com/Yelp/detect-secrets/pull/620
+[#625]: https://github.com/Yelp/detect-secrets/pull/625
 
 ### v1.3.0
 ##### July 22nd, 2022
