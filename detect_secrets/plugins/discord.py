@@ -11,7 +11,8 @@ class DiscordBotTokenDetector(RegexBasedDetector):
     secret_type = 'Discord Bot Token'
 
     denylist = [
-        # Discord Bot Token ([M|N]XXXXXXXXXXXXXXXXXXXXXXX.XXXXXX.XXXXXXXXXXXXXXXXXXXXXXXXXXX)
+        # Discord Bot Token ([M|N|O]XXXXXXXXXXXXXXXXXXXXXXX[XX].XXXXXX.XXXXXXXXXXXXXXXXXXXXXXXXXXX)
         # Reference: https://discord.com/developers/docs/reference#authentication
-        re.compile(r'[MN][a-zA-Z\d_-]{23}\.[a-zA-Z\d_-]{6}\.[a-zA-Z\d_-]{27}'),
+        # Also see: https://github.com/Yelp/detect-secrets/issues/627
+        re.compile(r'[MNO][a-zA-Z\d_-]{23,25}\.[a-zA-Z\d_-]{6}\.[a-zA-Z\d_-]{27}'),
     ]
