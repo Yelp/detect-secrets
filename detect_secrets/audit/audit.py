@@ -6,7 +6,7 @@ from . import io
 from ..core import baseline
 from ..exceptions import NoLineNumberError
 from ..exceptions import SecretNotFoundOnSpecifiedLineError
-from ..types import SecretContext
+from ..custom_types import SecretContext
 from ..util.code_snippet import get_code_snippet
 from .common import get_baseline_from_file
 from .common import get_raw_secret_from_file

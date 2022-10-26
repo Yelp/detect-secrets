@@ -17,7 +17,7 @@ import yaml
 from yaml.tokens import FlowEntryToken
 from yaml.tokens import KeyToken
 
-from ..types import NamedIO
+from ..custom_types import NamedIO
 from ..util.filetype import determine_file_type
 from ..util.filetype import FileType
 from .base import BaseTransformer

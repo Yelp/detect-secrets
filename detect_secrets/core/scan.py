@@ -14,8 +14,8 @@ from ..settings import get_filters
 from ..settings import get_plugins
 from ..settings import get_settings
 from ..transformers import get_transformed_file
-from ..types import NamedIO
-from ..types import SelfAwareCallable
+from ..custom_types import NamedIO
+from ..custom_types import SelfAwareCallable
 from ..util import git
 from ..util.code_snippet import CodeSnippet
 from ..util.code_snippet import get_code_snippet

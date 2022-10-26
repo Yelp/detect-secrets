@@ -16,7 +16,7 @@ from ..exceptions import InvalidBaselineError
 from ..exceptions import NoLineNumberError
 from ..exceptions import SecretNotFoundOnSpecifiedLineError
 from ..transformers import get_transformed_file
-from ..types import NamedIO
+from ..custom_types import NamedIO
 from ..util.inject import call_function_with_arguments
 
 
