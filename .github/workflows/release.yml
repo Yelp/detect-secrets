@@ -21,7 +21,7 @@ jobs:
         python: ['3.7', '3.8', '3.9', '3.10']
     steps:
     - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
-    - uses: actions/setup-python@98f2ad02fd48d057ee3b4d4f66525b231c3e52b6  # v3
+    - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v3
       with:
         python-version: ${{ matrix.python }}
     - name: Install dependencies
@@ -49,7 +49,7 @@ jobs:
     steps:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
       - name: Set up Python 3.7
-        uses: actions/setup-python@98f2ad02fd48d057ee3b4d4f66525b231c3e52b6  # v3
+        uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v3
         with:
           python-version: 3.7
       - name: bump version
@@ -98,7 +98,7 @@ jobs:
         with:
           token: ${{ secrets.PAT_TOKEN }}
           repository: bridgecrewio/checkov
-      - uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
+      - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Prepare PR
