@@ -104,7 +104,7 @@ jobs:
       - name: Prepare PR
         run: |
           # install needed tools
-          python -m pip install --no-cache-dir --upgrade pipenv "pipenv-setup[black]"
+          python -m pip install --no-cache-dir --upgrade pipenv "pipenv-setup[black]" vistir<0.7.0
 
           # update Pipfile
           pipenv --python ${{ env.PYTHON_VERSION }}
