@@ -7,7 +7,7 @@ from typing import List
 from typing import Optional
 from typing import TypeVar
 
-from ..types import NamedIO
+from ..custom_types import NamedIO
 from ..util.importlib import import_types_from_package
 from .base import BaseTransformer
 from .exceptions import ParsingError

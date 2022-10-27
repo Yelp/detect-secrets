@@ -27,10 +27,10 @@ from . import io
 from ..core import baseline
 from ..core.potential_secret import PotentialSecret
 from ..core.secrets_collection import SecretsCollection
+from ..custom_types import SecretContext
 from ..exceptions import NoLineNumberError
 from ..exceptions import SecretNotFoundOnSpecifiedLineError
 from ..settings import transient_settings
-from ..types import SecretContext
 from ..util.code_snippet import get_code_snippet
 from ..util.color import AnsiColor
 from ..util.color import colorize

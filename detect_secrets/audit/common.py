@@ -12,11 +12,11 @@ from ..core import baseline
 from ..core import plugins
 from ..core.potential_secret import PotentialSecret
 from ..core.secrets_collection import SecretsCollection
+from ..custom_types import NamedIO
 from ..exceptions import InvalidBaselineError
 from ..exceptions import NoLineNumberError
 from ..exceptions import SecretNotFoundOnSpecifiedLineError
 from ..transformers import get_transformed_file
-from ..types import NamedIO
 from ..util.inject import call_function_with_arguments
 
 

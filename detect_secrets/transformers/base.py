@@ -2,7 +2,7 @@ from abc import ABCMeta
 from abc import abstractmethod
 from typing import List
 
-from ..types import NamedIO
+from ..custom_types import NamedIO
 
 
 class BaseTransformer(metaclass=ABCMeta):

@@ -7,7 +7,7 @@ from typing import Iterator
 from typing import List
 from typing import Tuple
 
-from ..types import NamedIO
+from ..custom_types import NamedIO
 from ..util.filetype import determine_file_type
 from ..util.filetype import FileType
 from .base import BaseTransformer

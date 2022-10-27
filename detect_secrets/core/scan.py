@@ -9,13 +9,13 @@ from typing import Set
 from typing import Tuple
 from typing import Union
 
+from ..custom_types import NamedIO
+from ..custom_types import SelfAwareCallable
 from ..filters.allowlist import is_line_allowlisted
 from ..settings import get_filters
 from ..settings import get_plugins
 from ..settings import get_settings
 from ..transformers import get_transformed_file
-from ..types import NamedIO
-from ..types import SelfAwareCallable
 from ..util import git
 from ..util.code_snippet import CodeSnippet
 from ..util.code_snippet import get_code_snippet

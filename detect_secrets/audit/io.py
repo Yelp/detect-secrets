@@ -6,7 +6,7 @@ import platform
 import sys
 from enum import Enum
 
-from ..types import SecretContext
+from ..custom_types import SecretContext
 from ..util.color import AnsiColor
 from ..util.color import colorize
 

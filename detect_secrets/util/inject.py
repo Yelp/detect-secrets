@@ -5,7 +5,7 @@ from typing import cast
 from typing import Tuple
 from typing import Union
 
-from ..types import SelfAwareCallable
+from ..custom_types import SelfAwareCallable
 
 
 def call_function_with_arguments(
