@@ -49,6 +49,7 @@ class BasePlugin(metaclass=ABCMeta):
         line: str,
         line_number: int = 0,
         context: CodeSnippet = None,
+        raw_context: CodeSnippet = None,
         **kwargs: Any
     ) -> Set[PotentialSecret]:
         """This examines a line and finds all possible secret values in it."""
@@ -66,6 +67,7 @@ class BasePlugin(metaclass=ABCMeta):
                         self.verify,
                         secret=match,
                         context=context,
+                        raw_context=raw_context,
                     )
                     is_verified = True if verified_result == VerifiedResult.VERIFIED_TRUE else False
                 except requests.exceptions.RequestException:

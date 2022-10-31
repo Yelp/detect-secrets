@@ -308,6 +308,7 @@ class KeywordDetector(BasePlugin):
         line: str,
         line_number: int = 0,
         context: CodeSnippet = None,
+        raw_context: CodeSnippet = None,
         **kwargs: Any,
     ) -> Set[PotentialSecret]:
         filetype = determine_file_type(filename)
@@ -317,6 +318,7 @@ class KeywordDetector(BasePlugin):
             line=line,
             line_number=line_number,
             context=context,
+            raw_context=raw_context,
             denylist_regex_to_group=denylist_regex_to_group,
         )
 

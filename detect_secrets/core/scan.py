@@ -1,5 +1,6 @@
 import os
 import subprocess
+from functools import lru_cache
 from typing import Any
 from typing import cast
 from typing import Generator
@@ -26,6 +27,12 @@ from .plugins import Plugin
 from .potential_secret import PotentialSecret
 
 MIN_LINE_LENGTH = int(os.getenv('CHECKOV_MIN_LINE_LENGTH', '5'))
+
+
+@lru_cache(maxsize=1)
+def read_raw_lines(filename: str) -> List[str]:
+    with open(filename) as f:
+        return f.readlines()
 
 
 def get_files_to_scan(
@@ -323,6 +330,11 @@ def _process_line_based_plugins(
             line_number=line_number,
         )
 
+        raw_code_snippet = get_code_snippet(
+            lines=read_raw_lines(filename),
+            line_number=line_number,
+        )
+
         # We apply line-specific filters, and see whether that allows us to quit early.
         if _is_filtered_out(
             required_filter_parameters=['line'],
@@ -341,6 +353,7 @@ def _process_line_based_plugins(
                 line=line,
                 line_number=line_number,
                 context=code_snippet,
+                raw_context=raw_code_snippet,
             )
             if not _is_filtered_out(
                 required_filter_parameters=['context'],

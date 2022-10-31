@@ -47,6 +47,7 @@ class HighEntropyStringsPlugin(BasePlugin, metaclass=ABCMeta):
         line: str,
         line_number: int = 0,
         context: CodeSnippet = None,
+        raw_context: CodeSnippet = None,
         enable_eager_search: bool = False,
         **kwargs: Any,
     ) -> Set[PotentialSecret]:
@@ -55,6 +56,7 @@ class HighEntropyStringsPlugin(BasePlugin, metaclass=ABCMeta):
             line=line,
             line_number=line_number,
             context=context,
+            raw_context=raw_context,
         )
         if output or not enable_eager_search:
             # NOTE: We perform the limit filter at this layer (rather than analyze_string) so
@@ -77,7 +79,12 @@ class HighEntropyStringsPlugin(BasePlugin, metaclass=ABCMeta):
         # perform the limit filtering outside this function. This allows us to see *why* secrets
         # have failed to be caught with our configured limit.
         with self.non_quoted_string_regex(is_exact_match=False):
-            return super().analyze_line(filename=filename, line=line, line_number=line_number)
+            return super().analyze_line(
+                filename=filename,
+                line=line,
+                line_number=line_number,
+                raw_context=raw_context,
+            )
 
     def calculate_shannon_entropy(self, data: str) -> float:
         """Returns the entropy of a given string.
