@@ -9,6 +9,7 @@ from enum import Enum
 from ..types import SecretContext
 from ..util.color import AnsiColor
 from ..util.color import colorize
+from detect_secrets.exceptions import SecretNotFoundOnSpecifiedLineError
 
 
 def print_message(message: str) -> None:
@@ -34,7 +35,10 @@ def print_context(context: SecretContext) -> None:
 
     context.snippet.add_line_numbers()
     if context.secret.secret_value:
-        context.snippet.highlight_line(context.secret.secret_value)
+        try:
+            context.snippet.highlight_line(context.secret.secret_value)
+        except (ValueError, IndexError):
+            raise SecretNotFoundOnSpecifiedLineError(context.secret.line_number)
     else:
         context.snippet.target_line = colorize(context.snippet.target_line, AnsiColor.BOLD)
     print_message(str(context.snippet))
