@@ -22,6 +22,7 @@ class FileType(Enum):
     PROPERTIES = 16
     TOML = 17
     OTHER = 18
+    JSON = 19
 
 
 def determine_file_type(filename: str) -> FileType:
@@ -41,6 +42,7 @@ def determine_file_type(filename: str) -> FileType:
         '.tf': FileType.TERRAFORM,
         '.yaml': FileType.YAML,
         '.yml': FileType.YAML,
+        '.json': FileType.JSON,
         '.cs': FileType.C_SHARP,
         '.c': FileType.C,
         '.cpp': FileType.C_PLUS_PLUS,
