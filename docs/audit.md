@@ -56,7 +56,7 @@ $ detect-secrets audit .secrets.baseline
 > Note: You can also setup a Powershell script following [doc here](./developer-tool-faq.md#powershell-docker-command-is-too-long-do-you-have-some-shortcut-for-detect-secrets) to avoid typing the long command.
 
 ```shell
-docker run -it --rm -v c:/replace/with/your/folder/containing/git/repo:/code ibmcom/detect-secrets:latest audit .secrets.baseline
+docker run -it --rm -v c:/replace/with/your/folder/containing/git/repo:/code icr.io/git-defenders/detect-secrets:latest audit .secrets.baseline
 ```
 
 ### Windows git bash
