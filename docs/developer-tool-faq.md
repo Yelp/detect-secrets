@@ -448,12 +448,12 @@ See [How do I setup a pre-commit hook with the docker image?](#how-do-i-setup-a-
 ```shell
 # scan
 # Mount to /code folder is important since it's the workdir for detect-secrets
-docker run -it --rm -v c:/replace/with/your/folder/containing/git/repo:/code ibmcom/detect-secrets:latest scan
+docker run -it --rm -v c:/replace/with/your/folder/containing/git/repo:/code icr.io/git-defenders/detect-secrets:latest scan
 
 # generate or update baseline
 #
 # Note: please do NOT use "> .secrets.baseline" to generat new baseline on Windows platform as it will generate Linux line ending format from docker output.
-docker run -it --rm -v c:/replace/with/your/folder/containing/git/repo:/code ibmcom/detect-secrets:latest scan --update .secrets.baseline
+docker run -it --rm -v c:/replace/with/your/folder/containing/git/repo:/code icr.io/git-defenders/detect-secrets:latest scan --update .secrets.baseline
 ```
 
 #### Windows git bash
@@ -461,20 +461,20 @@ docker run -it --rm -v c:/replace/with/your/folder/containing/git/repo:/code ibm
 ```shell
 # the leading / is important for git bash env
 # do not wrap trailing command after docker image is also important
-winpty docker run -it --rm -v /$(pwd):/code ibmcom/detect-secrets:latest scan
+winpty docker run -it --rm -v /$(pwd):/code icr.io/git-defenders/detect-secrets:latest scan
 
 # generate or update baseline
-winpty docker run -it --rm -v /$(pwd):/code ibmcom/detect-secrets:latest scan --update .secrets.baseline
+winpty docker run -it --rm -v /$(pwd):/code icr.io/git-defenders/detect-secrets:latest scan --update .secrets.baseline
 ```
 
 #### MacOS & Linux
 
 ```shell
 # scan
-docker run -it --rm -v $(pwd):/code ibmcom/detect-secrets:latest scan
+docker run -it --rm -v $(pwd):/code icr.io/git-defenders/detect-secrets:latest scan
 
 # generate or update baseline
-docker run -it --rm -v $(pwd):/code ibmcom/detect-secrets:latest scan --update .secrets.baseline
+docker run -it --rm -v $(pwd):/code icr.io/git-defenders/detect-secrets:latest scan --update .secrets.baseline
 ```
 
 ### How do I run an audit with the docker image?
@@ -484,19 +484,19 @@ docker run -it --rm -v $(pwd):/code ibmcom/detect-secrets:latest scan --update .
 > Note: You can also setup a Powershell script following [doc here](#powershell-docker-command-is-too-long-do-you-have-some-shortcut-for-detect-secrets) to avoid typing the long command.
 
 ```shell
-docker run -it --rm -v c:/replace/with/your/folder/containing/git/repo:/code ibmcom/detect-secrets:latest audit .secrets.baseline
+docker run -it --rm -v c:/replace/with/your/folder/containing/git/repo:/code icr.io/git-defenders/detect-secrets:latest audit .secrets.baseline
 ```
 
 #### Windows git bash
 
 ```shell
-winpty docker run -it --rm -v /$(pwd):/code ibmcom/detect-secrets:latest audit .secrets.baseline
+winpty docker run -it --rm -v /$(pwd):/code icr.io/git-defenders/detect-secrets:latest audit .secrets.baseline
 ```
 
 #### MacOS & Linux
 
 ```shell
-docker run -it --rm -v $(pwd):/code ibmcom/detect-secrets:latest audit .secrets.baseline
+docker run -it --rm -v $(pwd):/code icr.io/git-defenders/detect-secrets:latest audit .secrets.baseline
 ```
 
 ### How do I setup a pre-commit hook with the docker image?
@@ -510,7 +510,7 @@ docker run -it --rm -v $(pwd):/code ibmcom/detect-secrets:latest audit .secrets.
     -   id: detect-secrets-docker
         name: detect-secrets-docker
         language: docker_image
-        entry: ibmcom/detect-secrets-hook:latest --baseline .secrets.baseline
+        entry: icr.io/git-defenders/detect-secrets-hook:latest --baseline .secrets.baseline
 ```
 
 1. [Windows environment], run the following command to turn off the CRLF warning message
@@ -523,15 +523,15 @@ git config --global core.safecrlf false
 
 ### How do I upgrade docker image in a pre-commit hook?
 
-1. Identify the docker image tag for `ibmcom/detect-secrets-hook` in your `.pre-commit-config.yaml` file. For example, the default is `latest`.
+1. Identify the docker image tag for `icr.io/git-defenders/detect-secrets-hook` in your `.pre-commit-config.yaml` file. For example, the default is `latest`.
 1. If you are using a latest tag such as `latest`.
-    1. In a terminal, run `docker pull ibmcom/detect-secrets-hook:latest` to get the latest image.
+    1. In a terminal, run `docker pull icr.io/git-defenders/detect-secrets-hook:latest` to get the latest image.
 1. If you are using a specific version tag, such as `0.13.1+ibm.37.dss`
     1. Update the `.pre-commit-config.yaml` to use a newer version tag.
 
 ### Can I pull a specific version of docker image?
 
-Yes, any tag listed [in docker hub for image ibmcom/detect-secrets](https://hub.docker.com/repository/docker/ibmcom/detect-secrets) can be used. You can use the same approach to find tags for `ibmcom/detect-secrets-hook`.
+Yes, any tag listed [in docker hub for image icr.io/git-defenders/detect-secrets](https://hub.docker.com/repository/docker/icr.io/git-defenders/detect-secrets) can be used. You can use the same approach to find tags for `icr.io/git-defenders/detect-secrets-hook`.
 
 The latest version for `detect-secrets` suite is `latest`.
 
@@ -543,17 +543,17 @@ To run other `detect-secrets` commands with the docker image, like the ones belo
 
 #### Windows Powershell and cmd
 
-Replace `detect-secrets` with `docker run -it --rm -v c:/replace/with/your/folder/containing/git/repo:/code ibmcom/detect-secrets:latest`
+Replace `detect-secrets` with `docker run -it --rm -v c:/replace/with/your/folder/containing/git/repo:/code icr.io/git-defenders/detect-secrets:latest`
 
 You can also setup a Powershell script following [doc here](#powershell-docker-command-is-too-long-do-you-have-some-shortcut-for-detect-secrets).
 
 #### Windows git bash
 
-Replace `detect-secrets` with `winpty docker run -it --rm -v /$(pwd):/code ibmcom/detect-secrets:latest`
+Replace `detect-secrets` with `winpty docker run -it --rm -v /$(pwd):/code icr.io/git-defenders/detect-secrets:latest`
 
 #### MacOS & Linux
 
-Replace `detect-secrets` with `docker run -it --rm -v $(pwd):/code ibmcom/detect-secrets:latest`
+Replace `detect-secrets` with `docker run -it --rm -v $(pwd):/code icr.io/git-defenders/detect-secrets:latest`
 
 ### Powershell docker command is too long, do you have some shortcut for detect-secrets?
 
