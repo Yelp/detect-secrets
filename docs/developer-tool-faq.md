@@ -531,7 +531,7 @@ git config --global core.safecrlf false
 
 ### Can I pull a specific version of docker image?
 
-Yes, any tag listed [in docker hub for image icr.io/git-defenders/detect-secrets](https://hub.docker.com/repository/docker/icr.io/git-defenders/detect-secrets) can be used. You can use the same approach to find tags for `icr.io/git-defenders/detect-secrets-hook`.
+Yes, any tag listed in ICR accessed via the [IBM Cloud Container Registry CLI](https://cloud.ibm.com/docs/Registry?topic=container-registry-cli-plugin-containerregcli) for image icr.io/git-defenders/detect-secrets can be used. You can use the same approach to find tags for `icr.io/git-defenders/detect-secrets-hook`.
 
 The latest version for `detect-secrets` suite is `latest`.
 
