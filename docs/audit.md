@@ -56,19 +56,19 @@ $ detect-secrets audit .secrets.baseline
 > Note: You can also setup a Powershell script following [doc here](./developer-tool-faq.md#powershell-docker-command-is-too-long-do-you-have-some-shortcut-for-detect-secrets) to avoid typing the long command.
 
 ```shell
-docker run -it --rm -v c:/replace/with/your/folder/containing/git/repo:/code ibmcom/detect-secrets:latest audit .secrets.baseline
+docker run -it --rm -v c:/replace/with/your/folder/containing/git/repo:/code icr.io/git-defenders/detect-secrets:latest audit .secrets.baseline
 ```
 
 ### Windows git bash
 
 ```shell
-winpty docker run -it --rm -v /$(pwd):/code ibmcom/detect-secrets:latest audit .secrets.baseline
+winpty docker run -it --rm -v /$(pwd):/code icr.io/git-defenders/detect-secrets:latest audit .secrets.baseline
 ```
 
 ### MacOS & Linux
 
 ```shell
-docker run -it --rm -v $(pwd):/code ibmcom/detect-secrets:latest audit .secrets.baseline
+docker run -it --rm -v $(pwd):/code icr.io/git-defenders/detect-secrets:latest audit .secrets.baseline
 ```
 
 ## Manually Labelling Secrets
@@ -205,11 +205,11 @@ The **redhat-ubi** Docker image offers additional benefits over the general-purp
 To use **redhat-ubi** image in your pipeline, add the following commands to your pipeline script (if opting to use **latest**, replace the image tag with this value):
 
 1. Pull the image:
-    - `docker pull ibmcom/detect-secrets:redhat-ubi`
+    - `docker pull icr.io/git-defenders/detect-secrets:redhat-ubi`
 2. Mount the directory containing your code to the Docker image's `/code` folder, since it's the working directory for detect-secrets. Then, update your baseline file.
-    - `docker run -it -a stdout --rm -v $(pwd):/code ibmcom/detect-secrets:redhat-ubi scan --update .secrets.baseline`
+    - `docker run -it -a stdout --rm -v $(pwd):/code icr.io/git-defenders/detect-secrets:redhat-ubi scan --update .secrets.baseline`
 3. With the same directory mounted, run a report.
-    - `docker run -it -a stdout --rm -v $(pwd):/code ibmcom/detect-secrets:redhat-ubi audit --report --fail-on-unaudited --fail-on-live --fail-on-audited-real .secrets.baseline`
+    - `docker run -it -a stdout --rm -v $(pwd):/code icr.io/git-defenders/detect-secrets:redhat-ubi audit --report --fail-on-unaudited --fail-on-live --fail-on-audited-real .secrets.baseline`
 
 #### Using the `detect-secrets:redhat-ubi-custom` Docker Image
 
@@ -220,23 +220,23 @@ Please refer to [this](./scripts/../../scripts/run-in-pipeline.sh) script for a 
 To use the image in your pipeline, add the following commands to your pipeline script:
 
 1. Pull the image:
-    - `docker pull ibmcom/detect-secrets:redhat-ubi-custom`
+    - `docker pull icr.io/git-defenders/detect-secrets:redhat-ubi-custom`
 2. Mount the directory containing your code to the Docker image's `/code` folder, since it's the working directory for detect-secrets. The image will automatically update your baseline file and run a report against it:
-    - `docker run -it -a stdout --rm -v $(pwd):/code ibmcom/detect-secrets:redhat-ubi-custom`
+    - `docker run -it -a stdout --rm -v $(pwd):/code icr.io/git-defenders/detect-secrets:redhat-ubi-custom`
 
 #### Image Versioning
 Users can reference a specific version of the detect-secrets redhat-ubi-tagged images. That way one can peg to the specific version for these images as we release newer versions of them instead of using the "latest" version.
 
-`ibmcom/detect-secrets:redhat-ubi`
+`icr.io/git-defenders/detect-secrets:redhat-ubi`
 - This will be considered the `latest` version for the image.
 
-`ibmcom/detect-secrets:0.13.1.ibm.48.dss-redhat-ubi`
+`icr.io/git-defenders/detect-secrets:0.13.1.ibm.48.dss-redhat-ubi`
 - This one will allow users to lock the image to a specific Detect Secrets version, in this case `0.13.1.ibm.48.dss`.
 
-`ibmcom/detect-secrets:redhat-ubi-custom`
+`icr.io/git-defenders/detect-secrets:redhat-ubi-custom`
 - This will be considered the `latest` version for the image.
 
-`ibmcom/detect-secrets:0.13.1.ibm.48.dss-redhat-ubi-custom`
+`icr.io/git-defenders/detect-secrets:0.13.1.ibm.48.dss-redhat-ubi-custom`
 - This will allow users to lock the image to a specific Detect Secrets version, in this case `0.13.1.ibm.48.dss`.
 #### Installing via pip
 
