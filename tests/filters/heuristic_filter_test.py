@@ -78,27 +78,25 @@ class TestIsLikelyIdString:
         assert filters.heuristic.is_likely_id_string(secret, line)
 
     @pytest.mark.parametrize(
-        'secret, line',
+        'secret, line, plugin',
         [
             # the word hidden has the word id in it, but lets
             # not mark that as an id string
-            ('RANDOM_STRING', 'hidden_secret: RANDOM_STRING'),
-            ('RANDOM_STRING', 'hidden_secret=RANDOM_STRING'),
-            ('RANDOM_STRING', 'hidden_secret = RANDOM_STRING'),
+            ('RANDOM_STRING', 'hidden_secret: RANDOM_STRING', None),
+            ('RANDOM_STRING', 'hidden_secret=RANDOM_STRING', None),
+            ('RANDOM_STRING', 'hidden_secret = RANDOM_STRING', None),
 
             # fail silently if the secret isn't even on the line
-            ('SOME_RANDOM_STRING', 'id: SOME_OTHER_RANDOM_STRING'),
+            ('SOME_RANDOM_STRING', 'id: SOME_OTHER_RANDOM_STRING', None),
 
             # fail although the word david ends in id
-            ('RANDOM_STRING', 'postgres://david:RANDOM_STRING'),
+            ('RANDOM_STRING', 'postgres://david:RANDOM_STRING', None),
 
             # fail since this is an aws access key id, a real secret
-            ('AKIA4NACSIJMDDNSEDTE', 'aws_access_key_id=AKIA4NACSIJMDDNSEDTE'),
+            ('AKIA4NACSIJMDDNSEDTE', 'aws_access_key_id=AKIA4NACSIJMDDNSEDTE', AWSKeyDetector()),
         ],
     )
-    def test_failure(self, secret, line, plugin=None):
-        if secret.startswith('AKIA'):
-            plugin = AWSKeyDetector()
+    def test_failure(self, secret, line, plugin):
         assert not filters.heuristic.is_likely_id_string(secret, line, plugin)
 
 
