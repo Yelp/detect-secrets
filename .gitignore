@@ -12,3 +12,4 @@
 !.gitignore
 .python-version
 .vscode
+.idea
