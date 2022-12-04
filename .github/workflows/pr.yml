@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
       - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v4
         with:
-          python-version: 3.7
+          python-version: 3.8
       - name: pre-commit
         uses: pre-commit/action@646c83fcd040023954eafda54b4db0192ce70507  # v3
 

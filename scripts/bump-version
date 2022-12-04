@@ -79,6 +79,9 @@ function installDependency() {
     # NOTE: We don't specify this in requirements-dev, since not all developers need
     # to bump the version.
     venv/bin/pip install bump2version
+    # Install local version of detect-secrets since when performing a commit, the pre-commit
+    # hook detect-secrets version (old) will be out of sync with the .secrets.baseline version (new)
+    venv/bin/pip install -e .
 }
 
 function setVersion() {
