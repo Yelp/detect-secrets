@@ -70,7 +70,7 @@ jobs:
           ## update package version
           echo "VERSION = '$new_tag'" > 'detect_secrets/__version__.py'
 
-          git commit -m "publish version ${new_tag}" detect_secrets/__version__.py || echo "No changes to commit"
+          git commit -m "publish version ${new_tag} [skip ci]" detect_secrets/__version__.py || echo "No changes to commit"
           git push origin
           git tag $new_tag
           git push origin $new_tag
@@ -90,7 +90,7 @@ jobs:
 
   create-pr:
     needs: bump-version
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, public, linux, x64]
     environment: release
     env:
       PYTHON_VERSION: "3.8"
