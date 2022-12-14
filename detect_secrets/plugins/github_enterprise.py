@@ -8,7 +8,7 @@ from detect_secrets.core.constants import VerifiedResult
 
 
 class GheDetector(RegexBasedDetector):
-    """ Scans for GitHub Enterprise credentials """
+    """ Scans for GitHub Enterprise credentials generated both before (see forty_hex var) and after (see new_ghe_token var) this update: https://docs.github.com/en/enterprise-server@3.2/authentication/keeping-your-account-and-data-secure/about-authentication-to-github#githubs-token-formats """
 
     secret_type = 'GitHub Enterprise Credentials'
     denylist = None
@@ -33,6 +33,10 @@ class GheDetector(RegexBasedDetector):
         api_endpoint = r'(?:{ghe_instance}|api.{ghe_instance})'\
             .format(ghe_instance=self.ghe_instance)
         forty_hex = r'(?:(?<=\W)|(?<=^))([0-9a-f]{40})(?:(?=\W)|(?=$))'
+        # References:
+        # https://docs.github.com/en/enterprise-server@3.2/authentication/keeping-your-account-and-data-secure/about-authentication-to-github#githubs-token-formats
+        # ref. https://github.blog/2021-04-05-behind-githubs-new-authentication-token-formats/
+        new_ghe_token = (r'(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9_]{36}')
         b64_encoded_token = r'(?:(?<=\W)|(?<=^))([A-Za-z0-9+/]{55}=)(?:(?=\W)|(?=$))'
         opt_username = r'(?:[a-zA-Z0-9-]+:|)'
         self.denylist = [
@@ -65,6 +69,7 @@ class GheDetector(RegexBasedDetector):
                     b64_encoded_token=b64_encoded_token,
                 ), flags=re.IGNORECASE,
             ),
+            re.compile(new_ghe_token)
         ]
 
     def verify(self, token, *args, **kwargs):

@@ -1,1 +1,1 @@
-VERSION = '0.13.1+ibm.55.dss'
+VERSION = '0.13.1+ibm.56.dss'
