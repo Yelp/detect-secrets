@@ -5,6 +5,8 @@ In most cases, you probably can just use the RegexBasedPlugin. In more advanced 
 you can also use the LineBasedPlugin, and FileBasedPlugin. If you're extending the BasePlugin,
 things may not work as you expect (see the scan logic in SecretsCollection).
 """
+from __future__ import annotations
+
 import re
 from abc import ABCMeta
 from abc import abstractmethod
@@ -48,8 +50,8 @@ class BasePlugin(metaclass=ABCMeta):
         filename: str,
         line: str,
         line_number: int = 0,
-        context: CodeSnippet = None,
-        raw_context: CodeSnippet = None,
+        context: CodeSnippet | None = None,
+        raw_context: CodeSnippet | None = None,
         **kwargs: Any
     ) -> Set[PotentialSecret]:
         """This examines a line and finds all possible secret values in it."""

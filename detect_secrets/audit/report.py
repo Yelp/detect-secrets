@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from enum import Enum
 from typing import Any
 from typing import Callable
@@ -26,7 +28,7 @@ class SecretClassToPrint(Enum):
 
 def generate_report(
     baseline_file: str,
-    class_to_print: SecretClassToPrint = None,
+    class_to_print: SecretClassToPrint | None = None,
     line_getter_factory: Callable[[str], 'LineGetter'] = open_file,
 ) -> Dict[str, List[Dict[str, Any]]]:
 

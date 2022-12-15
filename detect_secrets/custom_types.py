@@ -20,7 +20,7 @@ class SelfAwareCallable:
     # The variable names for its inputs
     injectable_variables: Set[str]
 
-    def __call__(self, *args: Any, **kwargs: Any) -> NoReturn:
+    def __call__(self, *args: Any, **kwargs: Any) -> NoReturn:  # type:ignore[empty-body]
         """
         This is needed, since you can't inherit Callable.
         Source: https://stackoverflow.com/a/52654516/13340678

@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: ['3.7', '3.8', '3.9', '3.10']
+        python: ['3.7', '3.8', '3.9', '3.10', '3.11']
     steps:
     - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
     - uses: actions/setup-python@2c3dd9e7e29afd70cc0950079bde6c979d1f69f9  # v3
@@ -35,7 +35,7 @@ jobs:
         # when using macOS and python version 3.7
         echo "NO_PROXY='*'" >> $GITHUB_ENV
     - name: Run tests
-      run: pytest --strict-markers tests
+      run: pytest --strict-markers -W ignore::UserWarning tests
 
   bump-version:
     # Run tests before bumping
@@ -93,7 +93,7 @@ jobs:
     runs-on: [self-hosted, public, linux, x64]
     environment: release
     env:
-      PYTHON_VERSION: "3.8"
+      PYTHON_VERSION: "3.7"
     steps:
       - name: Checkout checkov
         uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3

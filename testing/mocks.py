@@ -1,4 +1,6 @@
 """This is a collection of utility functions for easier, DRY testing."""
+from __future__ import annotations
+
 import io
 import os
 import tempfile
@@ -94,8 +96,10 @@ def disable_gibberish_filter() -> Iterator[None]:
 
 @contextmanager
 def mock_named_temporary_file(
-    mode: str = 'w+b', dir: str = None,
-    suffix: str = None, prefix: str = None,
+    mode: str = 'w+b',
+    dir: str | None = None,
+    suffix: str | None = None,
+    prefix: str | None = None,
 ) -> Iterator[IO[Any]]:
     """
     Used to create a mock temporary named file to write baseline files and secret files in

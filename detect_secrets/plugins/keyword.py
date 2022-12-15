@@ -24,6 +24,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
+from __future__ import annotations
+
 import re
 from typing import Any
 from typing import Dict
@@ -308,8 +310,8 @@ class KeywordDetector(BasePlugin):
         filename: str,
         line: str,
         line_number: int = 0,
-        context: CodeSnippet = None,
-        raw_context: CodeSnippet = None,
+        context: CodeSnippet | None = None,
+        raw_context: CodeSnippet | None = None,
         **kwargs: Any,
     ) -> Set[PotentialSecret]:
         filetype = determine_file_type(filename)

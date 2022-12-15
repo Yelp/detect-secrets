@@ -15,14 +15,6 @@ from detect_secrets.settings import configure_settings_from_baseline
 from detect_secrets.settings import get_settings
 
 
-class PatchedFile:
-    """This exists so that we can do typecasting, without importing unidiff."""
-    path: str
-
-    def __iter__(self) -> Generator:
-        pass
-
-
 class SecretsCollection:
     def __init__(self, root: str = '') -> None:
         """
