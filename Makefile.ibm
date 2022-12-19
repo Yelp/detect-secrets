@@ -5,7 +5,6 @@ MAKEFLAGS += --warn-undefined-variables
 DEBUG_IMAGE_TAG := $(TRAVIS_BRANCH)-$(TRAVIS_BUILD_NUMBER)-id-$(TRAVIS_BUILD_ID)-time-$(shell date +%s)
 
 DOCKER_DOMAIN := git-defenders
-DOCKERHUB_DOMAIN := ibmcom
 
 DOCKER_REGISTRY_ICR := icr.io
 DOCKER_USER_ICR := iamapikey
@@ -15,14 +14,10 @@ DOCKER_REGISTRY_ART := txo-toolbox-team-docker-local.artifactory.swg-devops.com
 DOCKER_USER_ART := $(ART_USER_ID)
 DOCKER_PASS_ART := $(ART_API_KEY)
 
-DOCKER_REGISTRY_DOCKERHUB := registry.hub.docker.com
-DOCKER_USER_DOCKERHUB := $(DOCKER_HUB_USERNAME)
-DOCKER_PASS_DOCKERHUB := $(DOCKER_HUB_API_KEY)
-
 DOCKER_IMAGES_TO_TAG := detect-secrets detect-secrets-hook
 DOCKER_IMAGES_TO_SCAN := detect-secrets detect-secrets-hook detect-secrets:redhat-ubi detect-secrets:redhat-ubi-custom
 DOCKER_IMAGES_TO_PUBLISH :=
-DOCKER_REGISTRIES := $(DOCKER_REGISTRY_ICR) $(DOCKER_REGISTRY_ART) $(DOCKER_REGISTRY_DOCKERHUB)
+DOCKER_REGISTRIES := $(DOCKER_REGISTRY_ICR) $(DOCKER_REGISTRY_ART)
 
 IMAGE_NAME :=
 DOCKER_REGISTRY :=
@@ -84,7 +79,6 @@ docker-build-images:
 	done
 
 docker-login:
-	@echo $(DOCKER_PASS_DOCKERHUB) | docker login -u $(DOCKER_USER_DOCKERHUB) --password-stdin;
 	@echo $(DOCKER_PASS_ART) | docker login -u $(DOCKER_USER_ART) --password-stdin $(DOCKER_REGISTRY_ART);
 	@echo $(DOCKER_PASS_ICR) | docker login -u $(DOCKER_USER_ICR) --password-stdin $(DOCKER_REGISTRY_ICR);
 
@@ -110,14 +104,10 @@ docker-publish-images: docker-login
 		done   \
 	done
 
-docker-publish-image:
-	if [ "$(DOCKER_REGISTRY)" = "$(DOCKER_REGISTRY_DOCKERHUB)" ]; then                                     \
-		docker tag $(DOCKER_DOMAIN_LOCAL)/$(IMAGE_NAME) $(DOCKERHUB_DOMAIN)/$(IMAGE_NAME);                 \
-		docker push $(DOCKERHUB_DOMAIN)/$(IMAGE_NAME); 													   \
-	else                                                                                                   \
-		docker tag $(DOCKER_DOMAIN_LOCAL)/$(IMAGE_NAME) $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME); \
-		docker push $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME);									   \
-	fi
+docker-publish-image:                                                                                  
+	docker tag $(DOCKER_DOMAIN_LOCAL)/$(IMAGE_NAME) $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME); \
+	docker push $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME);									   
+
 
 publish-cos:
 	pip install requests packaging;                                                                                 \

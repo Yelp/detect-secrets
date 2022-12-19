@@ -14,7 +14,7 @@
 function detect-secrets {
     $current_dir = (Get-Location).Path
     $dss_image_tag = "dss-latest"
-    $dss_image = "ibmcom/detect-secrets:${dss_image_tag}"
+    $dss_image = "icr.io/git-defenders/detect-secrets:${dss_image_tag}"
 
     docker run --rm -it -v ${current_dir}:/code ${dss_image} $args
 }
