@@ -116,7 +116,7 @@ def test_build_automaton():
         ('1.0.0+ibm.5', '1.0.0+ibm.5.dss'),
         ('1.0.0+ibm.5.dss', '1.0.0+ibm.6.dss'),
         ('1.0.0+ibm.5.dss', '1.0.0+ibm.6.dss.1'),
-        ('0.13.0-ibm.6-dss', '0.13.0+ibm.7.dss'),
+        ('0.13.0+ibm.6.dss', '0.13.0+ibm.7.dss'),
     ],
 )
 def test_version_compare(smaller_version_txt, larger_version_txt):
