@@ -37,7 +37,7 @@ repos:
       # You are encouraged to use static refs such as tags, instead of branch name
       #
       # Running "pre-commit autoupdate" would automatically updates rev to latest tag
-      rev: 0.13.1+ibm.50.dss
+      rev: 0.13.1+ibm.55.dss
       hooks:
           - id: detect-secrets # pragma: whitelist secret
             # Add options for detect-secrets-hook binary. You can run `detect-secrets-hook --help` to list out all possible options.
