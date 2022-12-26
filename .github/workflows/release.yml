@@ -20,7 +20,7 @@ jobs:
       matrix:
         python: ['3.7', '3.8', '3.9', '3.10', '3.11']
     steps:
-    - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
+    - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b  # v3
     - uses: actions/setup-python@2c3dd9e7e29afd70cc0950079bde6c979d1f69f9  # v3
       with:
         python-version: ${{ matrix.python }}
@@ -47,7 +47,7 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b  # v3
         with:
           token: ${{ secrets.PAT_TOKEN }}
       - name: Set up Python 3.7
@@ -96,7 +96,7 @@ jobs:
       PYTHON_VERSION: "3.7"
     steps:
       - name: Checkout checkov
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
+        uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b  # v3
         with:
           token: ${{ secrets.PAT_TOKEN }}
           repository: bridgecrewio/checkov
