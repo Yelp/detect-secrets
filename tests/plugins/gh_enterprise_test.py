@@ -4,8 +4,9 @@ import responses
 from detect_secrets.core.constants import VerifiedResult
 from detect_secrets.plugins.github_enterprise import GheDetector
 
-
-GHE_TOKEN = 'abcdef0123456789abcdef0123456789abcdef01'
+GHE_TOKEN_OLD = 'abcdef0123456789abcdef0123456789abcdef01'
+TOKEN_STRING = 'wWPw5k4aXcaT4fNP0UcnZwJUVFk6LO0pINUx'
+GHE_TOKEN_NEW = 'ghp_' + TOKEN_STRING
 GHE_TOKEN_BYTES = b'abcdef0123456789abcdef0123456789abcdef01'
 
 
@@ -14,6 +15,7 @@ class TestGheDetector(object):
     @pytest.mark.parametrize(
         'payload, should_flag',
         [
+            # Old GitHub Enterprise token format
             ('github-key 2764d47e6bf540911b7da8fe55caa9451e783549', True),
             ('github_pwd :53d49d5081266d939bac57a3d86c517ded974b19', True),
             ('gh-api-key=2764d47e6bf540911b7da8fe55caa9451e783549 ', True),
@@ -63,6 +65,13 @@ class TestGheDetector(object):
                 'YWJjZWRmYWJlZmQzMzMzMTQ1OTA4YWJjZGRmY2JkZGUxMTQ1Njc4OQo=', False,
             ),
             ('Authorization: token %s', False),
+            # New GitHub token format
+            (GHE_TOKEN_NEW, True),
+            ('gho_' + TOKEN_STRING, True),
+            ('ghu_' + TOKEN_STRING, True),
+            ('ghs_' + TOKEN_STRING, True),
+            ('ghr_' + TOKEN_STRING, True),
+            ('new_ghe_token: abcdef0123456789abcdef0123456789abcdef01', False),  # missing prefix
         ],
     )
     def test_analyze_line(self, payload, should_flag):
@@ -75,17 +84,26 @@ class TestGheDetector(object):
         'payload, should_flag',
         [
             (
-                'https://username:abcdef0123456789abcdef0123456789abcdef01@'
-                'github.somecompany.com', True,
+                'https://username:' + GHE_TOKEN_OLD + '@github.somecompany.com', True,
             ),
             (
-                'https://username:abcdef0123456789abcdef0123456789abcdef01@'
-                'api.github.somecompany.com', True,
+                'https://username:' + GHE_TOKEN_OLD + '@api.github.somecompany.com', True,
             ),
-            ('git+https://abcdef0123456789abcdef0123456789abcdef01@github.somecompany.com', True),
+            ('git+https://' + GHE_TOKEN_OLD + '@github.somecompany.com', True),
             (
-                'https://x-oauth-basic:abcdef0123456789abcdef0123456789abcdef01'
-                '@github.somecompany.com/org/repo.git', True,
+                'https://x-oauth-basic:' + GHE_TOKEN_OLD + '@github.somecompany.com/org/repo.git',
+                True,
+            ),
+            (
+                'https://username:' + GHE_TOKEN_NEW + '@github.somecompany.com', True,
+            ),
+            (
+                'https://username:' + GHE_TOKEN_NEW + '@api.github.somecompany.com', True,
+            ),
+            ('git+https://' + GHE_TOKEN_NEW + '@github.somecompany.com', True),
+            (
+                'https://x-oauth-basic:' + GHE_TOKEN_NEW + '@github.somecompany.com/org/repo.git',
+                True,
             ),
         ],
     )
@@ -101,21 +119,21 @@ class TestGheDetector(object):
             responses.GET, 'https://github.ibm.com/api/v3', status=401,
         )
 
-        assert GheDetector().verify(GHE_TOKEN) == VerifiedResult.VERIFIED_FALSE
+        assert GheDetector().verify(GHE_TOKEN_OLD) == VerifiedResult.VERIFIED_FALSE
 
     @responses.activate
     def test_verify_valid_secret(self):
         responses.add(
             responses.GET, 'https://github.ibm.com/api/v3', status=200,
         )
-        assert GheDetector().verify(GHE_TOKEN) == VerifiedResult.VERIFIED_TRUE
+        assert GheDetector().verify(GHE_TOKEN_OLD) == VerifiedResult.VERIFIED_TRUE
 
     @responses.activate
     def test_verify_status_not_200_or_401(self):
         responses.add(
             responses.GET, 'https://github.ibm.com/api/v3', status=500,
         )
-        assert GheDetector().verify(GHE_TOKEN) == VerifiedResult.UNVERIFIED
+        assert GheDetector().verify(GHE_TOKEN_OLD) == VerifiedResult.UNVERIFIED
 
     @responses.activate
     def test_verify_invalid_secret_bytes(self):
@@ -141,4 +159,30 @@ class TestGheDetector(object):
 
     @responses.activate
     def test_verify_unverified_secret(self):
-        assert GheDetector().verify(GHE_TOKEN) == VerifiedResult.UNVERIFIED
+        assert GheDetector().verify(GHE_TOKEN_OLD) == VerifiedResult.UNVERIFIED
+
+    @responses.activate
+    def test_verify_invalid_secret_new(self):
+        responses.add(
+            responses.GET, 'https://github.ibm.com/api/v3', status=401,
+        )
+
+        assert GheDetector().verify(GHE_TOKEN_NEW) == VerifiedResult.VERIFIED_FALSE
+
+    @responses.activate
+    def test_verify_status_not_200_or_401_new(self):
+        responses.add(
+            responses.GET, 'https://github.ibm.com/api/v3', status=500,
+        )
+        assert GheDetector().verify(GHE_TOKEN_NEW) == VerifiedResult.UNVERIFIED
+
+    @responses.activate
+    def test_verify_valid_secret_new(self):
+        responses.add(
+            responses.GET, 'https://github.ibm.com/api/v3', status=200,
+        )
+        assert GheDetector().verify(GHE_TOKEN_NEW) == VerifiedResult.VERIFIED_TRUE
+
+    @responses.activate
+    def test_verify_unverified_secret_new(self):
+        assert GheDetector().verify(GHE_TOKEN_NEW) == VerifiedResult.UNVERIFIED
