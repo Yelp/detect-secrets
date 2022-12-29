@@ -24,10 +24,10 @@ repos:
         language_version: python3
         exclude: bumpity.py$
 -   repo: https://github.com/asottile/add-trailing-comma
-    rev: v2.3.0
+    rev: v2.4.0
     hooks:
     -   id: add-trailing-comma
 -   repo: https://github.com/pre-commit/mirrors-autopep8
-    rev: v2.0.0
+    rev: v2.0.1
     hooks:
     -   id: autopep8
