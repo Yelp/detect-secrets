@@ -91,7 +91,8 @@ class TestGheDetector(object):
             ),
             ('git+https://' + GHE_TOKEN_OLD + '@github.somecompany.com', True),
             (
-                'https://x-oauth-basic:' + GHE_TOKEN_OLD + '@github.somecompany.com/org/repo.git', True,
+                'https://x-oauth-basic:' + GHE_TOKEN_OLD + '@github.somecompany.com/org/repo.git',
+                True,
             ),
             (
                 'https://username:' + GHE_TOKEN_NEW + '@github.somecompany.com', True,
@@ -101,7 +102,8 @@ class TestGheDetector(object):
             ),
             ('git+https://' + GHE_TOKEN_NEW + '@github.somecompany.com', True),
             (
-                'https://x-oauth-basic:' + GHE_TOKEN_NEW + '@github.somecompany.com/org/repo.git', True,
+                'https://x-oauth-basic:' + GHE_TOKEN_NEW + '@github.somecompany.com/org/repo.git',
+                True,
             ),
         ],
     )

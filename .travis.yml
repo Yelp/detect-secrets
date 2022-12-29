@@ -27,7 +27,7 @@ matrix:
 before_install:
     - echo -e "machine github.com\n  login $GH_ACCESS_TOKEN" >> ~/.netrc # Login to GitHub
     - echo -e "machine github.ibm.com\n  login $GHE_ACCESS_TOKEN" >> ~/.netrc # Login to GitHub Enterprise
-install:    
+install:
     - pip install "certifi>=2022.12.07" "setuptools>=65.5.1" tox pipenv
 script: make setup-trivy && make trivy-scan-python-vulnerabilities && make test
 cache:

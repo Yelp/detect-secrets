@@ -8,7 +8,10 @@ from detect_secrets.core.constants import VerifiedResult
 
 
 class GheDetector(RegexBasedDetector):
-    """ Scans for GitHub Enterprise credentials generated both before (see forty_hex var) and after (see new_ghe_token var) this update: https://docs.github.com/en/enterprise-server@3.2/authentication/keeping-your-account-and-data-secure/about-authentication-to-github#githubs-token-formats """
+    """ Scans for GitHub Enterprise credentials generated both before (see forty_hex var) and
+    after (see new_ghe_token var) this update:
+    https://docs.github.com/en/enterprise-server@3.2/authentication/keeping-your-account-and-data-secure/about-authentication-to-github#githubs-token-formats
+    """
 
     secret_type = 'GitHub Enterprise Credentials'
     denylist = None
