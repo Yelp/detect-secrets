@@ -69,7 +69,7 @@ class GheDetector(RegexBasedDetector):
                     b64_encoded_token=b64_encoded_token,
                 ), flags=re.IGNORECASE,
             ),
-            re.compile(new_ghe_token)
+            re.compile(new_ghe_token),
         ]
 
     def verify(self, token, *args, **kwargs):
