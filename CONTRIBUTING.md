@@ -190,8 +190,6 @@ Then start the debugger from your root-level main file.
 This project is written in Python. Here are the dependencies needed to run the tests:
 
 -   `python` The version can be installed using an utility like pyenv ( instructions bellow ) or your os package manager
-    -   `3.5`
-    -   `3.6`
     -   `3.7`
     -   `3.8`
     -   `3.9`

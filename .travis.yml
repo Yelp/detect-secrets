@@ -24,6 +24,9 @@ matrix:
         - env: TOXENV=py38
           python: 3.8
           dist: xenial # Required for Python >= 3.7 (travis-ci/travis-ci#9069)
+        - env: TOXENV=py39
+          python: 3.9
+          dist: xenial # Required for Python >= 3.7 (travis-ci/travis-ci#9069)
 before_install:
     - echo -e "machine github.com\n  login $GH_ACCESS_TOKEN" >> ~/.netrc # Login to GitHub
     - echo -e "machine github.ibm.com\n  login $GHE_ACCESS_TOKEN" >> ~/.netrc # Login to GitHub Enterprise
