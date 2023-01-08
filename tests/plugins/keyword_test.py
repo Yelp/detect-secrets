@@ -23,6 +23,7 @@ CONFIG_TEST_CASES = [
     ("api_key: '{}'".format(WHITES_SECRET), WHITES_SECRET),
     ('aws_secret_access_key: {}'.format(WHITES_SECRET), WHITES_SECRET),
     ('db_pass: {},'.format(COMMON_SECRET), COMMON_SECRET),      # Last character is ignored
+    ('my_pass: {},'.format(COMMON_SECRET), COMMON_SECRET),      # Last character is ignored
     ('passwd: {}`'.format(COMMON_SECRET), COMMON_SECRET),       # Last character is ignored
     ('private_key: {}"'.format(COMMON_SECRET), COMMON_SECRET),  # Last character is ignored
     ("secret: {}'".format(COMMON_SECRET), COMMON_SECRET),       # Last character is ignored
@@ -129,6 +130,7 @@ QUOTES_REQUIRED_TEST_CASES = [
     ('api_key: `{}`'.format(COMMON_SECRET), COMMON_SECRET),
     ("aws_secret_access_key: '{}'".format(COMMON_SECRET), COMMON_SECRET),
     ("db_pass: '{}'".format(LETTER_SECRET), LETTER_SECRET),  # All symbols are allowed
+    ("my_pass: '{}',".format(COMMON_SECRET), COMMON_SECRET),      # Last character is ignored
     ("password: '{}'".format(SYMBOL_SECRET), None),  # At least 1 alphanumeric character is required
     ('if ("{}" == passwd) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if ("{}" === private_key) {{'.format(COMMON_SECRET), COMMON_SECRET),
