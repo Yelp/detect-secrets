@@ -9,8 +9,8 @@ repos:
     # If you desire to use a specific version of detect-secrets, you can replace `master` with other git revisions such as branch, tag or commit sha.
     # You are encouraged to use static refs such as tags, instead of branch name
     #
-    # Running "pre-commit autoupdate" would automatically updates rev to latest tag
-    rev: master
+    # Running "pre-commit autoupdate" automatically updates rev to latest tag
+    rev: 0.13.1+ibm.56.dss
     hooks:
       - id: detect-secrets # pragma: whitelist secret
         # Add options for detect-secrets-hook binary. You can run `detect-secrets-hook --help` to list out all possible options.
