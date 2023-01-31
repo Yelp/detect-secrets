@@ -61,6 +61,7 @@ Format: `<upstream-version>-ibm.<minor>.<fix>`, for example `0.12.0-ibm.3`
 1. When fixing IBM specific bugs, increase `<fix>`
 1. When rebase from upstream, update `<upstream-version>` to the rebased upstream version. We do not reset the `<minor>` and `<fix>` when bumping upstream version.
 1. Version number also needs to be updated in [`__init__.py`](./detect_secrets/__init__.py#L1)
+1. Update the version number (value of `rev`) in [`user-config/.pre-commit-config.yaml`](./user-config/.pre-commit-config.yaml)
 
 ## How do we make release
 
