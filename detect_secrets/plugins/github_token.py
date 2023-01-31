@@ -12,5 +12,5 @@ class GitHubTokenDetector(RegexBasedDetector):
 
     denylist = [
         # ref. https://github.blog/2021-04-05-behind-githubs-new-authentication-token-formats/
-        re.compile(r'(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9_]{36}'),
+        re.compile(r'(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9_]{36}'),
     ]
