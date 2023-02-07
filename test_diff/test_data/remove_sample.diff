@@ -1,0 +1,20 @@
+diff --git a/Dockerfile b/Dockerfile
+index 99cf5ab..bd257e9 100644
+--- a/Dockerfile
++++ b/Dockerfile
+@@ -4,7 +4,6 @@ FROM public.ecr.aws/lambda/python:3.9
+
+ ENV PIP_ENV_VERSION="2022.1.8"
+
+-ENV AWS_ACCESS_KEY_ID="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+
+ COPY Pipfile Pipfile.lock ./
+
+@@ -14,5 +13,7 @@ RUN pip install pipenv==${PIP_ENV_VERSION} \
+  && rm -f requirements.txt Pipfile Pipfile.lock \
+  && pip uninstall -y pipenv
+
++COPY src/ "${LAMBDA_TASK_ROOT}/src/"
++COPY utilsPython/ "${LAMBDA_TASK_ROOT}/utilsPython/"
+
+ CMD ["src.secrets_setup.image.src.app.handler"]

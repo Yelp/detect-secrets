@@ -46,13 +46,15 @@ class BasePlugin(metaclass=ABCMeta):
         raise NotImplementedError
 
     def analyze_line(
-        self,
-        filename: str,
-        line: str,
-        line_number: int = 0,
-        context: CodeSnippet | None = None,
-        raw_context: CodeSnippet | None = None,
-        **kwargs: Any
+            self,
+            filename: str,
+            line: str,
+            line_number: int = 0,
+            context: CodeSnippet | None = None,
+            raw_context: CodeSnippet | None = None,
+            is_added: bool = False,
+            is_removed: bool = False,
+            **kwargs: Any
     ) -> Set[PotentialSecret]:
         """This examines a line and finds all possible secret values in it."""
         output = set()
@@ -61,8 +63,8 @@ class BasePlugin(metaclass=ABCMeta):
             # If the filter is disabled it means --no-verify flag was passed
             # We won't run verification in that case
             if (
-                'detect_secrets.filters.common.is_ignored_due_to_verification_policies'
-                in get_settings().filters
+                    'detect_secrets.filters.common.is_ignored_due_to_verification_policies'
+                    in get_settings().filters
             ):
                 try:
                     verified_result = call_function_with_arguments(
@@ -82,6 +84,8 @@ class BasePlugin(metaclass=ABCMeta):
                     secret=match,
                     line_number=line_number,
                     is_verified=is_verified,
+                    is_added=is_added,
+                    is_removed=is_removed,
                 ),
             )
 
@@ -118,7 +122,7 @@ class BasePlugin(metaclass=ABCMeta):
             try:
                 # NOTE: There is no context here, since in this frame, we're only aware of the
                 # secret itself.
-                verified_result = self.verify(secret.secret_value)      # type: ignore
+                verified_result = self.verify(secret.secret_value)  # type: ignore
             except (requests.exceptions.RequestException, TypeError):
                 # NOTE: A TypeError is raised when the function expects a `context` to be supplied.
                 # However, if this function is run through a context-less situation (e.g. adhoc
@@ -163,6 +167,7 @@ class RegexBasedDetector(BasePlugin, metaclass=ABCMeta):
             re.compile(r'foo'),
         )
     """
+
     @abstractproperty
     def denylist(self) -> Iterable[Pattern]:
         raise NotImplementedError
@@ -179,9 +184,9 @@ class RegexBasedDetector(BasePlugin, metaclass=ABCMeta):
 
     @staticmethod
     def build_assignment_regex(
-        prefix_regex: str,
-        secret_keyword_regex: str,
-        secret_regex: str,
+            prefix_regex: str,
+            secret_keyword_regex: str,
+            secret_regex: str,
     ) -> Pattern:
         """Generate assignment regex
         It reads 3 input parameters, each stands for regex. The return regex would look for

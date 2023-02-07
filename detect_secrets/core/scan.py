@@ -147,7 +147,7 @@ def scan_line(line: str) -> Generator[PotentialSecret, None, None]:
 
 
 def scan_file(filename: str) -> Generator[PotentialSecret, None, None]:
-    if not get_plugins():   # pragma: no cover
+    if not get_plugins():  # pragma: no cover
         log.error('No plugins to scan with!')
         return
 
@@ -157,9 +157,13 @@ def scan_file(filename: str) -> Generator[PotentialSecret, None, None]:
     try:
         has_secret = False
         for lines in _get_lines_from_file(filename):
+            lines_list = [
+                (number, value, False, False)
+                for number, value in enumerate(lines, start=1)
+            ]
             for secret in _process_line_based_plugins(
-                lines=list(enumerate(lines, start=1)),
-                filename=filename,
+                    lines=lines_list,
+                    filename=filename,
             ):
                 has_secret = True
                 yield secret
@@ -206,7 +210,11 @@ def scan_for_allowlisted_secrets_in_file(filename: str) -> Generator[PotentialSe
     # know which lines we want to scan.
     try:
         for lines in _get_lines_from_file(filename):
-            yield from _scan_for_allowlisted_secrets_in_lines(enumerate(lines, start=1), filename)
+            lines_list = [
+                (number, value, False, False)
+                for number, value in enumerate(lines, start=1)
+            ]
+            yield from _scan_for_allowlisted_secrets_in_lines(lines_list, filename)
             break
     except IOError:
         log.warning(f'Unable to open file: {filename}')
@@ -223,15 +231,15 @@ def scan_for_allowlisted_secrets_in_diff(diff: str) -> Generator[PotentialSecret
 
 
 def _scan_for_allowlisted_secrets_in_lines(
-    lines: Iterable[Tuple[int, str]],
-    filename: str,
+        lines: Iterable[Tuple[int, str, bool, bool]],
+        filename: str,
 ) -> Generator[PotentialSecret, None, None]:
     # We control the setting here because it makes more sense than requiring the caller
     # to set this setting before calling this function.
     get_settings().disable_filters('detect_secrets.filters.allowlist.is_line_allowlisted')
     get_filters.cache_clear()
 
-    line_numbers, lines = zip(*lines)
+    line_numbers, lines, is_added, is_removed = zip(*lines)
     line_content = [line.rstrip() for line in lines]
     for line_number, line in zip(line_numbers, line_content):
         context = get_code_snippet(line_content, line_number)
@@ -285,7 +293,8 @@ def _get_lines_from_file(filename: str) -> Generator[List[str], None, None]:
         yield lines
 
 
-def _get_lines_from_diff(diff: str) -> Generator[Tuple[str, List[Tuple[int, str]]], None, None]:
+def _get_lines_from_diff(diff: str) -> \
+        Generator[Tuple[str, List[Tuple[int, str, bool, bool]]], None, None]:
     """
     :raises: ImportError
     """
@@ -302,24 +311,27 @@ def _get_lines_from_diff(diff: str) -> Generator[Tuple[str, List[Tuple[int, str]
         yield (
             filename,
             [
-                (line.target_line_no, line.value)
+                (
+                    line.target_line_no if line.target_line_no
+                    else line.source_line_no, line.value, line.is_added, line.is_removed,
+                )
                 for chunk in patch_file
                 # target_lines refers to incoming (new) changes
-                for line in chunk.target_lines()
-                if line.is_added
+                for line in [line for line in chunk]
+                if line.is_added or line.is_removed
             ],
         )
 
 
 def _process_line_based_plugins(
-    lines: List[Tuple[int, str]],
+    lines: List[Tuple[int, str, bool, bool]],
     filename: str,
 ) -> Generator[PotentialSecret, None, None]:
     line_content = [line[1] for line in lines]
 
     # NOTE: We iterate through lines *then* plugins, because we want to quit early if any of the
     # filters return True.
-    for line_number, line in lines:
+    for line_number, line, is_added, is_removed in lines:
         line = line.strip()
         if len(line) < MIN_LINE_LENGTH:
             # skip lines which have too few none whitespace chars
@@ -327,11 +339,6 @@ def _process_line_based_plugins(
 
         code_snippet = get_code_snippet(
             lines=line_content,
-            line_number=line_number,
-        )
-
-        raw_code_snippet = get_code_snippet(
-            lines=read_raw_lines(filename),
             line_number=line_number,
         )
 
@@ -353,7 +360,8 @@ def _process_line_based_plugins(
                 line=line,
                 line_number=line_number,
                 context=code_snippet,
-                raw_context=raw_code_snippet,
+                is_added=is_added,
+                is_removed=is_removed,
             )
             if not _is_filtered_out(
                 required_filter_parameters=['context'],

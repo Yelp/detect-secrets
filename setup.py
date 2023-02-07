@@ -33,6 +33,7 @@ setup(
     install_requires=[
         'pyyaml',
         'requests',
+        'unidiff',
     ],
     include_package_data=True,
     package_data={

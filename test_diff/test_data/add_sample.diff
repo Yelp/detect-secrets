@@ -1,0 +1,12 @@
+diff --git a/Dockerfile b/Dockerfile
+index a72c6e0..f34b56b 100644
+--- a/Dockerfile
++++ b/Dockerfile
+@@ -3,6 +3,7 @@
+ FROM public.ecr.aws/lambda/python:3.9
+
+ ENV PIP_ENV_VERSION="2022.1.8"
+
++ENV AWS_ACCESS_KEY_ID="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+
+ COPY Pipfile Pipfile.lock ./
