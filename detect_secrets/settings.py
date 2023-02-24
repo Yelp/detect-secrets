@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 
 from .exceptions import InvalidFile
 from .util.importlib import import_file_as_module
-
+from bidict import bidict
 
 @lru_cache(maxsize=1)
 def get_settings() -> 'Settings':
@@ -26,6 +26,8 @@ def configure_settings_from_baseline(baseline: Dict[str, Any], filename: str = '
     :raises: KeyError
     """
     settings = get_settings()
+    if 'custom_regex' in baseline:
+        settings.configure_custom_regex(baseline['custom_regex'])
 
     if 'plugins_used' in baseline:
         settings.configure_plugins(baseline['plugins_used'])
@@ -153,10 +155,25 @@ class Settings:
                 'detect_secrets.filters.heuristic.is_swagger_file',
             }
         }
+        self.custom_regex = bidict({})
 
     def set(self, other: 'Settings') -> None:
         self.plugins = other.plugins
         self.filters = other.filters
+        self.custom_regex = other.custom_regex
+
+    def configure_custom_regex(self, config: List[Dict[str,str]]) -> 'Settings':
+        """
+        :param config: e.g.
+            [
+                {'name': 'Custom_regex for aab', 'regex': 'aab'}
+            ]
+        """
+        for cus_reg in config:
+            cus_reg = {**cus_reg}
+            name = cus_reg.pop('name')
+            regex = cus_reg.pop('regex')
+            self.custom_regex.put(name,regex)
 
     def configure_plugins(self, config: List[Dict[str, Any]]) -> 'Settings':
         """
@@ -238,6 +255,9 @@ class Settings:
                 # the settings object.
                 **serialized_plugin,
             })
+        custom_regex = []
+        for regex in self.custom_regex:
+            custom_regex.append({'name': regex, 'regex': self.custom_regex[regex]})
 
         return {
             'plugins_used': sorted(
@@ -255,6 +275,7 @@ class Settings:
                 ],
                 key=lambda x: str(x['path'].lower()),
             ),
+            'custom_regex': custom_regex
         }
 
 

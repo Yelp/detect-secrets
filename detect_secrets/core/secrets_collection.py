@@ -48,6 +48,7 @@ class SecretsCollection:
     def files(self) -> Set[str]:
         return set(self.data.keys())
 
+
     def scan_files(self, *filenames: str, num_processors: Optional[int] = None) -> None:
         """Just like scan_file, but optimized through parallel processing."""
         if len(filenames) == 1:
@@ -58,7 +59,6 @@ class SecretsCollection:
             num_processors = mp.cpu_count()
 
         child_process_settings = get_settings().json()
-
         with mp.Pool(
             processes=num_processors,
             initializer=configure_settings_from_baseline,
@@ -69,7 +69,23 @@ class SecretsCollection:
                 [os.path.join(self.root, filename) for filename in filenames],
             ):
                 for secret in secrets:
-                    self[os.path.relpath(secret.filename, self.root)].add(secret)
+                    self[secret.filename].add(secret)
+
+    def rename_file(self, filename: str, new_filename: str) -> None:
+        '''
+        Allows renaming of a file
+        '''
+        if filename in self.data.keys():
+            self.data[new_filename] = self.data.pop(filename)
+            for secret in self.data[new_filename]:
+                secret.filename = new_filename
+
+    def rename_files(self, filelist: dict) -> None:
+        '''
+        Same as rename_file except for multiple files
+        '''
+        for file in filelist:
+            self.rename_file(file, filelist[file])
 
     def scan_file(self, filename: str) -> None:
         for secret in scan.scan_file(os.path.join(self.root, filename)):
@@ -87,6 +103,14 @@ class SecretsCollection:
                 'SecretsCollection.scan_diff requires `unidiff` to work. Try pip '
                 'installing that package, and try again.',
             )
+
+    def combine(self, newer: 'SecretsCollection') -> None:
+        """
+        Used to replace and add the old results with the newer ones
+        """
+        for file in newer.data:
+            self.data[file] = newer.data[file]
+
 
     def merge(self, old_results: 'SecretsCollection') -> None:
         """
@@ -111,6 +135,8 @@ class SecretsCollection:
             for old_secret in old_results.data[filename]:
                 if old_secret not in mapping:
                     continue
+                # Always override notify status
+                mapping[old_secret].notify = old_secret.notify
 
                 # Only override if there's no newer value.
                 if mapping[old_secret].is_secret is None:
@@ -119,6 +145,14 @@ class SecretsCollection:
                 # If the old value is false, it won't make a difference.
                 if not mapping[old_secret].is_verified:
                     mapping[old_secret].is_verified = old_secret.is_verified
+
+    def remove(self,filelist: Optional[str]) -> None:
+        '''
+        Removes secrets of files provided in filelist
+        '''
+        for file in filelist:
+            if file in self.data.keys():
+                self.data.pop(file)
 
     def trim(
         self,
