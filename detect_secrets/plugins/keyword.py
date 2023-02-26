@@ -314,8 +314,6 @@ class KeywordDetector(BasePlugin):
         line_number: int = 0,
         context: CodeSnippet | None = None,
         raw_context: CodeSnippet | None = None,
-        is_added: bool = False,
-        is_removed: bool = False,
         **kwargs: Any,
     ) -> Set[PotentialSecret]:
         filetype = determine_file_type(filename)
@@ -326,8 +324,6 @@ class KeywordDetector(BasePlugin):
             line_number=line_number,
             context=context,
             raw_context=raw_context,
-            is_added=is_added,
-            is_removed=is_removed,
             denylist_regex_to_group=denylist_regex_to_group,
         )
 

@@ -359,28 +359,26 @@ def _process_line_based_plugins(
         ):
             continue
 
-        yield from (
-            secret
-            for plugin in get_plugins()
+        for plugin in get_plugins():
             for secret in _scan_line(
-                plugin=plugin,
-                filename=filename,
-                line=line,
-                line_number=line_number,
-                context=code_snippet,
-                raw_context=raw_code_snippet,
-                is_added=is_added,
-                is_removed=is_removed,
-            )
-            if not _is_filtered_out(
-                required_filter_parameters=['context'],
-                filename=secret.filename,
-                secret=secret.secret_value,
-                plugin=plugin,
-                line=line,
-                context=code_snippet,
-            )
-        )
+                    plugin=plugin,
+                    filename=filename,
+                    line=line,
+                    line_number=line_number,
+                    context=code_snippet,
+                    raw_context=raw_code_snippet,
+            ):
+                secret.is_removed = is_removed
+                secret.is_added = is_added
+                if not _is_filtered_out(
+                        required_filter_parameters=['context'],
+                        filename=secret.filename,
+                        secret=secret.secret_value,
+                        plugin=plugin,
+                        line=line,
+                        context=code_snippet,
+                ):
+                    yield secret
 
 
 def _scan_line(
