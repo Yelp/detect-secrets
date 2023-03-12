@@ -6,14 +6,9 @@ permissions: read-all
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c  # v3
-      - uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435  # v4
-        with:
-          python-version: 3.8
-      - name: pre-commit
-        uses: pre-commit/action@646c83fcd040023954eafda54b4db0192ce70507  # v3
+    uses: bridgecrewio/gha-reusable-workflows/.github/workflows/pre-commit.yaml@main
+    with:
+      python-version: "3.8"
 
   mypy:
     runs-on: ubuntu-latest
@@ -50,6 +45,6 @@ jobs:
       run: |
         # NO_PROXY is needed to call requests API within a forked process
         # when using macOS and python version 3.7
-        echo "NO_PROXY='*'" >> $GITHUB_ENV
+        echo "NO_PROXY='*'" >> "$GITHUB_ENV"
     - name: Run tests
       run: pytest --strict-markers -W ignore::UserWarning tests

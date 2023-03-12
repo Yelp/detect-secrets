@@ -10,6 +10,8 @@ on:
       - 'README.md'
       - 'CHANGELOG.md'
       - '.github/**'
+      - '.pre-commit-config.yaml'
+      - 'requirements-dev.txt'
 
 permissions: read-all
 
@@ -33,7 +35,7 @@ jobs:
       run: |
         # NO_PROXY is needed to call requests API within a forked process
         # when using macOS and python version 3.7
-        echo "NO_PROXY='*'" >> $GITHUB_ENV
+        echo "NO_PROXY='*'" >> "$GITHUB_ENV"
     - name: Run tests
       run: pytest --strict-markers -W ignore::UserWarning tests
 
@@ -62,9 +64,9 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git fetch --tags
-          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          latest_tag="$(git describe --tags "$(git rev-list --tags --max-count=1)")"
           echo "latest tag: $latest_tag"
-          new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b , $3+1)}')
+          new_tag=$(echo "$latest_tag" | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b , $3+1)}')
           echo "new tag: $new_tag"
 
           ## update package version
@@ -72,10 +74,10 @@ jobs:
 
           git commit -m "publish version ${new_tag} [skip ci]" detect_secrets/__version__.py || echo "No changes to commit"
           git push origin
-          git tag $new_tag
-          git push origin $new_tag
+          git tag "$new_tag"
+          git push origin "$new_tag"
 
-          echo "version=$new_tag" >> $GITHUB_OUTPUT
+          echo "version=$new_tag" >> "$GITHUB_OUTPUT"
       - name: create python package
         run: |
           python -m pip install wheel

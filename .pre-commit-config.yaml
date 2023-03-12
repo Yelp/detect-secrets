@@ -31,3 +31,9 @@ repos:
     rev: v2.0.1
     hooks:
     -   id: autopep8
+-   repo: https://github.com/rhysd/actionlint
+    rev: v1.6.23
+    hooks:
+    -   id: actionlint-docker
+        # SC2129 - Consider using { cmd1; cmd2; } >> file instead of individual redirects.
+        args: ["-ignore", "SC2129", "-ignore", "property \"os\" is not defined"]
