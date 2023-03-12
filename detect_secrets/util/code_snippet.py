@@ -19,12 +19,16 @@ def get_code_snippet(
     """
     target_line_index = line_number - 1
     end_line_index = target_line_index + lines_of_context + 1
-
-    if target_line_index <= lines_of_context:
-        start_line_index = 0
+    # for git history scanning
+    if len(lines) > lines_of_context:
+        if target_line_index <= lines_of_context:
+            start_line_index = 0
+        else:
+            start_line_index = target_line_index - lines_of_context
+            target_line_index = lines_of_context
     else:
-        start_line_index = target_line_index - lines_of_context
-        target_line_index = lines_of_context
+        start_line_index = 0
+        end_line_index = len(lines)
 
     return CodeSnippet(
         snippet=lines[start_line_index:end_line_index],
