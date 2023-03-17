@@ -39,13 +39,14 @@ def _set_debug_level(self, debug_level):
     :param debug_level: configure verbosity of log
     """
     mapping = {
-        0: logging.ERROR,
+        0: logging.WARN,
         1: logging.INFO,
-        2: logging.DEBUG,
+        2: logging.ERROR,
+        3: logging.DEBUG,
     }
 
     self.setLevel(
-        mapping[min(debug_level, 2)],
+        mapping[min(debug_level, len(mapping) - 1)],
     )
 
 
