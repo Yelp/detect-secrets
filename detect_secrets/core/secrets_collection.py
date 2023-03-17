@@ -365,7 +365,7 @@ class SecretsCollection:
 
         except UnicodeDecodeError as error:
             log.warning(
-                '%s failed to load and could not be scanned. Error: %s',
+                '%s failed to load and could not be scanned.\nError: %s',
                 filename, str(error),
             )
 
