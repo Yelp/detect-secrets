@@ -35,7 +35,7 @@ def get_logger(name=None, format_string=None):
 
 def _set_debug_level(self, debug_level):
     """
-    :type debug_level: int, between 0-2
+    :type debug_level: int, between 0-3
     :param debug_level: configure verbosity of log
     """
     mapping = {
