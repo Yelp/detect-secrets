@@ -363,8 +363,11 @@ class SecretsCollection:
                 )
                 f.seek(0)
 
-        except UnicodeDecodeError:
-            log.warning('%s failed to load.', filename)
+        except UnicodeDecodeError as error:
+            log.warning(
+                '%s failed to load and could not be scanned. Error: %s',
+                filename, str(error),
+            )
 
     def _extract_secrets_from_patch(self, f, plugin, filename):
         """Extract secrets from a given patch file object.
