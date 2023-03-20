@@ -48,7 +48,6 @@ class SecretsCollection:
     def files(self) -> Set[str]:
         return set(self.data.keys())
 
-
     def scan_files(self, *filenames: str, num_processors: Optional[int] = None) -> None:
         """Just like scan_file, but optimized through parallel processing."""
         if len(filenames) == 1:
@@ -104,13 +103,26 @@ class SecretsCollection:
                 'installing that package, and try again.',
             )
 
+    def add_branch(self, branch: str) -> None:
+        """
+        Adds branch to all secrets in this collection.
+        """
+        for file in self.data:
+            self.data[file]['branch'] = branch
+
+    def add_commit(self, commit: str) -> None:
+        """
+        Adds commit to all secrets in this collection.
+        """
+        for file in self.data:
+            self.data[file]['commit'] = commit
+
     def combine(self, newer: 'SecretsCollection') -> None:
         """
         Used to replace and add the old results with the newer ones
         """
         for file in newer.data:
             self.data[file] = newer.data[file]
-
 
     def merge(self, old_results: 'SecretsCollection') -> None:
         """
@@ -146,7 +158,7 @@ class SecretsCollection:
                 if not mapping[old_secret].is_verified:
                     mapping[old_secret].is_verified = old_secret.is_verified
 
-    def remove(self,filelist: Optional[str]) -> None:
+    def remove(self, filelist: Optional[str]) -> None:
         '''
         Removes secrets of files provided in filelist
         '''
