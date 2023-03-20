@@ -137,7 +137,7 @@ def merge_plugins_from_baseline(baseline_plugins, args, automaton):
         try:
             plugins_dict[plugin_name][param_name] = param_value
         except KeyError:
-            log.warning(
+            log.debug(
                 '{} specified, but {} not configured! Ignoring...'
                 .format(''.join(['--', param_name.replace('_', '-')]), plugin_name),
             )
