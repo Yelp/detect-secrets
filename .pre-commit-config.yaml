@@ -49,6 +49,5 @@ repos:
                     --baseline,
                     .secrets.baseline,
                     --use-all-plugins,
-                    --no-keyword-scan,
                     --fail-on-unaudited,
                 ]

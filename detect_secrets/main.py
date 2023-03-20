@@ -28,7 +28,7 @@ def main(argv=None):
     args = parse_args(argv, parserBuilder)
 
     if args.verbose:  # pragma: no cover
-        log.set_debug_level(args.verbose)
+        log.set_debug_level(3)
 
     if args.action == 'scan':
         automaton = None

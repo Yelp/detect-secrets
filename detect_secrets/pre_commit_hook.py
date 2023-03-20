@@ -29,7 +29,7 @@ def main(argv=None):
     version_check()
     args = parse_args(argv)
     if args.verbose:  # pragma: no cover
-        log.set_debug_level(args.verbose)
+        log.set_debug_level(3)
 
     try:
         # If baseline is provided, we first want to make sure
