@@ -133,9 +133,11 @@ class TestScanFile:
             logic.scan_file('filename')
 
         assert mock_log.info_messages == 'Checking file: filename\n'
-        assert mock_log.warning_messages == 'filename failed to load and could not be scanned.\n' \
-                                            + "Error: 'encoding type' codec can't decode byte" \
-                                            + ' 0x73 in position 0: exception message\n'
+
+        assert mock_log.warning_messages == 'filename failed to load, and could not be scanned,'\
+            ' because the file is not valid UTF-8.'\
+            '\nIf possible, convert this file to valid UTF-8'\
+            ' for it to be scanned.\nContinuing scan...\n\n'
 
         # If the file read was successful, secret would have been caught and added.
         assert len(logic.data) == 0

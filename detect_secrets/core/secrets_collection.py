@@ -6,6 +6,8 @@ import sys
 from time import gmtime
 from time import strftime
 
+from binaryornot.check import is_binary
+
 from detect_secrets import VERSION
 from detect_secrets.core.constants import IGNORED_FILE_EXTENSIONS
 from detect_secrets.core.log import log
@@ -363,11 +365,17 @@ class SecretsCollection:
                 )
                 f.seek(0)
 
-        except UnicodeDecodeError as error:
-            log.warning(
-                '%s failed to load and could not be scanned.\nError: %s',
-                filename, str(error),
-            )
+        except UnicodeDecodeError:
+            if (is_binary(filename)):
+                # If the file type is binary, suppress the warning
+                pass
+            else:
+                log.warning(
+                    '%s failed to load, and could not be scanned,'
+                    ' because the file is not valid UTF-8.'
+                    '\nIf possible, convert this file to valid UTF-8 for it to be scanned.'
+                    '\nContinuing scan...\n', filename,
+                )
 
     def _extract_secrets_from_patch(self, f, plugin, filename):
         """Extract secrets from a given patch file object.

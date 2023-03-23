@@ -16,3 +16,4 @@ ibm_db
 boxsdk[jwt]
 pyahocorasick
 tabulate
+binaryornot
