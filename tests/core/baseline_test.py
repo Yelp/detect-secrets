@@ -39,7 +39,6 @@ class TestInitializeBaseline:
             self.plugins,
             exclude_files_regex=exclude_files_regex,
             should_scan_all_files=scan_all_files,
-
         ).json()
 
     @pytest.mark.parametrize(
