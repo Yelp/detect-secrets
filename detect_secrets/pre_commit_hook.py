@@ -205,7 +205,10 @@ def find_secrets_in_files(args, plugins):
         if filename == args.baseline[0]:
             continue
 
-        collection.scan_file(filename)
+        collection.scan_file(
+            filename,
+            suppress_unscannable_file_warnings=args.suppress_unscannable_file_warnings,
+        )
 
     return collection
 

@@ -23,6 +23,7 @@ def initialize(
     should_scan_all_files=False,
     output_raw=False,
     output_verified_false=False,
+    suppress_unscannable_file_warnings=False,
 ):
     """Scans the entire codebase for secrets, and returns a
     SecretsCollection object.
@@ -44,6 +45,10 @@ def initialize(
     :type should_scan_all_files: bool
     :type output_raw: bool
     :type output_verified_false: bool
+
+    :type suppress_unscannable_file_warnings   boolean
+    :param suppress_unscannable_file_warnings: whether or not to suppress unscannable file warnings
+
     :rtype: SecretsCollection
     """
     output = SecretsCollection(
@@ -88,7 +93,7 @@ def initialize(
         files_to_scan = filter(filename_regex_match, files_to_scan)
 
     for file in sorted(files_to_scan):
-        output.scan_file(file)
+        output.scan_file(file, suppress_unscannable_file_warnings)
 
     return output
 

@@ -178,6 +178,8 @@ def _perform_scan(args, plugins, automaton, word_list_hash):
     if args.import_filename:
         _add_baseline_to_exclude_files(args)
 
+    print('args is ', args)
+
     new_baseline = baseline.initialize(
         plugins=plugins,
         exclude_files_regex=args.exclude_files,
@@ -188,6 +190,7 @@ def _perform_scan(args, plugins, automaton, word_list_hash):
         should_scan_all_files=args.all_files,
         output_raw=args.output_raw,
         output_verified_false=args.output_verified_false,
+        suppress_unscannable_file_warnings=args.suppress_unscannable_file_warnings,
     ).format_for_baseline_output()
 
     if old_baseline:

@@ -230,11 +230,15 @@ class SecretsCollection:
                     ),
                 )
 
-    def scan_file(self, filename):
+    def scan_file(self, filename, suppress_unscannable_file_warnings=False):
         """Scans a specified file, and adds information to self.data
 
         :type filename: str
         :param filename: full path to file to scan.
+
+        :type suppress_unscannable_file_warnings: boolean
+        :param suppress_unscannable_file_warnings: whether or not to suppress
+                                                   unscannable file warnings
 
         :returns: boolean; though this value is only used for testing
         """
@@ -244,11 +248,12 @@ class SecretsCollection:
             return False
         try:
             with codecs.open(filename, encoding='utf-8') as f:
-                self._extract_secrets_from_file(f, filename)
+                self._extract_secrets_from_file(f, filename, suppress_unscannable_file_warnings)
 
             return True
         except IOError:
-            log.warning('Unable to open file: %s', filename)
+            if not suppress_unscannable_file_warnings:
+                log.warning('Unable to open file: %s', filename)
             return False
 
     def get_secret(self, filename, secret, type_=None):
@@ -347,11 +352,16 @@ class SecretsCollection:
         else:
             self.data[filename].update(file_results)
 
-    def _extract_secrets_from_file(self, f, filename):
+    def _extract_secrets_from_file(self, f, filename, suppress_unscannable_file_warnings=False):
         """Extract secrets from a given file object.
 
         :type f:        File object
         :type filename: string
+
+        :type suppress_unscannable_file_warnings: boolean
+        :param suppress_unscannable_file_warnings: whether or not to suppress
+                                                   unscannable file warnings
+
         """
         try:
             log.info('Checking file: %s', filename)
@@ -369,7 +379,7 @@ class SecretsCollection:
             if (is_binary(filename)):
                 # If the file type is binary, suppress the warning
                 pass
-            else:
+            elif not suppress_unscannable_file_warnings:
                 log.warning(
                     '%s failed to load, and could not be scanned,'
                     ' because the file is not valid UTF-8.'
