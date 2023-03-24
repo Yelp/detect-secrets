@@ -19,7 +19,7 @@ deploy:
 matrix:
     include:
         - env: TOXENV=py37
-          python: 3.7.15
+          python: 3.7
           dist: xenial # Required for Python >= 3.7 (travis-ci/travis-ci#9069), the GitHub Travis build will use Python 3.7.1 by default if you provide 3.7 without a patch version and the build will fail with AttributeError: 'str' object has no attribute 'name'
         - env: TOXENV=py38
           python: 3.8
