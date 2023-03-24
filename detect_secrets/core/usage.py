@@ -50,6 +50,14 @@ def add_output_verified_false_flag(parser):
     )
 
 
+def add_suppress_unscannable_file_warnings(parser):
+    parser.add_argument(
+        '--suppress-unscannable-file-warnings',
+        action='store_true',
+        help='Suppress warnings that occur when one or more files cannot be scanned.',
+    )
+
+
 class ParserBuilder(object):
     def __init__(self):
         self.parser = argparse.ArgumentParser()
@@ -68,7 +76,8 @@ class ParserBuilder(object):
             ._add_use_all_plugins_argument()\
             ._add_no_verify_flag()\
             ._add_output_verified_false_flag()\
-            ._add_fail_on_unaudited_flag()
+            ._add_fail_on_unaudited_flag()\
+            ._add_suppress_unscannable_file_warnings()\
 
         PluginOptions(self.parser).add_arguments()
 
@@ -153,6 +162,10 @@ class ParserBuilder(object):
         )
         return self
 
+    def _add_suppress_unscannable_file_warnings(self):
+        add_suppress_unscannable_file_warnings(self.parser)
+        return self
+
 
 class ScanOptions:
     def __init__(self, subparser):
@@ -163,7 +176,8 @@ class ScanOptions:
     def add_arguments(self):
         self._add_initialize_baseline_argument()\
             ._add_adhoc_scanning_argument()\
-            ._add_output_raw_argument()
+            ._add_output_raw_argument()\
+            ._add_suppress_unscannable_file_warnings()
 
         PluginOptions(self.parser).add_arguments()
 
@@ -241,6 +255,10 @@ class ScanOptions:
                 'Do not use this option in a repo monitoring context.'
             ),
         )
+        return self
+
+    def _add_suppress_unscannable_file_warnings(self):
+        add_suppress_unscannable_file_warnings(self.parser)
         return self
 
 
