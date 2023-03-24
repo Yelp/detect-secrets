@@ -77,7 +77,7 @@ class ParserBuilder(object):
             ._add_no_verify_flag()\
             ._add_output_verified_false_flag()\
             ._add_fail_on_unaudited_flag()\
-            ._add_suppress_unscannable_file_warnings()\
+            ._add_suppress_unscannable_file_warnings()
 
         PluginOptions(self.parser).add_arguments()
 
