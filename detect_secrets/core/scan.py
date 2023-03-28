@@ -25,6 +25,8 @@ from ..util.path import get_relative_path
 from .log import log
 from .plugins import Plugin
 from .potential_secret import PotentialSecret
+from detect_secrets.util.filetype import determine_file_type
+from detect_secrets.util.filetype import FileType
 
 MIN_LINE_LENGTH = int(os.getenv('CHECKOV_MIN_LINE_LENGTH', '5'))
 
@@ -387,6 +389,16 @@ def _process_line_based_plugins(
                         line=line,
                         context=code_snippet,
                 ):
+                    if determine_file_type(filename) == FileType.YAML and secret.secret_value:
+                        # YAML specifically has multi-line string parsing that groups the
+                        # different lines as 1.
+                        # Calculate actual line number in case of YAML multi-line string
+                        actual_line_number = line_number
+                        for i, l in enumerate(raw_code_snippet_lines[actual_line_number - 1:]):
+                            if secret.secret_value in l:
+                                actual_line_number += i
+                                break
+                        secret.line_number = actual_line_number
                     yield secret
 
 
