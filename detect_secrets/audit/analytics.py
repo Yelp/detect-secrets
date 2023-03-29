@@ -104,7 +104,7 @@ class StatisticsCounter:
             },
         }
 
-    def calculate_precision(self):
+    def calculate_precision(self) -> float:
         precision = (
             round(float(self.correct) / (self.correct + self.incorrect), 4)
             if (self.correct and self.incorrect)
@@ -113,7 +113,7 @@ class StatisticsCounter:
 
         return precision
 
-    def calculate_recall(self):
+    def calculate_recall(self) -> float:
         # NOTE(2020-11-08|domanchi): This isn't the formal definition of `recall`, however,
         # this is the definition that we're going to attribute to it.
         #
