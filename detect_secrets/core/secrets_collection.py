@@ -230,7 +230,12 @@ class SecretsCollection:
                     ),
                 )
 
-    def scan_file(self, filename, suppress_unscannable_file_warnings=False):
+    def scan_file(
+        self,
+        filename,
+        suppress_unscannable_file_warnings=False,
+        fail_on_file_unscannable=False,
+    ):
         """Scans a specified file, and adds information to self.data
 
         :type filename: str
@@ -240,6 +245,10 @@ class SecretsCollection:
         :param suppress_unscannable_file_warnings: whether or not to suppress
                                                    unscannable file warnings
 
+        :type fail_on_file_unscannable: boolean
+        :param fail_on_file_unscannable: whether or not to fail if a file could
+                                         not be scanned.
+
         :returns: boolean; though this value is only used for testing
         """
         if os.path.islink(filename):
@@ -248,12 +257,29 @@ class SecretsCollection:
             return False
         try:
             with codecs.open(filename, encoding='utf-8') as f:
-                self._extract_secrets_from_file(f, filename, suppress_unscannable_file_warnings)
+                self._extract_secrets_from_file(
+                    f,
+                    filename,
+                    suppress_unscannable_file_warnings,
+                    fail_on_file_unscannable,
+                )
 
             return True
         except IOError:
             if not suppress_unscannable_file_warnings:
-                log.warning('Unable to open file: %s', filename)
+                log.warning(
+                    'Unable to open file: %s',
+                    filename,
+                )
+            if fail_on_file_unscannable:
+                log.error(
+                    '\nExiting since a file could not be opened.'
+                    '\nYou are seeing this message because '
+                    'the --fail-on-file-unscannable option is enabled.',
+                )
+                sys.exit(1)
+            else:
+                log.warning('Continuing scan...\n')
             return False
 
     def get_secret(self, filename, secret, type_=None):
@@ -352,7 +378,13 @@ class SecretsCollection:
         else:
             self.data[filename].update(file_results)
 
-    def _extract_secrets_from_file(self, f, filename, suppress_unscannable_file_warnings=False):
+    def _extract_secrets_from_file(
+        self,
+        f,
+        filename,
+        suppress_unscannable_file_warnings=False,
+        fail_on_file_unscannable=False,
+    ):
         """Extract secrets from a given file object.
 
         :type f:        File object
@@ -361,6 +393,10 @@ class SecretsCollection:
         :type suppress_unscannable_file_warnings: boolean
         :param suppress_unscannable_file_warnings: whether or not to suppress
                                                    unscannable file warnings
+
+        :type fail_on_file_unscannable: boolean
+        :param fail_on_file_unscannable: whether or not to fail if a file could
+                                         not be scanned.
 
         """
         try:
@@ -383,9 +419,18 @@ class SecretsCollection:
                 log.warning(
                     '%s failed to load, and could not be scanned,'
                     ' because the file is not valid UTF-8.'
-                    '\nIf possible, convert this file to valid UTF-8 for it to be scanned.'
-                    '\nContinuing scan...\n', filename,
+                    '\nIf possible, convert this file to valid UTF-8 for it to be scanned.',
+                    filename,
                 )
+            if fail_on_file_unscannable:
+                log.error(
+                    '\nExiting since a file could not be opened.'
+                    '\nYou are seeing this message because '
+                    'the --fail-on-file-unscannable option is enabled.',
+                )
+                sys.exit(1)
+            else:
+                log.warning('Continuing scan...\n')
 
     def _extract_secrets_from_patch(self, f, plugin, filename):
         """Extract secrets from a given patch file object.

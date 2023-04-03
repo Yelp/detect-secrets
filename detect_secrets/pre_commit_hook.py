@@ -208,6 +208,7 @@ def find_secrets_in_files(args, plugins):
         collection.scan_file(
             filename,
             suppress_unscannable_file_warnings=args.suppress_unscannable_file_warnings,
+            fail_on_file_unscannable=args.fail_on_file_unscannable,
         )
 
     return collection

@@ -58,6 +58,15 @@ def add_suppress_unscannable_file_warnings(parser):
     )
 
 
+def add_fail_on_file_unscannable(parser):
+    parser.add_argument(
+        '--fail-on-file-unscannable',
+        action='store_true',
+        help='Fail if one or more files could not be scanned. '
+        'Note that binary files will be skipped by this check.',
+    )
+
+
 class ParserBuilder(object):
     def __init__(self):
         self.parser = argparse.ArgumentParser()
@@ -77,7 +86,8 @@ class ParserBuilder(object):
             ._add_no_verify_flag()\
             ._add_output_verified_false_flag()\
             ._add_fail_on_unaudited_flag()\
-            ._add_suppress_unscannable_file_warnings()
+            ._add_suppress_unscannable_file_warnings()\
+            ._add_fail_on_file_unscannable()
 
         PluginOptions(self.parser).add_arguments()
 
@@ -164,6 +174,10 @@ class ParserBuilder(object):
 
     def _add_suppress_unscannable_file_warnings(self):
         add_suppress_unscannable_file_warnings(self.parser)
+        return self
+
+    def _add_fail_on_file_unscannable(self):
+        add_fail_on_file_unscannable(self.parser)
         return self
 
 
