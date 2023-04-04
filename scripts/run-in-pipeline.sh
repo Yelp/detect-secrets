@@ -70,7 +70,7 @@ skip_scan=${SKIP_SCAN:=$_skip_scan_default}
 fail_live=${FAIL_ON_LIVE:=$_fail_live_default}
 fail_unaudited=${FAIL_ON_UNAUDITED:=$_fail_unaudited_default}
 fail_audited_real=${FAIL_ON_AUDITED_REAL:=$_fail_audited_real_default}
-suppress_unscannable_file_warnings=${SUPPRESS_UNSCANNABLE_FILE_WARNINGS:=$_suppress_unscannable_file_warnings}
+suppress_unscannable_file_warnings=${SUPPRESS_UNSCANNABLE_FILE_WARNINGS:=$_suppress_unscannable_file_warnings_default}
 
 ##
 # Declare normalize function for normalizing the user input for Boolean vales to either true or false
