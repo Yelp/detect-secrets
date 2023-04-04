@@ -137,7 +137,10 @@ class TestScanFile:
         assert mock_log.warning_messages == 'filename failed to load, and could not be scanned,'\
                                             ' because the file is not valid UTF-8.'\
                                             '\nIf possible, convert this file to valid UTF-8'\
-                                            ' for it to be scanned.\nContinuing scan...\n\n'
+                                            ' for it to be scanned.\n'\
+                                            'You can suppress this warning with the'\
+                                            ' --suppress-unscannable-file-warnings option.'\
+                                            '\nContinuing scan...\n\n'
 
         # If the file read was successful, secret would have been caught and added.
         assert len(logic.data) == 0
