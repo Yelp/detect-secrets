@@ -266,19 +266,23 @@ class SecretsCollection:
 
             return True
         except IOError:
-            if not suppress_unscannable_file_warnings:
+            file_is_binary = is_binary(filename)
+
+            if not file_is_binary and not suppress_unscannable_file_warnings:
                 log.warning(
-                    'Unable to open file: %s',
+                    'Unable to open file: %s'
+                    '\nYou can suppress this warning with the'
+                    ' --suppress-unscannable-file-warnings option.',
                     filename,
                 )
-            if fail_on_file_unscannable:
+            if not file_is_binary and fail_on_file_unscannable:
                 log.error(
                     '\nExiting since a file could not be opened.'
                     '\nYou are seeing this message because '
                     'the --fail-on-file-unscannable option is enabled.',
                 )
                 sys.exit(1)
-            else:
+            elif not file_is_binary and not suppress_unscannable_file_warnings:
                 log.warning('Continuing scan...\n')
             return False
 
@@ -412,24 +416,25 @@ class SecretsCollection:
                 f.seek(0)
 
         except UnicodeDecodeError:
-            if (is_binary(filename)):
-                # If the file type is binary, suppress the warning
-                pass
-            elif not suppress_unscannable_file_warnings:
+            file_is_binary = is_binary(filename)
+
+            if not file_is_binary and not suppress_unscannable_file_warnings:
                 log.warning(
                     '%s failed to load, and could not be scanned,'
                     ' because the file is not valid UTF-8.'
-                    '\nIf possible, convert this file to valid UTF-8 for it to be scanned.',
+                    '\nIf possible, convert this file to valid UTF-8 for it to be scanned.'
+                    '\nYou can suppress this warning with the'
+                    ' --suppress-unscannable-file-warnings option.',
                     filename,
                 )
-            if fail_on_file_unscannable:
+            if not file_is_binary and fail_on_file_unscannable:
                 log.error(
                     '\nExiting since a file could not be opened.'
                     '\nYou are seeing this message because '
                     'the --fail-on-file-unscannable option is enabled.',
                 )
                 sys.exit(1)
-            else:
+            elif not file_is_binary and not suppress_unscannable_file_warnings:
                 log.warning('Continuing scan...\n')
 
     def _extract_secrets_from_patch(self, f, plugin, filename):
