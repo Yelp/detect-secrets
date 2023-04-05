@@ -95,6 +95,7 @@ class TestMain:
             output_verified_false=False,
             word_list_file=None,
             word_list_hash=None,
+            suppress_unscannable_file_warnings=False,
         )
 
     def test_scan_with_rootdir(self, mock_baseline_initialize):
@@ -111,6 +112,7 @@ class TestMain:
             output_verified_false=False,
             word_list_file=None,
             word_list_hash=None,
+            suppress_unscannable_file_warnings=False,
         )
 
     def test_scan_with_exclude_args(self, mock_baseline_initialize):
@@ -129,6 +131,7 @@ class TestMain:
             output_verified_false=False,
             word_list_file=None,
             word_list_hash=None,
+            suppress_unscannable_file_warnings=False,
         )
 
     @pytest.mark.parametrize(
@@ -213,6 +216,7 @@ class TestMain:
             output_verified_false=False,
             word_list_file=None,
             word_list_hash=None,
+            suppress_unscannable_file_warnings=False,
         )
 
     def test_reads_from_stdin(self, mock_merge_baseline):
@@ -269,6 +273,7 @@ class TestMain:
             output_verified_false=False,
             word_list_file=None,
             word_list_hash=None,
+            suppress_unscannable_file_warnings=False,
         )
         mock_merge_baseline.assert_not_called()
 

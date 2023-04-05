@@ -33,8 +33,11 @@
 #    FAIL_ON_AUDITED_REAL : (True/False) Sets the condition to fail audit if there are audited and set to real secrets found
 #      * Default:  True
 #
+#    SUPPRESS_UNSCANNABLE_FILE_WARNINGS : (True/False) Suppresses warnings that occur when one or more files cannot be scanned.
+#      * Default: False
+#
 # Example manual docker run within packaged container (git-defenders/detect-secrets-redhat-ubi-custom):
-#    docker run  --env BASELINE=.secrets.baseline  --env FAIL_ON_LIVE=False  -it -a stdout --rm -v $(pwd):/code git-defenders/detect-secrets-redhat-ubi-custom
+#    docker run  --env BASELINE=.secrets.baseline  --env FAIL_ON_LIVE=False  -it -a stdout --rm -v $(pwd):/code git-defenders/detect-secrets:redhat-ubi-custom
 ##
 
 ## Constants for FAIL_ON_xx Environment Varibles
@@ -49,6 +52,7 @@ _omit_instructions_default=$_false
 _fail_live_default=$_true
 _fail_unaudited_default=$_true
 _fail_audited_real_default=$_true
+_suppress_unscannable_file_warnings_default=$_false
 
 ## Constants representing Detect Secrets audit -reports --fail-on-xx paramenter options
 _fail_live_option="--fail-on-live"
@@ -56,6 +60,7 @@ _fail_unaudited_option="--fail-on-unaudited"
 _fail_audited_real_option="--fail-on-audited-real"
 _omit_instructions_option="--omit-instructions"
 _json_option="--json"
+_suppress_scannable_file_warnings_option="--suppress-unscannable-file-warnings"
 
 ## Reading input Environment Variables while setting defaults for missing Environment Variables
 baseline=${BASELINE:=$_baseline_default}
@@ -65,6 +70,7 @@ skip_scan=${SKIP_SCAN:=$_skip_scan_default}
 fail_live=${FAIL_ON_LIVE:=$_fail_live_default}
 fail_unaudited=${FAIL_ON_UNAUDITED:=$_fail_unaudited_default}
 fail_audited_real=${FAIL_ON_AUDITED_REAL:=$_fail_audited_real_default}
+suppress_unscannable_file_warnings=${SUPPRESS_UNSCANNABLE_FILE_WARNINGS:=$_suppress_unscannable_file_warnings_default}
 
 ##
 # Declare normalize function for normalizing the user input for Boolean vales to either true or false
@@ -98,6 +104,9 @@ function normalize {
 ## Initialize Detect Secrets audit_report parameter string
 audit_report_params=' '
 
+## Initialize Detect Secrets scan parameter string
+scan_params=' '
+
 ##
 # Starting the pipeline Detect Secrets run
 ##
@@ -118,6 +127,16 @@ then
   echo "...skip scan with baseline update: $_true"
 else
   echo "...skip scan with baseline update: $_false"
+fi
+
+# suppress_unscannable_file-warnings parameter
+suppress_unscannable_file_warnings="$(normalize $suppress_unscannable_file_warnings $_suppress_unscannable_file_warnings_default)"
+if [[ "$suppress_unscannable_file_warnings" == "$_true" ]]
+then
+  echo "...suppress unscannable file warnings: $_true"
+  scan_params="$scan_params $_suppress_scannable_file_warnings_option"
+else
+  echo "...suppress unscannable file warnings: $_false"
 fi
 
 # json parameter
@@ -174,8 +193,8 @@ fi
 if [[ "$skip_scan" == "$_false" ]]
 then
   echo
-  echo "Scanning code directory (docker volume mounted to $PWD) and updating baseline file $baseline ... "
-  detect-secrets scan --update $baseline
+  echo "Scanning code directory (docker volume mounted to $PWD) and updating baseline file $baseline... "
+  detect-secrets scan --update $baseline $scan_params
 fi
 
 echo

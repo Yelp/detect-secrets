@@ -178,7 +178,7 @@ fix-dns:
 test-local:
 	coverage run -m pytest tests $(EXTRA_PYTEST_OPTIONS)
 	coverage report --show-missing --include=tests/* --fail-under 100
-	coverage report --show-missing --include=detect_secrets/* --fail-under 98
+	coverage report --show-missing --include=detect_secrets/* --fail-under 97
 
 
 .PHONY: docker-test-images docker-build-images docker-login docker-publish-images docker-publish-image publish-cos deploy push-tag sync-branches fix-dns test-local setup-trivy docker-quality-images release

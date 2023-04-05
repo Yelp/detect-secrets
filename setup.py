@@ -28,6 +28,7 @@ setup(
         'boxsdk[jwt]',
         'packaging',
         'tabulate',
+        'binaryornot',
     ],
     extras_require={
         'word_list': [
