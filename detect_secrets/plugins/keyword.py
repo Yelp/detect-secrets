@@ -98,7 +98,7 @@ SQUARE_BRACKETS = r'(\[[0-9]*\])'
 
 FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
     # e.g. my_password := "bar" or my_password := bar
-    r'{denylist}({closing})?{whitespace}:=?{whitespace}({quote}?)({secret})(\3)'.format(
+    r'{denylist}({closing})?{whitespace}:={whitespace}({quote}?)({secret})(\3)'.format(
         denylist=DENYLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,

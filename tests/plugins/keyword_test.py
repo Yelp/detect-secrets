@@ -83,6 +83,8 @@ GOLANG_TEST_CASES = [
     ('password := "somefakekey"', None),    # 'fake' in the secret
     ('some_key = "real_secret"', None),     # We cannot make 'key' a Keyword, too noisy)
     ('private_key "hopenobodyfindsthisone\';', None),  # Double-quote does not match single-quote)
+    ('password: real_key', None),
+    ('password: "real_key"', None),
     (LONG_LINE, None),  # Long line test
 ]
 
