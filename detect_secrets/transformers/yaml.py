@@ -37,8 +37,17 @@ class YAMLTransformer(BaseTransformer):
         except yaml.YAMLError:
             raise ParsingError
 
+        seen = set()
+
         lines: List[str] = []
         for item in items:
+            # Filter out previous lines seen before. This removes duplicates when it comes
+            # to anchor & and alias * tags.
+            if item in seen:
+                continue
+            else:
+                seen.add(item)
+
             while len(lines) < item.line_number - 1:
                 lines.append('')
 
