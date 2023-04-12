@@ -18,6 +18,8 @@ class TestNpmDetector:
             ('_authToken=743b294a-cd03-11ec-9d64-0242ac120002', False),
             ('foo', False),
             ('//registry.npmjs.org/:_authToken=${NPM_TOKEN}', False),
+            ('//gitlab.com/api/v4/projects/1347/packages/npm/:_authToken=glpat-a8r3xUFrtP-isd1DLK_r', True),
+            ('//gitlab.com/api/v4/projects/1347/packages/npm/:_authToken=${CI_JOB_TOKEN}', False),
         ],
     )
     def test_analyze(self, payload, should_flag):
