@@ -118,7 +118,7 @@ jobs:
           # update setup.py
           pipenv-setup sync --pipfile
       - name: Create PR
-        uses: peter-evans/create-pull-request@2b011faafdcbc9ceb11414d64d0573f37c774b04  # v4
+        uses: peter-evans/create-pull-request@5b4a9f6a9e2af26e5f02351490b90d01eb8ec1e5  # v4
         with:
           token: ${{ secrets.PAT_TOKEN }}
           branch: update-detect-secrets-dep
