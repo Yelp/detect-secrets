@@ -13,6 +13,6 @@ class AzureStorageKeyDetector(RegexBasedDetector):
     denylist = [
         # Account Key (AccountKey=xxxxxxxxx)
         re.compile(
-            r'(?:[A-Za-z0-9+\/]{4}){18,}(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=|[A-Za-z0-9+\/]{4})$',  # noqa: E501
+            r'(?:[A-Za-z0-9+\/]{86,20000}==)$',
         ),
     ]
