@@ -42,11 +42,18 @@ TRIVY_VERSION := $(shell curl -s "https://api.github.com/repos/aquasecurity/triv
 TRIVY_OS := $(shell uname | sed 's/Darwin/macOS/' )
 TRIVY_ARCH := $(shell uname -m | cut -d_ -f2 )
 
+# Cosign related
+COSIGN ?= /tmp/cosign
+COSIGN_VERSION := $(shell curl -s "https://api.github.com/repos/sigstore/cosign/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
+
 TRAVIS_COMMIT ?= head
 
 setup-trivy:
 	curl -sSfL https://github.com/aquasecurity/trivy/releases/download/v$(TRIVY_VERSION)/trivy_$(TRIVY_VERSION)_$(TRIVY_OS)-$(TRIVY_ARCH)bit.tar.gz -o /tmp/trivy.tar.gz
 	tar zxvf /tmp/trivy.tar.gz -C $(dir $(TRIVY)) trivy
+
+setup-cosign:
+	curl -sSfL "https://github.com/sigstore/cosign/releases/download/v$COSIGN_VERSION/cosign-linux-amd64" -o /tmp/cosign
 
 trivy-scan-python-vulnerabilities:
 	PIPENV_YES=True # If set, Pipenv automatically assumes “yes” at all prompts. This prevents the build from hanging.
@@ -106,7 +113,17 @@ docker-publish-images: docker-login
 
 docker-publish-image:
 	docker tag $(DOCKER_DOMAIN_LOCAL)/$(IMAGE_NAME) $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME); \
-	docker push $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME);
+	docker push $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME); \
+
+	@echo "Signing image $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME)"; \
+	cosign sign $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME); \
+
+	@echo "Verifying image $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME)"; \
+	cosign verify "$(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME)";
+
+cosign-login:
+	@echo $(DOCKER_PASS_ART) | docker run bitnami/cosign login -u $(DOCKER_USER_ART) --password-stdin $(DOCKER_REGISTRY_ART); \
+	@echo $(DOCKER_PASS_ICR) | docker run bitnami/cosign login -u $(DOCKER_USER_ICR) --password-stdin $(DOCKER_REGISTRY_ICR);
 
 publish-cos:
 	pip install requests packaging;                                                                                 \
@@ -181,4 +198,4 @@ test-local:
 	coverage report --show-missing --include=detect_secrets/* --fail-under 97
 
 
-.PHONY: docker-test-images docker-build-images docker-login docker-publish-images docker-publish-image publish-cos deploy push-tag sync-branches fix-dns test-local setup-trivy docker-quality-images release
+.PHONY: docker-test-images docker-build-images docker-login cosign-login docker-publish-images docker-publish-image publish-cos deploy push-tag sync-branches fix-dns test-local setup-trivy docker-quality-images release

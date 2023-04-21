@@ -29,7 +29,7 @@ before_install:
     - echo -e "machine github.ibm.com\n  login $GHE_ACCESS_TOKEN" >> ~/.netrc # Login to GitHub Enterprise
 install:
     - pip install "certifi>=2022.12.07" "setuptools>=65.5.1" tox pipenv
-script: make setup-trivy && make trivy-scan-python-vulnerabilities && make test
+script: make setup-trivy && make setup-cosign && make trivy-scan-python-vulnerabilities && make test
 cache:
     directories:
         - $HOME/.cache/pre-commit
