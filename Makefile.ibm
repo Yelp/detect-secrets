@@ -119,6 +119,7 @@ docker-publish-image:
 	# They were encrypted for Travis builds following https://docs.travis-ci.com/user/encrypting-files/#automated-encryption
 	# Note: make sure to pass in the "--com" option when using the travis CLI, otherwise you will get an error
 	# Decryption occurs in Travis builds (see before_install in .travis.yml)
+
 	@echo "Signing image $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME)"; \
 	$(COSIGN) sign --key ./cosign.key $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME); \
 
