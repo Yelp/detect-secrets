@@ -116,10 +116,10 @@ docker-publish-image:
 	docker push $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME); \
 
 	@echo "Signing image $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME)"; \
-	$(COSIGN) sign $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME); --identity-token \
+	$(COSIGN) sign --key ./cosign.key $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME); --identity-token \
 
 	@echo "Verifying image $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME)"; \
-	$(COSIGN) verify "$(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME)";
+	$(COSIGN) verify --key ./cosign.pub "$(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME)";
 
 cosign-login:
 	@echo $(DOCKER_PASS_ART) | $(COSIGN) login -u $(DOCKER_USER_ART) --password-stdin $(DOCKER_REGISTRY_ART); \
