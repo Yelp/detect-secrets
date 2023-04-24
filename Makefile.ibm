@@ -122,7 +122,10 @@ docker-publish-image:
 	# Decryption occurs in Travis builds (see before_install in .travis.yml)
 
 	# For troubleshooting purposes
-	ls; \
+	ls -la ; \
+	pwd; \
+	ls -la ./travis; \
+
 	@echo "Signing image $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME)"; \
 	$(COSIGN) sign --key cosign.key $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME); \
 
