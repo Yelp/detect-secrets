@@ -124,7 +124,7 @@ docker-publish-image:
 	# For troubleshooting purposes
 	ls -la ; \
 	pwd; \
-	ls -la ./travis; \
+	git status; \
 
 	@echo "Signing image $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME)"; \
 	$(COSIGN) sign --key cosign.key $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME); \

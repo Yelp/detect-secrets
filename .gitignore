@@ -17,3 +17,9 @@
 
 # Used for local testing
 test.py
+
+# cosign
+cosign.pub
+cosign.key
+
+.DS_Store
