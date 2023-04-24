@@ -183,6 +183,7 @@ class RegexBasedDetector(BasePlugin, metaclass=ABCMeta):
             prefix_regex: str,
             secret_keyword_regex: str,
             secret_regex: str,
+            assignment_with_dash: bool = False
     ) -> Pattern:
         """Generate assignment regex
         It reads 3 input parameters, each stands for regex. The return regex would look for
@@ -197,7 +198,7 @@ class RegexBasedDetector(BasePlugin, metaclass=ABCMeta):
         opt_close_square_bracket = r'(?:\]|)'
         opt_dash_underscore = r'(?:_|-|)'
         opt_space = r'(?: *)'
-        assignment = r'(?:=|:|:=|=>| +|::)'
+        assignment = r'(?:=|:|:=|=>| +|::)' if not assignment_with_dash else r'(?:=|:|:=|=>| +|::|\-)'
         return re.compile(
             r'{begin}{opt_open_square_bracket}{opt_quote}{prefix_regex}{opt_dash_underscore}'
             '{secret_keyword_regex}{opt_quote}{opt_close_square_bracket}{opt_space}'
