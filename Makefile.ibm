@@ -127,10 +127,10 @@ docker-publish-image:
 	ls -la ./travis; \
 
 	@echo "Signing image $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME)"; \
-	$(COSIGN) sign --key ./travis/cosign.key $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME); \
+	$(COSIGN) sign --key cosign.key $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME); \
 
 	@echo "Verifying image $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME)"; \
-	$(COSIGN) verify --key ./travis/cosign.pub "$(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME)";
+	$(COSIGN) verify --key cosign.pub "$(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME)";
 
 cosign-login:
 	@echo $(DOCKER_PASS_ART) | $(COSIGN) login -u $(DOCKER_USER_ART) --password-stdin $(DOCKER_REGISTRY_ART); \
