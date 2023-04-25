@@ -122,7 +122,7 @@ docker-publish-image:
 	# Decryption occurs in Travis builds (see before_install in .travis.yml)
 
 	@echo "Signing image $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME)"; \
-	$(COSIGN) sign --key env://COSIGN_PRIVATE_KEY $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME); \
+	$(COSIGN) sign --key env://COSIGN_PRIVATE_KEY --yes $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME); \
 
 	@echo "Verifying image $(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME)"; \
 	$(COSIGN) verify --key env://COSIGN_PUBLIC_KEY "$(DOCKER_REGISTRY)/$(DOCKER_DOMAIN)/$(IMAGE_NAME)";
