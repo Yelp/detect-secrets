@@ -21,6 +21,6 @@ test.py
 # cosign
 cosign.pub
 cosign.key
-secrets.tar
 
+# OSX
 .DS_Store
