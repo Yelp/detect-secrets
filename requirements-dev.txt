@@ -1,4 +1,4 @@
-coverage==7.2.1
+coverage==7.2.3
 flake8==5.0.4  # 6.0.0+ needs Python 3.8
 gibberish-detector==0.1.1
 monotonic==1.6
