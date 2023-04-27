@@ -31,7 +31,7 @@ class PotentialSecret:
             is_verified: bool = False,
             is_added: Optional[bool] = None,
             is_removed: Optional[bool] = None,
-            is_multi_line: Optional[bool] = None,
+            is_multiline: Optional[bool] = None,
     ) -> None:
         """
         :param type: human-readable secret type, defined by the plugin
@@ -51,7 +51,7 @@ class PotentialSecret:
         self.is_verified = is_verified
         self.is_added = is_added
         self.is_removed = is_removed
-        self.is_multi_line = is_multi_line
+        self.is_multiline = is_multiline
 
         # If two PotentialSecrets have the same values for these fields,
         # they are considered equal. Note that line numbers aren't included
@@ -92,7 +92,7 @@ class PotentialSecret:
             'is_verified',
             'is_added',
             'is_removed',
-            'is_multi_line',
+            'is_multiline',
         }:
             if parameter in data:
                 kwargs[parameter] = data[parameter]
@@ -124,8 +124,8 @@ class PotentialSecret:
         if hasattr(self, 'is_removed') and self.is_removed is not None:
             attributes['is_removed'] = self.is_removed
 
-        if hasattr(self, 'is_multi_line') and self.is_multi_line is not None:
-            attributes['is_multi_line'] = self.is_multi_line
+        if hasattr(self, 'is_multiline') and self.is_multiline is not None:
+            attributes['is_multiline'] = self.is_multiline
 
         return attributes
 
