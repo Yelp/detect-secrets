@@ -46,6 +46,8 @@ jobs:
     environment: release
     permissions:
       contents: write
+      # IMPORTANT: this permission is mandatory for trusted publishing to pypi
+      id-token: write
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
@@ -84,8 +86,6 @@ jobs:
           python setup.py sdist bdist_wheel
       - name: Publish a Python distribution to PyPI
         uses: pypa/gh-action-pypi-publish@0bf742be3ebe032c25dd15117957dc15d0cfc38d  # v1
-        with:
-          password: ${{ secrets.PYPI_TOKEN }}
       - name: sleep and wait for package to refresh
         run: |
           sleep 2m
