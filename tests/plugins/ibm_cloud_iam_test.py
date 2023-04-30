@@ -4,9 +4,10 @@ import responses
 from detect_secrets.constants import VerifiedResult
 from detect_secrets.plugins.ibm_cloud_iam import IbmCloudIamDetector
 
-
-CLOUD_IAM_KEY = 'abcd1234abcd1234abcd1234ABCD1234ABCD1234--__'
-CLOUD_IAM_KEY_BYTES = b'abcd1234abcd1234abcd1234ABCD1234ABCD1234--__'
+CLOUD_IAM_KEY = 'ukYEEX38RiGgq1BPf2m-nIeTM_lEGizKKn49RRoC_6fn'
+CLOUD_IAM_KEY_BYTES = b'ukYEEX38RiGgq1BPf2m-nIeTM_lEGizKKn49RRoC_6fn'
+LOW_ENTROPY_KEY = 'abcd1234abcd1234abcd1234ABCD1234ABCD1234--__'
+LOW_ENTROPY_KEY_BYTES = b'abcd1234abcd1234abcd1234ABCD1234ABCD1234--__'
 
 
 class TestIBMCloudIamDetector:
@@ -35,7 +36,7 @@ class TestIBMCloudIamDetector:
             ('ibm_api_key := {cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             ('"ibm-iam_key" := "{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             (
-                '"ibm_cloud_iam_api_key":= "{cloud_iam_key}"'.format(
+                '"ibm_cloud_iam_api_key":"{cloud_iam_key}"'.format(
                     cloud_iam_key=CLOUD_IAM_KEY,
                 ), True,
             ),
@@ -53,6 +54,41 @@ class TestIBMCloudIamDetector:
             ('CLOUD_APIKEY: "insert_key_here"', False),
             ('cloud-iam-key:=afakekey', False),
             ('fake-cloud-iam-key= "not_long_enough"', False),
+            ('ibm-cloud_api_key: {cloud_iam_key}'.format(cloud_iam_key=LOW_ENTROPY_KEY), False),
+            ('ibm_cloud_iam-key : {cloud_iam_key}'.format(cloud_iam_key=LOW_ENTROPY_KEY), False),
+            ('IBM-API-KEY : "{cloud_iam_key}"'.format(cloud_iam_key=LOW_ENTROPY_KEY), False),
+            ('"iam_api_key" : "{cloud_iam_key}"'.format(cloud_iam_key=LOW_ENTROPY_KEY), False),
+            ('cloud-api-key: "{cloud_iam_key}"'.format(cloud_iam_key=LOW_ENTROPY_KEY), False),
+            ('"iam-password": "{cloud_iam_key}"'.format(cloud_iam_key=LOW_ENTROPY_KEY), False),
+            ('CLOUD_IAM_API_KEY:"{cloud_iam_key}"'.format(cloud_iam_key=LOW_ENTROPY_KEY), False),
+            ('ibm-cloud-key:{cloud_iam_key}'.format(cloud_iam_key=LOW_ENTROPY_KEY), False),
+            ('ibm_key:"{cloud_iam_key}"'.format(cloud_iam_key=LOW_ENTROPY_KEY), False),
+            (
+                '"ibm_cloud_iam_api_key":"{cloud_iam_key}"'.format(
+                    cloud_iam_key=LOW_ENTROPY_KEY,
+                ), False,
+            ),
+            ('ibm_cloud_iamapikey= {cloud_iam_key}'.format(cloud_iam_key=LOW_ENTROPY_KEY), False),
+            ('ibm_cloud_api_key= "{cloud_iam_key}"'.format(cloud_iam_key=LOW_ENTROPY_KEY), False),
+            ('IBMCLOUDIAMAPIKEY={cloud_iam_key}'.format(cloud_iam_key=LOW_ENTROPY_KEY), False),
+            ('cloud_iam_api_key="{cloud_iam_key}"'.format(cloud_iam_key=LOW_ENTROPY_KEY), False),
+            ('ibm_api_key := {cloud_iam_key}'.format(cloud_iam_key=LOW_ENTROPY_KEY), False),
+            ('"ibm-iam_key" := "{cloud_iam_key}"'.format(cloud_iam_key=LOW_ENTROPY_KEY), False),
+            (
+                '"ibm_cloud_iam_api_key":= "{cloud_iam_key}"'.format(
+                    cloud_iam_key=LOW_ENTROPY_KEY,
+                ), False,
+            ),
+            ('ibm-cloud_api_key:={cloud_iam_key}'.format(cloud_iam_key=LOW_ENTROPY_KEY), False),
+            ('"cloud_iam_api_key":="{cloud_iam_key}"'.format(cloud_iam_key=LOW_ENTROPY_KEY), False),
+            ('ibm_iam_key:= "{cloud_iam_key}"'.format(cloud_iam_key=LOW_ENTROPY_KEY), False),
+            ('ibm_iam_key:= "{cloud_iam_key}extra"'.format(cloud_iam_key=LOW_ENTROPY_KEY), False),
+            ('ibm_api_key:="{cloud_iam_key}"'.format(cloud_iam_key=LOW_ENTROPY_KEY), False),
+            ('ibm_password = "{cloud_iam_key}"'.format(cloud_iam_key=LOW_ENTROPY_KEY), False),
+            ('ibm-cloud-pwd = {cloud_iam_key}'.format(cloud_iam_key=LOW_ENTROPY_KEY), False),
+            ('ibm-cloud-pwd = {cloud_iam_key}extra'.format(cloud_iam_key=LOW_ENTROPY_KEY), False),
+            ('ibm-cloud-pwd = shorter-version', False),
+            ('apikey:{cloud_iam_key}'.format(cloud_iam_key=LOW_ENTROPY_KEY), False),
         ],
     )
     def test_analyze_string_content(self, payload, should_flag):
