@@ -128,7 +128,7 @@ C_PLUS_PLUS_TEST_CASES = [
     ('some_key = "real_secret"', None),     # We cannot make 'key' a Keyword, too noisy)
 ]
 
-QUOTES_REQUIRED_TEST_CASES = [
+QUOTES_REQUIRED_TEST_CASES_GENERIC = [
     ('apikey: "{}"'.format(COMMON_SECRET), COMMON_SECRET),
     ('apikey_myservice: "{}"'.format(COMMON_SECRET), COMMON_SECRET),    # Suffix
     ('api_key: `{}`'.format(COMMON_SECRET), COMMON_SECRET),
@@ -148,7 +148,6 @@ QUOTES_REQUIRED_TEST_CASES = [
     ('if (aws_secret_access_key != "{}") {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if (db_pass !== "{}") {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('password "{}";'.format(COMMON_SECRET), COMMON_SECRET),
-    ('password = {}'.format(COMMON_SECRET), None),  # Secret without quotes
     ('password = "{}"'.format(COMMON_SECRET), COMMON_SECRET),
     ('password => "{}"'.format(COMMON_SECRET), COMMON_SECRET),
     ('api_key = ""', None),              # Nothing in the quotes
@@ -159,6 +158,18 @@ QUOTES_REQUIRED_TEST_CASES = [
     (LONG_LINE, None),  # Long line test
     ('password => ""', None),
     ('password => {}'.format(COMMON_SECRET), None),
+]
+
+QUOTES_REQUIRED_TEST_CASES = [
+    *QUOTES_REQUIRED_TEST_CASES_GENERIC,
+    ('password = {}'.format(COMMON_SECRET), None),
+]  # Secret without quotes
+
+QUOTES_REQUIRED_TEST_CASES_BASH_CONSIDER = [
+    *QUOTES_REQUIRED_TEST_CASES_GENERIC,
+    # Terraform files might contain bash code, secret might be stated. For example:
+    # #!/bin/bash export {SOME_KEY}={SOME_SECRET_STRING}
+    ('password = {}'.format(COMMON_SECRET), COMMON_SECRET),
 ]
 
 
@@ -184,7 +195,7 @@ def parse_test_cases(test_cases):
             ('pyi', QUOTES_REQUIRED_TEST_CASES),
             ('js', QUOTES_REQUIRED_TEST_CASES),
             ('swift', QUOTES_REQUIRED_TEST_CASES),
-            ('tf', QUOTES_REQUIRED_TEST_CASES),
+            ('tf', QUOTES_REQUIRED_TEST_CASES_BASH_CONSIDER),
             (None, QUOTES_REQUIRED_TEST_CASES),
         ])
     ),
