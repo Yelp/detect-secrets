@@ -24,7 +24,7 @@ setup(
     keywords=['secret-management', 'pre-commit', 'security', 'entropy-checks'],
     install_requires=[
         'pyyaml',
-        'requests',
+        'requests==2.29.0',  # requests v2.30.0 is broken
         'boxsdk[jwt]',
         'packaging',
         'tabulate',
