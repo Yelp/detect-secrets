@@ -5,7 +5,7 @@ monotonic==1.6
 mypy==1.2.0
 pre-commit==2.21.0
 pyahocorasick==2.0.0
-pytest==7.2.2
+pytest==7.3.1
 pyyaml==6.0
 requests==2.28.2
 responses==0.23.1
