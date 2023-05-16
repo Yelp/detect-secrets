@@ -27,6 +27,11 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 <!--
 ### Unreleased
+##### May 15th, 2023
+#### :tada: New Features
+- Added a detector for IPPublic (ipv4) ([#692])
+
+[#692]: https://github.com/Yelp/detect-secrets/pull/692
 -->
 
 ### v1.4.0
