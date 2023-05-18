@@ -33,6 +33,7 @@ class TestArtifactoryDetector:
             ('X-JFrog-Art-Api: $PASSWORD', False),
             ('artifactory:_password=AP6xxxxxx', False),
             ('artifactory:_password=AKCxxxxxxxx', False),
+            ('not_artifactory_password=AAAAxxxxxxx:APA91xxxxx', False),  # firebase messaging api
         ],
     )
     def test_analyze_line(self, payload, should_flag):
