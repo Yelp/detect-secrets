@@ -28,7 +28,7 @@ pyflakes==1.6.0
 pyparsing==2.4.7
 pytest==6.2.2
 PyYAML==6.0
-requests==2.26.0
+requests==2.31.0
 responses==0.16.0
 six==1.16.0
 toml==0.10.2
