@@ -31,7 +31,9 @@ from testing.mocks import mock_named_temporary_file
             'IHNlY3JldCBwYXNzd29yZCExMjM0IyQlCgo=\n'
             '-----END PRIVATE KEY-----',
             1,
-            'BEGIN PRIVATE KEY-----',
+            '\nc3VwZXIgZHVwZXIgc2VjcmV0IHBhc3N3b3JkLCBzdXBlciBkdXBlciBzZWNyZXQgcGFzc3'
+            'dvcmQhMTIzNCMkJQpzdXBlciBkdXBlciBzZWNyZXQgcGFzc3dvcmQsIHN1cGVyIGR1cGVy'
+            'IHNlY3JldCBwYXNzd29yZCExMjM0IyQlCgo=',
         ),
         (
             'some text here\n'
