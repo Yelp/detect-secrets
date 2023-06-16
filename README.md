@@ -42,19 +42,19 @@ For more detailed documentation, check out our other [documentation](docs/).
 Create a baseline of potential secrets currently found in your git repository.
 
 ```bash
-$ detect-secrets scan > .secrets.baseline
+detect-secrets scan > .secrets.baseline
 ```
 
 or, to run it from a different directory:
 
 ```bash
-$ detect-secrets -C /path/to/directory scan > /path/to/directory/.secrets.baseline
+detect-secrets -C /path/to/directory scan > /path/to/directory/.secrets.baseline
 ```
 
 **Scanning non-git tracked files:**
 
 ```bash
-$ detect-secrets scan test_data/ --all-files > .secrets.baseline
+detect-secrets scan test_data/ --all-files > .secrets.baseline
 ```
 
 ### Adding New Secrets to Baseline:
@@ -68,7 +68,7 @@ This will rescan your codebase, and:
 This will also preserve any labelled secrets you have.
 
 ```bash
-$ detect-secrets scan --baseline .secrets.baseline
+detect-secrets scan --baseline .secrets.baseline
 ```
 
 For baselines older than version 0.9, just recreate it.
@@ -78,19 +78,19 @@ For baselines older than version 0.9, just recreate it.
 **Scanning Staged Files Only:**
 
 ```bash
-$ git diff --staged --name-only -z | xargs -0 detect-secrets-hook --baseline .secrets.baseline
+git diff --staged --name-only -z | xargs -0 detect-secrets-hook --baseline .secrets.baseline
 ```
 
 **Scanning All Tracked Files:**
 
 ```bash
-$ git ls-files -z | xargs -0 detect-secrets-hook --baseline .secrets.baseline
+git ls-files -z | xargs -0 detect-secrets-hook --baseline .secrets.baseline
 ```
 
 ### Viewing All Enabled Plugins:
 
 ```bash
-$ detect-secrets scan --list-all-plugins
+detect-secrets scan --list-all-plugins
 ArtifactoryDetector
 AWSKeyDetector
 AzureStorageKeyDetector
@@ -118,13 +118,13 @@ TwilioKeyDetector
 ### Disabling Plugins:
 
 ```bash
-$ detect-secrets scan --disable-plugin KeywordDetector --disable-plugin AWSKeyDetector
+detect-secrets scan --disable-plugin KeywordDetector --disable-plugin AWSKeyDetector
 ```
 
 If you want to **only** run a specific plugin, you can do:
 
 ```bash
-$ detect-secrets scan --list-all-plugins | \
+detect-secrets scan --list-all-plugins | \
     grep -v 'BasicAuthDetector' | \
     sed "s#^#--disable-plugin #g" | \
     xargs detect-secrets scan test_data
@@ -137,7 +137,7 @@ checklist of secrets to migrate, or to better configure your plugins to improve 
 ratio.
 
 ```bash
-$ detect-secrets audit .secrets.baseline
+detect-secrets audit .secrets.baseline
 ```
 
 ### Usage in Other Python Scripts
@@ -224,7 +224,7 @@ to use. Use this handy checklist to help you decide:
 ### Adding Secrets to Baseline
 
 ```
-$ detect-secrets scan --help
+detect-secrets scan --help
 usage: detect-secrets scan [-h] [--string [STRING]] [--only-allowlisted]
                            [--all-files] [--baseline FILENAME]
                            [--force-use-all-plugins] [--slim]
@@ -318,7 +318,7 @@ filter options:
 ### Blocking Secrets not in Baseline
 
 ```
-$ detect-secrets-hook --help
+detect-secrets-hook --help
 usage: detect-secrets-hook [-h] [-v] [--version] [--baseline FILENAME]
                            [--list-all-plugins] [-p PLUGIN]
                            [--base64-limit [BASE64_LIMIT]]
@@ -417,7 +417,7 @@ const secret = "hunter2";
 ### Auditing Secrets in Baseline
 
 ```bash
-$ detect-secrets audit --help
+detect-secrets audit --help
 usage: detect-secrets audit [-h] [--diff] [--stats]
                       [--report] [--only-real | --only-false]
                       [--json]
@@ -497,13 +497,13 @@ Sometimes, you want to be able to globally allow certain lines in your scan, if 
 specific pattern. You can specify a regex rule as such:
 
 ```bash
-$ detect-secrets scan --exclude-lines 'password = (blah|fake)'
+detect-secrets scan --exclude-lines 'password = (blah|fake)'
 ```
 
 Or you can specify multiple regex rules as such:
 
 ```bash
-$ detect-secrets scan --exclude-lines 'password = blah' --exclude-lines 'password = fake'
+detect-secrets scan --exclude-lines 'password = blah' --exclude-lines 'password = fake'
 ```
 
 #### --exclude-files
@@ -512,13 +512,13 @@ Sometimes, you want to be able to ignore certain files in your scan. You can spe
 pattern to do so, and if the filename meets this regex pattern, it will not be scanned:
 
 ```bash
-$ detect-secrets scan --exclude-files '.*\.signature$'
+detect-secrets scan --exclude-files '.*\.signature$'
 ```
 
 Or you can specify multiple regex patterns as such:
 
 ```bash
-$ detect-secrets scan --exclude-files '.*\.signature$' --exclude-files '.*/i18n/.*'
+detect-secrets scan --exclude-files '.*\.signature$' --exclude-files '.*/i18n/.*'
 ```
 
 #### --exclude-secrets
@@ -527,13 +527,13 @@ Sometimes, you want to be able to ignore certain secret values in your scan. You
 a regex rule as such:
 
 ```bash
-$ detect-secrets scan --exclude-secrets '(fakesecret|\${.*})'
+detect-secrets scan --exclude-secrets '(fakesecret|\${.*})'
 ```
 
 Or you can specify multiple regex rules as such:
 
 ```bash
-$ detect-secrets scan --exclude-secrets 'fakesecret' --exclude-secrets '\${.*})'
+detect-secrets scan --exclude-secrets 'fakesecret' --exclude-secrets '\${.*})'
 ```
 
 #### Inline Allowlisting
@@ -562,7 +562,7 @@ This may be a convenient way for you to ignore secrets, without needing to regen
 baseline again. If you need to explicitly search for these allowlisted secrets, you can also do:
 
 ```bash
-$ detect-secrets scan --only-allowlisted
+detect-secrets scan --only-allowlisted
 ```
 
 Want to write more custom logic to filter out false positives? Check out how to do this in
@@ -578,22 +578,22 @@ if you want to specify a large list of words instead, you can use the `--word-li
 To use this feature, be sure to install the `pyahocorasick` package, or simply use:
 
 ```bash
-$ pip install detect-secrets[word_list]
+pip install detect-secrets[word_list]
 ```
 
 Then, you can use it as such:
 
 ```bash
-$ cat wordlist.txt
+cat wordlist.txt
 not-a-real-secret
-$ cat sample.ini
+cat sample.ini
 password = not-a-real-secret
 
 # Will show results
-$ detect-secrets scan sample.ini
+detect-secrets scan sample.ini
 
 # No results found
-$ detect-secrets scan --word-list wordlist.txt
+detect-secrets scan --word-list wordlist.txt
 ```
 
 ### Gibberish Detector
@@ -604,7 +604,7 @@ is actually gibberish, with the assumption that **real** secret values are not w
 To use this feature, be sure to install the `gibberish-detector` package, or use:
 
 ```bash
-$ pip install detect-secrets[gibberish]
+pip install detect-secrets[gibberish]
 ```
 
 Check out the [gibberish-detector](https://github.com/domanchi/gibberish-detector) package for
@@ -614,7 +614,7 @@ be included for easy use.
 You can also specify your own model as such:
 
 ```bash
-$ detect-secrets scan --gibberish-model custom.model
+detect-secrets scan --gibberish-model custom.model
 ```
 
 This is not a default plugin, given that this will ignore secrets such as `password`.
