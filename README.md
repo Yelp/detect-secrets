@@ -203,14 +203,13 @@ with transient_settings({
 ## Installation
 
 ```bash
-$ pip install detect-secrets
-✨🍰✨
+pip install detect-secrets
 ```
 
 Install via [brew](https://brew.sh/):
 
 ```bash
-$ brew install detect-secrets
+brew install detect-secrets
 ```
 
 ## Usage
