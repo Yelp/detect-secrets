@@ -1,6 +1,7 @@
-import datetime
 import hashlib
 import hmac
+from datetime import datetime
+from datetime import timezone
 from typing import List
 
 import requests
@@ -109,7 +110,7 @@ def query_ibm_cos_hmac(
     request_parameters = ''
 
     # assemble the standardized request
-    time = datetime.datetime.utcnow()
+    time = datetime.now(timezone.utc)
     timestamp = time.strftime('%Y%m%dT%H%M%SZ')
     datestamp = time.strftime('%Y%m%d')
 
