@@ -102,6 +102,25 @@ def test_load_and_output():
             break
 
 
+def test_plugin_not_found_in_baseline():
+    # Test fix for the issue in #718
+    data = {
+        'version': '1.4.0',
+        'plugins_used': [{
+            'name': 'FakeCustomPlugin',
+            'path': 'file://./path/to/plugin/that/does/not/exist/plugin.py',
+        }],
+        'results': {},
+    }
+    secrets = baseline.load(data)
+    with pytest.raises(FileNotFoundError) as exc_info:
+        baseline.format_for_output(secrets)
+
+    # Check that filename of file that was not found is in the error message
+    # (#718)
+    exc_info.match(r'\./path/to/plugin/that/does/not/exist/plugin\.py')
+
+
 def test_upgrade_does_nothing_if_newer_version():
     current_baseline = {'version': '3.0.0'}
     assert baseline.upgrade(current_baseline) == current_baseline
