@@ -4,8 +4,8 @@ certifi==2023.7.22
 cfgv==3.2.0
 charset-normalizer==2.0.7
 coverage==4.5.4
-distlib==0.3.6
-filelock==3.0.12
+distlib==0.3.7
+filelock==3.12.2
 flake8==3.5.0
 gibberish-detector==0.1.1
 identify==2.3.0
@@ -18,7 +18,7 @@ mypy==0.971
 mypy-extensions==0.4.3
 nodeenv==1.6.0
 packaging==21.3
-platformdirs==2.0.2
+platformdirs==3.10.0
 pluggy==0.13.1
 pre-commit==2.17.0
 py==1.11.0
@@ -26,7 +26,7 @@ pyahocorasick==1.4.4
 pycodestyle==2.3.1
 pyflakes==1.6.0
 pyparsing==2.4.7
-pytest==6.2.2
+pytest==7.4.3
 PyYAML==6.0
 requests==2.31.0
 responses==0.16.0
@@ -40,5 +40,5 @@ types-requests==2.28.9
 typing-extensions==3.10.0.2
 unidiff==0.7.4
 urllib3==1.26.9
-virtualenv==20.6.0
+virtualenv==20.24.6
 zipp==3.6.0
