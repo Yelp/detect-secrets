@@ -34,7 +34,7 @@ class IbmCloudIamDetector(RegexBasedDetector):
 
 
 def verify_cloud_iam_api_key(apikey: Union[str, bytes]) -> requests.Response:  # pragma: no cover
-    if type(apikey) == bytes:
+    if type(apikey) is bytes:
         apikey = apikey.decode('UTF-8')
 
     headers = {
