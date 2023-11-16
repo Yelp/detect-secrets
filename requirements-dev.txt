@@ -9,7 +9,7 @@ filelock==3.13.1
 flake8==6.1.0
 gibberish-detector==0.1.1
 identify==2.3.0
-idna==3.3
+idna==3.4
 importlib-metadata==6.8.0
 iniconfig==1.1.1
 mccabe==0.7.0
