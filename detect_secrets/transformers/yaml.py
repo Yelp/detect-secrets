@@ -37,8 +37,17 @@ class YAMLTransformer(BaseTransformer):
         except yaml.YAMLError:
             raise ParsingError
 
+        seen = set()
+
         lines: List[str] = []
         for item in items:
+            # Filter out previous lines seen before. This removes duplicates when it comes
+            # to anchor & and alias * tags.
+            if item in seen:
+                continue
+            else:
+                seen.add(item)
+
             while len(lines) < item.line_number - 1:
                 lines.append('')
 
@@ -210,25 +219,28 @@ class YAMLFileParser:
         self,
         parent: Optional[yaml.nodes.Node],
         index: Optional[yaml.nodes.Node],
-    ) -> yaml.nodes.Node:
+    ) -> Optional[yaml.nodes.Node]:
         line = (
             self.loader.marks[-1].line
             if self.is_inline_flow_mapping_key
             else self.loader.line
         )
 
-        node = yaml.composer.Composer.compose_node(self.loader, parent, index)
-        node.__line__ = line + 1
+        node = yaml.composer.Composer.compose_node(self.loader, parent, index)  # type: ignore
+        if node is None:
+            return None
+
+        node.__line__ = line + 1    # type: ignore
 
         if node.tag.endswith(':map'):
             # Reset the inline flow mapping key when the end of a mapping is reached
             # to avoid complications with empty mappings
             self.is_inline_flow_mapping_key = False
-            return _tag_dict_values(node)
+            return _tag_dict_values(cast(yaml.nodes.MappingNode, node))
 
         # TODO: Not sure if need to do :seq
 
-        return cast(yaml.nodes.Node, node)
+        return node
 
     def _parse_flow_mapping_key_shim(
         self,

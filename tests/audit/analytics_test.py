@@ -66,9 +66,14 @@ def test_no_divide_by_zero(secret):
         main(['audit', f.name, '--stats', '--json'])
 
 
-@pytest.mark.skip(reason='TODO')
-def test_basic_statistics_str():
-    pass
+def test_basic_statistics_str(printer):
+    with labelled_secrets() as filename:
+        main(['audit', filename, '--stats'])
+
+    assert printer.message == (
+        'Plugin: BasicAuthDetector\nStatistics: True Positives: 1, ' +
+        'False Positives: 2, Unknown: 1, Precision: 0.3333, Recall: 0.5\n\n\n'
+    )
 
 
 @contextmanager

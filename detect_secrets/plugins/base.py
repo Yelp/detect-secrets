@@ -53,7 +53,7 @@ class BasePlugin(metaclass=ABCMeta):
     ) -> Set[PotentialSecret]:
         """This examines a line and finds all possible secret values in it."""
         output = set()
-        for match in self.analyze_string(line, **kwargs):   # type: ignore
+        for match in self.analyze_string(line, **kwargs):
             is_verified: bool = False
             # If the filter is disabled it means --no-verify flag was passed
             # We won't run verification in that case
