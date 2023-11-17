@@ -1,4 +1,5 @@
 import pytest
+
 from detect_secrets.plugins.email_address import EmailAddressDetector
 
 
