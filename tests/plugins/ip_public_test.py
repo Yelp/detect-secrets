@@ -1,4 +1,5 @@
 import pytest
+
 from detect_secrets.plugins.ip_public import IPPublicDetector
 
 
@@ -40,10 +41,10 @@ class TestIPPublicDetector:
                 ('256.256.256.256', False),
                 ('1.2.3', False),
                 ('1.2.3.4.5.6', True),
-                ('1.2.3.4.5.6.7.8', "2"),
+                ('1.2.3.4.5.6.7.8', '2'),
                 ('1.2.3.04', True),
                 ('noreply@github.com', False),
-                ('github.com', False)
+                ('github.com', False),
             ],
         )
         def test_analyze_line(self, payload, should_flag):
