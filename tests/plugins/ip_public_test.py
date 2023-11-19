@@ -40,8 +40,8 @@ class TestIPPublicDetector:
                 # Invalid IPv4 addresses
                 ('256.256.256.256', False),
                 ('1.2.3', False),
-                ('1.2.3.4.5.6', True),
-                ('1.2.3.4.5.6.7.8', '2'),
+                ('1.2.3.4.5.6', False),
+                ('1.2.3.4.5.6.7.8', False),
                 ('1.2.3.04', True),
                 ('noreply@github.com', False),
                 ('github.com', False),
