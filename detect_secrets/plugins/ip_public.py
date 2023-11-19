@@ -19,28 +19,21 @@ class IPPublicDetector(RegexBasedDetector):
     secret_type = 'Public IP (ipv4)'
 
     denylist_ipv4_address = r"""
-        # Negative lookbehind: Checks if preceding character is not a digit
-        (?<![0-9])
-        # Negative lookahead: Checks if following pattern doesn't match
-        (?!
-            # Matches "192.168.", "127.", "10.", or "172." with specific ranges
-            192\.168\.|
-            127\.|
-            10\.|
-            172\.(?:1[6-9]|2[0-9]|3[01])
+        (?<!\.)         # Negative lookbehind: Ensures no preceding dot
+        \b              # Word boundary: Start of a word
+        (?!             # Negative lookahead: Ensures the following pattern doesn't match
+            192\.168\.  # Exclude "192.168."
+            |127\.      # Exclude "127."
+            |10\.       # Exclude "10."
+            |172\.(?:1[6-9]|2[0-9]|3[01]) # Exclude "172." with specific ranges
         )
-        # Non-capturing group for numbers 0-255 followed by a dot
-        (?:
-            (?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.
-        ){3}
-        # Matches final number in an IP address (0-255)
-        (?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)
-        # Optional group for port number (0-99999)
-        (?::\d{1,5})?
-        # Negative lookahead: Ensures next character isn't a digit
-        (?!
-            [0-9]
-        )
+        (?:             # Non-capturing group for octets
+            (?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\. # Match numbers 0-255 followed by dot
+        ){3}            # Repeat for three octets
+        (?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?) # Match final octet (0-255)
+        (?::\d{1,5})?   # Optional non-capturing group for port number (0-99999)
+        \b              # Word boundary: End of a word
+        (?!\.)          # Negative lookahead: Ensures no following dot
     """
 
     denylist = [
