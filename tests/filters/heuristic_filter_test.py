@@ -1,6 +1,7 @@
 import os
 
 import pytest
+
 from detect_secrets import filters
 from detect_secrets.core.scan import scan_line
 from detect_secrets.plugins.aws import AWSKeyDetector

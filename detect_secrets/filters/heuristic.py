@@ -2,9 +2,11 @@ import os
 import re
 import string
 from functools import lru_cache
-from typing import Optional, Pattern
+from typing import Optional
+from typing import Pattern
 
-from detect_secrets.plugins.base import BasePlugin, RegexBasedDetector
+from detect_secrets.plugins.base import BasePlugin
+from detect_secrets.plugins.base import RegexBasedDetector
 
 
 def is_sequential_string(secret: str) -> bool:
