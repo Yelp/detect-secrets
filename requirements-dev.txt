@@ -8,7 +8,7 @@ distlib==0.3.7
 filelock==3.13.1
 flake8==6.1.0
 gibberish-detector==0.1.1
-identify==2.3.0
+identify==2.5.32
 idna==3.4
 iniconfig==1.1.1
 mccabe==0.7.0
