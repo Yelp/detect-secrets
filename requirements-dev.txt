@@ -28,7 +28,7 @@ pyparsing==2.4.7
 pytest==7.4.3
 PyYAML==6.0
 requests==2.31.0
-responses==0.16.0
+responses==0.24.1
 six==1.16.0
 toml==0.10.2
 tox==3.24.4
