@@ -42,7 +42,7 @@ class TestIPPublicDetector:
                 ('1.2.3', False),
                 ('1.2.3.4.5.6', False),
                 ('1.2.3.4.5.6.7.8', False),
-                ('1.2.3.04', True),
+                ('1.2.3.04', False),
                 ('noreply@github.com', False),
                 ('github.com', False),
             ],
