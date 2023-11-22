@@ -26,10 +26,12 @@ def parse_args(argv):
 
 
 def main(argv=None):
-    version_check()
     args = parse_args(argv)
     if args.verbose:  # pragma: no cover
         log.set_debug_level(3)
+
+    if not args.no_version_check:
+        version_check()
 
     try:
         # If baseline is provided, we first want to make sure

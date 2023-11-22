@@ -7,6 +7,9 @@ import requests
 from packaging.version import parse
 
 from detect_secrets import VERSION
+from detect_secrets.core.log import get_logger
+
+log = get_logger(format_string='%(message)s')
 
 
 def version_check():
@@ -14,6 +17,12 @@ def version_check():
     # get latest version from GHE
     yellow = '\033[93m'
     end_yellow = '\033[0m'
+
+    current_version = parse(VERSION)
+    log.debug(
+        'detect-secrets: checking if up-to-date: version=%s',
+        current_version,
+    )
     try:
         resp = requests.get(
             (
@@ -24,7 +33,10 @@ def version_check():
         )
         resp.raise_for_status()
         latest_version = parse(resp.text)
-        current_version = parse(VERSION)
+        log.debug(
+            'detect-secrets: latest_version=%s up-to-date=%r',
+            latest_version, current_version >= latest_version,
+        )
         if current_version < latest_version:
             print(
                 yellow +
