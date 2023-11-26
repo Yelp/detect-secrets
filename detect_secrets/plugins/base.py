@@ -8,9 +8,8 @@ things may not work as you expect (see the scan logic in SecretsCollection).
 from __future__ import annotations
 
 import re
-from abc import ABCMeta
+from abc import ABC
 from abc import abstractmethod
-from abc import abstractproperty
 from typing import Any
 from typing import Dict
 from typing import Generator
@@ -27,8 +26,9 @@ from detect_secrets.util.code_snippet import CodeSnippet
 from detect_secrets.util.inject import call_function_with_arguments
 
 
-class BasePlugin(metaclass=ABCMeta):
-    @abstractproperty
+class BasePlugin(ABC):
+    @property
+    @abstractmethod
     def secret_type(self) -> str:
         """
         Unique, user-facing description to identify this type of secret. This should be overloaded
@@ -149,7 +149,7 @@ class BasePlugin(metaclass=ABCMeta):
         return self.json() == other.json()
 
 
-class RegexBasedDetector(BasePlugin, metaclass=ABCMeta):
+class RegexBasedDetector(BasePlugin):
     """Parent class for regular-expression based detectors.
 
     To create a new regex-based detector, subclass this and set `secret_type` with a
@@ -164,7 +164,8 @@ class RegexBasedDetector(BasePlugin, metaclass=ABCMeta):
         )
     """
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def denylist(self) -> Iterable[Pattern]:
         raise NotImplementedError
 
