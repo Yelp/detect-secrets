@@ -32,7 +32,7 @@ class IbmCosHmacDetector(RegexBasedDetector):
         ),
     )
 
-    def verify(       # type: ignore[override]  # noqa: F821
+    def verify(  # type: ignore[override]
         self,
         secret: str,
         context: CodeSnippet,
@@ -74,12 +74,12 @@ def hash(key: bytes, msg: str) -> bytes:
     return hmac.new(key, msg.encode('utf-8'), hashlib.sha256).digest()
 
 
-def createSignatureKey(key: str, datestamp: str, region: str, service: str) -> bytes:
-    keyDate = hash(('AWS4' + key).encode('utf-8'), datestamp)
-    keyString = hash(keyDate, region)
-    keyService = hash(keyString, service)
-    keySigning = hash(keyService, 'aws4_request')
-    return keySigning
+def createSignatureKey(key: str, datestamp: str, region: str, service: str) -> bytes:  # noqa: N802
+    key_date = hash(('AWS4' + key).encode('utf-8'), datestamp)
+    key_string = hash(key_date, region)
+    key_service = hash(key_string, service)
+    key_signing = hash(key_service, 'aws4_request')
+    return key_signing
 
 
 def verify_ibm_cos_hmac_credentials(
@@ -118,7 +118,7 @@ def query_ibm_cos_hmac(
     standardized_querystring = request_parameters
     standardized_headers = 'host:' + host + '\n' + 'x-amz-date:' + timestamp + '\n'
     signed_headers = 'host;x-amz-date'
-    payload_hash = hashlib.sha256(''.encode('utf-8')).hexdigest()
+    payload_hash = hashlib.sha256(b'').hexdigest()
 
     standardized_request = (
         http_method + '\n'

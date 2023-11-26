@@ -1,16 +1,21 @@
+from __future__ import annotations
+
 import re
 from contextlib import contextmanager
 from typing import Any
 from typing import Generator
+from typing import TYPE_CHECKING
 
-from detect_secrets.core.plugins import Plugin
 from detect_secrets.core.plugins.util import get_mapping_from_secret_type_to_class
 from detect_secrets.plugins.base import RegexBasedDetector
 
+if TYPE_CHECKING:
+    from detect_secrets.plugins.base import BasePlugin
+
 
 @contextmanager
-def register_plugin(plugin: Plugin) -> Generator[None, None, None]:
-    def get_instance(*args: Any, **kwargs: Any) -> Plugin:
+def register_plugin(plugin: BasePlugin) -> Generator[None, None, None]:
+    def get_instance(*args: Any, **kwargs: Any) -> BasePlugin:
         # NOTE: We need this, because the initialization process auto-fills in arguments
         # to the classname. However, we already have an instance, so it doesn't matter.
         return plugin

@@ -8,7 +8,7 @@ class InvalidBaselineError(ValueError):
     pass
 
 
-class InvalidFile(ValueError):
+class InvalidFile(ValueError):  # noqa: N818
     """Think of this as a 400, if FileNotFoundError was a 404 HTTPError code."""
     pass
 

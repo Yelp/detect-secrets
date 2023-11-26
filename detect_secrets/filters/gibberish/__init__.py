@@ -1,15 +1,20 @@
+from __future__ import annotations
+
 import os
 import string
 from functools import lru_cache
 from typing import Any
 from typing import Dict
 from typing import Optional
+from typing import TYPE_CHECKING
 from typing import Union
 
-from ...core.plugins import Plugin
 from ...plugins.private_key import PrivateKeyDetector
 from ...settings import get_settings
 from ..util import compute_file_hash
+
+if TYPE_CHECKING:
+    from detect_secrets.plugins.base import BasePlugin
 
 
 Model = Any
@@ -36,8 +41,8 @@ def initialize(model_path: Optional[str] = None, limit: float = 3.7) -> None:
 
     model = get_model()
 
-    from gibberish_detector import serializer  # type:ignore[import]
-    from gibberish_detector.exceptions import ParsingError  # type:ignore[import]
+    from gibberish_detector import serializer  # type:ignore[import-untyped]
+    from gibberish_detector.exceptions import ParsingError  # type:ignore[import-untyped]
     with open(path) as f:
         try:
             model.update(serializer.deserialize(f.read()))
@@ -55,7 +60,7 @@ def initialize(model_path: Optional[str] = None, limit: float = 3.7) -> None:
     get_settings().filters[path] = config
 
 
-def should_exclude_secret(secret: str, plugin: Optional[Plugin] = None) -> bool:
+def should_exclude_secret(secret: str, plugin: BasePlugin | None = None) -> bool:
     """
     :param plugin: optional, for easier testing. The dependency injection system
         will populate its proper value on complete runs.
@@ -74,7 +79,7 @@ def should_exclude_secret(secret: str, plugin: Optional[Plugin] = None) -> bool:
     if not get_model().data or not get_model().charset:
         raise AssertionError('Attempting to use uninitialized gibberish model.')
 
-    from gibberish_detector.detector import Detector  # type:ignore[import]
+    from gibberish_detector.detector import Detector  # type:ignore[import-untyped]
     detector = Detector(
         model=get_model(),
         threshold=get_settings().filters[f'{__name__}.should_exclude_secret']['limit'],
@@ -90,6 +95,6 @@ def should_exclude_secret(secret: str, plugin: Optional[Plugin] = None) -> bool:
 
 
 @lru_cache(maxsize=1)
-def get_model() -> 'Model':
-    from gibberish_detector.model import Model  # type:ignore[import]
+def get_model() -> Model:
+    from gibberish_detector.model import Model  # type:ignore[import-untyped]
     return Model(charset='')

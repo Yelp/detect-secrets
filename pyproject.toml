@@ -1,0 +1,54 @@
+[tool.ruff]
+line-length = 100
+
+select = [
+    "A",
+    "ARG",
+    "B",
+    "C4",
+    "E",
+    "F",
+    "I",
+    "N",
+    "PGH",
+    "RUF",
+    "S",
+    "SIM",
+    "T10",
+    "T20",
+    "UP",
+    "W",
+    "YTT",
+]
+exclude = [
+    "bumpity.py",
+    "scripts",
+    "test_data",
+    "test_diff",
+    "tests",
+    "testing",
+    "venv",
+]
+ignore = [
+    "A001",
+    "A002",
+    "A003",
+    "ARG002",
+    "B904",  # should be handled properly at some point
+    "I001",
+    "PGH003",  # should be handled properly at some point
+    "RUF012",
+    "S113",  # should be handled properly at some point
+    "UP006",
+    "UP007",
+    "UP032",  # should be handled properly at some point
+]
+
+target-version = "py38"
+
+[tool.ruff.per-file-ignores]
+"detect_secrets/plugins/*" = ["S105"]
+
+"detect_secrets/audit/io.py" = ["T201"]
+"detect_secrets/main.py" = ["T201"]
+"detect_secrets/pre_commit_hook.py" = ["T201"]

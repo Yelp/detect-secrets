@@ -13,7 +13,7 @@ class VerifiedResult(Enum):
     VERIFIED_TRUE = 3
 
     @staticmethod
-    def from_secret(secret: PotentialSecret) -> 'VerifiedResult':
+    def from_secret(secret: PotentialSecret) -> VerifiedResult:
         if secret.is_secret is None:
             return VerifiedResult.UNVERIFIED
         elif secret.is_secret:

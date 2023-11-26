@@ -5,15 +5,11 @@ from typing import Any
 from typing import Iterable
 from typing import List
 from typing import Optional
-from typing import TypeVar
 
 from ..custom_types import NamedIO
 from ..util.importlib import import_types_from_package
 from .base import BaseTransformer
 from .exceptions import ParsingError
-
-
-Transformer = TypeVar('Transformer', bound=BaseTransformer)
 
 
 def get_transformed_file(
@@ -38,7 +34,7 @@ def get_transformed_file(
 
 
 @lru_cache(maxsize=1)
-def get_transformers() -> Iterable[Transformer]:
+def get_transformers() -> Iterable[BaseTransformer]:
     return [
         item()
         for item in import_types_from_package(

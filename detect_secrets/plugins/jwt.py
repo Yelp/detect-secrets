@@ -34,9 +34,9 @@ class JwtTokenDetector(RegexBasedDetector):
                 if m == 1:
                     raise TypeError('Incorrect padding')
                 elif m == 2:
-                    part += '=='.encode('utf-8')
+                    part += b'=='
                 elif m == 3:
-                    part += '==='.encode('utf-8')
+                    part += b'==='
                 b64_decoded = base64.urlsafe_b64decode(part)
                 if idx < 2:
                     _ = json.loads(b64_decoded.decode('utf-8'))

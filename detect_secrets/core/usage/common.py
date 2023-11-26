@@ -14,7 +14,7 @@ def valid_path(path: str) -> str:
     return path
 
 
-def initialize_plugin_settings(args: argparse.Namespace) -> None:
+def initialize_plugin_settings(args: argparse.Namespace) -> None:  # noqa: ARG001
     """
     This is a stand-in function, which should be replaced if baseline options are used.
     This ensures that our global settings object is initialized to a minimal state

@@ -15,7 +15,7 @@ def get_root_directory(path: str = '') -> str:
         command.extend(['-C', path])
 
     command.extend(['rev-parse', '--show-toplevel'])
-    return subprocess.check_output(command).decode('utf-8').strip()
+    return subprocess.check_output(command).decode('utf-8').strip()  # noqa: S603
 
 
 def get_tracked_files(root: str) -> Set[str]:
@@ -31,7 +31,7 @@ def get_tracked_files(root: str) -> Set[str]:
     output = set()
     try:
         files = subprocess.check_output(
-            ['git', '-C', root, 'ls-files'],
+            ['git', '-C', root, 'ls-files'],  # noqa: S603,S607
             stderr=subprocess.DEVNULL,
         )
 
@@ -50,7 +50,7 @@ def get_tracked_files(root: str) -> Set[str]:
 
 def get_changed_but_unstaged_files() -> Set[str]:
     try:
-        files = subprocess.check_output('git diff --name-only'.split()).decode().splitlines()
+        files = subprocess.check_output('git diff --name-only'.split()).decode().splitlines()  # noqa: S603
     except subprocess.CalledProcessError:   # pragma: no cover
         # Since we don't pipe stderr, we get free logging through git.
         raise ValueError

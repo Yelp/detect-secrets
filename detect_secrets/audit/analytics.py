@@ -14,7 +14,7 @@ from .common import get_baseline_from_file
 
 def calculate_statistics_for_baseline(
     filename: str,
-    **kwargs: Any,
+    **kwargs: Any,  # noqa: ARG001
 ) -> 'StatisticsAggregator':
     """
     :raises: InvalidBaselineError

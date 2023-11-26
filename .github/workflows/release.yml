@@ -13,14 +13,18 @@ on:
       - '.pre-commit-config.yaml'
       - 'requirements-dev.txt'
 
-permissions: read-all
+permissions:
+  contents: read
+
+env:
+  MIN_PYTHON_VERSION: "3.8"
 
 jobs:
   tests:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.12']
+        python: ['3.8', '3.9', '3.10', '3.11', '3.12']
     steps:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
     - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v3
@@ -31,12 +35,6 @@ jobs:
       run: |
         pip install --upgrade pip
         pip install -r requirements-dev.txt
-    - name: Sets env var for release
-      if: ${{ matrix.os == 'macos-latest' && matrix.python == '3.7' }}
-      run: |
-        # NO_PROXY is needed to call requests API within a forked process
-        # when using macOS and python version 3.7
-        echo "NO_PROXY='*'" >> "$GITHUB_ENV"
     - name: Run tests
       run: pytest --strict-markers -W ignore::UserWarning tests
 
@@ -55,10 +53,10 @@ jobs:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
         with:
           token: ${{ secrets.PAT_TOKEN }}
-      - name: Set up Python 3.7
+      - name: Set up Python
         uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v3
         with:
-          python-version: 3.7
+          python-version: ${{ env.MIN_PYTHON_VERSION }}
       - name: bump version
         id: version
         env:
@@ -95,8 +93,6 @@ jobs:
     needs: bump-version
     runs-on: [self-hosted, public, linux, x64]
     environment: release
-    env:
-      PYTHON_VERSION: "3.7"
     steps:
       - name: Checkout checkov
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
@@ -105,14 +101,14 @@ jobs:
           repository: bridgecrewio/checkov
       - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: ${{ env.MIN_PYTHON_VERSION }}
       - name: Prepare PR
         run: |
           # install needed tools
           python -m pip install --no-cache-dir --upgrade pipenv "pipenv-setup[black]" "vistir<0.7.0"
 
           # update Pipfile
-          pipenv --python ${{ env.PYTHON_VERSION }}
+          pipenv --python ${{ env.MIN_PYTHON_VERSION }}
           pipenv install bc-detect-secrets==${{ needs.bump-version.outputs.version }}
           pipenv lock
 

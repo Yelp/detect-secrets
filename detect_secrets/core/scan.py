@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import subprocess
 from functools import lru_cache
@@ -8,6 +10,7 @@ from typing import Iterable
 from typing import List
 from typing import Set
 from typing import Tuple
+from typing import TYPE_CHECKING
 from typing import Union
 
 from ..custom_types import NamedIO
@@ -23,10 +26,12 @@ from ..util.code_snippet import get_code_snippet
 from ..util.inject import call_function_with_arguments
 from ..util.path import get_relative_path
 from .log import log
-from .plugins import Plugin
 from .potential_secret import PotentialSecret
 from detect_secrets.util.filetype import determine_file_type
 from detect_secrets.util.filetype import FileType
+
+if TYPE_CHECKING:
+    from detect_secrets.plugins.base import BasePlugin
 
 MIN_LINE_LENGTH = int(os.getenv('CHECKOV_MIN_LINE_LENGTH', '5'))
 
@@ -36,7 +41,7 @@ def read_raw_lines(file_name: str) -> List[str]:
     try:
         with open(file_name) as f:
             return f.readlines()
-    except IOError:
+    except OSError:
         log.debug(f"Can't open file {file_name}")
         return []
 
@@ -176,7 +181,7 @@ def scan_file(filename: str) -> Generator[PotentialSecret, None, None]:
 
             if has_secret:
                 break
-    except IOError:
+    except OSError:
         log.warning(f'Unable to open file: {filename}')
         return
 
@@ -222,7 +227,7 @@ def scan_for_allowlisted_secrets_in_file(filename: str) -> Generator[PotentialSe
             ]
             yield from _scan_for_allowlisted_secrets_in_lines(lines_list, filename)
             break
-    except IOError:
+    except OSError:
         log.warning(f'Unable to open file: {filename}')
         return
 
@@ -306,7 +311,7 @@ def _get_lines_from_diff(diff: str) -> \
     """
     # Local imports, so that we don't need to require unidiff for versions of
     # detect-secrets that don't use it.
-    from unidiff import PatchSet  # type:ignore[import]
+    from unidiff import PatchSet  # type:ignore[import-untyped]
 
     patch_set = PatchSet.from_string(diff)
     for patch_file in patch_set:
@@ -323,7 +328,7 @@ def _get_lines_from_diff(diff: str) -> \
                 )
                 for chunk in patch_file
                 # target_lines refers to incoming (new) changes
-                for line in [line for line in chunk]
+                for line in list(chunk)
                 if line.is_added or line.is_removed
             ],
         )
@@ -394,8 +399,8 @@ def _process_line_based_plugins(
                         # different lines as 1.
                         # Calculate actual line number in case of YAML multi-line string
                         actual_line_number = line_number
-                        for i, l in enumerate(raw_code_snippet_lines[actual_line_number - 1:]):
-                            if secret.secret_value in l:
+                        for i, cline in enumerate(raw_code_snippet_lines[actual_line_number - 1:]):
+                            if secret.secret_value in cline:
                                 actual_line_number += i
                                 break
                         secret.line_number = actual_line_number
@@ -403,7 +408,7 @@ def _process_line_based_plugins(
 
 
 def _scan_line(
-    plugin: Plugin,
+    plugin: BasePlugin,
     filename: str,
     line: str,
     line_number: int,

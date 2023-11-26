@@ -28,7 +28,7 @@ def get_baseline_from_file(filename: str) -> SecretsCollection:
     try:
         # TODO: Should we upgrade this?
         return baseline.load(baseline.load_from_file(filename), filename)
-    except (IOError, json.decoder.JSONDecodeError):
+    except (OSError, json.decoder.JSONDecodeError):
         io.print_error('Not a valid baseline file!')
         raise InvalidBaselineError
     except KeyError:
@@ -157,7 +157,7 @@ class LineGetter:
 
         with self.open_file() as f:
             lines = get_transformed_file(f, use_eager_transformers=self.use_eager_transformers)
-            self._lines = self.raw_lines if not lines else lines
+            self._lines = lines if lines else self.raw_lines
 
         return self._lines
 

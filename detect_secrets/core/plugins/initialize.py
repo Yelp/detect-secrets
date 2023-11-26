@@ -1,15 +1,19 @@
+from __future__ import annotations
+
 from typing import Any
+from typing import cast
 from typing import Dict
 from typing import Iterable
 from typing import List
-from typing import Type
+from typing import TYPE_CHECKING
 
-from ...plugins.base import BasePlugin
 from ...settings import get_settings
 from ..log import log
 from .util import get_mapping_from_secret_type_to_class
 from .util import get_plugins_from_file
-from .util import Plugin
+
+if TYPE_CHECKING:
+    from detect_secrets.plugins.base import BasePlugin
 
 
 def from_secret_type(secret_type: str) -> BasePlugin:
@@ -17,7 +21,7 @@ def from_secret_type(secret_type: str) -> BasePlugin:
     :raises: TypeError
     """
     try:
-        plugin_type = get_mapping_from_secret_type_to_class()[secret_type]
+        plugin_type: type[BasePlugin] = get_mapping_from_secret_type_to_class()[secret_type]
     except KeyError:
         raise TypeError
 
@@ -51,19 +55,20 @@ def from_plugin_classname(classname: str) -> BasePlugin:
         raise
 
 
-def from_file(filename: str) -> Iterable[Type[Plugin]]:
+def from_file(filename: str) -> Iterable[type[BasePlugin]]:
     """
     :raises: FileNotFoundError
     :raises: InvalidFile
     """
-    output: List[Type[Plugin]] = []
-    plugin_class: Type[Plugin]
+    output: List[type[BasePlugin]] = []
+    plugin_class: type[BasePlugin]
+    secret_type_classes = get_mapping_from_secret_type_to_class()
     for plugin_class in get_plugins_from_file(filename):
-        secret_type = plugin_class.secret_type  # type: ignore
-        if secret_type in get_mapping_from_secret_type_to_class():
+        secret_type = cast('str', plugin_class.secret_type)
+        if secret_type in secret_type_classes:
             log.info(f'Duplicate plugin detected: {plugin_class.__name__}. Skipping...')
 
-        get_mapping_from_secret_type_to_class()[secret_type] = plugin_class
+        secret_type_classes[secret_type] = plugin_class
         output.append(plugin_class)
 
     return output

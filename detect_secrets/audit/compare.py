@@ -77,10 +77,10 @@ def _compare_baselines(
         if `left_secret` is None, then it's a newly added secret;
         if `right_secret` is None, then it's a deleted secret
     """
-    class LeftSecret(Exception):
+    class LeftSecret(Exception):  # noqa: N818
         pass
 
-    class RightSecret(Exception):
+    class RightSecret(Exception):  # noqa: N818
         pass
 
     left_secrets = [secret for _, secret in old_baseline]
@@ -173,7 +173,7 @@ def _display_difference_to_user(
     new_baseline, new_config = new_data
 
     iterator = BidirectionalIterator(list(_compare_baselines(old_baseline, new_baseline)))
-    for filename, left_secret, right_secret in iterator:
+    for _, left_secret, right_secret in iterator:
         io.clear_screen()
 
         secret = left_secret if left_secret else right_secret

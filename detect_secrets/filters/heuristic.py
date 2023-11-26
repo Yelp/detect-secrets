@@ -42,11 +42,7 @@ def is_sequential_string(secret: str) -> bool:
     )
 
     uppercase = secret.upper()
-    for sequential_string in sequences:
-        if uppercase in sequential_string:
-            return True
-
-    return False
+    return any(uppercase in sequential_string for sequential_string in sequences)
 
 
 def is_potential_uuid(secret: str) -> bool:
@@ -98,50 +94,48 @@ def is_non_text_file(filename: str) -> bool:
 #       and look for "ASCII text", but that might be more expensive.
 #
 #       Definitely something to look into, if this list gets unruly long.
-IGNORED_FILE_EXTENSIONS = set(
-    (
-        '.7z',
-        '.bin',
-        '.bmp',
-        '.bz2',
-        '.class',
-        '.css',
-        '.dmg',
-        '.doc',
-        '.eot',
-        '.exe',
-        '.gif',
-        '.gz',
-        '.ico',
-        '.iml',
-        '.ipr',
-        '.iws',
-        '.jar',
-        '.jpg',
-        '.jpeg',
-        '.lock',
-        '.map',
-        '.mo',
-        '.pdf',
-        '.png',
-        '.prefs',
-        '.psd',
-        '.rar',
-        '.realm',
-        '.s7z',
-        '.sum',
-        '.svg',
-        '.tar',
-        '.tif',
-        '.tiff',
-        '.ttf',
-        '.webp',
-        '.woff',
-        '.xls',
-        '.xlsx',
-        '.zip',
-    ),
-)
+IGNORED_FILE_EXTENSIONS = {
+    '.7z',
+    '.bin',
+    '.bmp',
+    '.bz2',
+    '.class',
+    '.css',
+    '.dmg',
+    '.doc',
+    '.eot',
+    '.exe',
+    '.gif',
+    '.gz',
+    '.ico',
+    '.iml',
+    '.ipr',
+    '.iws',
+    '.jar',
+    '.jpg',
+    '.jpeg',
+    '.lock',
+    '.map',
+    '.mo',
+    '.pdf',
+    '.png',
+    '.prefs',
+    '.psd',
+    '.rar',
+    '.realm',
+    '.s7z',
+    '.sum',
+    '.svg',
+    '.tar',
+    '.tif',
+    '.tiff',
+    '.ttf',
+    '.webp',
+    '.woff',
+    '.xls',
+    '.xlsx',
+    '.zip',
+}
 
 
 def is_templated_secret(secret: str) -> bool:

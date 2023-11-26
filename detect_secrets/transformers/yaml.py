@@ -247,7 +247,7 @@ class YAMLFileParser:
         # KeyToken ('key:')
         is_inline_dictionary = (
             first
-            and self.loader.marks[-1].line == self.loader.peek_token().start_mark.line
+            and self.loader.marks[-1].line == self.loader.peek_token().start_mark.line  # type:ignore[no-untyped-call]
             or self._check_next_tokens_shim(FlowEntryToken, KeyToken)
         )
 
@@ -256,7 +256,10 @@ class YAMLFileParser:
         else:
             self.is_inline_flow_mapping_key = False
 
-        return cast(yaml.nodes.Node, yaml.parser.Parser.parse_flow_mapping_key(self.loader, first))
+        return cast(
+            'yaml.nodes.Node',
+            yaml.parser.Parser.parse_flow_mapping_key(self.loader, first),  # type:ignore[no-untyped-call]
+        )
 
     def _check_next_tokens_shim(
         self,

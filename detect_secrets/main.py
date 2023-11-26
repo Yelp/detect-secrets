@@ -146,9 +146,9 @@ def handle_audit_action(args: argparse.Namespace) -> None:
             # Starts interactive session.
             if args.diff:
                 # Show changes
-                audit.compare_baselines(args.filename[0], args.filename[1])
+                audit.compare.compare_baselines(args.filename[0], args.filename[1])
             else:
                 # Label secrets
-                audit.audit_baseline(args.filename[0])
+                audit.audit.audit_baseline(args.filename[0])
     except InvalidBaselineError:
         pass

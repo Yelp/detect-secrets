@@ -146,10 +146,7 @@ class SecretsCollection:
                 if not os.path.exists(filename)
             ]
 
-        if not filelist:
-            fileset = set()
-        else:
-            fileset = set(filelist)
+        fileset = set(filelist) if filelist else set()
 
         # Unfortunately, we can't merely do a set intersection since we want to update the line
         # numbers (if applicable). Therefore, this does it manually.
@@ -255,21 +252,21 @@ class SecretsCollection:
             if not strict:
                 continue
 
-            for secretA in self_mapping.values():
-                secretB = other_mapping[(secretA.secret_hash, secretA.type)]
+            for secret_a in self_mapping.values():
+                secret_b = other_mapping[(secret_a.secret_hash, secret_a.type)]
 
-                valuesA = vars(secretA)
-                valuesA.pop('secret_value')
-                valuesB = vars(secretB)
-                valuesB.pop('secret_value')
+                values_a = vars(secret_a)
+                values_a.pop('secret_value')
+                values_b = vars(secret_b)
+                values_b.pop('secret_value')
 
-                if valuesA['line_number'] == 0 or valuesB['line_number'] == 0:
+                if values_a['line_number'] == 0 or values_b['line_number'] == 0:
                     # If line numbers are not provided (for either one), then don't compare
                     # line numbers.
-                    valuesA.pop('line_number')
-                    valuesB.pop('line_number')
+                    values_a.pop('line_number')
+                    values_b.pop('line_number')
 
-                if valuesA != valuesB:
+                if values_a != values_b:
                     return False
 
         return True

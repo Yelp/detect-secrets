@@ -16,10 +16,7 @@ def call_function_with_arguments(
     :raises: TypeError
     """
     # First, we ensure that the function we're going to inject values into is self-aware.
-    if not isinstance(func, SelfAwareCallable):
-        function = make_function_self_aware(func)
-    else:
-        function = func
+    function = func if isinstance(func, SelfAwareCallable) else make_function_self_aware(func)
 
     # If `function` is derived from a method, we add the instance of the class by default.
     # However, if `function` is a method itself, it will already carry the reference of the

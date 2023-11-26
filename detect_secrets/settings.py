@@ -1,3 +1,4 @@
+import contextlib
 from contextlib import contextmanager
 from copy import deepcopy
 from functools import lru_cache
@@ -91,7 +92,7 @@ def cache_bust() -> None:
     get_plugins.cache_clear()
 
     get_filters.cache_clear()
-    for path, config in get_settings().filters.items():
+    for path in get_settings().filters:
         # Need to also clear the individual caches (e.g. cached regex patterns).
         parts = urlparse(path)
         if not parts.scheme:
@@ -176,10 +177,8 @@ class Settings:
 
     def disable_plugins(self, *plugin_names: str) -> 'Settings':
         for name in plugin_names:
-            try:
+            with contextlib.suppress(KeyError):
                 self.plugins.pop(name)
-            except KeyError:
-                pass
 
         get_plugins.cache_clear()
         return self
@@ -275,7 +274,7 @@ def get_filters() -> List:
     from .util.inject import get_injectable_variables
 
     output = []
-    for path, config in get_settings().filters.items():
+    for path in get_settings().filters:
         parts = urlparse(path)
         if not parts.scheme:
             module_path, function_name = path.rsplit('.', 1)

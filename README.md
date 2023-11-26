@@ -1,5 +1,6 @@
 [![Build Status](https://github.com/bridgecrewio/detect-secrets/actions/workflows/release.yml/badge.svg)](https://github.com/bridgecrewio/detect-secrets/actions/workflows/release.yml?query=branch%3Amaster++)
-[![PyPI version](https://badge.fury.io/py/bc-detect-secrets.svg)](https://badge.fury.io/py/bc-detect-secrets)
+[![PyPI](https://img.shields.io/pypi/v/bc-detect-secrets)](https://pypi.org/project/bc-detect-secrets/)
+[![Python Version](https://img.shields.io/pypi/pyversions/bc-detect-secrets)](#)
 
 # detect-secrets
 

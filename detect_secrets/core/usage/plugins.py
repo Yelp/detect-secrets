@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import argparse
 import os
 from typing import cast
@@ -87,7 +89,7 @@ def _add_custom_limits(parser: argparse._ArgumentGroup) -> None:
 
 def _add_disable_flag(parser: argparse._ArgumentGroup) -> None:
     def valid_plugin_name(string: str) -> str:
-        valid_plugin_names = {
+        valid_plugin_names: set[str] = {
             item.__name__
             for item in get_mapping_from_secret_type_to_class().values()
         }
@@ -109,7 +111,7 @@ def _add_disable_flag(parser: argparse._ArgumentGroup) -> None:
 def parse_args(args: argparse.Namespace) -> None:
     if args.disable_plugin:
         # Flatten entry for easier parsing.
-        args.disable_plugin = set([entry for item in args.disable_plugin for entry in item])
+        args.disable_plugin = {entry for item in args.disable_plugin for entry in item}
         get_settings().disable_plugins(*args.disable_plugin)
 
     # By the time the code reaches here, the baseline logic will have populated an initial

@@ -52,7 +52,7 @@ class BasePlugin(ABC):
             line_number: int = 0,
             context: CodeSnippet | None = None,
             raw_context: CodeSnippet | None = None,
-            **kwargs: Any
+            **kwargs: Any,
     ) -> Set[PotentialSecret]:
         """This examines a line and finds all possible secret values in it."""
         output = set()
@@ -71,7 +71,7 @@ class BasePlugin(ABC):
                         context=context,
                         raw_context=raw_context,
                     )
-                    is_verified = True if verified_result == VerifiedResult.VERIFIED_TRUE else False
+                    is_verified = bool(verified_result == VerifiedResult.VERIFIED_TRUE)
                 except requests.exceptions.RequestException:
                     is_verified = False
 
@@ -173,7 +173,7 @@ class RegexBasedDetector(BasePlugin):
         for regex in self.denylist:
             for match in regex.findall(string):
                 if isinstance(match, tuple):
-                    for submatch in filter(bool, match):
+                    for submatch in filter(bool, match):  # noqa: UP028
                         # It might make sense to paste break after yielding
                         yield submatch
                 else:

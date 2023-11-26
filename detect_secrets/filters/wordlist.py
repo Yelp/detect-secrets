@@ -22,7 +22,7 @@ def is_feature_enabled() -> bool:
         return False
 
 
-def initialize(wordlist_filename: str, min_length: int = 3, file_hash: str = '') -> Automaton:
+def initialize(wordlist_filename: str, min_length: int = 3, file_hash: str = '') -> Automaton:  #noqa: ARG001
     """
     :param min_length: if words are too small, the automaton will flag too many
         words. As a result, our recall will decrease without a precision boost.
@@ -68,5 +68,5 @@ def should_exclude_secret(secret: str) -> bool:
 
 @lru_cache(maxsize=1)
 def get_automaton() -> Automaton:
-    import ahocorasick  # type:ignore[import]
+    import ahocorasick  # type:ignore[import-not-found]
     return ahocorasick.Automaton()

@@ -18,5 +18,5 @@ def potential_secret_factory(
         filename=filename,
         secret=secret,
         line_number=line_number,
-        **kwargs
+        **kwargs,
     )

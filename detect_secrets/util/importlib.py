@@ -94,12 +94,12 @@ def import_file_as_module(filename: str, name: Optional[str] = None) -> ModuleTy
 
     # Source: https://stackoverflow.com/a/67692/13340678
     spec = importlib.util.spec_from_file_location(name, filename)
-    if not spec:
+    if not spec or not spec.loader:
         raise InvalidFile
 
     module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)                 # type: ignore
-    module.__path__ = os.path.abspath(filename)     # type: ignore
+    spec.loader.exec_module(module)
+    module.__path__ = os.path.abspath(filename)  # type:ignore[assignment]
 
     return module
 

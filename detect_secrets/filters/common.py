@@ -1,15 +1,20 @@
+from __future__ import annotations
+
 import os
 from functools import lru_cache
 from typing import cast
+from typing import TYPE_CHECKING
 
 import requests
 
 from ..constants import VerifiedResult
-from ..core.plugins import Plugin
 from ..settings import get_settings
 from ..util.code_snippet import CodeSnippet
 from ..util.inject import call_function_with_arguments
 from .util import get_caller_path
+
+if TYPE_CHECKING:
+    from detect_secrets.plugins.base import BasePlugin
 
 
 def is_invalid_file(filename: str) -> bool:
@@ -28,7 +33,7 @@ def _get_baseline_filename() -> str:
 
 def is_ignored_due_to_verification_policies(
     secret: str,
-    plugin: Plugin,
+    plugin: BasePlugin,
     context: CodeSnippet,
 ) -> bool:
     """

@@ -1,16 +1,15 @@
-coverage==7.2.7
-flake8==5.0.4  # 6.0.0+ needs Python 3.8
+coverage==7.3.2
 gibberish-detector==0.1.1
 monotonic==1.6
-mypy==1.4.1
-pre-commit==2.21.0
+mypy==1.7.1
+pre-commit==3.5.0
 pyahocorasick==2.0.0
-pytest==7.4.0
+pytest==7.4.3
 pyyaml==6.0.1
 requests==2.31.0
-responses==0.23.3
-tox==3.28.0  # can't be updated to 4+ due to flake8@5.0.4 needing importlib-metadata<4.3 and tox needs importlib-metadata>=5.1
-types-pyyaml==6.0.12.11
-types-requests==2.31.0.2
-typing-extensions==4.7.1
+responses==0.24.1
+tox==4.11.3
+types-pyyaml==6.0.12.12
+types-requests==2.31.0.10
+typing-extensions==4.8.0
 unidiff==0.7.5

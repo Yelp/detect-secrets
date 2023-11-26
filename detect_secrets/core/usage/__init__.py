@@ -158,10 +158,9 @@ class ParserBuilder:
         try:
             for processor in self._post_processors:
                 processor(args)
-        except argparse.ArgumentTypeError as e:
+        except argparse.ArgumentTypeError:
             # TODO: Better help text?
             self._parser.print_usage(sys.stderr)
-            print(f'error: {str(e)}', file=sys.stderr)
             sys.exit(1)
 
         args.custom_root = args.custom_root[0]

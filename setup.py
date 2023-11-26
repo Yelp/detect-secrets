@@ -19,7 +19,7 @@ with open('README.md', encoding='utf-8') as f:
 
 setup(
     name='bc-detect-secrets',
-    python_requires='>=3.7',
+    python_requires='>=3.8',
     packages=find_packages(exclude=(['test*', 'tmp*'])),
     version=VERSION,
     description='Tool for detecting secrets in the codebase',
@@ -57,7 +57,6 @@ setup(
     },
     classifiers=[
         'Programming Language :: Python :: 3 :: Only',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',

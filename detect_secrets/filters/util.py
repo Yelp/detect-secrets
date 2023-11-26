@@ -40,7 +40,7 @@ def compute_file_hash(filename: str, buffer_size: int = 64 * 1024) -> str:
     This is akin to:
         $ sha1sum <filename>
     """
-    sha1 = hashlib.sha1()
+    sha1 = hashlib.sha1()  # noqa: S324
     with open(filename, 'rb') as f:
         data = f.read(buffer_size)
         while data:

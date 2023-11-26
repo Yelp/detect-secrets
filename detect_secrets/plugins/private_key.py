@@ -75,14 +75,14 @@ class PrivateKeyDetector(RegexBasedDetector):
             line_number: int = 0,
             context: Optional[CodeSnippet] = None,
             raw_context: Optional[CodeSnippet] = None,
-            **kwargs: Any
+            **kwargs: Any,
     ) -> Set[PotentialSecret]:
         output: Set[PotentialSecret] = set()
 
         output.update(
             super().analyze_line(
                 filename=filename, line=line, line_number=line_number,
-                context=context, raw_context=raw_context, **kwargs
+                context=context, raw_context=raw_context, **kwargs,
             ),
         )
 
@@ -94,7 +94,7 @@ class PrivateKeyDetector(RegexBasedDetector):
                 output.update(
                     super().analyze_line(
                         filename=filename, line=file_content, line_number=1,
-                        context=context, raw_context=raw_context, **kwargs
+                        context=context, raw_context=raw_context, **kwargs,
                     ),
                 )
         return output
@@ -112,7 +112,7 @@ class PrivateKeyDetector(RegexBasedDetector):
 
     def read_file(self, file_path: str) -> str:
         try:
-            with open(file_path, 'r') as f:
+            with open(file_path) as f:
                 file_content = f.read()
                 return file_content
         except Exception:

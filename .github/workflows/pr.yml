@@ -2,7 +2,11 @@ name: pr
 
 on: pull_request
 
-permissions: read-all
+permissions:
+  contents: read
+
+env:
+  MIN_PYTHON_VERSION: "3.8"
 
 jobs:
   lint:
@@ -16,7 +20,7 @@ jobs:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
       - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
         with:
-          python-version: 3.7
+          python-version: ${{ env.MIN_PYTHON_VERSION }}
       - name: Install dependencies
         run: |
           pip install --upgrade pip
@@ -30,7 +34,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.12']
+        python: ['3.8', '3.9', '3.10', '3.11', '3.12']
     steps:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
     - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v3
@@ -41,11 +45,5 @@ jobs:
       run: |
         pip install --upgrade pip
         pip install -r requirements-dev.txt
-    - name: Sets env var for release
-      if: ${{ matrix.os == 'macos-latest' && matrix.python == '3.7' }}
-      run: |
-        # NO_PROXY is needed to call requests API within a forked process
-        # when using macOS and python version 3.7
-        echo "NO_PROXY='*'" >> "$GITHUB_ENV"
     - name: Run tests
       run: pytest --strict-markers -W ignore::UserWarning tests

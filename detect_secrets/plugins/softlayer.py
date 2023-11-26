@@ -30,7 +30,7 @@ class SoftlayerDetector(RegexBasedDetector):
         ),
     ]
 
-    def verify(       # type: ignore[override]  # noqa: F821
+    def verify(  # type: ignore[override]
         self,
         secret: str,
         context: CodeSnippet,

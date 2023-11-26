@@ -23,7 +23,7 @@ def clear_screen() -> None:     # pragma: no cover
     command = 'clear'
     if platform.system() == 'Windows':
         command = 'cls'
-    os.system(command)
+    os.system(command)  # noqa: S605
 
 
 def print_context(context: SecretContext) -> None:
@@ -96,7 +96,7 @@ def get_user_decision(
     user_input = None
     while user_input not in prompter.valid_input:
         if user_input:
-            print('Invalid input.')     # type: ignore # Statement unreachable? Come on mypy...
+            print('Invalid input.')
 
         user_input = input(str(prompter))
         if user_input:

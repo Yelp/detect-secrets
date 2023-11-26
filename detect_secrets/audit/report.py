@@ -19,7 +19,7 @@ class SecretClassToPrint(Enum):
     FALSE_POSITIVE = 2
 
     @staticmethod
-    def from_class(secret_class: VerifiedResult) -> 'SecretClassToPrint':
+    def from_class(secret_class: VerifiedResult) -> SecretClassToPrint:
         if secret_class in [VerifiedResult.UNVERIFIED, VerifiedResult.VERIFIED_TRUE]:
             return SecretClassToPrint.REAL_SECRET
         else:
@@ -29,7 +29,7 @@ class SecretClassToPrint(Enum):
 def generate_report(
     baseline_file: str,
     class_to_print: SecretClassToPrint | None = None,
-    line_getter_factory: Callable[[str], 'LineGetter'] = open_file,
+    line_getter_factory: Callable[[str], LineGetter] = open_file,
 ) -> Dict[str, List[Dict[str, Any]]]:
 
     secrets: Dict[Tuple[str, str], Any] = {}

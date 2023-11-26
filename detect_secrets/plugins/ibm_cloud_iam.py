@@ -49,22 +49,22 @@ class IbmCloudIamDetector(RegexBasedDetector):
         line_number: int = 0,
         context: CodeSnippet | None = None,
         raw_context: CodeSnippet | None = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> Set[PotentialSecret]:
         potentials = super().analyze_line(
-            filename, line, line_number, context, raw_context, **kwargs
+            filename, line, line_number, context, raw_context, **kwargs,
         )
         secrets = set()
         for p in potentials:
             if self.entropy_plugin.analyze_line(
-                    filename, f'"{p.secret_value}"', line_number, context, raw_context, **kwargs
+                    filename, f'"{p.secret_value}"', line_number, context, raw_context, **kwargs,
             ):
                 secrets.add(p)
         return secrets
 
 
 def verify_cloud_iam_api_key(apikey: Union[str, bytes]) -> requests.Response:  # pragma: no cover
-    if type(apikey) == bytes:
+    if isinstance(apikey, bytes):
         apikey = apikey.decode('UTF-8')
 
     headers = {

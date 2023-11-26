@@ -76,7 +76,7 @@ class PotentialSecret:
     @staticmethod
     def hash_secret(secret: str) -> str:
         """This offers a way to coherently test this class, without mocking self.secret_hash."""
-        return hashlib.sha1(secret.encode('utf-8')).hexdigest()
+        return hashlib.sha1(secret.encode('utf-8')).hexdigest()  # noqa: S324
 
     @classmethod
     def load_secret_from_dict(cls, data: Dict[str, Union[str, int, bool]]) -> 'PotentialSecret':
