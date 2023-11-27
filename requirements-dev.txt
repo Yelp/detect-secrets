@@ -2,7 +2,7 @@ attrs==21.4.0
 backports.entry-points-selectable==1.1.1
 certifi==2023.11.17
 cfgv==3.4.0
-charset-normalizer==2.0.7
+charset-normalizer==3.3.2
 coverage==7.3.2
 distlib==0.3.7
 filelock==3.13.1
