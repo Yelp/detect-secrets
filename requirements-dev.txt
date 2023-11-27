@@ -1,5 +1,5 @@
 attrs==21.4.0
-backports.entry-points-selectable==1.1.1
+backports.entry-points-selectable==1.2.0
 certifi==2023.11.17
 cfgv==3.4.0
 charset-normalizer==2.0.7
