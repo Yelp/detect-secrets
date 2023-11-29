@@ -10,7 +10,7 @@ flake8==6.1.0
 gibberish-detector==0.1.1
 identify==2.5.32
 idna==3.4
-iniconfig==1.1.1
+iniconfig==2.0.0
 mccabe==0.7.0
 monotonic==1.6
 mypy==0.971
