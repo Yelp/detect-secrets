@@ -26,7 +26,7 @@ pycodestyle==2.11.0
 pyflakes==3.1.0
 pyparsing==3.1.1
 pytest==7.4.3
-PyYAML==6.0
+PyYAML==6.0.1
 requests==2.31.0
 responses==0.24.1
 six==1.16.0
