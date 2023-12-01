@@ -71,6 +71,7 @@ def default_settings() -> Generator['Settings', None, None]:
             for plugin_type in get_mapping_from_secret_type_to_class().values()
         ],
     }) as settings:
+        get_mapping_from_secret_type_to_class.cache_clear()
         yield settings
 
 
