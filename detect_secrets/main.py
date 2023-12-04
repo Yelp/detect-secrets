@@ -18,9 +18,6 @@ def parse_args(argv, parserBuilder):
 
 
 def main(argv=None):
-
-    version_check()
-
     if len(sys.argv) == 1:  # pragma: no cover
         sys.argv.append('-h')
 
@@ -29,6 +26,9 @@ def main(argv=None):
 
     if args.verbose:  # pragma: no cover
         log.set_debug_level(3)
+
+    if not args.no_version_check:
+        version_check()
 
     if args.action == 'scan':
         automaton = None

@@ -42,6 +42,14 @@ def add_no_verify_flag(parser):
     )
 
 
+def add_no_version_check_flag(parser):
+    parser.add_argument(
+        '--no-version-check',
+        action='store_true',
+        help='Disables detect-secrets up-to-date version check.',
+    )
+
+
 def add_output_verified_false_flag(parser):
     parser.add_argument(
         '--output-verified-false',
@@ -75,7 +83,9 @@ class ParserBuilder(object):
         self.add_default_arguments()
 
     def add_default_arguments(self):
-        self._add_verbosity_argument()._add_version_argument()
+        self._add_no_version_check_flag()\
+            ._add_verbosity_argument()\
+            ._add_version_argument()
 
     def add_pre_commit_arguments(self):
         self._add_filenames_argument()\
@@ -158,6 +168,10 @@ class ParserBuilder(object):
 
     def _add_no_verify_flag(self):
         add_no_verify_flag(self.parser)
+        return self
+
+    def _add_no_version_check_flag(self):
+        add_no_version_check_flag(self.parser)
         return self
 
     def _add_output_verified_false_flag(self):
