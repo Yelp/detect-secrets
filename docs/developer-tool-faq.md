@@ -419,11 +419,11 @@ The `detect-secrets` tool can also be run as a docker container. It supports Win
 
 #### Prerequisite
 
-You need to have Python and [install the pre-commit framework](https://pre-commit.com/#install). The docker image of `detect-secrets` saves you the effort of installing the detect-secret pip package, which would require a heavy weight compilation environment. Besides that, please also make sure you have [docker installed](https://docs.docker.com/install/).
+You need to have Python and [install the pre-commit framework](https://pre-commit.com/#install). The docker image of `detect-secrets` saves you the effort of installing the detect-secret pip package, which would require a heavy weight compilation environment. Additionally, please also make sure you have a desktop container management application such as [Rancher Desktop](https://rancherdesktop.io) or [Podman Desktop](https://podman-desktop.io) installed. (NOTE: Docker Desktop is no longer approved to use on IBM devices.)
 
 1. python [installed](https://docs.python-guide.org/starting/installation/)
 1. pre-commit framework [installed](https://pre-commit.com/#install)
-1. docker [installed](https://docs.docker.com/install/)
+1. [Rancher Desktop](https://rancherdesktop.io) or [Podman Desktop](https://podman-desktop.io) installed
 
 #### Setup steps
 
