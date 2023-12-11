@@ -19,7 +19,7 @@ nodeenv==1.8.0
 packaging==23.2
 platformdirs==4.1.0
 pluggy==1.3.0
-pre-commit==3.5.0
+pre-commit==3.6.0
 py==1.11.0
 pyahocorasick==2.0.0
 pycodestyle==2.11.1
