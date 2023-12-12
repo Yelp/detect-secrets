@@ -4,7 +4,7 @@ certifi==2023.11.17
 cfgv==3.4.0
 charset-normalizer==3.3.2
 coverage==7.3.2
-distlib==0.3.7
+distlib==0.3.8
 filelock==3.13.1
 flake8==6.1.0
 gibberish-detector==0.1.1
