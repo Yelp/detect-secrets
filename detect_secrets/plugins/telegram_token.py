@@ -10,5 +10,5 @@ class TelegramTokenDetector(RegexBasedDetector):
     secret_type = 'Telegram Token'
 
     denylist = [
-        re.compile(r'^\d{8,10}:[a-zA-Z\d_\-]{35}$'),
+        re.compile(r'\d{8,15}:[a-zA-Z\d_\-]{35}'),
     ]
