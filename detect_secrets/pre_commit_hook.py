@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import argparse
 import json
 import os
@@ -18,6 +19,7 @@ from detect_secrets.util import git
 def main(argv: Optional[List[str]] = None) -> int:
     try:
         args = parse_args(argv)
+        print(args)
     except ValueError:
         return 1
 
@@ -26,7 +28,9 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     # Find all secrets in files to be committed
     secrets = SecretsCollection()
+    args.file
     for filename in args.filenames:
+        print(filename)
         secrets.scan_file(filename)
 
     new_secrets = secrets
