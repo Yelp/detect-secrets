@@ -164,7 +164,7 @@ def is_prefixed_with_dollar_sign(secret: str) -> bool:
     # false negatives than `is_templated_secret` (e.g. secrets that actually start with a $).
     # This is best used with files that actually use this as a means of referencing variables.
     # TODO: More intelligent filetype handling?
-    return secret[0] == '$'
+    return bool(secret) and secret[0] == '$'
 
 
 def is_indirect_reference(line: str) -> bool:
