@@ -16,6 +16,15 @@ class TestGetFilesToScan:
         assert list(scan.get_files_to_scan(non_tracked_file.name, should_scan_all_files=False))
 
     @staticmethod
+    def test_should_scan_tracked_files_when_in_subdirectory(non_tracked_file):
+        pwd = os.getcwd()
+        try:
+            os.chdir('test_data')
+            assert len(list(scan.get_files_to_scan('.', should_scan_all_files=False))) == 23
+        finally:
+            os.chdir(pwd)
+
+    @staticmethod
     def test_should_scan_tracked_files_in_directory(non_tracked_file):
         assert (
             os.path.relpath(non_tracked_file.name, '') not in set(
