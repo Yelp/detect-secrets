@@ -1,4 +1,4 @@
-import os
+import os.path
 import subprocess
 from typing import Any
 from typing import cast
@@ -20,7 +20,6 @@ from ..util import git
 from ..util.code_snippet import CodeSnippet
 from ..util.code_snippet import get_code_snippet
 from ..util.inject import call_function_with_arguments
-from ..util.path import get_relative_path
 from .log import log
 from .plugins import Plugin
 from .potential_secret import PotentialSecret
@@ -54,8 +53,7 @@ def get_files_to_scan(
 
     :param root: if not specified, will assume current repository as root.
     """
-    if root:
-        root = os.path.realpath(root)
+    root = os.path.realpath(root)
 
     # First, we determine the appropriate filtering mode to be used.
     # If this is True, then it will consider everything to be valid.
@@ -69,7 +67,14 @@ def get_files_to_scan(
 
         if not should_scan_all_files:
             try:
-                valid_paths = git.get_tracked_files(git.get_root_directory(root))
+                git_root = git.get_root_directory(root)
+                relative_root = os.path.relpath(root, git_root) + '/' if root != git_root else ''
+                tracked_paths = git.get_tracked_files(git_root)
+                valid_paths = set(
+                    os.path.relpath(os.path.join(git_root, path), root)
+                    for path in tracked_paths
+                    if path.startswith(relative_root)
+                )
             except subprocess.CalledProcessError:
                 log.warning('Did not detect git repository. Try scanning all files instead.')
                 valid_paths = False
@@ -84,17 +89,14 @@ def get_files_to_scan(
 
     for path in paths:
         iterator = (
-            cast(List[Tuple], [(root or os.getcwd(), None, [path])])
+            cast(List[Tuple], [(root, None, [path])])
             if os.path.isfile(path)
             else os.walk(path)
         )
 
         for path_root, _, filenames in iterator:
             for filename in filenames:
-                relative_path = get_relative_path(
-                    root=root or os.getcwd(),
-                    path=os.path.join(path_root, filename),
-                )
+                relative_path = os.path.relpath(os.path.join(path_root, filename), root)
                 if not relative_path:
                     # e.g. symbolic links may be pointing outside the root directory
                     continue

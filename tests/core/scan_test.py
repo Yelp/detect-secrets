@@ -1,4 +1,4 @@
-import os
+import os.path
 import textwrap
 from pathlib import Path
 
@@ -7,7 +7,6 @@ import pytest
 from detect_secrets.core import scan
 from detect_secrets.settings import transient_settings
 from detect_secrets.util import git
-from detect_secrets.util.path import get_relative_path_if_in_cwd
 from testing.mocks import mock_named_temporary_file
 
 
@@ -19,7 +18,7 @@ class TestGetFilesToScan:
     @staticmethod
     def test_should_scan_tracked_files_in_directory(non_tracked_file):
         assert (
-            get_relative_path_if_in_cwd(non_tracked_file.name) not in set(
+            os.path.relpath(non_tracked_file.name, '') not in set(
                 scan.get_files_to_scan(
                     os.path.dirname(non_tracked_file.name),
                     should_scan_all_files=False,
@@ -30,7 +29,7 @@ class TestGetFilesToScan:
     @staticmethod
     def test_should_scan_all_files_in_directory_if_flag_is_provided(non_tracked_file):
         assert (
-            get_relative_path_if_in_cwd(non_tracked_file.name) in set(
+            os.path.relpath(non_tracked_file.name, '') in set(
                 scan.get_files_to_scan(
                     os.path.dirname(non_tracked_file.name),
                     should_scan_all_files=True,
