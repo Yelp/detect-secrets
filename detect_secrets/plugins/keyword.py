@@ -97,7 +97,7 @@ QUOTE = r'[\'"`]'
 #   [^\v,\'"`]  ->  this section match with the last secret character that can be everything except
 #                   line breaks, comma, backticks or quotes. This allows to reduce the false
 #                   positives number and to prevent errors in the code snippet highlighting.
-SECRET = r'(?=[^\v\'\"]*)(?=\w+)[^\v\'\"]*[^\v,\'\"`]'
+SECRET = r'(?=[^\v\'\"]*)(?=[a-zA-Z0-9_!@#$%^&])[^\v\'\"]*[^\v,\'\"`]'
 SQUARE_BRACKETS = r'(\[[0-9]*\])'
 
 FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
