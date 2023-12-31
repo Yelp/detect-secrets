@@ -8,6 +8,7 @@ def potential_secret_factory(
     filename: str = 'filename',
     secret: str = 'secret',
     line_number: int = 1,
+    occurrences: int = 1,
     **kwargs: Any,
 ) -> PotentialSecret:
     """This is only marginally better than creating PotentialSecret objects directly,
@@ -18,5 +19,6 @@ def potential_secret_factory(
         filename=filename,
         secret=secret,
         line_number=line_number,
+        occurrences=occurrences,
         **kwargs
     )

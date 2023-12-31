@@ -129,6 +129,15 @@ class TestScanFile:
 
         assert bool(secrets)
 
+    @staticmethod
+    def test_duplicate_secrets_occurrences():
+        secrets = SecretsCollection()
+        secrets.scan_file('test_data/files/file_with_duplicate_secrets.py')
+
+        secret = next(iter(secrets['test_data/files/file_with_duplicate_secrets.py']))
+        assert len(secrets['test_data/files/file_with_duplicate_secrets.py']) == 1
+        assert secret.occurrences == 2
+
 
 class TestScanDiff:
     @staticmethod
@@ -335,11 +344,11 @@ class TestEqual:
     def test_strict_equality():
         secret = potential_secret_factory()
         secretsA = SecretsCollection()
-        secretsA[secret.filename].add(secret)
+        secretsA[secret.filename].append(secret)
 
         secret = potential_secret_factory(line_number=2)
         secretsB = SecretsCollection()
-        secretsB[secret.filename].add(secret)
+        secretsB[secret.filename].append(secret)
 
         assert secretsA == secretsB
         assert not secretsA.exactly_equals(secretsB)

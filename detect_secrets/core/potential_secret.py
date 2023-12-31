@@ -29,6 +29,7 @@ class PotentialSecret:
         line_number: int = 0,
         is_secret: Optional[bool] = None,
         is_verified: bool = False,
+        occurrences: int = 0,
     ) -> None:
         """
         :param type: human-readable secret type, defined by the plugin
@@ -46,6 +47,7 @@ class PotentialSecret:
         self.set_secret(secret)
         self.is_secret = is_secret
         self.is_verified = is_verified
+        self.occurrences = occurrences
 
         # If two PotentialSecrets have the same values for these fields,
         # they are considered equal. Note that line numbers aren't included
@@ -84,6 +86,7 @@ class PotentialSecret:
             'line_number',
             'is_secret',
             'is_verified',
+            'occurrences',
         }:
             if parameter in data:
                 kwargs[parameter] = data[parameter]
@@ -108,6 +111,9 @@ class PotentialSecret:
 
         if hasattr(self, 'is_secret') and self.is_secret is not None:
             attributes['is_secret'] = self.is_secret
+
+        if self.occurrences:
+            attributes['occurrences'] = self.occurrences
 
         return attributes
 

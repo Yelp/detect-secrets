@@ -62,7 +62,7 @@ def handle_scan_action(args: argparse.Namespace) -> None:
             root=args.custom_root,
         ):
             for secret in scan_for_allowlisted_secrets_in_file(filename):
-                secrets[secret.filename].add(secret)
+                secrets[secret.filename].append(secret)
 
         print(json.dumps(baseline.format_for_output(secrets), indent=2))
         return

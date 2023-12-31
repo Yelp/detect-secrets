@@ -119,10 +119,10 @@ def parse_ordering(printer) -> str:
 
 def test_file_no_longer_exists(printer, mock_user_decision):
     secretsA = SecretsCollection()
-    secretsA['fileB'].add(potential_secret_factory('a'))
+    secretsA['fileB'].append(potential_secret_factory('a'))
 
     secretsB = SecretsCollection()
-    secretsB['fileA'].add(potential_secret_factory('a'))
+    secretsB['fileA'].append(potential_secret_factory('a'))
 
     run_logic(secretsA, secretsB)
     assert not mock_user_decision.called
@@ -149,7 +149,7 @@ def run_logic(secretsA: SecretsCollection, secretsB: SecretsCollection):
 def get_secrets(*secrets) -> SecretsCollection:
     output = SecretsCollection()
     for secret in secrets:
-        output[secret.filename].add(secret)
+        output[secret.filename].append(secret)
 
     return output
 

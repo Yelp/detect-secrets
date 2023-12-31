@@ -1,6 +1,7 @@
 import io
 import json
 import sys
+import tempfile
 from contextlib import contextmanager
 from functools import partial
 from typing import List
@@ -211,6 +212,42 @@ class TestLineNumberChanges:
         secrets.scan_file(self.FILENAME)
         for _, secret in secrets:
             secret.line_number += 1
+
+        yield secrets
+
+
+class TestOccurrencesChanges:
+    FILENAME = 'test_data/files/file_with_secrets.py'
+
+    def test_modifies_baseline(self, modified_baseline):
+        with tempfile.NamedTemporaryFile() as f:
+            baseline.save_to_file(modified_baseline, f.name)
+
+            assert_commit_blocked_with_diff_exit_code([
+                self.FILENAME,
+                '--baseline',
+                f.name,
+            ])
+
+    def test_does_not_modify_slim_baseline(self, modified_baseline):
+        with tempfile.NamedTemporaryFile() as f:
+            baseline.save_to_file(
+                baseline.format_for_output(modified_baseline, is_slim_mode=True),
+                f.name,
+            )
+
+            assert_commit_succeeds([
+                self.FILENAME,
+                '--baseline',
+                f.name,
+            ])
+
+    @pytest.fixture
+    def modified_baseline(self):
+        secrets = SecretsCollection()
+        secrets.scan_file(self.FILENAME)
+        for _, secret in secrets:
+            secret.occurrences += 1
 
         yield secrets
 

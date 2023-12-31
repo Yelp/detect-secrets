@@ -85,6 +85,7 @@ def format_for_output(secrets: SecretsCollection, is_slim_mode: bool = False) ->
         ).items():
             for secret_dict in secret_list:
                 secret_dict.pop('line_number')
+                secret_dict.pop('occurrences')
 
     return output
 

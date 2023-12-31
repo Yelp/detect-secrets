@@ -33,7 +33,7 @@ def test_nothing_to_audit(printer):
 
 def test_file_no_longer_exists():
     secrets = SecretsCollection()
-    secrets['non-existent'].add(potential_secret_factory())
+    secrets['non-existent'].append(potential_secret_factory())
 
     run_logic(secrets)
 
