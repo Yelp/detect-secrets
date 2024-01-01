@@ -35,7 +35,7 @@ tox==4.11.4
 tox-pip-extensions==1.6.0
 typed-ast==1.5.5
 types-PyYAML==6.0.12.12
-types-requests==2.31.0.10
+types-requests==2.31.0.20231231
 typing-extensions==4.9.0
 unidiff==0.7.5
 urllib3==2.1.0
