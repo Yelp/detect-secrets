@@ -98,6 +98,7 @@ BasicAuthDetector
 CloudantDetector
 DiscordBotTokenDetector
 GitHubTokenDetector
+GitLabTokenDetector
 Base64HighEntropyString
 HexHighEntropyString
 IbmCloudIamDetector
