@@ -27,6 +27,9 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 <!--
 ### Unreleased
+
+- Added `AzureKeyDetector` plugin (updated from `AzureStorageKeyDetector`) ([#xxx], [@satonaoki])
+
 -->
 
 ### v1.4.0
