@@ -12,7 +12,7 @@ from detect_secrets.audit import io
                 'allow_backstep': True,
             },
             (
-                'Is this a secret that should be committed to this repository? '
+                'Should this string be committed to the repository? '
                 '(y)es, (n)o, (s)kip, (b)ack, (q)uit: '
             ),
         ),
