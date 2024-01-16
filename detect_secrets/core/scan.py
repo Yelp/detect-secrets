@@ -138,8 +138,12 @@ def scan_line(line: str) -> Generator[PotentialSecret, None, None]:
 
 
 def scan_file(filename: str) -> Generator[PotentialSecret, None, None]:
-    if not get_plugins():   # pragma: no cover
-        log.error('No plugins to scan with!')
+    try:
+        if not get_plugins():   # pragma: no cover
+            log.error('No plugins to scan with!')
+            return
+    except FileNotFoundError:
+        log.error('Unable to load plugins!')
         return
 
     if _is_filtered_out(required_filter_parameters=['filename'], filename=filename):
