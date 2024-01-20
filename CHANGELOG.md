@@ -27,6 +27,10 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 
 <!--
 ### Unreleased
+##### May 16th, 2023
+#### :tada: New Features
+- Added a detector for EmailAddress ([#694])
+[#694]: https://github.com/Yelp/detect-secrets/pull/694
 -->
 
 ### v1.4.0
