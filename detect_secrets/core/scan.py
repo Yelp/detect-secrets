@@ -54,6 +54,7 @@ def get_files_to_scan(
     :param root: if not specified, will assume current repository as root.
     """
     root = os.path.realpath(root)
+    paths = tuple(map(os.path.realpath, paths))
 
     # First, we determine the appropriate filtering mode to be used.
     # If this is True, then it will consider everything to be valid.
