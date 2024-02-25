@@ -1,3 +1,4 @@
+from pathlib import Path
 from unittest import mock
 
 import pytest
@@ -43,7 +44,8 @@ class TestScanFile:
         ):
             SecretsCollection().scan_file('test_data/config.env')
 
-        assert 'Unable to open file: test_data/config.env' in mock_log_warning.warning_messages
+        file_warning = str(Path('test_data/config.env'))
+        assert 'Unable to open file: %s' % file_warning in mock_log_warning.warning_messages
 
     @staticmethod
     def test_line_based_success():
@@ -64,9 +66,9 @@ class TestScanFile:
         secrets = SecretsCollection()
         secrets.scan_file('test_data/each_secret.py')
 
-        secret = next(iter(secrets['test_data/each_secret.py']))
+        secret = next(iter(secrets[str(Path('test_data/each_secret.py'))]))
         assert secret.secret_value.startswith('c2VjcmV0IG1lc')
-        assert len(secrets['test_data/each_secret.py']) == 1
+        assert len(secrets[str(Path('test_data/each_secret.py'))]) == 1
 
     @staticmethod
     def test_file_based_success_config():
@@ -80,11 +82,11 @@ class TestScanFile:
         secrets.scan_file('test_data/config.ini')
 
         assert [str(secret).splitlines()[1] for _, secret in secrets] == [
-            'Location:    test_data/config.ini:2',
-            'Location:    test_data/config.ini:10',
-            'Location:    test_data/config.ini:21',
-            'Location:    test_data/config.ini:22',
-            'Location:    test_data/config.ini:32',
+            'Location:    %s:2' % str(Path('test_data/config.ini')),
+            'Location:    %s:10' % str(Path('test_data/config.ini')),
+            'Location:    %s:21' % str(Path('test_data/config.ini')),
+            'Location:    %s:22' % str(Path('test_data/config.ini')),
+            'Location:    %s:32' % str(Path('test_data/config.ini')),
         ]
 
     @staticmethod
@@ -99,9 +101,9 @@ class TestScanFile:
         secrets.scan_file('test_data/config.yaml')
 
         assert [str(secret).splitlines()[1] for _, secret in secrets] == [
-            'Location:    test_data/config.yaml:3',
-            'Location:    test_data/config.yaml:5',
-            'Location:    test_data/config.yaml:13',
+            'Location:    %s:3' % str(Path('test_data/config.yaml')),
+            'Location:    %s:5' % str(Path('test_data/config.yaml')),
+            'Location:    %s:13' % str(Path('test_data/config.yaml')),
         ]
 
     @staticmethod
@@ -217,12 +219,12 @@ class TestTrim:
         secrets.scan_file('test_data/each_secret.py')
 
         results = SecretsCollection.load_from_baseline({'results': secrets.json()})
-        results.data['test_data/each_secret.py'].pop()
+        results.data[str(Path('test_data/each_secret.py'))].pop()
 
-        original_size = len(secrets['test_data/each_secret.py'])
+        original_size = len(secrets[str(Path('test_data/each_secret.py'))])
         secrets.trim(results)
 
-        assert len(secrets['test_data/each_secret.py']) < original_size
+        assert len(secrets[str(Path('test_data/each_secret.py'))]) < original_size
 
     @staticmethod
     def test_deleted_secret_file():
@@ -232,7 +234,7 @@ class TestTrim:
         secrets.trim(SecretsCollection())
         assert secrets
 
-        secrets.trim(SecretsCollection(), filelist=['test_data/each_secret.py'])
+        secrets.trim(SecretsCollection(), filelist=[str(Path('test_data/each_secret.py'))])
         assert not secrets
 
     @staticmethod
@@ -288,7 +290,7 @@ class TestTrim:
         secrets.scan_file('test_data/each_secret.py')
         assert bool(secrets)
 
-        secrets.data['does-not-exist'] = secrets.data.pop('test_data/each_secret.py')
+        secrets.data['does-not-exist'] = secrets.data.pop(str(Path('test_data/each_secret.py')))
         secrets.trim()
 
         assert not bool(secrets)
@@ -316,7 +318,7 @@ def test_bool():
     secrets.scan_file('test_data/each_secret.py')
     assert secrets
 
-    secrets['test_data/each_secret.py'].clear()
+    secrets[str(Path('test_data/each_secret.py'))].clear()
     assert not secrets
 
 
@@ -373,8 +375,8 @@ class TestSubtraction:
         assert secrets != baseline
 
         result = secrets - baseline
-        assert len(result['test_data/each_secret.py']) == 3
-        assert len(secrets['test_data/each_secret.py']) == 5
+        assert len(result[str(Path('test_data/each_secret.py'))]) == 3
+        assert len(secrets[str(Path('test_data/each_secret.py'))]) == 5
 
     @staticmethod
     def test_no_overlapping_files(configure_plugins):
@@ -384,5 +386,5 @@ class TestSubtraction:
             secrets_a.scan_file('test_data/each_secret.py')
             secrets_b.scan_file('test_data/config.env')
 
-        assert (secrets_a - secrets_b).files == {'test_data/each_secret.py'}
-        assert (secrets_b - secrets_a).files == {'test_data/config.env'}
+        assert (secrets_a - secrets_b).files == {str(Path('test_data/each_secret.py'))}
+        assert (secrets_b - secrets_a).files == {str(Path('test_data/config.env'))}

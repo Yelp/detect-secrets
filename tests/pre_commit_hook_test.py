@@ -3,6 +3,7 @@ import json
 import sys
 from contextlib import contextmanager
 from functools import partial
+from pathlib import Path
 from typing import List
 from unittest import mock
 
@@ -68,7 +69,7 @@ def test_baseline_filters_out_known_secrets():
             ])
 
         # Remove one arbitrary secret, so that it won't be the full set.
-        secrets.data['test_data/each_secret.py'].pop()
+        secrets.data[str(Path('test_data/each_secret.py'))].pop()
 
         with mock_named_temporary_file() as f:
             baseline.save_to_file(secrets, f.name)
@@ -135,7 +136,7 @@ class TestModifiesBaselineFromVersionChange:
 
     def test_maintains_labelled_data(self):
         def label_secret(secrets):
-            list(secrets[self.FILENAME])[0].is_secret = True
+            list(secrets[str(Path(self.FILENAME))])[0].is_secret = True
             return baseline.format_for_output(secrets)
 
         with self.get_baseline_file(formatter=label_secret) as f:
@@ -148,7 +149,7 @@ class TestModifiesBaselineFromVersionChange:
             f.seek(0)
             data = json.loads(f.read())
 
-            assert data['results'][self.FILENAME][0]['is_secret']
+            assert data['results'][str(Path(self.FILENAME))][0]['is_secret']
 
     def test_maintains_slim_mode(self):
         with self.get_baseline_file(

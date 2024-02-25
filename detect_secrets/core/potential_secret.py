@@ -6,6 +6,7 @@ from typing import Union
 
 from ..util.color import AnsiColor
 from ..util.color import colorize
+from ..util.path import convert_local_os_path
 
 
 class PotentialSecret:
@@ -75,7 +76,7 @@ class PotentialSecret:
         """Custom JSON decoder"""
         kwargs: Dict[str, Any] = {
             'type': str(data['type']),
-            'filename': str(data['filename']),
+            'filename': convert_local_os_path(str(data['filename'])),
             'secret': 'will be replaced',
         }
 
