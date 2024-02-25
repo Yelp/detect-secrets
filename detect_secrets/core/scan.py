@@ -101,7 +101,7 @@ def get_files_to_scan(
 
                 if (
                     valid_paths is True
-                    or relative_path in cast(Set[str], valid_paths)
+                    or relative_path in valid_paths
                 ):
                     yield relative_path
 

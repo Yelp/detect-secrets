@@ -114,11 +114,11 @@ def test_console_output_json_formatting():
 
     # Assert formatting
     data = json.loads(capturedOutput.getvalue())
-    assert(data['version'])
-    assert(data['plugins_used'])
-    assert(data['filters_used'])
-    assert(data['results'])
-    assert(data['generated_at'])
+    assert (data['version'])
+    assert (data['plugins_used'])
+    assert (data['filters_used'])
+    assert (data['results'])
+    assert (data['generated_at'])
 
 
 class TestModifiesBaselineFromVersionChange:

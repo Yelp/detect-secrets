@@ -19,6 +19,7 @@ from ..plugins.base import BasePlugin
 from ..transformers import get_transformed_file
 from ..types import NamedIO
 from ..util.inject import call_function_with_arguments
+from detect_secrets.util.code_snippet import get_code_snippet
 
 
 def get_baseline_from_file(filename: str) -> SecretsCollection:
@@ -91,6 +92,7 @@ def get_raw_secrets_from_file(
             line_numbers = list(range(len(lines_to_scan)))
 
         for line_number, line in zip(line_numbers, lines_to_scan):
+            context = get_code_snippet(lines=line_getter.lines, line_number=line_number + 1)
             identified_secrets = call_function_with_arguments(
                 plugin.analyze_line,
                 filename=secret.filename,
@@ -100,6 +102,7 @@ def get_raw_secrets_from_file(
                 # We enable eager search, because we *know* there's a secret here -- the baseline
                 # flagged it after all.
                 enable_eager_search=bool(secret.line_number),
+                context=context,
             )
 
             for identified_secret in (identified_secrets or []):

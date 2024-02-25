@@ -70,10 +70,10 @@ sys     0m2.486s
 
 ### Running the Entire Test Suite
 
-You can run the test suite in the interpreter of your choice (in this example, `py36`) by doing:
+You can run the test suite in the interpreter of your choice (in this example, `py37`) by doing:
 
 ```bash
-tox -e py36
+tox -e py37
 ```
 
 This will also run the code through our series of coverage tests, `mypy` rules and other linting

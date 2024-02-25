@@ -2,7 +2,11 @@ import os
 import re
 import string
 from functools import lru_cache
+from typing import Optional
 from typing import Pattern
+
+from detect_secrets.plugins.base import BasePlugin
+from detect_secrets.plugins.base import RegexBasedDetector
 
 
 def is_sequential_string(secret: str) -> bool:
@@ -57,13 +61,14 @@ def _get_uuid_regex() -> Pattern:
     )
 
 
-def is_likely_id_string(secret: str, line: str) -> bool:
+def is_likely_id_string(secret: str, line: str, plugin: Optional[BasePlugin] = None) -> bool:
     try:
         index = line.index(secret)
     except ValueError:
         return False
 
-    return bool(_get_id_detector_regex().search(line, pos=0, endpos=index))
+    return (not plugin or not isinstance(plugin, RegexBasedDetector)) \
+        and bool(_get_id_detector_regex().search(line, pos=0, endpos=index))
 
 
 @lru_cache(maxsize=1)
@@ -159,7 +164,7 @@ def is_prefixed_with_dollar_sign(secret: str) -> bool:
     # false negatives than `is_templated_secret` (e.g. secrets that actually start with a $).
     # This is best used with files that actually use this as a means of referencing variables.
     # TODO: More intelligent filetype handling?
-    return secret[0] == '$'
+    return bool(secret) and secret[0] == '$'
 
 
 def is_indirect_reference(line: str) -> bool:
@@ -208,6 +213,7 @@ def is_lock_file(filename: str) -> bool:
         'Pipfile.lock',
         'poetry.lock',
         'Cargo.lock',
+        'packages.lock.json',
     }
 
 

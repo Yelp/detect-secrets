@@ -4,6 +4,7 @@ import pytest
 
 from detect_secrets import filters
 from detect_secrets.core.scan import scan_line
+from detect_secrets.plugins.aws import AWSKeyDetector
 from detect_secrets.settings import transient_settings
 
 
@@ -77,23 +78,26 @@ class TestIsLikelyIdString:
         assert filters.heuristic.is_likely_id_string(secret, line)
 
     @pytest.mark.parametrize(
-        'secret, line',
+        'secret, line, plugin',
         [
             # the word hidden has the word id in it, but lets
             # not mark that as an id string
-            ('RANDOM_STRING', 'hidden_secret: RANDOM_STRING'),
-            ('RANDOM_STRING', 'hidden_secret=RANDOM_STRING'),
-            ('RANDOM_STRING', 'hidden_secret = RANDOM_STRING'),
+            ('RANDOM_STRING', 'hidden_secret: RANDOM_STRING', None),
+            ('RANDOM_STRING', 'hidden_secret=RANDOM_STRING', None),
+            ('RANDOM_STRING', 'hidden_secret = RANDOM_STRING', None),
 
             # fail silently if the secret isn't even on the line
-            ('SOME_RANDOM_STRING', 'id: SOME_OTHER_RANDOM_STRING'),
+            ('SOME_RANDOM_STRING', 'id: SOME_OTHER_RANDOM_STRING', None),
 
             # fail although the word david ends in id
-            ('RANDOM_STRING', 'postgres://david:RANDOM_STRING'),
+            ('RANDOM_STRING', 'postgres://david:RANDOM_STRING', None),
+
+            # fail since this is an aws access key id, a real secret
+            ('AKIA4NACSIJMDDNSEDTE', 'aws_access_key_id=AKIA4NACSIJMDDNSEDTE', AWSKeyDetector()),
         ],
     )
-    def test_failure(self, secret, line):
-        assert not filters.heuristic.is_likely_id_string(secret, line)
+    def test_failure(self, secret, line, plugin):
+        assert not filters.heuristic.is_likely_id_string(secret, line, plugin)
 
 
 @pytest.mark.parametrize(
@@ -117,9 +121,16 @@ def test_is_templated_secret(line, result):
         assert bool(list(scan_line(line))) is result
 
 
-def test_is_prefixed_with_dollar_sign():
-    assert filters.heuristic.is_prefixed_with_dollar_sign('$secret')
-    assert not filters.heuristic.is_prefixed_with_dollar_sign('secret')
+@pytest.mark.parametrize(
+    'secret, result',
+    (
+        ('$secret', True),
+        ('secret', False),
+        ('', False),
+    ),
+)
+def test_is_prefixed_with_dollar_sign(secret, result):
+    assert filters.heuristic.is_prefixed_with_dollar_sign(secret) == result
 
 
 @pytest.mark.parametrize(
@@ -135,8 +146,9 @@ def test_is_indirect_reference(line, result):
 
 
 def test_is_lock_file():
-    # Basic test
+    # Basic tests
     assert filters.heuristic.is_lock_file('composer.lock')
+    assert filters.heuristic.is_lock_file('packages.lock.json')
 
     # file path
     assert filters.heuristic.is_lock_file('path/yarn.lock')
