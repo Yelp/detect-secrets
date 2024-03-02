@@ -28,7 +28,7 @@ class AWSKeyDetector(RegexBasedDetector):
         re.compile(r'(?:A3T[A-Z0-9]|ABIA|ACCA|AKIA|ASIA)[0-9A-Z]{16}'),
 
         # This examines the variable name to identify AWS secret tokens.
-        # The order is important since we want to prefer finding `AKIA`-based
+        # The order is important since we want to prefer finding access
         # keys (since they can be verified), rather than the secret tokens.
 
         re.compile(
