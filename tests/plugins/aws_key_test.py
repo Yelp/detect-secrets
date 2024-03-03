@@ -33,6 +33,22 @@ class TestAWSKeyDetector:
                 False,
             ),
             (
+                'A3T0ZZZZZZZZZZZZZZZZ',
+                True,
+            ),
+            (
+                'ABIAZZZZZZZZZZZZZZZZ',
+                True,
+            ),
+            (
+                'ACCAZZZZZZZZZZZZZZZZ',
+                True,
+            ),
+            (
+                'ASIAZZZZZZZZZZZZZZZZ',
+                True,
+            ),
+            (
                 'aws_access_key = "{}"'.format(EXAMPLE_SECRET),
                 True,
             ),
