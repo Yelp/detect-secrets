@@ -34,6 +34,7 @@ if TYPE_CHECKING:
     from detect_secrets.plugins.base import BasePlugin
 
 MIN_LINE_LENGTH = int(os.getenv('CHECKOV_MIN_LINE_LENGTH', '5'))
+MAX_LINE_LENGTH = int(os.getenv('CHECKOV_MAX_LINE_LENGTH', '100000'))
 
 
 @lru_cache(maxsize=1)
@@ -346,8 +347,8 @@ def _process_line_based_plugins(
     for line_number, line, is_added, is_removed in lines:
         line = line.strip()
         index += 1
-        if len(line) < MIN_LINE_LENGTH:
-            # skip lines which have too few none whitespace chars
+        if len(line) < MIN_LINE_LENGTH or len(line) > MAX_LINE_LENGTH:
+            # skip lines which have too few or too many none whitespace chars
             continue
 
         if not is_added and not is_removed:
