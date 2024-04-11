@@ -649,3 +649,4 @@ heuristics to try and prevent obvious cases of committing secrets.
 
   Ensure the file encoding of your baseline file is UTF-8.
   [More details here](https://github.com/Yelp/detect-secrets/issues/272#issuecomment-619187136).
+  
