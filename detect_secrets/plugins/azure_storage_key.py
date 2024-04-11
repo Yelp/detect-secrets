@@ -20,14 +20,19 @@ class AzureStorageKeyDetector(RegexBasedDetector):
     denylist = [
         # Account Key (AccountKey=xxxxxxxxx)
         re.compile(
-            r'(?:["\']?[A-Za-z0-9+\/]{86,1000}==["\']?)$',
+            r'(?:["\']?[A-Za-z0-9+\/]{86,1000}==["\']?)',
         ),
     ]
 
-    skip_keys = [
-        r'PublicKey[s]?:[a-z-\s\n>]*{secret}',
-    ]
+    context_keys = [
+        r'AccountKey=\s*{secret}',
 
+        # maximum 2 lines secret distance under azure mention (case-insensitive)
+        r'(?i)azure.*\n?.*\n?.*{secret}',
+
+        # maximum 2 lines secret distance above azure mention (case-insensitive)
+        r'(?i){secret}.*\n?.*\n?.*azure',
+    ]
     def analyze_line(
             self,
             filename: str,
@@ -42,26 +47,26 @@ class AzureStorageKeyDetector(RegexBasedDetector):
             filename=filename, line=line, line_number=line_number,
             context=context, raw_context=raw_context, **kwargs,
         )
-        output.update(self.filter_skip_keys(results, context, line))
+        output.update(self.analyze_context_keys(results, context, line))
 
         return output
 
-    def filter_skip_keys(
+    def analyze_context_keys(
             self,
             results: Set[PotentialSecret],
             context: Optional[CodeSnippet],
             line: str,
     ) -> List[PotentialSecret]:
         context_text = ''.join(context.lines) if context else line
-        return [result for result in results if not self.skip_keys_exists(result, context_text)]
+        return [result for result in results if self.context_keys_exists(result, context_text)]
 
-    def skip_keys_exists(self, result: PotentialSecret, string: str) -> bool:
+    def context_keys_exists(self, result: PotentialSecret, string: str) -> bool:
         if result.secret_value:
-            for secret_regex in self.skip_keys:
+            for secret_regex in self.context_keys:
                 regex = re.compile(
                     secret_regex.format(
                         secret=re.escape(result.secret_value),
-                    ), re.DOTALL,
+                    ), re.MULTILINE,
                 )
                 if regex.search(string) is not None:
                     return True
