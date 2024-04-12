@@ -9,7 +9,7 @@ filelock==3.13.1
 flake8==6.1.0
 gibberish-detector==0.1.1
 identify==2.5.33
-idna==3.6
+idna==3.7
 iniconfig==2.0.0
 mccabe==0.7.0
 monotonic==1.6
