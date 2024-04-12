@@ -57,7 +57,7 @@ class AzureStorageKeyDetector(RegexBasedDetector):
             context: Optional[CodeSnippet],
             line: str,
     ) -> List[PotentialSecret]:
-        context_text = ''.join(context.lines) if context else line
+        context_text = '\n'.join(context.lines).replace('\n\n', '\n') if context else line
         return [result for result in results if self.context_keys_exists(result, context_text)]
 
     def context_keys_exists(self, result: PotentialSecret, string: str) -> bool:
