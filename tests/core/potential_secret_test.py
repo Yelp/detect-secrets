@@ -52,6 +52,9 @@ def test_json():
             'is_secret': True,
             'is_verified': False,
         },
+        {
+            'occurrences': 2,
+        },
     ),
 )
 def test_load_secret_from_dict(kwargs):

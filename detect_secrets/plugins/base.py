@@ -78,6 +78,7 @@ class BasePlugin(metaclass=ABCMeta):
                     secret=match,
                     line_number=line_number,
                     is_verified=is_verified,
+                    occurrences=1,
                 ),
             )
 

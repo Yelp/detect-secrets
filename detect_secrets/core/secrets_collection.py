@@ -31,7 +31,7 @@ class SecretsCollection:
             relative to root, since we're running as if it was in a different directory,
             rather than scanning a different directory.
         """
-        self.data: Dict[str, Set[PotentialSecret]] = defaultdict(set)
+        self.data: Dict[str, List[PotentialSecret]] = defaultdict(list)
         self.root = root
 
     @classmethod
@@ -40,7 +40,7 @@ class SecretsCollection:
         for filename in baseline['results']:
             for item in baseline['results'][filename]:
                 secret = PotentialSecret.load_secret_from_dict({'filename': filename, **item})
-                output[filename].add(secret)
+                output[filename].append(secret)
 
         return output
 
@@ -69,11 +69,11 @@ class SecretsCollection:
                 [os.path.join(self.root, filename) for filename in filenames],
             ):
                 for secret in secrets:
-                    self[os.path.relpath(secret.filename, self.root)].add(secret)
+                    self.add_secret(os.path.relpath(secret.filename, self.root), secret)
 
     def scan_file(self, filename: str) -> None:
         for secret in scan.scan_file(os.path.join(self.root, filename)):
-            self[filename].add(secret)
+            self.add_secret(filename, secret)
 
     def scan_diff(self, diff: str) -> None:
         """
@@ -81,12 +81,19 @@ class SecretsCollection:
         """
         try:
             for secret in scan.scan_diff(diff):
-                self[secret.filename].add(secret)
+                self.add_secret(secret.filename, secret)
         except ImportError:     # pragma: no cover
             raise NotImplementedError(
                 'SecretsCollection.scan_diff requires `unidiff` to work. Try pip '
                 'installing that package, and try again.',
             )
+
+    def add_secret(self, filename: str, secret: PotentialSecret) -> None:
+        if secret in self[filename]:
+            index = self[filename].index(secret)
+            self[filename][index].occurrences += 1
+        else:
+            self[filename].append(secret)
 
     def merge(self, old_results: 'SecretsCollection') -> None:
         """
@@ -161,7 +168,7 @@ class SecretsCollection:
 
         # Unfortunately, we can't merely do a set intersection since we want to update the line
         # numbers (if applicable). Therefore, this does it manually.
-        result: Dict[str, Set[PotentialSecret]] = defaultdict(set)
+        result: Dict[str, List[PotentialSecret]] = defaultdict(list)
 
         for filename in scanned_results.files:
             if filename not in self.files:
@@ -180,7 +187,11 @@ class SecretsCollection:
                     # Only update line numbers if we're tracking them.
                     existing_secret.line_number = secret.line_number
 
-                result[filename].add(existing_secret)
+                if existing_secret.occurrences:
+                    # Only update occurences if we're tracking them.
+                    existing_secret.occurrences = secret.occurrences
+
+                result[filename].append(existing_secret)
 
         for filename in self.files:
             # If this is already populated by scanned_results, then the set intersection
@@ -211,10 +222,10 @@ class SecretsCollection:
     def exactly_equals(self, other: Any) -> bool:
         return self.__eq__(other, strict=True)      # type: ignore
 
-    def __getitem__(self, filename: str) -> Set[PotentialSecret]:
+    def __getitem__(self, filename: str) -> List[PotentialSecret]:
         return self.data[filename]
 
-    def __setitem__(self, filename: str, value: Set[PotentialSecret]) -> None:
+    def __setitem__(self, filename: str, value: List[PotentialSecret]) -> None:
         self.data[filename] = value
 
     def __iter__(self) -> Generator[Tuple[str, PotentialSecret], None, None]:
@@ -297,7 +308,7 @@ class SecretsCollection:
             if filename not in self.files:
                 continue
 
-            output[filename] = self[filename] - other[filename]
+            output[filename] = list(set(self[filename]) - set(other[filename]))
 
         for filename in self.files:
             if filename in other.files:
