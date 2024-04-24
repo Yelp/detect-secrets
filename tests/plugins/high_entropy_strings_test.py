@@ -35,6 +35,14 @@ class TestHighEntropyString:
 
             # Non-quoted string
             ('{secret}', False),
+
+            # Non-quoted string from ini file
+            ('some_key = {secret}', True),
+            ('some_key={secret}', True),
+            #
+            # Non-quoted string from Yaml
+            ('some_key: {secret}', True),
+            ('some_key:{secret}', True),
         ),
     )
     def test_basic(plugin, non_secret, secret, format, should_be_caught):
