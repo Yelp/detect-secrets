@@ -26,7 +26,7 @@ def test_custom_plugins_does_not_pollute_settings():
     assert new_baseline['plugins_used'] == [
         {
             'name': 'HippoDetector',
-            'path': f'file://{os.path.abspath("testing/plugins.py")}',
+            'path': 'file://{0}'.format(os.path.abspath('testing/plugins.py')),
         },
     ]
     with pytest.raises(TypeError):
