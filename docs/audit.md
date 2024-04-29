@@ -29,7 +29,7 @@ Secret Type: Secret Keyword
 68:      }
 69:    ],
 ----------
-Is this a secret that should be committed to this repository? (y)es, (n)o, (s)kip, (q)uit:
+Should this string be committed to the repository? (y)es, (n)o, (s)kip, (q)uit:
 ```
 
 There are two common cases for manual labelling:
