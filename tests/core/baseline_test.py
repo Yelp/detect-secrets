@@ -1,4 +1,5 @@
 import json
+import os.path
 import subprocess
 import tempfile
 from pathlib import Path
@@ -8,7 +9,6 @@ import pytest
 
 from detect_secrets.core import baseline
 from detect_secrets.settings import get_settings
-from detect_secrets.util.path import get_relative_path_if_in_cwd
 from testing.mocks import mock_named_temporary_file
 
 
@@ -79,7 +79,7 @@ class TestCreate:
             assert f.name not in secrets.data
 
             secrets = baseline.create('test_data/files/tmp', should_scan_all_files=True)
-            assert get_relative_path_if_in_cwd(f.name) in secrets.data
+            assert os.path.relpath(f.name, '') in secrets.data
 
 
 def test_load_and_output():

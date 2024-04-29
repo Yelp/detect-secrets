@@ -1,9 +1,8 @@
-import os
+import os.path
 import subprocess
 from typing import Set
 
 from ..core.log import log
-from .path import get_relative_path
 
 
 def get_root_directory(path: str = '') -> str:
@@ -36,7 +35,7 @@ def get_tracked_files(root: str) -> Set[str]:
         )
 
         for filename in files.decode('utf-8').splitlines():
-            path = get_relative_path(root, os.path.join(root, filename))
+            path = os.path.relpath(os.path.join(root, filename), root)
             if path:
                 output.add(path)
 
