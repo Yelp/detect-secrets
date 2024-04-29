@@ -31,7 +31,17 @@ def from_plugin_classname(classname: str) -> Plugin:
     """
     :raises: TypeError
     """
-    for plugin_type in get_mapping_from_secret_type_to_class().values():
+    try:
+        plugin_types = get_mapping_from_secret_type_to_class().values()
+    except FileNotFoundError as e:
+        log.error(f'Error: Failed to load `{classname}` plugin: {e}')
+        log.error(
+            'This error can occur when using a baseline that references a '
+            'custom plugin with a path that does not exist.',
+        )
+        raise
+
+    for plugin_type in plugin_types:
         if plugin_type.__name__ == classname:
             break
     else:

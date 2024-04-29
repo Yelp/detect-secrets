@@ -1,3 +1,4 @@
+import errno
 import importlib.util
 import os
 import pkgutil
@@ -85,7 +86,8 @@ def import_file_as_module(filename: str, name: Optional[str] = None) -> ModuleTy
     for you.
     """
     if not os.path.exists(filename):
-        raise FileNotFoundError
+        # Source: https://stackoverflow.com/a/36077407
+        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), filename)
 
     if not name:
         # NOTE: After several trial and error attempts, I could not discern the importance
