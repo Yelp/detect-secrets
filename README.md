@@ -113,6 +113,7 @@ SlackDetector
 SoftlayerDetector
 SquareOAuthDetector
 StripeDetector
+TelegramBotTokenDetector
 TwilioKeyDetector
 ```
 
