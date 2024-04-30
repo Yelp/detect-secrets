@@ -103,6 +103,7 @@ Base64HighEntropyString
 HexHighEntropyString
 IbmCloudIamDetector
 IbmCosHmacDetector
+IPPublicDetector
 JwtTokenDetector
 KeywordDetector
 MailchimpDetector
