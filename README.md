@@ -97,6 +97,7 @@ AzureStorageKeyDetector
 BasicAuthDetector
 CloudantDetector
 DiscordBotTokenDetector
+EmailAddressDetector
 GitHubTokenDetector
 GitLabTokenDetector
 Base64HighEntropyString
