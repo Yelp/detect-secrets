@@ -1,5 +1,6 @@
 import json
 import random
+from pathlib import Path
 from typing import List
 from typing import Optional
 from unittest import mock
@@ -135,7 +136,7 @@ def test_ensure_file_transformers_are_used(printer):
         run_logic(secrets, 'y')
         assert not m.called
 
-    line_number = list(secrets['test_data/config.env'])[0].line_number
+    line_number = list(secrets[str(Path('test_data/config.env'))])[0].line_number
     assert lines[line_number - 1] in printer.message
 
 
