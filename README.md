@@ -109,6 +109,7 @@ KeywordDetector
 MailchimpDetector
 NpmDetector
 PrivateKeyDetector
+PypiTokenDetector
 SendGridDetector
 SlackDetector
 SoftlayerDetector
