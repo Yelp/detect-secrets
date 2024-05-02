@@ -12,5 +12,9 @@ class PypiTokenDetector(RegexBasedDetector):
 
     denylist = [
         # refs https://warehouse.pypa.io/development/token-scanning.html
+        # pypi.org token
         re.compile(r'pypi-AgEIcHlwaS5vcmc[A-Za-z0-9-_]{70,}'),
+
+        # test.pypi.org token
+        re.compile(r'pypi-AgENdGVzdC5weXBpLm9yZw[A-Za-z0-9-_]{70,}'),
     ]
