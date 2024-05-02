@@ -3,6 +3,7 @@ from typing import Any
 from typing import Callable
 from typing import Dict
 from typing import List
+from typing import Optional
 from typing import Tuple
 
 from ..constants import VerifiedResult
@@ -26,7 +27,7 @@ class SecretClassToPrint(Enum):
 
 def generate_report(
     baseline_file: str,
-    class_to_print: SecretClassToPrint = None,
+    class_to_print: Optional[SecretClassToPrint] = None,
     line_getter_factory: Callable[[str], 'LineGetter'] = open_file,
 ) -> Dict[str, List[Dict[str, Any]]]:
 

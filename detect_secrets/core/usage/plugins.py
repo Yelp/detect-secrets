@@ -2,6 +2,7 @@ import argparse
 import os
 from typing import cast
 from typing import Iterable
+from typing import Set
 
 from .. import plugins
 from ...exceptions import InvalidFile
@@ -87,7 +88,7 @@ def _add_custom_limits(parser: argparse._ArgumentGroup) -> None:
 
 def _add_disable_flag(parser: argparse._ArgumentGroup) -> None:
     def valid_plugin_name(string: str) -> str:
-        valid_plugin_names = {
+        valid_plugin_names: Set[str] = {
             item.__name__
             for item in get_mapping_from_secret_type_to_class().values()
         }

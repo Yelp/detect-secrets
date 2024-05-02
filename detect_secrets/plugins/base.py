@@ -13,6 +13,7 @@ from typing import Any
 from typing import Dict
 from typing import Generator
 from typing import Iterable
+from typing import Optional
 from typing import Pattern
 from typing import Set
 
@@ -48,7 +49,7 @@ class BasePlugin(metaclass=ABCMeta):
         filename: str,
         line: str,
         line_number: int = 0,
-        context: CodeSnippet = None,
+        context: Optional[CodeSnippet] = None,
         **kwargs: Any
     ) -> Set[PotentialSecret]:
         """This examines a line and finds all possible secret values in it."""

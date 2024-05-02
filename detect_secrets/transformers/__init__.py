@@ -20,7 +20,8 @@ def get_transformed_file(
     file: NamedIO,
     use_eager_transformers: bool = False,
 ) -> Optional[List[str]]:
-    for transformer in get_transformers():
+    tranformers: Iterable[Transformer] = get_transformers()
+    for transformer in tranformers:
         if not transformer.should_parse_file(file.name):
             continue
 
@@ -28,7 +29,8 @@ def get_transformed_file(
             continue
 
         try:
-            return transformer.parse_file(file)
+            parsed_file: Optional[List[str]] = transformer.parse_file(file)
+            return parsed_file
         except ParsingError:
             pass
         finally:

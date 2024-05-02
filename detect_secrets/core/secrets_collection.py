@@ -20,7 +20,7 @@ class PatchedFile:
     """This exists so that we can do typecasting, without importing unidiff."""
     path: str
 
-    def __iter__(self) -> Generator:
+    def __iter__(self) -> Generator:  # type: ignore
         pass
 
 

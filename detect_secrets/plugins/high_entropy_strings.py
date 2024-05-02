@@ -7,6 +7,7 @@ from typing import Any
 from typing import cast
 from typing import Dict
 from typing import Generator
+from typing import Optional
 from typing import Set
 
 from ..core.potential_secret import PotentialSecret
@@ -46,7 +47,7 @@ class HighEntropyStringsPlugin(BasePlugin, metaclass=ABCMeta):
         filename: str,
         line: str,
         line_number: int = 0,
-        context: CodeSnippet = None,
+        context: Optional[CodeSnippet] = None,
         enable_eager_search: bool = False,
         **kwargs: Any,
     ) -> Set[PotentialSecret]:

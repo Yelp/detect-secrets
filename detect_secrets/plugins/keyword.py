@@ -307,7 +307,7 @@ class KeywordDetector(BasePlugin):
         filename: str,
         line: str,
         line_number: int = 0,
-        context: CodeSnippet = None,
+        context: Optional[CodeSnippet] = None,
         **kwargs: Any,
     ) -> Set[PotentialSecret]:
         filetype = determine_file_type(filename)

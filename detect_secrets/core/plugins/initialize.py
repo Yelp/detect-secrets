@@ -4,6 +4,7 @@ from typing import Iterable
 from typing import List
 from typing import Type
 
+from ...plugins.base import BasePlugin
 from ...settings import get_settings
 from ..log import log
 from .util import get_mapping_from_secret_type_to_class
@@ -11,28 +12,29 @@ from .util import get_plugins_from_file
 from .util import Plugin
 
 
-def from_secret_type(secret_type: str) -> Plugin:
+def from_secret_type(secret_type: str) -> BasePlugin:
     """
     :raises: TypeError
     """
     try:
-        plugin_type = get_mapping_from_secret_type_to_class()[secret_type]
+        plugin_type: Dict[str, Type[Plugin]] = get_mapping_from_secret_type_to_class()[secret_type]
     except KeyError:
         raise TypeError
 
     try:
-        return plugin_type(**_get_config(plugin_type.__name__))
+        plugin: Plugin = plugin_type(**_get_config(plugin_type.__name__))
+        return plugin
     except TypeError:
         log.error('Unable to initialize plugin!')
         raise
 
 
-def from_plugin_classname(classname: str) -> Plugin:
+def from_plugin_classname(classname: str) -> BasePlugin:
     """
     :raises: TypeError
     """
     try:
-        plugin_types = get_mapping_from_secret_type_to_class().values()
+        plugin_types: Iterable[Type[Plugin]] = get_mapping_from_secret_type_to_class().values()
     except FileNotFoundError as e:
         log.error(f'Error: Failed to load `{classname}` plugin: {e}')
         log.error(
@@ -54,7 +56,8 @@ def from_plugin_classname(classname: str) -> Plugin:
         raise TypeError
 
     try:
-        return plugin_type(**_get_config(classname))
+        plugin: Plugin = plugin_type(**_get_config(classname))
+        return plugin
     except TypeError:
         log.error('Unable to initialize plugin!')
         raise

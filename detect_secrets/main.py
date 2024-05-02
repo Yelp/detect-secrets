@@ -16,6 +16,7 @@ from .core.usage import ParserBuilder
 from .exceptions import InvalidBaselineError
 from .settings import get_plugins
 from .settings import get_settings
+from detect_secrets.audit.report import SecretClassToPrint
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -132,9 +133,9 @@ def handle_audit_action(args: argparse.Namespace) -> None:
         elif args.report:
             class_to_print = None
             if args.only_real:
-                class_to_print = audit.report.SecretClassToPrint.REAL_SECRET
+                class_to_print: SecretClassToPrint = SecretClassToPrint.REAL_SECRET
             elif args.only_false:
-                class_to_print = audit.report.SecretClassToPrint.FALSE_POSITIVE
+                class_to_print: SecretClassToPrint = SecretClassToPrint.FALSE_POSITIVE
             print(
                 json.dumps(
                     audit.report.generate_report(args.filename[0], class_to_print),

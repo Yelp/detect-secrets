@@ -5,11 +5,14 @@ from importlib import import_module
 from typing import Any
 from typing import Dict
 from typing import Generator
+from typing import Iterable
 from typing import List
+from typing import Type
 from urllib.parse import urlparse
 
 from .exceptions import InvalidFile
 from .util.importlib import import_file_as_module
+from detect_secrets.core.plugins.util import Plugin
 
 
 @lru_cache(maxsize=1)
@@ -65,10 +68,11 @@ def default_settings() -> Generator['Settings', None, None]:
     """Convenience function to enable all plugins and default filters."""
     from .core.plugins.util import get_mapping_from_secret_type_to_class
 
+    plugin_types: Iterable[Type[Plugin]] = get_mapping_from_secret_type_to_class().values()
     with transient_settings({
         'plugins_used': [
             {'name': plugin_type.__name__}
-            for plugin_type in get_mapping_from_secret_type_to_class().values()
+            for plugin_type in plugin_types
         ],
     }) as settings:
         yield settings
