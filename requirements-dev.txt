@@ -24,7 +24,7 @@ py==1.11.0
 pyahocorasick==2.1.0
 pycodestyle==2.11.1
 pyflakes==3.2.0
-pyparsing==3.1.1
+pyparsing==3.1.2
 pytest==7.4.3
 PyYAML==6.0.1
 requests==2.31.0
@@ -39,5 +39,5 @@ types-requests==2.31.0.20240106
 typing-extensions==4.11.0
 unidiff==0.7.5
 urllib3==2.1.0
-virtualenv==20.25.0
+virtualenv==20.26.1
 zipp==3.17.0
