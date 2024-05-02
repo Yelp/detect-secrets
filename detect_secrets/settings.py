@@ -12,7 +12,6 @@ from urllib.parse import urlparse
 
 from .exceptions import InvalidFile
 from .util.importlib import import_file_as_module
-from detect_secrets.core.plugins.util import Plugin
 
 
 @lru_cache(maxsize=1)
@@ -68,7 +67,7 @@ def default_settings() -> Generator['Settings', None, None]:
     """Convenience function to enable all plugins and default filters."""
     from .core.plugins.util import get_mapping_from_secret_type_to_class
 
-    plugin_types: Iterable[Type[Plugin]] = get_mapping_from_secret_type_to_class().values()
+    plugin_types: Iterable[Type] = get_mapping_from_secret_type_to_class().values()
     with transient_settings({
         'plugins_used': [
             {'name': plugin_type.__name__}
