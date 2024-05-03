@@ -16,7 +16,6 @@ class TestOpenAIDetector:
             ('sk-proj-Xi8tdMjHV6pmbBbwilTeT4BlbkFJ3UDnpdEwNNm6wVBpYM0o', False),
         ],
     )
-
     def test_analyze(self, payload, should_flag):
         logic = OpenAIDetector()
         output = logic.analyze_line(filename='mock_filename', line=payload)
