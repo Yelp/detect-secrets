@@ -108,6 +108,7 @@ JwtTokenDetector
 KeywordDetector
 MailchimpDetector
 NpmDetector
+OpenAIDetector
 PrivateKeyDetector
 PypiTokenDetector
 SendGridDetector
