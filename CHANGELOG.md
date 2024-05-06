@@ -26,7 +26,7 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 -->
 
 ### v1.5.0
-##### May 3rd, 2024
+##### May 6th, 2024
 
 We apologise for the extreme delay in publishing a new release for our beloved `detect-secrets`. We at Yelp appreciate your continued support and your contributions to this valuable project!
 
