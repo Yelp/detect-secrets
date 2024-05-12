@@ -13,9 +13,13 @@ from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.base import RegexBasedDetector
 from detect_secrets.util.code_snippet import CodeSnippet
 
+
 class AzureStorageKeyDetector(RegexBasedDetector):
     """Scans for Azure Storage Account access keys."""
     secret_type = 'Azure Storage Account access key'
+
+    account_key = 'AccountKey'
+    azure = 'azure'
 
     denylist = [
         # Account Key (AccountKey=xxxxxxxxx)
@@ -25,14 +29,15 @@ class AzureStorageKeyDetector(RegexBasedDetector):
     ]
 
     context_keys = [
-        r'AccountKey=\s*{secret}',
+        r'{account_key}=\s*{secret}',
 
         # maximum 2 lines secret distance under azure mention (case-insensitive)
-        r'(?i)azure.*\n?.*\n?.*{secret}',
+        r'(?i){azure}.*\n?.*\n?.*{secret}',
 
         # maximum 2 lines secret distance above azure mention (case-insensitive)
-        r'(?i){secret}.*\n?.*\n?.*azure',
+        r'(?i){secret}.*\n?.*\n?.*{azure}',
     ]
+
     def analyze_line(
             self,
             filename: str,
@@ -65,9 +70,14 @@ class AzureStorageKeyDetector(RegexBasedDetector):
             for secret_regex in self.context_keys:
                 regex = re.compile(
                     secret_regex.format(
-                        secret=re.escape(result.secret_value),
+                        secret=re.escape(result.secret_value), account_key=self.account_key,
+                        azure=self.azure,
                     ), re.MULTILINE,
                 )
+                if regex.pattern.startswith(self.account_key) and self.account_key not in string:
+                    continue
+                if self.azure in regex.pattern.lower() and self.azure not in string.lower():
+                    continue
                 if regex.search(string) is not None:
                     return True
         return False
