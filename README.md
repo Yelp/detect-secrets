@@ -458,6 +458,60 @@ analytics:
   --json        Outputs results in a machine-readable format.
 ```
 
+### Using in Python Scripts
+Detect-secrets API for python scripts supports scans for secrets in strings, files, and Git repositories. It supports dynamic plugin loading and allows scanning either all files or only Git-tracked files in a local repository.
+#### Getting a list of supported plugins
+```python
+from detect_secrets.api import list_plugins
+
+plugins = list_plugins()
+print(plugins)
+
+```
+
+#### Scanning a String
+```python
+from detect_secrets.api import scan_string
+
+string_to_check = "AWS_SECRET_KEY = 'AKIAIOSFODNN7EXAMPLE'"
+
+#checking string with all plugins
+secrets = scan_string(string)
+print(secrets)
+#checking string with specified plugin
+secrets = scan_string(string, plugins='AWSKeyDetector')
+print(secrets)
+```
+
+#### Scanning a File
+```python
+from detect_secrets.api import scan_file
+#scanning a file with all plugins
+secrets = scan_file('/path/to/file.txt')
+print(secrets)
+
+#scanning a file with specified plugin
+secrets = scan_file('/path/to/file.txt', plugins='AWSKeyDetector')
+print(secrets)
+```
+
+#### Scanning a Git Repository
+```python
+from detect_secrets.api import scan_git_repository
+
+#scanning a git repo with all plugins, only git tracked files
+secrets = scan_git_repository('/path/to/repository')
+print(secrets)
+
+#scanning a git repo with specified plugin, only git tracked files
+secrets = scan_git_repository('/path/to/repository', plugins='AWSKeyDetector')
+print(secrets)
+
+#scanning a all files
+secrets = scan_git_repository('/path/to/repository', scan_all_files=True)
+print(secrets)
+```
+
 ## Configuration
 
 This tool operates through a system of **plugins** and **filters**.
