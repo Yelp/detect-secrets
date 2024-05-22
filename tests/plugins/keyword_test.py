@@ -46,6 +46,8 @@ CONFIG_TEST_CASES = [
     ('password: ${link}', None),        # Has a ${ followed by a }
     ('some_key = "real_secret"', None),  # We cannot make 'key' a Keyword, too noisy)
     ('private_key "hopenobodyfindsthisone\';', None),   # Double-quote does not match single-quote)
+    ('api.key = {}'.format(COMMON_SECRET), COMMON_SECRET),
+    ('API-KEY = {}'.format(COMMON_SECRET), COMMON_SECRET),
     (LONG_LINE, None),  # Long line test
 ]
 

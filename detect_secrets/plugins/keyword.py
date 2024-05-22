@@ -43,7 +43,7 @@ from detect_secrets.util.code_snippet import CodeSnippet
 
 # Note: All values here should be lowercase
 DENYLIST = (
-    'api_?key',
+    'api[_\\.\\-]?key',
     'auth_?key',
     'service_?key',
     'account_?key',
