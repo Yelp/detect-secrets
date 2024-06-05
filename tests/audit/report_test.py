@@ -206,18 +206,24 @@ def create_file_with_content(content):
 @pytest.fixture
 def baseline_file():
     # Create our own SecretsCollection manually, so that we have fine-tuned control.
-    first_content = textwrap.dedent(f"""
+    first_content = textwrap.dedent(
+        f"""
         url = {url_format.format(first_secret)}
         example = {url_format.format(random_secret)}
         link = {url_format.format(first_secret)}
-    """)[1:]
-    second_content = textwrap.dedent(f"""
+    """,
+    )[1:]
+    second_content = textwrap.dedent(
+        f"""
         url = {url_format.format(second_secret)}
         example = {url_format.format(random_secret)}
-    """)[1:]
-    third_content = textwrap.dedent(f"""
+    """,
+    )[1:]
+    third_content = textwrap.dedent(
+        f"""
         aws_access_key = {aws_secret}
-    """)[1:]
+    """,
+    )[1:]
 
     with create_file_with_content(first_content) as first_file, \
             create_file_with_content(second_content) as second_file, \

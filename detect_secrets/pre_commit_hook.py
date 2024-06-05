@@ -147,10 +147,10 @@ def pretty_print_diagnostics(secrets: SecretsCollection, width: int = 80) -> Non
     )
     for suggestion in [
         'For information about putting your secrets in a safer place, '
-        f'please ask {os.environ.get("DETECT_SECRETS_SECURITY_TEAM", "in #security")}',
+        'please ask {0}'.format(os.environ.get('DETECT_SECRETS_SECURITY_TEAM', 'in #security')),
 
         'Mark false positives with an inline '
-        f'`{color.colorize("pragma: allowlist secret", color.AnsiColor.BOLD)}` comment',
+        '`{0}` comment'.format(color.colorize('pragma: allowlist secret', color.AnsiColor.BOLD)),
     ]:
         print(wrapper.fill(suggestion))
 

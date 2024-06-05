@@ -158,7 +158,7 @@ class TestCustomPlugins:
 
             parser.parse_args(['--baseline', f.name])
             assert get_settings().plugins['HippoDetector'] == {
-                'path': f'file://{os.path.abspath("testing/plugins.py")}',
+                'path': 'file://{0}'.format(os.path.abspath('testing/plugins.py')),
             }
             assert plugins.initialize.from_plugin_classname('HippoDetector')
 

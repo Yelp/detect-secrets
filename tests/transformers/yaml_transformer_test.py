@@ -53,11 +53,13 @@ class TestYAMLTransformer:
         # However, "folded" style may be used to keep a certain line limit with very long secrets,
         # so we should probably handle that.
         file = mock_file_object(
-            textwrap.dedent(f"""
+            textwrap.dedent(
+                f"""
                 multiline: |{block_chomping}    # example
                     this is
                     a basic multiline string
-            """)[1:-1],
+            """,
+            )[1:-1],
         )
 
         assert YAMLTransformer().parse_file(file) == [
@@ -195,12 +197,14 @@ class TestYAMLFileParser:
     def test_multi_line(block_scalar_style, block_chomping):
         # NOTE: Referenced https://yaml-multiline.info/ for the many ways to do multi line strings
         file = mock_file_object(
-            textwrap.dedent(f"""
+            textwrap.dedent(
+                f"""
                 key: {block_scalar_style}{block_chomping}   # comment
                     multi
-                    #line
+                    # line
                     string
-            """)[1:-1],
+            """,
+            )[1:-1],
         )
 
         assert [item.line for item in YAMLFileParser(file)] == [

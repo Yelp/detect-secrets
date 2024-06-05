@@ -130,7 +130,7 @@ class UserPrompt:
 
     def __str__(self) -> str:
         if 'Y' in self.valid_input:
-            output = 'Is this a secret that should be committed to this repository?'
+            output = 'Should this string be committed to the repository?'
         else:
             output = 'What would you like to do?'
 
