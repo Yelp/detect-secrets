@@ -3,7 +3,7 @@ backports.entry-points-selectable==1.3.0
 certifi==2024.2.2
 cfgv==3.4.0
 charset-normalizer==3.3.2
-coverage==7.5.1
+coverage==7.5.3
 distlib==0.3.8
 filelock==3.14.0
 flake8==7.0.0
