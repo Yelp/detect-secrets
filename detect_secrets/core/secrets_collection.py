@@ -76,6 +76,10 @@ class SecretsCollection:
         for secret in scan.scan_file(os.path.join(self.root, convert_local_os_path(filename))):
             self[convert_local_os_path(filename)].add(secret)
 
+    def scan_string(self, string: str) -> None:
+        for secret in scan.scan_line(string):
+            self['adhoc-string-scan'].add(secret)
+
     def scan_diff(self, diff: str) -> None:
         """
         :raises: UnidiffParseError
