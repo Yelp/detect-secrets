@@ -187,6 +187,18 @@ class TestAzureStorageKeyDetector:
                 lJzRc1YdHaAA2KCNJJ1tkYwF/+mKK6Ygw0NGe170Xu592euJv2wYUtBlV8z+qnlcNQSnIYVTkLWntUO1F8j8rQ==""",
                 False,
             ),
+            (
+                """
+                resolution: {integrity: sha512-/AazAV/F+HK4LIywF9C+NYHcJo038zEnWkteilcxC1FM/uK/4NVGDKGrxx7nNq1ybspAroRKT4I1FHfxQzxkUw==}
+                engines: {node: '>=12.0.0'}
+                peerDependencies:
+                    '@azure/identity': '*'
+                    '@azure/msal-browser': '*'
+                    buffer: '*'
+                    stream-browserify: '*'
+                """,
+                False,
+            ),
         ],
     )
     def test_analyze(self, payload, should_flag):
