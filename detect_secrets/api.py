@@ -14,10 +14,10 @@ def get_settings(filters: list = None, plugins: list = None) -> Dict[str, List]:
     Return used plugins and filters to be used to scan with provided params
     """
     if filters and not isinstance(filters, list):
-        raise ValueError(f'Error: "{filters}" must be List object')
+        raise ValueError(f"Error: '{filters}' must be List object")
 
     if plugins and not isinstance(plugins, list):
-        raise ValueError(f'Error: "{plugins}" must be List object')
+        raise ValueError(f"Error: '{plugins}' must be List object")
 
     if filters:
         filters_used = filters
