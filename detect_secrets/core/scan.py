@@ -316,7 +316,7 @@ def _process_line_based_plugins(
     # filters return True.
     for line_number, line in lines:
         log.debug(f'Processing {filename}:{line_number}')
-        line = line.rstrip()
+        line = line.rstrip().replace("[", "\[").replace("]", "\]")
         code_snippet = get_code_snippet(
             lines=line_content,
             line_number=line_number,
