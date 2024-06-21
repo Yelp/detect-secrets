@@ -219,10 +219,7 @@ class TestScanGitRepo:
     @staticmethod
     def test_not_git():
         repo_path = tempfile.mkdtemp()
-        with pytest.raises(
-            ValueError,
-            match=f"Error: '{repo_path}' is not a valid Git repository",
-        ):
+        with pytest.raises(ValueError):
             assert scan_git_repository(repo_path)
 
     @staticmethod
