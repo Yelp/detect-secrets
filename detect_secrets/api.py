@@ -154,9 +154,6 @@ def scan_git_repository(
 
     try:
         repo = Repo(repo_path)
-        if repo.bare:
-            raise ValueError(f"Error: '{repo_path}' is not a valid Git repository")
-
         files_to_scan = []
         if scan_all_files:
             for root, _, files in os.walk(repo_path):

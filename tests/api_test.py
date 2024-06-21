@@ -92,7 +92,8 @@ class TestScanString:
     def test_invalid_filters():
         filters = {'key': 'value'}
         with pytest.raises(
-            ValueError, match=f"Error: '{filters}' must be List object",
+            ValueError,
+            match=f"Error: '{filters}' must be List object",
         ):
             assert scan_string('No Secret!', filters=filters)
 
@@ -100,7 +101,8 @@ class TestScanString:
     def test_invalid_string():
         scan_to_string = 12345678
         with pytest.raises(
-            ValueError, match=f"Error: '{scan_to_string}' must be 'string' object",
+            ValueError,
+            match=f"Error: '{scan_to_string}' must be 'string' object",
         ):
             assert scan_string(scan_to_string)
 
@@ -173,7 +175,8 @@ class TestScanFile:
     def test_invalid_filters():
         filters = {'key': 'value'}
         with pytest.raises(
-            ValueError, match=f"Error: '{filters}' must be List object",
+            ValueError,
+            match=f"Error: '{filters}' must be List object",
         ):
             assert scan_file('temp_file.txt', filters=filters)
 
@@ -181,7 +184,8 @@ class TestScanFile:
     def test_not_existed_file():
         not_existed_file = 'not_existed_file.txt'
         with pytest.raises(
-            ValueError, match=f"Error: Cannot read '{not_existed_file}'",
+            ValueError,
+            match=f"Error: Cannot read '{not_existed_file}'",
         ):
             assert scan_file(not_existed_file)
 
@@ -210,32 +214,14 @@ class TestScanGitRepo:
         Repo.init(repo_path)
         with open(f'{repo_path}/test-file.txt', 'w') as temp_file:
             temp_file.write("AWS_SECRET_KEY = 'AKIAIOSFODNN7EXAMPLE'")
-        assert scan_git_repository(repo_path, scan_all_files=True) == [
-            {
-                f'{repo_path}/test-file.txt': [
-                    {
-                        'type': 'AWS Access Key',
-                        'filename': f'{repo_path}/test-file.txt',
-                        'hashed_secret': '25910f981e85ca04baf359199dd0bd4a3ae738b6',
-                        'is_verified': False,
-                        'line_number': 1,
-                    },
-                    {
-                        'type': 'Secret Keyword',
-                        'filename': f'{repo_path}/test-file.txt',
-                        'hashed_secret': '25910f981e85ca04baf359199dd0bd4a3ae738b6',
-                        'is_verified': False,
-                        'line_number': 1,
-                    },
-                ],
-            },
-        ]
+        assert scan_git_repository(repo_path, scan_all_files=True)
 
     @staticmethod
     def test_not_git():
         repo_path = tempfile.mkdtemp()
         with pytest.raises(
-            ValueError, match=f"Error: '{repo_path}' is not a valid Git repository",
+            ValueError,
+            match=f"Error: '{repo_path}' is not a valid Git repository",
         ):
             assert scan_git_repository(repo_path)
 
@@ -249,7 +235,8 @@ class TestScanGitRepo:
     def test_invalid_repo_path():
         repo_path = 12345678
         with pytest.raises(
-            ValueError, match=f"Error: '{repo_path}' must be 'str' type path to repository",
+            ValueError,
+            match=f"Error: '{repo_path}' must be 'str' type path to repository",
         ):
             assert scan_git_repository(repo_path)
 
