@@ -8,6 +8,7 @@ distlib==0.3.8
 filelock==3.14.0
 flake8==7.0.0
 gibberish-detector==0.1.1
+GitPython==3.1.43
 identify==2.5.36
 idna==3.7
 iniconfig==2.0.0
