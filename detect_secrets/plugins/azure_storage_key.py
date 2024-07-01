@@ -32,10 +32,10 @@ class AzureStorageKeyDetector(RegexBasedDetector):
         r'{account_key}=\s*{secret}',
 
         # maximum 2 lines secret distance under azure mention (case-insensitive)
-        r'(?i){azure}.*\n?.*\n?.*{secret}',
+        r'(?i)\b{azure}(.*\n){{0,2}}.*{secret}',
 
         # maximum 2 lines secret distance above azure mention (case-insensitive)
-        r'(?i){secret}.*\n?.*\n?.*{azure}',
+        r'(?i)\b{secret}(.*\n){{0,2}}.*{azure}',
     ]
 
     def analyze_line(
