@@ -64,6 +64,7 @@ DENYLIST = (
     'contraseña',
     'contrasena',
     'recaptcha_.*key',
+    'nessus_?key',
 )
 # Includes ], ', " as closing
 CLOSING = r'[]\'"]{0,2}'
