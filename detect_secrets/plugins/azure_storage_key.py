@@ -21,6 +21,10 @@ class AzureStorageKeyDetector(RegexBasedDetector):
     account_key = 'AccountKey'
     azure = 'azure'
 
+    max_line_length = 4000
+    max_part_length = 2000
+    integrity_regex = re.compile(r'integrity[:=]')
+
     denylist = [
         # Account Key (AccountKey=xxxxxxxxx)
         re.compile(
@@ -66,6 +70,9 @@ class AzureStorageKeyDetector(RegexBasedDetector):
         return [result for result in results if self.context_keys_exists(result, context_text)]
 
     def context_keys_exists(self, result: PotentialSecret, string: str) -> bool:
+        if len(string) > self.max_line_length:
+            # for very long lines, we don't run the regex to avoid performance issues
+            return False
         if result.secret_value:
             for secret_regex in self.context_keys:
                 regex = re.compile(
@@ -84,10 +91,11 @@ class AzureStorageKeyDetector(RegexBasedDetector):
                     return True
         return False
 
-    @staticmethod
-    def contains_integrity(secret_val: str, string: str) -> bool:
+    def contains_integrity(self, secret_val: str, string: str) -> bool:
         # we want to ignore cases of lock files which contains hashes
-
-        regex = re.compile(r'integrity[:=]')
         context_parts = string.split('\n')
-        return any(secret_val in part and regex.search(part) is not None for part in context_parts)
+        return any(
+            len(part) < self.max_part_length and
+            secret_val in part and
+            self.integrity_regex.search(part) is not None for part in context_parts
+        )
