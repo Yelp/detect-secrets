@@ -1,6 +1,6 @@
 attrs==23.2.0
 backports.entry-points-selectable==1.3.0
-certifi==2024.2.2
+certifi==2024.7.4
 cfgv==3.4.0
 charset-normalizer==3.3.2
 coverage==7.5.3
