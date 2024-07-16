@@ -39,5 +39,5 @@ types-requests==2.31.0.20240106
 typing-extensions==4.12.2
 unidiff==0.7.5
 urllib3==2.2.2
-virtualenv==20.26.1
+virtualenv==20.26.3
 zipp==3.19.2
