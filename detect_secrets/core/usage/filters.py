@@ -78,6 +78,23 @@ def add_filter_options(parent: argparse.ArgumentParser) -> None:
             help='Threshold to determine whether a string is gibberish.',
         )
 
+    if filters.bert_classifier.is_feature_enabled():
+        parser.add_argument(
+            '--bert-model',
+            type=str,
+            help='HuggingFace model path for classifying secrets.',
+        )
+        parser.add_argument(
+            '--bert-threshold',
+            type=float,
+            help='Threshold to determine whether a string is a secret.',
+        )
+        parser.add_argument(
+            '--huggingface-token',
+            type=str,
+            help='Huggingface API token for downloading models.',
+        )
+
     _add_custom_filters(parser)
     _add_disable_flag(parser)
 
@@ -167,6 +184,29 @@ def parse_args(args: argparse.Namespace) -> None:
             kwargs['limit'] = args.gibberish_limit
 
         filters.gibberish.initialize(**kwargs)
+
+    if filters.bert_classifier.is_feature_ready(args):
+        kwargs = {}
+        if args.bert_model:
+            kwargs['model_path'] = args.bert_model
+
+        if args.bert_threshold:
+            kwargs['limit'] = args.bert_threshold
+
+        if args.huggingface_token:
+            kwargs['huggingface_token'] = args.huggingface_token
+
+        import torch
+
+        if torch.cuda.is_available():
+            args.num_cores = [3]
+        else:
+            args.num_cores = [1] # We set this because deep learning models can be huge and we can't parallelize the process as much as we can without using it. It's mainly for avoiding memory issues.
+
+        import torch.multiprocessing as mp
+        mp.set_start_method('spawn', force=True)
+
+        filters.bert_classifier.initialize(**kwargs)
 
     if not args.no_verify:
         get_settings().filters[
