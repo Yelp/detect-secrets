@@ -78,7 +78,7 @@ def add_filter_options(parent: argparse.ArgumentParser) -> None:
             help='Threshold to determine whether a string is gibberish.',
         )
 
-    if filters.bert_classifier.is_feature_enabled():
+    if filters.classifier.is_feature_enabled():
         parser.add_argument(
             '--huggingface-model',
             type=str,
@@ -185,7 +185,7 @@ def parse_args(args: argparse.Namespace) -> None:
 
         filters.gibberish.initialize(**kwargs)
 
-    if filters.bert_classifier.is_feature_ready(args):
+    if filters.classifier.is_feature_ready(args):
         kwargs = {}
         if args.huggingface_model:
             kwargs['huggingface_model'] = args.huggingface_model
@@ -206,7 +206,7 @@ def parse_args(args: argparse.Namespace) -> None:
         import torch.multiprocessing as mp
         mp.set_start_method('spawn', force=True)
 
-        filters.bert_classifier.initialize(**kwargs)
+        filters.classifier.initialize(**kwargs)
 
     if not args.no_verify:
         get_settings().filters[

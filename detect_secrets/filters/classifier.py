@@ -3,10 +3,11 @@ import string
 from typing import Dict
 from typing import Union
 from typing import Optional
+from typing import Any
 
 from functools import lru_cache
 
-from transformers import Pipeline
+Pipeline = Any
 
 from ..core.plugins import Plugin
 from ..plugins.private_key import PrivateKeyDetector
