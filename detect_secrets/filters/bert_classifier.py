@@ -26,24 +26,24 @@ def is_feature_enabled() -> bool:
         return False
     
 def is_feature_ready(args: Namespace) -> bool:
-    return args.bert_model and args.bert_threshold and args.huggingface_token
+    return args.huggingface_model and args.threshold and args.huggingface_token
     
-def initialize(model_path: str = None, limit: float = 0.8, huggingface_token: Optional[str] = None) -> None:
+def initialize(huggingface_model: str = None, threshold: float = 0.8, huggingface_token: Optional[str] = None) -> None:
     """
     :param limit: this limit was obtained through trial and error. Check out
         the original pull request for rationale.
 
     :raises: ValueError
     """
-    path = model_path
+    path = huggingface_model
 
-    model = get_model(model_path, huggingface_token)
+    model = get_model(huggingface_model, huggingface_token)
 
     config: Dict[str, Union[float, str]] = {
-        'limit': limit,
+        'threshold': threshold,
     }
-    if model_path:
-        config['model'] = model_path
+    if huggingface_model:
+        config['model'] = huggingface_model
         config['huggingface_token'] = huggingface_token
 
     path = f'{__name__}.should_exclude_secret'
@@ -67,17 +67,17 @@ def should_exclude_secret(secret: str, plugin: Optional[Plugin] = None) -> bool:
     pipeline = get_model(get_settings().filters[f'{__name__}.should_exclude_secret']['model'], get_settings().filters[f'{__name__}.should_exclude_secret']['huggingface_token'])
     result = pipeline(secret)[0]
 
-    return result['label'] == 'LABEL_1' and result['score'] >= get_settings().filters[f'{__name__}.should_exclude_secret']['limit']
+    return result['label'] == 'LABEL_1' and result['score'] >= get_settings().filters[f'{__name__}.should_exclude_secret']['threshold']
 
 @lru_cache(maxsize=1)
 def get_model(model_name: str, huggingface_token: str) -> 'Pipeline':
     import torch
-    from transformers import pipeline, BertForSequenceClassification, BertTokenizer
+    from transformers import pipeline, AutoModelForSequenceClassification, AutoTokenizer
 
-    model = BertForSequenceClassification.from_pretrained(model_name, token=huggingface_token)
+    model = AutoModelForSequenceClassification.from_pretrained(model_name, token=huggingface_token)
     model = model.share_memory()
 
-    tokenizer = BertTokenizer.from_pretrained(model_name, token=huggingface_token)
+    tokenizer = AutoTokenizer.from_pretrained(model_name, token=huggingface_token)
 
     if torch.cuda.is_available():
         logger.info("CUDA is available. Using GPU for Bert model.")

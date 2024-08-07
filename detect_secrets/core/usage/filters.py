@@ -80,12 +80,12 @@ def add_filter_options(parent: argparse.ArgumentParser) -> None:
 
     if filters.bert_classifier.is_feature_enabled():
         parser.add_argument(
-            '--bert-model',
+            '--huggingface-model',
             type=str,
             help='HuggingFace model path for classifying secrets.',
         )
         parser.add_argument(
-            '--bert-threshold',
+            '--threshold',
             type=float,
             help='Threshold to determine whether a string is a secret.',
         )
@@ -187,11 +187,11 @@ def parse_args(args: argparse.Namespace) -> None:
 
     if filters.bert_classifier.is_feature_ready(args):
         kwargs = {}
-        if args.bert_model:
-            kwargs['model_path'] = args.bert_model
+        if args.huggingface_model:
+            kwargs['huggingface_model'] = args.huggingface_model
 
-        if args.bert_threshold:
-            kwargs['limit'] = args.bert_threshold
+        if args.threshold:
+            kwargs['threshold'] = args.threshold
 
         if args.huggingface_token:
             kwargs['huggingface_token'] = args.huggingface_token
