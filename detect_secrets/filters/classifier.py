@@ -27,7 +27,10 @@ def is_feature_enabled() -> bool:
         return False
     
 def is_feature_ready(args: Namespace) -> bool:
-    return args.huggingface_model and args.threshold and args.huggingface_token
+    try:
+        return args.huggingface_model and args.threshold and args.huggingface_token
+    except Exception:
+        return False
     
 def initialize(huggingface_model: str = None, threshold: float = 0.8, huggingface_token: Optional[str] = None) -> None:
     """
