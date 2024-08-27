@@ -32,7 +32,14 @@ def is_feature_enabled() -> bool:
 
 def is_feature_ready(args: Namespace) -> bool:
     try:
-        return type(args.huggingface_model and args.threshold and args.huggingface_token) is bool
+        temp = vars(args)
+        answer = True
+
+        entries = ['huggingface_model', 'threshold', 'huggingface_token']
+        for entry in entries:
+            answer = answer and temp[entry] is not None
+
+        return answer
     except Exception:
         return False
 
