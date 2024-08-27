@@ -201,7 +201,7 @@ def parse_args(args: argparse.Namespace) -> None:
         if torch.cuda.is_available():
             args.num_cores = [3]
         else:
-            args.num_cores = [1] # We set this because deep learning models can be huge and we can't parallelize the process as much as we can without using it. It's mainly for avoiding memory issues.
+            args.num_cores = [1]
 
         import torch.multiprocessing as mp
         mp.set_start_method('spawn', force=True)
