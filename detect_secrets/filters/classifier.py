@@ -83,11 +83,9 @@ def should_exclude_secret(secret: str, plugin: Optional[Plugin] = None) -> bool:
         raise AssertionError('Attempting to use uninitialized HuggingFace model.')
 
     pipeline = get_model(model_name, token)
-    result = pipeline(secret)[0]
+    result:Dict[str, Union[str, float]] = pipeline(secret)[0]
 
-    result = result['label'] == 'LABEL_1' and result['score'] >= threshold
-
-    return result if result is bool else False
+    return result['label'] == 'LABEL_1' and result['score'] >= threshold
 
 
 @lru_cache(maxsize=1)
