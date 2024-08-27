@@ -32,7 +32,7 @@ def is_feature_enabled() -> bool:
 
 def is_feature_ready(args: Namespace) -> bool:
     try:
-        return type(args.huggingface_model and args.threshold and args.huggingface_token) == bool
+        return type(args.huggingface_model and args.threshold and args.huggingface_token) is bool
     except Exception:
         return False
 
