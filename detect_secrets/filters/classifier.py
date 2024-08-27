@@ -52,7 +52,7 @@ def initialize(
 
     get_model(huggingface_model, huggingface_token)
 
-    config: Dict[str, Union[float, str]] = {
+    config: Dict[str, Union[float, str, Optional[str]]] = {
         'threshold': threshold,
     }
     if huggingface_model:
@@ -85,7 +85,9 @@ def should_exclude_secret(secret: str, plugin: Optional[Plugin] = None) -> bool:
     pipeline = get_model(model_name, token)
     result = pipeline(secret)[0]
 
-    return result['label'] == 'LABEL_1' and result['score'] >= threshold
+    result = result['label'] == 'LABEL_1' and result['score'] >= threshold
+
+    return result if result is bool else False
 
 
 @lru_cache(maxsize=1)
