@@ -13,6 +13,7 @@ class TestTelegramTokenDetector:
             ('7213808860:AAH1bjqpKKW3maRSPAxzIU-0v6xNuq2-NjM', True),
             ('foo:AAH1bjqpKKW3maRSPAxzIU-0v6xNuq2-NjM', False),
             ('foo', False),
+            ('arn:aws:sns:aaa:111122223333:aaaaaaaaaaaaaaaaaaassssssddddddddddddd', False)
         ],
     )
     def test_analyze(self, payload, should_flag):
