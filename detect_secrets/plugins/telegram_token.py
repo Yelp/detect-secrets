@@ -15,7 +15,7 @@ class TelegramBotTokenDetector(RegexBasedDetector):
 
     denylist = [
         # refs https://core.telegram.org/bots/api#authorizing-your-bot
-        re.compile(r'\d{8,10}:[0-9A-Za-z_-]{35}'),
+        re.compile(r'^\d{8,10}:[0-9A-Za-z_-]{35}$'),
     ]
 
     def verify(self, secret: str) -> VerifiedResult:  # pragma: no cover
