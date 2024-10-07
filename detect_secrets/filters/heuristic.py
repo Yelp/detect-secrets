@@ -197,7 +197,7 @@ def _get_indirect_reference_regex() -> Pattern:
     #       [^\v]*      ->  Something except line breaks
     #       [\]\)]      ->  End of indirect reference: ] or )
     #   )
-    return re.compile(r'([^\v=!:]*)\s*(:=?|[!=]{1,3})\s*([\w.-]+[\[\(][^\v]*[\]\)])')
+    return re.compile(r'([^\v=!:"<%>]*)\s*(:=?|[!=]{1,3})\s*([\w.-]+[\[\(][^\v]*[\]\)])')
 
 
 def is_lock_file(filename: str) -> bool:

@@ -139,6 +139,8 @@ def test_is_prefixed_with_dollar_sign(secret, result):
         ('secret = get_secret_key()', True),
         ('secret = request.headers["apikey"]', True),
         ('secret = hunter2', False),
+        ("<%= ENV['CLIENT_ACCESS_KEY_ID'].presence || 'AKIA123456789ABCDEF1' %>", True),
+        ("ENV['CLIENT_ACCESS_KEY_ID'].presence || 'AKIA123456789ABCDEF1'", False),
     ),
 )
 def test_is_indirect_reference(line, result):
