@@ -11,6 +11,7 @@ class IPPublicDetector(RegexBasedDetector):
         - 10.
         - 172.(16-31)
         - 192.168.
+        - 169.254. - Link Local Address IPv4
 
     Reference:
     https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.xhtml
@@ -25,6 +26,7 @@ class IPPublicDetector(RegexBasedDetector):
                 192\.168\. # Exclude "192.168."
                 |127\.     # Exclude "127."
                 |10\.      # Exclude "10."
+                |169\.254\. # Exclude IPv4 Link Local Address (169.254.0.0/16)
                 |172\.(?:1[6-9]|2[0-9]|3[01])   # Exclude "172." with specific ranges
             )
             (?:            # Non-capturing group for octets
