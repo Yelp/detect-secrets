@@ -31,7 +31,7 @@ requests==2.32.3
 responses==0.25.3
 six==1.16.0
 toml==0.10.2
-tox==4.15.0
+tox==4.23.2
 tox-pip-extensions==1.6.0
 typed-ast==1.5.5
 types-PyYAML==6.0.12.12
