@@ -13,7 +13,7 @@ idna==3.7
 iniconfig==2.0.0
 mccabe==0.7.0
 monotonic==1.6
-mypy==0.971
+mypy==1.13.0
 mypy-extensions==1.0.0
 nodeenv==1.9.1
 packaging==24.1
