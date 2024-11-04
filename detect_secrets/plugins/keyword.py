@@ -223,6 +223,16 @@ FOLLOWED_BY_ARROW_FUNCTION_SIGN_QUOTES_REQUIRED_REGEX = re.compile(
     ),
     flags=re.IGNORECASE,
 )
+DATA_PUT_PASSWORD_REGEX = re.compile(
+    # Matches patterns like data.put("password", "bar") or data.put('password', 'bar')
+    r'data\.put\({whitespace}{quote}{denylist}{quote}{whitespace},{whitespace}{quote}({secret}){quote}{whitespace}\)'.format(
+        denylist=DENYLIST_REGEX_WITH_PREFIX,
+        quote=QUOTE,
+        whitespace=OPTIONAL_WHITESPACE,
+        secret=SECRET,
+    ),
+    re.IGNORECASE,
+)
 CONFIG_DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_COLON_REGEX: 4,
     PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX: 2,
@@ -248,6 +258,7 @@ QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 5,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
     FOLLOWED_BY_ARROW_FUNCTION_SIGN_QUOTES_REQUIRED_REGEX: 4,
+    DATA_PUT_PASSWORD_REGEX: 2,
 }
 
 TERRAFORM_DENYLIST_REGEX_TO_GROUP = {

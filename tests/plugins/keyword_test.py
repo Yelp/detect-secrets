@@ -162,6 +162,8 @@ QUOTES_REQUIRED_TEST_CASES_GENERIC = [
     (LONG_LINE, None),  # Long line test
     ('password => ""', None),
     ('password => {}'.format(COMMON_SECRET), None),
+    ('data.put("password", "{}")'.format(COMMON_SECRET), COMMON_SECRET),
+    ('data.put("secret", "{}")'.format(COMMON_SECRET), COMMON_SECRET),
 ]
 
 QUOTES_REQUIRED_TEST_CASES = [
