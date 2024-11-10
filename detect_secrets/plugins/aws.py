@@ -32,7 +32,7 @@ class AWSKeyDetector(RegexBasedDetector):
         # keys (since they can be verified), rather than the secret tokens.
 
         re.compile(
-            r'aws.{{0,20}}?{secret_keyword}.{{0,20}}?[\'\"]([0-9a-zA-Z/+]{{40}})[\'\"]'.format(
+            r'aws.{{0,20}}?{secret_keyword}.{{0,20}}?[\'\"]?([0-9a-zA-Z/+]{{40}})[\'\"]?'.format(
                 secret_keyword=secret_keyword,
             ),
             flags=re.IGNORECASE,
