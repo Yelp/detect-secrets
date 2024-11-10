@@ -124,6 +124,7 @@ def test_is_templated_secret(line, result):
 def test_is_prefixed_with_dollar_sign():
     assert filters.heuristic.is_prefixed_with_dollar_sign('$secret')
     assert not filters.heuristic.is_prefixed_with_dollar_sign('secret')
+    assert not filters.heuristic.is_prefixed_with_dollar_sign('')
 
 
 @pytest.mark.parametrize(
