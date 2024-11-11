@@ -21,7 +21,7 @@ class IbmCloudIamDetector(RegexBasedDetector):
     opt_ibm_cloud_iam = r'(?:ibm(?:_|-|)cloud(?:_|-|)iam|cloud(?:_|-|)iam|' + \
         r'ibm(?:_|-|)cloud|ibm(?:_|-|)iam|ibm|iam|cloud|)'
     opt_dash_underscore = r'(?:_|-|)'
-    opt_api = r'(?:api|)'
+    opt_api = r'(?:api|platform|)'
     key_or_pass = r'(?:key|pwd|password|pass|token)'
     secret = r'([a-zA-Z0-9_\-]{44}(?![a-zA-Z0-9_\-]))'
     denylist = [

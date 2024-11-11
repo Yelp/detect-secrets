@@ -45,6 +45,7 @@ class TestIBMCloudIamDetector:
             ('ibm_iam_key:= "{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             ('ibm_iam_key:= "{cloud_iam_key}extra"'.format(cloud_iam_key=CLOUD_IAM_KEY), False),
             ('ibm_api_key:="{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
+            ('ibm_platform_key={cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             ('ibm_password = "{cloud_iam_key}"'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             ('ibm-cloud-pwd = {cloud_iam_key}'.format(cloud_iam_key=CLOUD_IAM_KEY), True),
             ('ibm-cloud-pwd = {cloud_iam_key}extra'.format(cloud_iam_key=CLOUD_IAM_KEY), False),
