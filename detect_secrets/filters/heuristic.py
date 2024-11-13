@@ -135,6 +135,18 @@ IGNORED_FILE_EXTENSIONS = {
     '.xls',
     '.xlsx',
     '.zip',
+    '.resx',
+    '.bim',
+    '.mdl',
+    '.slx',
+    '.hex',
+    '.srec',
+    '.mot',
+    '.csa',
+    '.fls',
+    '.fl2',
+    '.fl3',
+    '.fl4',
 }
 
 
