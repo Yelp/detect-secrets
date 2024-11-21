@@ -26,7 +26,7 @@ THE SOFTWARE.
 """
 import os
 import re
-from typing import Any
+from typing import Any, Tuple
 from typing import Generator
 from typing import Optional
 from typing import Set
@@ -67,6 +67,7 @@ class PrivateKeyDetector(RegexBasedDetector):
 
     def __init__(self) -> None:
         self._analyzed_files: Set[str] = set()
+        self._commit_hashes: Set[Tuple[str, str]] = set()
 
     def analyze_line(
             self,
@@ -75,7 +76,7 @@ class PrivateKeyDetector(RegexBasedDetector):
             line_number: int = 0,
             context: Optional[CodeSnippet] = None,
             raw_context: Optional[CodeSnippet] = None,
-            is_scan_diff: Optional[bool] = False,
+            commit_hash: Optional[str] = '',
             **kwargs: Any,
     ) -> Set[PotentialSecret]:
         output: Set[PotentialSecret] = set()
@@ -87,34 +88,34 @@ class PrivateKeyDetector(RegexBasedDetector):
             ),
         )
 
-        to_analyze_line = filename not in self._analyzed_files
-        if is_scan_diff:
-            to_analyze_line = True
+        # for git history
+        if not output and commit_hash:
+            if (filename, commit_hash) not in self._commit_hashes:
+                file_context = ''
+                for l in context.lines:
+                    file_context += l
+                output.update(
+                    super().analyze_line(
+                        filename=filename, line=file_context, line_number=1,
+                        context=context, raw_context=raw_context, **kwargs,
+                    ),
+                )
+                self._commit_hashes.add((filename, commit_hash))
+                return output
+            else:
+                return {}
 
-        if not output and to_analyze_line \
+        if not output and filename not in self._analyzed_files \
                 and 0 < self.get_file_size(filename) < PrivateKeyDetector.MAX_FILE_SIZE:
-            if not is_scan_diff:
-                self._analyzed_files.add(filename)
+            self._analyzed_files.add(filename)
             file_content = self.read_file(filename)
             if file_content:
-                found_secrets = super().analyze_line(
-                    filename=filename, line=file_content, line_number=1,
-                    context=context, raw_context=raw_context, **kwargs,
+                output.update(
+                    super().analyze_line(
+                        filename=filename, line=file_content, line_number=1,
+                        context=context, raw_context=raw_context, **kwargs,
+                    ),
                 )
-                updated_secrets = set()
-                for sec in found_secrets:
-                    secret_val = sec.secret_value or ''
-                    line_number = self.find_line_number(file_content, secret_val)
-                    updated_secrets.add(
-                        PotentialSecret(
-                            type=self.secret_type,
-                            filename=sec.filename,
-                            secret=secret_val,
-                            line_number=line_number,
-                            is_verified=sec.is_verified,
-                        ),
-                    )
-                output.update(updated_secrets)
         return output
 
     def analyze_string(self, string: str) -> Generator[str, None, None]:
@@ -141,15 +142,3 @@ class PrivateKeyDetector(RegexBasedDetector):
             return os.path.getsize(file_path)
         except Exception:
             return -1
-
-    def find_line_number(
-            self, file_content: str, substring: str, default_line_number: int = 1,
-    ) -> int:
-        if len(substring) == 0:
-            return default_line_number
-        lines = file_content.splitlines()
-
-        for line_number, line in enumerate(lines, start=1):
-            if substring in line:
-                return line_number
-        return default_line_number
