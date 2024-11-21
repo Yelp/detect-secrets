@@ -30,6 +30,7 @@ from typing import Any
 from typing import Generator
 from typing import Optional
 from typing import Set
+from typing import Tuple
 
 from ..core.potential_secret import PotentialSecret
 from ..util.code_snippet import CodeSnippet
@@ -67,6 +68,7 @@ class PrivateKeyDetector(RegexBasedDetector):
 
     def __init__(self) -> None:
         self._analyzed_files: Set[str] = set()
+        self._commit_hashes: Set[Tuple[str, str]] = set()
 
     def analyze_line(
             self,
@@ -75,7 +77,7 @@ class PrivateKeyDetector(RegexBasedDetector):
             line_number: int = 0,
             context: Optional[CodeSnippet] = None,
             raw_context: Optional[CodeSnippet] = None,
-            is_scan_diff: Optional[bool] = False,
+            commit_hash: Optional[str] = '',
             **kwargs: Any,
     ) -> Set[PotentialSecret]:
         output: Set[PotentialSecret] = set()
@@ -87,35 +89,65 @@ class PrivateKeyDetector(RegexBasedDetector):
             ),
         )
 
-        to_analyze_line = filename not in self._analyzed_files
-        if is_scan_diff:
-            to_analyze_line = True
+        if output:
+            return output
 
-        if not output and to_analyze_line \
+        # for git history
+        if commit_hash:
+            if (filename, commit_hash) not in self._commit_hashes:
+                file_content = ''
+                for file_line in context.lines:  # type: ignore
+                    file_content += file_line
+                found_secrets = super().analyze_line(
+                    filename=filename, line=file_content, line_number=1,
+                    context=context, raw_context=raw_context, **kwargs,
+                )
+                updated_secrets = self._get_updated_secrets(
+                    found_secrets=found_secrets,
+                    file_content=file_content,
+                    split_by_newline=True,
+                )
+                output.update(updated_secrets)
+                self._commit_hashes.add((filename, commit_hash))
+            return output
+
+        if filename not in self._analyzed_files \
                 and 0 < self.get_file_size(filename) < PrivateKeyDetector.MAX_FILE_SIZE:
-            if not is_scan_diff:
-                self._analyzed_files.add(filename)
+            self._analyzed_files.add(filename)
             file_content = self.read_file(filename)
             if file_content:
                 found_secrets = super().analyze_line(
                     filename=filename, line=file_content, line_number=1,
                     context=context, raw_context=raw_context, **kwargs,
                 )
-                updated_secrets = set()
-                for sec in found_secrets:
-                    secret_val = sec.secret_value or ''
-                    line_number = self.find_line_number(file_content, secret_val)
-                    updated_secrets.add(
-                        PotentialSecret(
-                            type=self.secret_type,
-                            filename=sec.filename,
-                            secret=secret_val,
-                            line_number=line_number,
-                            is_verified=sec.is_verified,
-                        ),
-                    )
+                updated_secrets = self._get_updated_secrets(
+                    found_secrets=found_secrets,
+                    file_content=file_content,
+                )
                 output.update(updated_secrets)
         return output
+
+    def _get_updated_secrets(
+        self, found_secrets: Set[PotentialSecret],
+        file_content: str,
+        split_by_newline: Optional[bool] = False,
+    ) -> Set[PotentialSecret]:
+        updated_secrets: Set[PotentialSecret] = set()
+        for sec in found_secrets:
+            secret_val = sec.secret_value.strip() or ''  # type: ignore
+            if split_by_newline and '\n' in secret_val:
+                secret_val = secret_val.split('\n')[0]
+            line_number = self.find_line_number(file_content, secret_val)
+            updated_secrets.add(
+                PotentialSecret(
+                    type=self.secret_type,
+                    filename=sec.filename,
+                    secret=secret_val,
+                    line_number=line_number,
+                    is_verified=sec.is_verified,
+                ),
+            )
+        return updated_secrets
 
     def analyze_string(self, string: str) -> Generator[str, None, None]:
         for regex in self.denylist:
