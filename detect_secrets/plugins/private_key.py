@@ -75,6 +75,7 @@ class PrivateKeyDetector(RegexBasedDetector):
             line_number: int = 0,
             context: Optional[CodeSnippet] = None,
             raw_context: Optional[CodeSnippet] = None,
+            is_scan_diff: Optional[bool] = False,
             **kwargs: Any,
     ) -> Set[PotentialSecret]:
         output: Set[PotentialSecret] = set()
@@ -86,9 +87,14 @@ class PrivateKeyDetector(RegexBasedDetector):
             ),
         )
 
-        if not output and filename not in self._analyzed_files \
+        to_analyze_line = filename not in self._analyzed_files
+        if is_scan_diff:
+            to_analyze_line = True
+
+        if not output and to_analyze_line \
                 and 0 < self.get_file_size(filename) < PrivateKeyDetector.MAX_FILE_SIZE:
-            self._analyzed_files.add(filename)
+            if not is_scan_diff:
+                self._analyzed_files.add(filename)
             file_content = self.read_file(filename)
             if file_content:
                 output.update(
