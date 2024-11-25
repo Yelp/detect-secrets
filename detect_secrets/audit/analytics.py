@@ -58,7 +58,14 @@ class StatisticsAggregator:
         return cast(StatisticsCounter, self.data[secret_type]['stats'])
 
     def __str__(self) -> str:
-        raise NotImplementedError
+        output = ''
+
+        for secret_type, framework in self.data.items():
+            output += f'Plugin: {get_mapping_from_secret_type_to_class()[secret_type].__name__}\n'
+            for value in framework.values():
+                output += f'Statistics: {value}\n\n'
+
+        return output
 
     def json(self) -> Dict[str, Any]:
         output = {}
@@ -77,19 +84,36 @@ class StatisticsCounter:
         self.incorrect: int = 0
         self.unknown: int = 0
 
-    def __repr__(self) -> str:
+    def __str__(self) -> str:
         return (
-            f'{self.__class__.__name__}(correct={self.correct}, '
-            'incorrect={self.incorrect}, unknown={self.unknown},)'
+            f'True Positives: {self.correct}, False Positives: {self.incorrect}, '
+            f'Unknown: {self.unknown}, Precision: {self.calculate_precision()}, '
+            f'Recall: {self.calculate_recall()}'
         )
 
     def json(self) -> Dict[str, Any]:
+        return {
+            'raw': {
+                'true-positives': self.correct,
+                'false-positives': self.incorrect,
+                'unknown': self.unknown,
+            },
+            'score': {
+                'precision': self.calculate_precision(),
+                'recall': self.calculate_recall(),
+            },
+        }
+
+    def calculate_precision(self) -> float:
         precision = (
             round(float(self.correct) / (self.correct + self.incorrect), 4)
             if (self.correct and self.incorrect)
             else 0.0
         )
 
+        return precision
+
+    def calculate_recall(self) -> float:
         # NOTE(2020-11-08|domanchi): This isn't the formal definition of `recall`, however,
         # this is the definition that we're going to attribute to it.
         #
@@ -124,14 +148,4 @@ class StatisticsCounter:
             else 0.0
         )
 
-        return {
-            'raw': {
-                'true-positives': self.correct,
-                'false-positives': self.incorrect,
-                'unknown': self.unknown,
-            },
-            'score': {
-                'precision': precision,
-                'recall': recall,
-            },
-        }
+        return recall

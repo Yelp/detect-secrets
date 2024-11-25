@@ -53,11 +53,13 @@ class TestYAMLTransformer:
         # However, "folded" style may be used to keep a certain line limit with very long secrets,
         # so we should probably handle that.
         file = mock_file_object(
-            textwrap.dedent(f"""
+            textwrap.dedent(
+                f"""
                 multiline: |{block_chomping}    # example
                     this is
                     a basic multiline string
-            """)[1:-1],
+            """,
+            )[1:-1],
         )
 
         assert YAMLTransformer().parse_file(file) == [
@@ -121,6 +123,43 @@ class TestYAMLTransformer:
             'keyD: "valueD"',
         ]
 
+    @staticmethod
+    def test_single_anchor_tag():
+        file = mock_file_object(
+            textwrap.dedent("""
+                keyA: &test
+                    keyB: string    # with comments
+            """)[1:-1],
+        )
+
+        assert YAMLTransformer().parse_file(file) == [
+            '',
+            'keyB: "string"    # with comments',
+        ]
+
+    @staticmethod
+    def test_anchor_tag_alias_combination():
+        file = mock_file_object(
+            textwrap.dedent("""
+                groupA: &groupA
+                    keyA: valueA
+                    keyB: valueB
+
+                groupB: &groupB
+                    keyC: valueC
+                    keyD: *groupA
+            """)[1:-1],
+        )
+
+        assert YAMLTransformer().parse_file(file) == [
+            '',
+            'keyA: "valueA"',
+            'keyB: "valueB"',
+            '',
+            '',
+            'keyC: "valueC"',
+        ]
+
 
 class TestYAMLFileParser:
     @staticmethod
@@ -158,12 +197,14 @@ class TestYAMLFileParser:
     def test_multi_line(block_scalar_style, block_chomping):
         # NOTE: Referenced https://yaml-multiline.info/ for the many ways to do multi line strings
         file = mock_file_object(
-            textwrap.dedent(f"""
+            textwrap.dedent(
+                f"""
                 key: {block_scalar_style}{block_chomping}   # comment
                     multi
-                    #line
+                    # line
                     string
-            """)[1:-1],
+            """,
+            )[1:-1],
         )
 
         assert [item.line for item in YAMLFileParser(file)] == [
@@ -426,5 +467,82 @@ class TestYAMLFileParser:
                 '__value__': '4',
                 '__line__': 2,
                 '__original_key__': 'd',
+            },
+        }
+
+    @staticmethod
+    def test_single_anchor_tag():
+        file = mock_file_object(
+            textwrap.dedent("""
+                keyA: &test
+                    keyB: string    # with comments
+                    keyC:
+                        keyD: string
+            """)[1:-1],
+        )
+
+        assert YAMLFileParser(file).json() == {
+            'keyA': {
+                'keyB': {
+                    '__value__': 'string',
+                    '__line__': 2,
+                    '__original_key__': 'keyB',
+                },
+                'keyC': {
+                    'keyD': {
+                        '__value__': 'string',
+                        '__line__': 4,
+                        '__original_key__': 'keyD',
+                    },
+                },
+            },
+        }
+
+    @staticmethod
+    def test_anchor_tag_alias_combination():
+        file = mock_file_object(
+            textwrap.dedent("""
+                groupA: &groupA
+                    keyA: valueA
+                    keyB: valueB
+
+                groupB: &groupB
+                    keyC: valueC
+                    keyD: *groupA
+            """)[1:-1],
+        )
+
+        temp = YAMLFileParser(file).json()
+        assert temp == {
+            'groupA': {
+                'keyA': {
+                    '__value__': 'valueA',
+                    '__line__': 2,
+                    '__original_key__': 'keyA',
+                },
+                'keyB': {
+                    '__value__': 'valueB',
+                    '__line__': 3,
+                    '__original_key__': 'keyB',
+                },
+            },
+            'groupB': {
+                'keyC': {
+                    '__value__': 'valueC',
+                    '__line__': 6,
+                    '__original_key__': 'keyC',
+                },
+                'keyD': {
+                    'keyA': {
+                        '__value__': 'valueA',
+                        '__line__': 2,
+                        '__original_key__': 'keyA',
+                    },
+                    'keyB': {
+                        '__value__': 'valueB',
+                        '__line__': 3,
+                        '__original_key__': 'keyB',
+                    },
+                },
             },
         }

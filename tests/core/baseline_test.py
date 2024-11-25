@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import tempfile
 from pathlib import Path
@@ -84,22 +85,46 @@ class TestCreate:
 
 def test_load_and_output():
     with open('.secrets.baseline') as f:
-        data = json.loads(f.read())
+        filedata = f.read()
 
-    secrets = baseline.load(data, filename='.secrets.baseline')
+    if os.sep == '\\':
+        # Replace Linux path seperators for Windows ones
+        filedata = filedata.replace('/', '\\\\')
+
+    filedata_json = json.loads(filedata)
+    secrets = baseline.load(filedata_json, filename='.secrets.baseline')
     output = baseline.format_for_output(secrets)
 
-    for item in [data, output]:
+    for item in [filedata_json, output]:
         item.pop('generated_at')
 
     # We perform string matching because we want to ensure stable sorts.
-    assert json.dumps(output) == json.dumps(data)
+    assert json.dumps(output) == json.dumps(filedata_json)
 
     # We need to make sure that default values carry through, for future backwards compatibility.
     for plugin in output['plugins_used']:
         if plugin['name'] == 'Base64HighEntropyString':
             assert plugin['limit'] == 4.5
             break
+
+
+def test_plugin_not_found_in_baseline():
+    # Test fix for the issue in #718
+    data = {
+        'version': '1.4.0',
+        'plugins_used': [{
+            'name': 'FakeCustomPlugin',
+            'path': 'file://./path/to/plugin/that/does/not/exist/plugin.py',
+        }],
+        'results': {},
+    }
+    secrets = baseline.load(data)
+    with pytest.raises(FileNotFoundError) as exc_info:
+        baseline.format_for_output(secrets)
+
+    # Check that filename of file that was not found is in the error message
+    # (#718)
+    exc_info.match(r'\./path/to/plugin/that/does/not/exist/plugin\.py')
 
 
 def test_upgrade_does_nothing_if_newer_version():

@@ -121,9 +121,16 @@ def test_is_templated_secret(line, result):
         assert bool(list(scan_line(line))) is result
 
 
-def test_is_prefixed_with_dollar_sign():
-    assert filters.heuristic.is_prefixed_with_dollar_sign('$secret')
-    assert not filters.heuristic.is_prefixed_with_dollar_sign('secret')
+@pytest.mark.parametrize(
+    'secret, result',
+    (
+        ('$secret', True),
+        ('secret', False),
+        ('', False),
+    ),
+)
+def test_is_prefixed_with_dollar_sign(secret, result):
+    assert filters.heuristic.is_prefixed_with_dollar_sign(secret) == result
 
 
 @pytest.mark.parametrize(

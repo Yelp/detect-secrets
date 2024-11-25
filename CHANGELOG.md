@@ -25,9 +25,64 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [@xxxx]: https://github.com/xxxx
 -->
 
-<!--
-### Unreleased
--->
+### v1.5.0
+##### May 6th, 2024
+
+We apologise for the extreme delay in publishing a new release for our beloved `detect-secrets`. We at Yelp appreciate your continued support and your contributions to this valuable project!
+
+#### :newspaper: News
+- We're adding support for Python 3.10, 3.11 and 3.12 and we dropped support for Python 3.6 and 3.7! We hope this won't be too disruptive for you all. Be aware that in a next release, we'll remove support for Python 3.8 too, as it'll reach EOL in October 2024.
+
+#### :mega: Release Highlights
+- Added support for OS-agnostic baseline files ([#586])
+
+#### :tada: New Features
+- Added a detector for IP addresses ([#692])
+- Added a detector for GitLab tokens ([#782])
+- Added a detector for Telegram tokens ([#808])
+- Added a detector for Pypi and TestPypi tokens ([#819])
+- Added a detector for OpenAI tokens ([#823])
+
+#### :sparkles: Usability
+- Added filenames in errors thrown when a plugin file specified in the `.secrets.baseline` is not found. ([#719])
+- Changed the wording of the audit prompt ([#738])
+
+#### :telescope: Accuracy
+- Improved DiscordBotTokenDetector to reduce false negatives ([#628])
+- Improved KeywordDetector to reduce false positive for Golang ([#675])
+- Improved AWSKeyDetector by adding more access key formats ([#796])
+
+#### :bug: Bugfixes
+- Fixed `NotImplementedError` in StatisticsAggregator ([#678])
+- Fixed bug in YAMLTransformer related to parsing YAML files with achors and tags ([#679])
+- Fixed `IndexError` in `is_prefixed_with_dollar_sign` caused by passing empty strings ([#712])
+
+#### :snake: Miscellaneous
+- Dropped support for Python 3.6 ([#672])
+- Dropped support for Python 3.7 ([#724])
+- Added support for Python 3.10 ([#724])
+- Added support for Python 3.11 ([#730])
+- Added support for Python 3.12 ([#810])
+- Multiple dependency updates
+
+[#586]: https://github.com/Yelp/detect-secrets/pull/586
+[#628]: https://github.com/Yelp/detect-secrets/pull/628
+[#672]: https://github.com/Yelp/detect-secrets/pull/672
+[#675]: https://github.com/Yelp/detect-secrets/pull/675
+[#678]: https://github.com/Yelp/detect-secrets/pull/678
+[#679]: https://github.com/Yelp/detect-secrets/pull/679
+[#692]: https://github.com/Yelp/detect-secrets/pull/692
+[#712]: https://github.com/Yelp/detect-secrets/pull/712
+[#719]: https://github.com/Yelp/detect-secrets/pull/719
+[#724]: https://github.com/Yelp/detect-secrets/pull/724
+[#730]: https://github.com/Yelp/detect-secrets/pull/730
+[#738]: https://github.com/Yelp/detect-secrets/pull/738
+[#782]: https://github.com/Yelp/detect-secrets/pull/782
+[#796]: https://github.com/Yelp/detect-secrets/pull/796
+[#808]: https://github.com/Yelp/detect-secrets/pull/808
+[#810]: https://github.com/Yelp/detect-secrets/pull/810
+[#819]: https://github.com/Yelp/detect-secrets/pull/819
+[#823]: https://github.com/Yelp/detect-secrets/pull/823
 
 ### v1.4.0
 ##### October 4th, 2022

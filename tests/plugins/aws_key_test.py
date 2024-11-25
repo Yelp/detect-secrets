@@ -33,6 +33,22 @@ class TestAWSKeyDetector:
                 False,
             ),
             (
+                'A3T0ZZZZZZZZZZZZZZZZ',
+                True,
+            ),
+            (
+                'ABIAZZZZZZZZZZZZZZZZ',
+                True,
+            ),
+            (
+                'ACCAZZZZZZZZZZZZZZZZ',
+                True,
+            ),
+            (
+                'ASIAZZZZZZZZZZZZZZZZ',
+                True,
+            ),
+            (
                 'aws_access_key = "{}"'.format(EXAMPLE_SECRET),
                 True,
             ),
@@ -102,8 +118,8 @@ class TestAWSKeyDetector:
                 self.example_key,
                 get_code_snippet(
                     [
-                        f'false_secret = {"TEST" * 10}',
-                        f'real_secret = {EXAMPLE_SECRET}',
+                        'false_secret = {0}'.format('TEST' * 10),
+                        'real_secret = {0}'.format(EXAMPLE_SECRET),
                     ],
                     1,
                 ),
