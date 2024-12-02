@@ -13,5 +13,5 @@ class ArtifactoryDetector(RegexBasedDetector):
         re.compile(r'(?:\s|=|:|"|^)AKC[a-zA-Z0-9]{10,200}(?:\s|"|$)'),
         # Artifactory encrypted passwords begin with AP[A-Z]
         # Keyword with Password:
-        re.compile(r'(?<!AAAA[_\-\w]{7})(?i:artif|jfrog|buildkit)(?:.{0,100}\n?){0,2}(?:\s|=|:|"|^)(AP[\dABCDEF][a-zA-Z0-9]{8,200})(?:\s|"|$)'),
+        re.compile(r'(?i:artif|jfrog|buildkit)(?:.{0,100}\n?){0,2}(?:\s|=|:|"|^)(AP[\dABCDEF][a-zA-Z0-9]{8,200})(?:\s|"|$)'),
     ]
