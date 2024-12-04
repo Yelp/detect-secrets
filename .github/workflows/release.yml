@@ -83,8 +83,10 @@ jobs:
         run: |
           python -m pip install wheel
           python setup.py sdist bdist_wheel
+      - name: rename dist files
+        run: for file in dist/*.gz; do mv "$file" "${file//-/_}" ; done
       - name: Publish a Python distribution to PyPI
-        uses: pypa/gh-action-pypi-publish@15c56dba361d8335944d31a2ecd17d700fc7bcbc  # v1.12.2
+        uses: pypa/gh-action-pypi-publish@b7f401de30cb6434a1e19f805ff006643653240e  # v1
       - name: sleep and wait for package to refresh
         run: |
           sleep 2m
