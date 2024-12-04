@@ -84,7 +84,9 @@ jobs:
           python -m pip install wheel
           python setup.py sdist bdist_wheel
       - name: rename dist files
-        run: for file in dist/*.gz; do mv "$file" "${file//bc-detect-secrets/bc_detect_secrets}" ; done
+        run: |
+          shopt -s nullglob
+          for file in dist/bc-*.gz; do mv "$file" "${file//bc-detect-secrets/bc_detect_secrets}" ; done
       - name: Publish a Python distribution to PyPI
         uses: pypa/gh-action-pypi-publish@b7f401de30cb6434a1e19f805ff006643653240e  # v1
       - name: sleep and wait for package to refresh
