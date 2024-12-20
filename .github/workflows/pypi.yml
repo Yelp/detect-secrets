@@ -42,6 +42,6 @@ jobs:
     - name: Build package
       run: python setup.py sdist bdist_wheel
     - name: Publish package
-      uses: pypa/gh-action-pypi-publish@v1.5.0
+      uses: pypa/gh-action-pypi-publish@release/v1
       with:
         password: ${{ secrets.pypi_password }}
