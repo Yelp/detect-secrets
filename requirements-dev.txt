@@ -5,7 +5,7 @@ cfgv==3.4.0
 charset-normalizer==3.3.2
 coverage==7.5.3
 distlib==0.3.8
-filelock==3.14.0
+filelock==3.16.1
 flake8==7.0.0
 gibberish-detector==0.1.1
 identify==2.5.36
