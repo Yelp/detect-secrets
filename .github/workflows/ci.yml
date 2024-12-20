@@ -25,8 +25,7 @@ jobs:
         python-version: ${{ matrix.python }}
         cache: 'pip'
         cache-dependency-path: |
-          '**/requirements-dev.txt'
-          '**/requirements-dev-minimal.txt'
+          '**/requirements*.txt'
           '**/setup.py'
     - run: python -m pip install --upgrade setuptools pip tox virtualenv
     # Run tox only for the installed py version on the runner as outlined in the python matrix
