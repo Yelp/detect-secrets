@@ -133,11 +133,14 @@ def pretty_print_diagnostics(secrets: SecretsCollection, width: int = 80) -> Non
         ),
     )
     print()
-
+    
     # Display found secrets
     for _, secret in secrets:
         print(secret)
 
+    # Display the number of detected secrets
+    print(f"\nTotal secrets detected: {len(secrets)}")
+    
     # Display mitigation suggestions
     print('Possible mitigations:')
     wrapper = textwrap.TextWrapper(
