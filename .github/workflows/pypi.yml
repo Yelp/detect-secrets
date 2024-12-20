@@ -23,8 +23,8 @@ jobs:
         python-version: ${{ matrix.python }}
         cache: 'pip'
         cache-dependency-path: |
-          '**/requirements*.txt'
-          '**/setup.py'
+          '../**/requirements*.txt'
+          '../**/setup.py'
     - run: python -m pip install --upgrade setuptools pip tox virtualenv
     # Run tox only for the installed py version on the runner as outlined in the python matrix
     # Ensures the correct py version is installed and tested as opposed to 'tox' which attempts to run for all py versions in tox.ini
@@ -43,8 +43,8 @@ jobs:
         python-version: 3.8
         cache: 'pip'
         cache-dependency-path: |
-          '**/requirements*.txt'
-          '**/setup.py'
+          '../**/requirements*.txt'
+          '../**/setup.py'
     - name: Install dependencies
       run: pip install wheel
     - name: Build package
