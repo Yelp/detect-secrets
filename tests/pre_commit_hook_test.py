@@ -98,6 +98,7 @@ def test_console_output():
     # Assert formatting
     output = capturedOutput.getvalue()
     assert output.startswith('ERROR: Potential secrets about to be committed to git repo!')
+    assert 'Total secrets detected: 1' in output
 
 
 def test_console_output_json_formatting():
