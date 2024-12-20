@@ -5,7 +5,7 @@ cfgv==3.4.0
 charset-normalizer==3.3.2
 coverage==7.5.3
 distlib==0.3.8
-filelock==3.14.0
+filelock==3.16.1
 flake8==7.0.0
 gibberish-detector==0.1.1
 identify==2.5.36
@@ -17,7 +17,7 @@ mypy==0.971
 mypy-extensions==1.0.0
 nodeenv==1.9.1
 packaging==24.1
-platformdirs==4.2.2
+platformdirs==4.3.6
 pluggy==1.5.0
 pre-commit==4.0.1
 py==1.11.0
@@ -31,7 +31,7 @@ requests==2.32.3
 responses==0.25.3
 six==1.16.0
 toml==0.10.2
-tox==4.15.0
+tox==4.23.2
 tox-pip-extensions==1.6.0
 typed-ast==1.5.5
 types-PyYAML==6.0.12.12
@@ -39,5 +39,5 @@ types-requests==2.31.0.20240106
 typing-extensions==4.12.2
 unidiff==0.7.5
 urllib3==2.2.2
-virtualenv==20.26.3
+virtualenv==20.26.6
 zipp==3.19.2
