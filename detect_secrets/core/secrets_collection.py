@@ -308,6 +308,10 @@ class SecretsCollection:
 
         return output
 
+    def __len__(self) -> int:
+        """Returns the total number of secrets in the collection."""
+        return sum(len(secrets) for secrets in self.data.values())
+
 
 def _scan_file_and_serialize(filename: str) -> List[PotentialSecret]:
     """Used for multiprocessing, since lambdas can't be serialized."""
