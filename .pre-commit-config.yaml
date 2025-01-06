@@ -26,7 +26,8 @@ repos:
     hooks:
     -   id: add-trailing-comma
 -   repo: https://github.com/pre-commit/mirrors-autopep8
-    rev: v1.4.4
+    repo: https://github.com/hhatto/autopep8
+    rev: v2.3.1
     hooks:
     -   id: autopep8
 -   repo: local
