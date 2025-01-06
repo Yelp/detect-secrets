@@ -33,7 +33,6 @@ six==1.16.0
 toml==0.10.2
 tox==4.23.2
 tox-pip-extensions==1.6.0
-typed-ast==1.5.5
 types-PyYAML==6.0.12.12
 types-requests==2.31.0.20240106
 typing-extensions==4.12.2
