@@ -24,10 +24,6 @@ repos:
     -   id: reorder-python-imports
         language_version: python3
         exclude: bumpity.py$
--   repo: https://github.com/asottile/add-trailing-comma
-    rev: v1.4.1
-    hooks:
-    -   id: add-trailing-comma
 -   repo: https://github.com/pre-commit/mirrors-autopep8
     repo: https://github.com/hhatto/autopep8
     rev: v2.3.1
