@@ -78,6 +78,23 @@ def add_filter_options(parent: argparse.ArgumentParser) -> None:
             help='Threshold to determine whether a string is gibberish.',
         )
 
+    if filters.classifier.is_feature_enabled():
+        parser.add_argument(
+            '--huggingface-model',
+            type=str,
+            help='HuggingFace model path for classifying secrets.',
+        )
+        parser.add_argument(
+            '--threshold',
+            type=float,
+            help='Threshold to determine whether a string is a secret.',
+        )
+        parser.add_argument(
+            '--huggingface-token',
+            type=str,
+            help='Huggingface API token for downloading models.',
+        )
+
     _add_custom_filters(parser)
     _add_disable_flag(parser)
 
@@ -167,6 +184,29 @@ def parse_args(args: argparse.Namespace) -> None:
             kwargs['limit'] = args.gibberish_limit
 
         filters.gibberish.initialize(**kwargs)
+
+    if filters.classifier.is_feature_ready(args):
+        kwargs = {}
+        if args.huggingface_model:
+            kwargs['huggingface_model'] = args.huggingface_model
+
+        if args.threshold:
+            kwargs['threshold'] = args.threshold
+
+        if args.huggingface_token:
+            kwargs['huggingface_token'] = args.huggingface_token
+
+        import torch
+
+        if torch.cuda.is_available():
+            args.num_cores = [3]
+        else:
+            args.num_cores = [1]
+
+        import torch.multiprocessing as mp
+        mp.set_start_method('spawn', force=True)
+
+        filters.classifier.initialize(**kwargs)
 
     if not args.no_verify:
         get_settings().filters[

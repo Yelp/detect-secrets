@@ -64,6 +64,9 @@ def handle_scan_action(args: argparse.Namespace) -> None:
             for secret in scan_for_allowlisted_secrets_in_file(filename):
                 secrets[secret.filename].add(secret)
 
+        # clear stdout buffer
+        sys.stdout.flush()
+
         print(json.dumps(baseline.format_for_output(secrets), indent=2))
         return
 
@@ -86,6 +89,9 @@ def handle_scan_action(args: argparse.Namespace) -> None:
 
         baseline.save_to_file(secrets, args.baseline_filename)
     else:
+        # clear stdout buffer
+        sys.stdout.flush()
+
         print(json.dumps(baseline.format_for_output(secrets, is_slim_mode=args.slim), indent=2))
 
 
@@ -135,6 +141,7 @@ def handle_audit_action(args: argparse.Namespace) -> None:
                 class_to_print = audit.report.SecretClassToPrint.REAL_SECRET
             elif args.only_false:
                 class_to_print = audit.report.SecretClassToPrint.FALSE_POSITIVE
+
             print(
                 json.dumps(
                     audit.report.generate_report(args.filename[0], class_to_print),
