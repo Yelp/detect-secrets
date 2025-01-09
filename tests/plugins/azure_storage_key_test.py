@@ -199,6 +199,22 @@ class TestAzureStorageKeyDetector:
                 """,
                 False,
             ),
+            (
+                    """
+                    "Microsoft.AspNetCore.AzureAppServices.HostingStartup/2.0.1": {
+                        "sha512": "hdneJMBdHdrlMc/NYaNS8GFWlR/3tN7TsV/jOSBuc61+gWULwu45t+I7g5IF/iCHWI9PLMLNP5VOj+d1Tv1zUA=="
+                    }
+                    """,
+                    False,
+            ),
+            (
+                    """
+                    "Microsoft.AspNetCore.AzureAppServicesIntegration/2.0.1": {
+                        "sha512": "r2JMiK8RB2mHGKWIc+NVViT++2ZxCAGJBbLtptINB32F/c3DrNEtKWVNs2MEldEb822llBjrRmsJ7cScCW+P7g=="
+                    }
+                    """,
+                    False,
+            ),
         ],
     )
     def test_analyze(self, payload, should_flag):
