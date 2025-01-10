@@ -147,62 +147,90 @@ $ detect-secrets audit .secrets.baseline
 
 ### Usage in Other Python Scripts
 
-**Basic Use:**
+Detect-secrets API for python scripts supports scans for secrets in strings, files, and Git repositories. It supports scanning with custom settings or with advanced settings by providing Plugins and Filters. Git repository scanning allows either all files or only Git-tracked files in a local repository.
 
+**Scanning with Default Settings**
 ```python
-from detect_secrets import SecretsCollection
-from detect_secrets.settings import default_settings
+#scanning a string with default settings
+from detect_secrets.api import scan_string
 
-secrets = SecretsCollection()
-with default_settings():
-    secrets.scan_file('test_data/config.ini')
+string_to_check = "AWS_SECRET_KEY = 'AKIAIOSFODNN7EXAMPLE'"
+secrets = scan_string(string=string)
+print(secrets)
 
+#scanning a file with default settings
+from detect_secrets.api import scan_file
 
-import json
-print(json.dumps(secrets.json(), indent=2))
+secrets = scan_file(filepath='/path/to/file.txt')
+print(secrets)
+
+#scanning a git repo with default settings
+from detect_secrets.api import scan_git_repository
+
+#scanning a git repo with default settings, only git tracked files
+secrets = scan_git_repository(repo_path='/path/to/repository')
+print(secrets)
+
+#scanning a git repo with default settings, all files
+secrets = scan_git_repository(repo_path='/path/to/repository', scan_all_files=True)
+print(secrets)
 ```
 
-**More Advanced Configuration:**
-
+**Scanning with More Advanced Configurations**
 ```python
-from detect_secrets import SecretsCollection
-from detect_secrets.settings import transient_settings
+# Only run scans with only these plugins.
+# This format is the same as the one that is saved in the generated baseline.
+plugins_used = [
+  # Example of configuring a built-in plugin
+  {
+    'name': 'Base64HighEntropyString',
+    'limit': 5.0,
+  },
+  # Example of using a custom plugin
+  {
+    'name': 'HippoDetector',
+    'path': 'file:///Users/aaronloo/Documents/github/detect-secrets/testing/plugins.py',
+  },
+]
 
-secrets = SecretsCollection()
-with transient_settings({
-    # Only run scans with only these plugins.
-    # This format is the same as the one that is saved in the generated baseline.
-    'plugins_used': [
-        # Example of configuring a built-in plugin
-        {
-            'name': 'Base64HighEntropyString',
-            'limit': 5.0,
-        },
+# We can also specify whichever additional filters we want.
+# This is an example of using the function `is_identified_by_ML_model` within the
+# local file `./private-filters/example.py`.
+filters_used = [
+  {
+    'path': 'file://private-filters/example.py::is_identified_by_ML_model',
+  },
+]
+# get default settings
+from detect_secrets.api import get_setting
+settings = get_settings()
+print(settings)
 
-        # Example of using a custom plugin
-        {
-            'name': 'HippoDetector',
-            'path': 'file:///Users/aaronloo/Documents/github/detect-secrets/testing/plugins.py',
-        },
-    ],
+# get settings with advanced configuration
+setting = get_settings(plugins=plugins_used, fileters=filters_used)
 
-    # We can also specify whichever additional filters we want.
-    # This is an example of using the function `is_identified_by_ML_model` within the
-    # local file `./private-filters/example.py`.
-    'filters_used': [
-        {
-            'path': 'file://private-filters/example.py::is_identified_by_ML_model',
-        },
-    ]
-}) as settings:
-    # If we want to make any further adjustments to the created settings object (e.g.
-    # disabling default filters), we can do so as such.
-    settings.disable_filters(
-        'detect_secrets.filters.heuristic.is_prefixed_with_dollar_sign',
-        'detect_secrets.filters.heuristic.is_likely_id_string',
-    )
+# scanning a string with advanced configuration
+from detect_secrets.api import scan_string
 
-    secrets.scan_file('test_data/config.ini')
+secrets = scan_string(string=string, plugins=plugins_used, filters=filters_used)
+print(secrets)
+
+# scanning a string with advanced configuration
+from detect_secrets.api import scan_file
+
+secrets = scan_file(filepath='path/to/file', plugins=plugins_used, filters=filters_used)
+print(secrets)
+
+# scanning a string with advanced configuration
+from detect_secrets.api import scan_git_reposiroty
+
+# Only Git tracked files
+secrets = scan_git_repository(repo_path='path/to/git/repo', plugins=plugins_used, filters=filters_used)
+print(secrets)
+
+# All files
+secrets = scan_git_repository(repo_path='path/to/git/repo', scan_all_files=True, plugins=plugins_used, filters=filters_used)
+print(secrets)
 ```
 
 ## Installation
