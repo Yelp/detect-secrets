@@ -25,6 +25,14 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [@xxxx]: https://github.com/xxxx
 -->
 
+<!--
+### Unreleased
+##### January 14th, 2025
+#### :tada: New Features
+- Added a detector for Aiven token ([#910])
+[#910]: https://github.com/Yelp/detect-secrets/pull/910
+-->
+
 ### v1.5.0
 ##### May 6th, 2024
 
