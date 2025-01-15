@@ -139,6 +139,15 @@ def test_is_prefixed_with_dollar_sign(secret, result):
         ('secret = get_secret_key()', True),
         ('secret = request.headers["apikey"]', True),
         ('secret = hunter2', False),
+        ("<%= ENV['CLIENT_ACCESS_KEY_ID'].presence || 'AKIA123456789ABCDEF1' %>", True), # Erb template with intermediate method
+        ("<%= ENV['CLIENT_ACCESS_KEY_ID'] || 'AKIA123456789ABCDEF1' %>", True),          # Erb template without intermediate method
+        ("ENV['CLIENT_ACCESS_KEY_ID'].presence || 'AKIA123456789ABCDEF1'", True),        # Ruby with intermediate method
+        ("ENV['CLIENT_ACCESS_KEY_ID'] || 'AKIA123456789ABCDEF1'", True),                 # Ruby without intermediate method
+        ('not_a_secret ||= something_else', False),                                      # Ruby assignment
+        ('not_a_secret || something_else', False),                                       # Ruby truthy validation
+        ('api_key = ENV["API_KEY"].get() || "default_key"', True),                       # Ruby with intermediate method with assignment
+        ('token = ENV["TOKEN"] || default_token', True),                                 # Ruby without intermediate method with assignment
+        ('api_key ||= fetch_api_key()', True),                                           # Ruby without intermediate method with assignment
     ),
 )
 def test_is_indirect_reference(line, result):
