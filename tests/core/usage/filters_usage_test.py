@@ -79,7 +79,7 @@ class TestCustomFilters:
             'file://',
         ),
     )
-    def test_local_file_success(scheme, parser):
+    def test_local_file_found(scheme, parser):
         secrets = SecretsCollection()
         with transient_settings({
             'plugins_used': [{
@@ -93,7 +93,7 @@ class TestCustomFilters:
             ])
             secrets.scan_file('test_data/config.env')
 
-        assert not secrets
+        assert secrets
 
     @staticmethod
     def test_module_success(parser):

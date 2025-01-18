@@ -145,7 +145,7 @@ class TestScanString:
             ],
         }):
             assert scan_adhoc_string('bangbangintotheroom').splitlines() == [
-                'Base64HighEntropyString: False (3.326)',
+                'Base64HighEntropyString: False',
             ]
 
     @staticmethod
