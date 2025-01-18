@@ -165,13 +165,8 @@ class RegexBasedDetector(BasePlugin, metaclass=ABCMeta):
 
     def analyze_string(self, string: str) -> Generator[str, None, None]:
         for regex in self.denylist:
-            for match in regex.findall(string):
-                if isinstance(match, tuple):
-                    for submatch in filter(bool, match):
-                        # It might make sense to paste break after yielding
-                        yield submatch
-                else:
-                    yield match
+            for match in regex.finditer(string):
+                yield match.group(0) # Returns the entire matched string
 
     @staticmethod
     def build_assignment_regex(
