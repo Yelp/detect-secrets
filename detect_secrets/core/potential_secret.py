@@ -1,4 +1,5 @@
 import hashlib
+import random
 from typing import Any
 from typing import Dict
 from typing import Optional
@@ -54,7 +55,9 @@ class PotentialSecret:
         self.fields_to_compare = ['filename', 'secret_hash', 'type']
 
     def set_secret(self, secret: str) -> None:
-        self.secret_hash: str = self.hash_secret(secret)
+        if(len(secret) > 4):
+            self.secret_hash: str = self.hash_secret(secret)
+            self.secret_redacted: str = self.redact_secret(secret)
 
         # Note: Originally, we never wanted to keep the secret value in memory,
         #       after finding it in the codebase. However, to support verifiable
@@ -71,6 +74,15 @@ class PotentialSecret:
         """This offers a way to coherently test this class, without mocking self.secret_hash."""
         return hashlib.sha1(secret.encode('utf-8')).hexdigest()
 
+    @staticmethod
+    def redact_secret(secret: str) -> str:
+        temp = secret[2:-2]
+        temp = [k for k in temp]
+        for j in random.sample(range(len(temp) - 1),len(temp)//2):
+            temp[j] = '*'
+        temp=''.join(temp)
+        return secret[0] + secret[1] + temp + secret[-2] + secret[-1]
+    
     @classmethod
     def load_secret_from_dict(cls, data: Dict[str, Union[str, int, bool]]) -> 'PotentialSecret':
         """Custom JSON decoder"""
@@ -92,6 +104,7 @@ class PotentialSecret:
         output = cls(**kwargs)
         output.secret_value = None
         output.secret_hash = str(data['hashed_secret'])
+        output.secret_redacted = str(data['redacted_secret'])
 
         return output
 
@@ -101,6 +114,7 @@ class PotentialSecret:
             'type': self.type,
             'filename': self.filename,
             'hashed_secret': self.secret_hash,
+            'redacted_secret': self.secret_redacted,
             'is_verified': self.is_verified,
         }
 
