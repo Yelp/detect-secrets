@@ -82,9 +82,8 @@ class TestScanFile:
         secrets.scan_file('test_data/config.ini')
 
         result = [str(secret).splitlines()[1] for _, secret in secrets]
-        breakpoint()
 
-        assert [str(secret).splitlines()[1] for _, secret in secrets] == [
+        assert result == [
             'Location:    %s:2' % str(Path('test_data/config.ini')),
             'Location:    %s:10' % str(Path('test_data/config.ini')),
             'Location:    %s:10' % str(Path('test_data/config.ini')),
