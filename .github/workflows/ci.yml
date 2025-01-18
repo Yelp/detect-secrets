@@ -21,15 +21,17 @@ jobs:
         python: ['3.9', '3.10', '3.11', '3.12', '3.13']
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
       with:
         python-version: ${{ matrix.python }}
-        cache: 'pip'
-        cache-dependency-path: |
-          '../**/requirements*.txt'
-          '../**/setup.py'
-    - run: python -m pip install --upgrade setuptools pip tox virtualenv
+        enable-cache: true
+        cache-dependency-glob: |
+          **/setup.py
+          **/requirements*.txt
+    - run: uv tool install tox --with tox-uv
     # Run tox only for the installed py version on the runner as outlined in the python matrix
     # Ensures the correct py version is installed and tested as opposed to 'tox' which attempts to run for all py versions in tox.ini
-    - run: tox -e py
-    - run: tox -e mypy
+    - run: uv run tox -e py
+    - run: uv run tox -e mypy
