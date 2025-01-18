@@ -28,7 +28,7 @@ class HighEntropyStringsPlugin(BasePlugin, metaclass=ABCMeta):
 
         # We require quoted strings to reduce noise.
         # NOTE: We need this to be a capturing group, so back-reference can work.
-        self.regex = re.compile(r'([\'"])([{}]+)(\1)'.format(re.escape(charset)))
+        self.regex = re.compile(r'([{}]+)'.format(re.escape(charset)))
 
     def analyze_string(self, string: str) -> Generator[str, None, None]:
         for result in self.regex.findall(string):

@@ -34,7 +34,7 @@ class TestHighEntropyString:
             ("'{secret}'", True),
 
             # Non-quoted string
-            ('{secret}', False),
+            ('{secret}', True),
         ),
     )
     def test_basic(plugin, non_secret, secret, format, should_be_caught):

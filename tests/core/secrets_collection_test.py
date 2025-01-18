@@ -81,12 +81,18 @@ class TestScanFile:
         secrets = SecretsCollection()
         secrets.scan_file('test_data/config.ini')
 
+        result = [str(secret).splitlines()[1] for _, secret in secrets]
+        breakpoint()
+
         assert [str(secret).splitlines()[1] for _, secret in secrets] == [
             'Location:    %s:2' % str(Path('test_data/config.ini')),
+            'Location:    %s:10' % str(Path('test_data/config.ini')),
             'Location:    %s:10' % str(Path('test_data/config.ini')),
             'Location:    %s:21' % str(Path('test_data/config.ini')),
             'Location:    %s:22' % str(Path('test_data/config.ini')),
             'Location:    %s:32' % str(Path('test_data/config.ini')),
+            'Location:    %s:32' % str(Path('test_data/config.ini')),
+            'Location:    %s:33' % str(Path('test_data/config.ini')),
         ]
 
     @staticmethod
@@ -104,6 +110,7 @@ class TestScanFile:
             'Location:    %s:3' % str(Path('test_data/config.yaml')),
             'Location:    %s:5' % str(Path('test_data/config.yaml')),
             'Location:    %s:13' % str(Path('test_data/config.yaml')),
+            'Location:    %s:18' % str(Path('test_data/config.yaml')),
         ]
 
     @staticmethod
