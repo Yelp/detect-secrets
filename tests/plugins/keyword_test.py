@@ -24,6 +24,7 @@ CONFIG_TEST_CASES = [
     ('aws_secret_access_key: {}'.format(WHITES_SECRET), WHITES_SECRET),
     ('db_pass: {},'.format(COMMON_SECRET), COMMON_SECRET),      # Last character is ignored
     ('passwd: {}`'.format(COMMON_SECRET), COMMON_SECRET),       # Last character is ignored
+    ('pass: {}`'.format(COMMON_SECRET), COMMON_SECRET),       # Last character is ignored
     ('private_key: {}"'.format(COMMON_SECRET), COMMON_SECRET),  # Last character is ignored
     ("secret: {}'".format(COMMON_SECRET), COMMON_SECRET),       # Last character is ignored
     ('secrete "{}";'.format(COMMON_SECRET), COMMON_SECRET),
@@ -34,6 +35,7 @@ CONFIG_TEST_CASES = [
     ('if ("{}" == password) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if ("{}" == my_super_password) {{'.format(COMMON_SECRET), COMMON_SECRET),     # Prefix
     ('if ("{}" != passwd) {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if ("{}" != pass) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if ("{}" === private_key) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if ("{}" !== secret) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('secrete = {}'.format(LETTER_SECRET), LETTER_SECRET),   # All symbols are allowed
@@ -54,10 +56,12 @@ GOLANG_TEST_CASES = [
     ('db_pass := {}'.format(COMMON_SECRET), COMMON_SECRET),
     ('db_pass_secure := {}'.format(COMMON_SECRET), COMMON_SECRET),  # Suffix
     ('passwd := {},'.format(COMMON_SECRET), COMMON_SECRET),         # Last character is ignored
+    ('pass := {},'.format(COMMON_SECRET), COMMON_SECRET),         # Last character is ignored
     ("private_key := {}'".format(COMMON_SECRET), COMMON_SECRET),    # Last character is ignored
     ('secret := {}"'.format(COMMON_SECRET), COMMON_SECRET),         # Last character is ignored
     ('password := {}`'.format(COMMON_SECRET), COMMON_SECRET),       # Last character is ignored
     ('if ("{}" == passwd) {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if ("{}" == pass) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if ("{}" === private_key) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if ("{}" != secret) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if ("{}" !== password) {{'.format(COMMON_SECRET), COMMON_SECRET),
@@ -68,6 +72,7 @@ GOLANG_TEST_CASES = [
     ('db_pass = {}'.format(COMMON_SECRET), COMMON_SECRET),
     ('password = {},'.format(COMMON_SECRET), COMMON_SECRET),        # Last character is ignored
     ("passwd = {}'".format(COMMON_SECRET), COMMON_SECRET),          # Last character is ignored
+    ("pass = {}'".format(COMMON_SECRET), COMMON_SECRET),          # Last character is ignored
     ('private_key = {}"'.format(COMMON_SECRET), COMMON_SECRET),     # Last character is ignored
     ('secret = {}`'.format(COMMON_SECRET), COMMON_SECRET),          # Last character is ignored
     ('secrete = "{}"'.format(COMMON_SECRET), COMMON_SECRET),
@@ -102,6 +107,7 @@ COMMON_C_TEST_CASES = [
     ("aws_secret_access_key = @'{}';".format(COMMON_SECRET), None),  # Double quotes required
     ("db_pass[] = '{}';".format(COMMON_SECRET), None),  # Double quotes required
     ('passwd = {};'.format(COMMON_SECRET), None),       # Double quotes required
+    ('pass = {};'.format(COMMON_SECRET), None),       # Double quotes required
     ('private_key = {};'.format(COMMON_SECRET), None),  # Double quotes required
     ('secret[] = {};'.format(COMMON_SECRET), None),     # Double quotes required
     ('api_key = ""', None),                 # Nothing in the quotes
@@ -133,6 +139,7 @@ QUOTES_REQUIRED_TEST_CASES = [
     ("db_pass: '{}'".format(LETTER_SECRET), LETTER_SECRET),  # All symbols are allowed
     ("password: '{}'".format(SYMBOL_SECRET), None),  # At least 1 alphanumeric character is required
     ('if ("{}" == passwd) {{'.format(COMMON_SECRET), COMMON_SECRET),
+    ('if ("{}" == pass) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if ("{}" === private_key) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if ("{}" === my_private_key) {{'.format(COMMON_SECRET), COMMON_SECRET),   # Prefix
     ('if ("{}" != secret) {{'.format(COMMON_SECRET), COMMON_SECRET),
