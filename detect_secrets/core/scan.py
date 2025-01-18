@@ -1,5 +1,6 @@
 import os
 import subprocess
+from functools import lru_cache
 from typing import Any
 from typing import cast
 from typing import Generator
@@ -24,6 +25,18 @@ from ..util.path import get_relative_path
 from .log import log
 from .plugins import Plugin
 from .potential_secret import PotentialSecret
+from detect_secrets.util.filetype import determine_file_type
+from detect_secrets.util.filetype import FileType
+
+
+@lru_cache(maxsize=1)
+def read_raw_lines(file_name: str) -> List[str]:
+    try:
+        with open(file_name) as f:
+            return f.readlines()
+    except IOError:
+        log.debug(f"Can't open file {file_name}")
+        return []
 
 
 def get_files_to_scan(
@@ -311,7 +324,7 @@ def _process_line_based_plugins(
     filename: str,
 ) -> Generator[PotentialSecret, None, None]:
     line_content = [line[1] for line in lines]
-
+    raw_code_snippet_lines = read_raw_lines(filename)
     # NOTE: We iterate through lines *then* plugins, because we want to quit early if any of the
     # filters return True.
     for line_number, line in lines:
@@ -331,25 +344,33 @@ def _process_line_based_plugins(
         ):
             continue
 
-        yield from (
-            secret
-            for plugin in get_plugins()
+        for plugin in get_plugins():
             for secret in _scan_line(
-                plugin=plugin,
-                filename=filename,
-                line=line,
-                line_number=line_number,
-                context=code_snippet,
-            )
-            if not _is_filtered_out(
-                required_filter_parameters=['context'],
-                filename=secret.filename,
-                secret=secret.secret_value,
-                plugin=plugin,
-                line=line,
-                context=code_snippet,
-            )
-        )
+                    plugin=plugin,
+                    filename=filename,
+                    line=line,
+                    line_number=line_number,
+                    context=code_snippet,
+            ):
+                if not _is_filtered_out(
+                        required_filter_parameters=['context'],
+                        filename=secret.filename,
+                        secret=secret.secret_value,
+                        plugin=plugin,
+                        line=line,
+                        context=code_snippet,
+                ):
+                    if determine_file_type(filename) == FileType.YAML and secret.secret_value:
+                        # YAML specifically has multi-line string parsing that groups the
+                        # different lines as 1.
+                        # Calculate actual line number in case of YAML multi-line string
+                        actual_line_number = line_number
+                        for i, l in enumerate(raw_code_snippet_lines[actual_line_number - 1:]):
+                            if secret.secret_value in l:
+                                actual_line_number += i
+                                break
+                        secret.line_number = actual_line_number
+                    yield secret
 
 
 def _scan_line(
