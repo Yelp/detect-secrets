@@ -3,7 +3,6 @@ from typing import List
 
 from .color import AnsiColor
 from .color import colorize
-from detect_secrets.exceptions import SecretNotFoundOnSpecifiedLineError
 
 
 def get_code_snippet(
@@ -72,19 +71,16 @@ class CodeSnippet:
         """
         :param payload: string to highlight, on chosen line
         """
-        try:
-            index_of_payload = self.target_line.lower().index(payload.lower())
-            end_of_payload = index_of_payload + len(payload)
+        index_of_payload = self.target_line.lower().index(payload.lower())
+        end_of_payload = index_of_payload + len(payload)
 
-            self.target_line = u'{}{}{}'.format(
-                self.target_line[:index_of_payload],
-                self.apply_highlight(self.target_line[index_of_payload:end_of_payload]),
-                self.target_line[end_of_payload:],
-            )
+        self.target_line = "{}{}{}".format(
+            self.target_line[:index_of_payload],
+            self.apply_highlight(self.target_line[index_of_payload:end_of_payload]),
+            self.target_line[end_of_payload:],
+        )
 
-            return self
-        except ValueError:
-            raise SecretNotFoundOnSpecifiedLineError(self.target_index)
+        return self
 
     def get_line_number(self, line_number: int) -> str:
         """Broken out, for custom colorization."""
