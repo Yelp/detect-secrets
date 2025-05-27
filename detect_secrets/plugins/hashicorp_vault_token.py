@@ -13,5 +13,5 @@ class HashiCorpVaultTokenDetector(RegexBasedDetector):
     denylist = [
         # ref. https://github.blog/2021-04-05-behind-githubs-new-authentication-token-formats/
         # \b has been added to avoid many false positives when using Vault <=1.9 tokens
-        re.compile(r'(?:hv|\b)[brs]\.[A-Za-z0-9]{24,}'),
+        re.compile(r'(?:hv|\b)[brs]\.[A-Za-z0-9_-]{24,}'),
     ]
