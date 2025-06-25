@@ -12,7 +12,7 @@ identify==2.5.36
 idna==3.7
 iniconfig==2.0.0
 mccabe==0.7.0
-monotonic==1.6
+monotonic==1.6; python_version < '3.3'
 mypy==0.971
 mypy-extensions==1.0.0
 nodeenv==1.9.1
