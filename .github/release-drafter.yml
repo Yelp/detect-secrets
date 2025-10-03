@@ -1,0 +1,108 @@
+# Configuration for Release Drafter
+# See: https://github.com/release-drafter/release-drafter
+
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+
+categories:
+  - title: ':newspaper: News'
+    labels:
+      - 'breaking-change'
+      - 'deprecation'
+  - title: ':tada: New Features'
+    labels:
+      - 'feature'
+      - 'enhancement'
+  - title: ':bug: Bugfixes'
+    labels:
+      - 'bug'
+      - 'fix'
+  - title: ':telescope: Accuracy'
+    labels:
+      - 'accuracy'
+      - 'detection'
+  - title: ':sparkles: Usability'
+    labels:
+      - 'usability'
+      - 'ux'
+  - title: ':performing_arts: Performance'
+    labels:
+      - 'performance'
+  - title: ':snake: Miscellaneous'
+    labels:
+      - 'dependencies'
+      - 'documentation'
+      - 'chore'
+      - 'refactor'
+
+change-template: '- $TITLE ([#$NUMBER])'
+change-title-escapes: '\<*_&'
+
+version-resolver:
+  major:
+    labels:
+      - 'breaking-change'
+  minor:
+    labels:
+      - 'feature'
+      - 'enhancement'
+  patch:
+    labels:
+      - 'bug'
+      - 'fix'
+      - 'dependencies'
+      - 'documentation'
+  default: patch
+
+template: |
+  ## What's Changed
+
+  $CHANGES
+
+  **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION
+
+  ## Installation
+
+  ```bash
+  pip install detect-secrets==$RESOLVED_VERSION
+  ```
+
+  ## Contributors
+
+  Thank you to all contributors who made this release possible!
+
+  $CONTRIBUTORS
+
+autolabeler:
+  - label: 'bug'
+    title:
+      - '/fix/i'
+      - '/bug/i'
+  - label: 'feature'
+    title:
+      - '/feat/i'
+      - '/feature/i'
+      - '/add/i'
+  - label: 'enhancement'
+    title:
+      - '/enhance/i'
+      - '/improve/i'
+      - '/update/i'
+  - label: 'dependencies'
+    title:
+      - '/bump/i'
+      - '/depend/i'
+    branch:
+      - '/dependabot/i'
+  - label: 'documentation'
+    files:
+      - '*.md'
+      - 'docs/**'
+  - label: 'chore'
+    title:
+      - '/chore/i'
+
+exclude-labels:
+  - 'skip-changelog'
+  - 'no-changelog'
+  - 'internal'
