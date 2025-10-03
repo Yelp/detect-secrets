@@ -21,6 +21,7 @@ Thanks to all our contributors who has helped this project so far (in alphabetic
 - [@KevinHock](https://github.com/KevinHock)
 - [@killuazhu](https://github.com/killuazhu)
 - [@lirantal](https://github.com/lirantal)
+- [@mjpieters](https://github.com/mjpieters)
 - [@Namburgesas](https://github.com/Namburgesas)
 - [@neunkasulle](https://github.com/neunkasulle)
 - [@nickiaconis](https://github.com/nickiaconis)
