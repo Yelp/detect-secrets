@@ -151,6 +151,7 @@ class Settings:
                 'detect_secrets.filters.heuristic.is_lock_file',
                 'detect_secrets.filters.heuristic.is_not_alphanumeric_string',
                 'detect_secrets.filters.heuristic.is_swagger_file',
+                'detect_secrets.filters.heuristic.is_environment_variable_name',
             }
         }
 

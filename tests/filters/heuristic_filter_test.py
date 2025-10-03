@@ -178,3 +178,37 @@ def test_is_not_alphanumeric_string(secret, result):
 )
 def test_is_swagger_file(filename, result):
     assert filters.heuristic.is_swagger_file(filename.format(sep=os.path.sep)) is result
+
+
+@pytest.mark.parametrize(
+    'secret, result',
+    (
+        # Environment variable names (should be filtered - True)
+        ('MY_SECRET1', True),
+        ('MY_API_KEY', True),
+        ('DB_PASSWORD', True),
+        ('SECRET_KEY', True),
+        ('AUTH_TOKEN', True),
+        ('API_KEY_123', True),
+        ('MY_SECRET_1', True),
+        ('ABC', True),
+        ('A_B', True),
+        ('PASSWORD_ENV', True),
+        
+        # Not environment variable names (should NOT be filtered - False)
+        ('my_secret', False),  # lowercase
+        ('MyPassword123', False),  # mixed case
+        ('my_real_p@ssw0rd', False),  # special chars
+        ('sk-abc123def456', False),  # has dash
+        ('${PASSWORD}', False),  # has special chars
+        ('$API_KEY', False),  # starts with $
+        ('a1', False),  # too short
+        ('123', False),  # no letters
+        ('hunter2', False),  # lowercase
+        ('Secret123!', False),  # has special char
+        ('Ab', False),  # too short (< 3 chars)
+        ('ABC123def', False),  # mixed case (< 80% uppercase)
+    ),
+)
+def test_is_environment_variable_name(secret, result):
+    assert filters.heuristic.is_environment_variable_name(secret) is result

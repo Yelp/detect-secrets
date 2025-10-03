@@ -235,3 +235,44 @@ def is_swagger_file(filename: str) -> bool:
 @lru_cache(maxsize=1)
 def _get_swagger_regex() -> Pattern:
     return re.compile(r'.*swagger.*')
+
+
+def is_environment_variable_name(secret: str) -> bool:
+    """
+    Filters strings that look like environment variable names.
+
+    Environment variable names typically follow patterns like:
+    - MY_API_KEY
+    - DB_PASSWORD
+    - SECRET_KEY_1
+    - AUTH_TOKEN
+
+    This helps reduce false positives when code references environment
+    variable names as strings (e.g., api_key_env = "MY_API_KEY").
+
+    Pattern characteristics:
+    - Primarily uppercase letters (at least 80% of alphabetic chars)
+    - Contains underscores or is all caps
+    - Alphanumeric with underscores only (no special characters)
+    - Minimum length of 3 characters
+    """
+    if not secret or len(secret) < 3:
+        return False
+
+    # Must contain only alphanumeric characters and underscores
+    if not re.match(r'^[A-Z0-9_]+$', secret):
+        return False
+
+    # Must have at least one letter
+    if not any(c.isalpha() for c in secret):
+        return False
+
+    # Check if it's primarily uppercase (at least 80% of letters are uppercase)
+    letters = [c for c in secret if c.isalpha()]
+    if not letters:
+        return False
+
+    uppercase_ratio = sum(1 for c in letters if c.isupper()) / len(letters)
+
+    # Must be mostly uppercase (80% threshold) and contain underscores OR be all uppercase
+    return uppercase_ratio >= 0.8 and ('_' in secret or secret.isupper())
