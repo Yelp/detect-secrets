@@ -84,3 +84,76 @@ class ContextAwareMockPlugin(MockPlugin):
 class ExceptionRaisingMockPlugin(MockPlugin):
     def verify(self, secret):
         raise requests.exceptions.ConnectionError
+
+
+class TestIsBaselineFile:
+    """Tests for is_baseline_file filter (issue #912)."""
+    
+    def test_absolute_path(self):
+        """Test that absolute paths are normalized correctly."""
+        from detect_secrets.filters.common import is_baseline_file
+        from detect_secrets.settings import get_settings
+        import os
+        import tempfile
+        
+        with tempfile.NamedTemporaryFile(suffix='.baseline') as f:
+            # Configure the filter with absolute path
+            get_settings().filters['detect_secrets.filters.common.is_baseline_file'] = {
+                'filename': f.name
+            }
+            
+            # Test with the same absolute path
+            assert is_baseline_file(f.name)
+            
+    def test_relative_path_with_dot_slash(self):
+        """Test that ./filename is normalized to filename."""
+        from detect_secrets.filters.common import is_baseline_file
+        from detect_secrets.settings import get_settings
+        import os
+        import tempfile
+        
+        with tempfile.NamedTemporaryFile(suffix='.baseline', delete=False) as f:
+            baseline_path = f.name
+        
+        try:
+            orig_cwd = os.getcwd()
+            os.chdir(os.path.dirname(baseline_path))
+            
+            # Configure filter with ./ prefix
+            relative_path = './' + os.path.basename(baseline_path)
+            get_settings().filters['detect_secrets.filters.common.is_baseline_file'] = {
+                'filename': relative_path
+            }
+            
+            # Test that both paths match
+            assert is_baseline_file(relative_path)
+            assert is_baseline_file(os.path.basename(baseline_path))
+            assert is_baseline_file(baseline_path)
+            
+        finally:
+            os.chdir(orig_cwd)
+            os.unlink(baseline_path)
+    
+    def test_normalized_vs_unnormalized_paths(self):
+        """Test that paths with redundant separators are normalized."""
+        from detect_secrets.filters.common import is_baseline_file
+        from detect_secrets.settings import get_settings
+        import os
+        import tempfile
+        
+        with tempfile.NamedTemporaryFile(suffix='.baseline', delete=False) as f:
+            baseline_path = f.name
+        
+        try:
+            # Configure filter with one path
+            get_settings().filters['detect_secrets.filters.common.is_baseline_file'] = {
+                'filename': baseline_path
+            }
+            
+            # Test with various normalized forms
+            assert is_baseline_file(baseline_path)
+            assert is_baseline_file(os.path.realpath(baseline_path))
+            assert is_baseline_file(os.path.normpath(baseline_path))
+            
+        finally:
+            os.unlink(baseline_path)

@@ -56,6 +56,7 @@ def configure_settings_from_baseline(baseline: Dict[str, Any], filename: str = '
         settings.filters['detect_secrets.filters.common.is_baseline_file'] = {
             'filename': filename,
         }
+        get_filters.cache_clear()
 
     return settings
 
