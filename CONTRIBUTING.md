@@ -133,3 +133,17 @@ What about contributing better false positive filters? Check out more details he
 
 Check out [more detailed upgrade instructions here](/docs/upgrades.md), and how to write
 backwards-compatible changes using the built-in upgrade infrastructure.
+
+## 6. Release Process (For Maintainers)
+
+If you're a maintainer preparing a new release, please see our comprehensive
+[Release Process Documentation](/docs/release.md) which covers:
+
+- Step-by-step release instructions
+- CHANGELOG update guidelines
+- Version bumping process
+- PyPI publication workflow
+- Post-release verification
+
+You can also use the [Release Checklist](/.github/RELEASE_CHECKLIST.md) as a quick
+reference during the release process.
