@@ -1,0 +1,9 @@
+{"file": "logs.txt", "line_number": 5, "type": "PII", "hashed_secret": "565b3bca2eea347541278ebba86b749c6b320cff", "secret_value": "j.doe@example.test"}
+{"file": "logs.txt", "line_number": 7, "type": "PII", "hashed_secret": "a7bb3ea3c4a3bd75befe9f72f6669ac1edcc9521", "secret_value": "l.ibrahim+ord@demo.test"}
+{"file": "logs.txt", "line_number": 16, "type": "PII", "hashed_secret": "1097665a59ffa107e6ffdefcc1033e4592d1bbbe", "secret_value": "support+escalate@company.test"}
+{"file": "logs.txt", "line_number": 21, "type": "PII", "hashed_secret": "4c9e4f01edf3fc9175d204a766aca4374357ac04", "secret_value": "password=Th1sIsNotAPass&remember=true"}
+{"file": "logs.txt", "line_number": 24, "type": "PII", "hashed_secret": "2726aac98ef3996dada0776f5cfddfe0feca8ef0", "secret_value": "n.haddad@fake.test"}
+{"file": "logs.txt", "line_number": 28, "type": "PII", "hashed_secret": "3e49313247aa68f323dad3b122fba13c86d4a035", "secret_value": "mostafa.test+vr@fake-mail.test"}
+{"file": "logs.txt", "line_number": 37, "type": "PII", "hashed_secret": "550c8b89d42629cd61cf032ff07dbf9543ff1408", "secret_value": "jane.q.public@testsrv.test"}
+{"file": "logs.txt", "line_number": 66, "type": "PII", "hashed_secret": "179ccc3f0a0aa9d4065af569fef2396210527f29", "secret_value": "op.team+ocr@ops.test"}
+{"file": "logs.txt", "line_number": 69, "type": "PII", "hashed_secret": "f3f08ded366c7d8d237ffd6b336c083ffa56c41f", "secret_value": "mostafa.elshamy@aucegypt.test"}

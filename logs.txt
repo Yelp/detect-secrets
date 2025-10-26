@@ -1,0 +1,74 @@
+2025-10-26T10:00:00.001Z INFO  global - startup: pid=21456 env=prod region=eu-central-1 cfg_ver=2025.10.01
+{"ts":"2025-10-26T10:00:01.100Z","svc":"auth","lvl":"INFO","msg":"login attempt","meta":{"user_agent":"Mozilla/5.0 (Windows NT 10.0)","session":"sess_9db3a0f8-3c2a-4f7a-8a1b-550e4400a001","source_ip":"198.51.100.101"}}
+2025-10-26T10:00:01.101Z DEBUG auth - password_check -- user_input=****** mask=on duration_ms=11
+2025-10-26T10:00:01.105Z WARN  auth - suspicious login - acct=j.doe at example.test (normalized: j.doe@example.test) src_ip=203.0.113.42
+2025-10-26T10:00:02.000Z INFO  payments - tokenized_pan=tok_4b1cXXXXXXf3b, exp=07/26 note="sample token"
+{"ts":"2025-10-26T10:00:03Z","svc":"orders","lvl":"ERROR","msg":"order commit failed","order":"ORD-20251026-0001","payload":"{\"customer\":\"L. Ibrahim\",\"contact\":\"l.ibrahim+ord@demo.test\",\"meta\":\"zip=11511;notes=left at door\"}"}
+198.51.100.50 - - [26/Oct/2025:10:00:04 +0300] "GET /api/profile?u=laila.ibrahim%40demo.test&return=min HTTP/1.1" 200 349 "-" "curl/7.70"
+2025-10-26T10:00:05.111Z INFO  sync - delta sync completed in 120ms rows=342 anchors="a1:0f4c, a2:9f2a"
+2025-10-26T10:00:05.112Z DEBUG dns - resolved backend.service -> 10.0.3.21 (ttl=60)
+# noisy note: the field below contains encoded user metadata that was appended to the log by an older agent
+log_blob=4a6f686e2e446f65406578616d706c652e746573743a3132393730303030 (hex) 
+2025-10-26T10:00:05.200Z DEBUG parser - header sniff: cookie="SID=eyJhbGciOiJI...; remember=on"
+2025-10-26T10:00:06.010Z WARN  api - slow response trace_id=trc_7c6d3b path=/v1/search q="drivers license"
+{"ts":"2025-10-26T10:00:06.200Z","svc":"uploader","lvl":"INFO","msg":"file accepted","file_meta":"name=IMG_2025_10_25_JohnDoe.jpg;size=2.1MB;owner=img_user_556;tags=front,id"}
+2025-10-26T10:00:06.300Z INFO  mailer - queued email to: support+escalate@company.test template="pw-reset" meta="user:laila.ibrahim; ref=ec:2025-10-26-10-00"
+POST /login HTTP/1.1
+Host: auth.example.test
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 156
+username=mostafa.elshamy%2Btest%40fake-mail.test&password=Th1sIsNotAPass&remember=true
+
+2025-10-26T10:00:07.777Z ERROR db - failed to commit transaction tx=0x7ffb1234 err=duplicate key on customers(email)
+INSERT INTO customers (id,fullname,email,phone,address,dob,meta) VALUES ('c_2048','Noura Haddad','n.haddad@fake.test','(+20) 100-555-7777','4 Pyramid Rd, Cairo','1994-11-30','{"src":"migration","ref":"mig-2025-09"}');
+-- audit: user=svc_migr host=10.0.0.9 app=pg  pid=3321
+
+# embedded JSON inside text field (escaped)
+2025-10-26T10:00:08.001Z DEBUG worker - processed: {"job":"transcode","input":"s3://bucket/vid_1234.mp4","owner":"user:mostafa.test+vr@fake-mail.test","notes":"orig_filename=vacation_2024.mov"}
+
+203.0.113.9 - mark [26/Oct/2025:10:00:08 +0300] "POST /account/update HTTP/1.1" 200 124 "https://app.example.test/account" "Mozilla/5.0" "X-Forwarded-For: 198.51.100.5" "Referer: https://portal.example.test/settings"
+
+2025-10-26T10:00:09.010Z INFO  device - register success device_id=andr-000a1b2c3d4e5f imei=356000111222333 sim="+20-100-555-0100" model="Pixel-77"
+2025-10-26T10:00:09.011Z DEBUG hw - mac=00:0a:95:9d:68:16 vendor="AcmeCorp" firmware=3.1.0
+
+# stacktrace with subtle email mention in message
+2025-10-26T10:00:09.500Z ERROR orders - Uncaught exception processing order=ORD-555
+java.lang.RuntimeException: Invalid payer details -> contactInfo=payee: "jane.q.public@testsrv.test" ; tel=+1.5550101
+	at com.ops.payment.PayerValidator.validate(PayerValidator.java:122)
+	at com.ops.payment.PaymentService.charge(PaymentService.java:88)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+    ... 21 more
+
+2025-10-26T10:00:10.002Z INFO  analytics - event=page_view uid=usr_00921 props={"page":"/checkout","referrer":"/cart","session_len":142}
+{"ts":"2025-10-26T10:00:10.100Z","svc":"search","lvl":"INFO","q":"visa number 4111-1111-1111-1111 exp=11/25","user":"test_ingest"}
+# note: masked card in upstream; some pipelines copy full string unintentionally
+2025-10-26T10:00:10.200Z WARN  ingest - found pattern like card in free_text; tagging suspectedPII=true
+
+# large blob: base64-encoded credentials dumped by bad agent (deliberately noisy)
+2025-10-26T10:00:11.000Z DEBUG leak_agent - blob_b64=am9obk5Eb2VAZXhhbXBsZS50ZXN0OjEyMzQ1Njc4 (note: this is an intentionally logged artifact)
+
+2025-10-26T10:00:11.100Z INFO  scheduler - run complete job=mailshot-2025-10-26 count=1200 duration_s=4.2
+2025-10-26T10:00:11.500Z INFO  impl - user-fields: "first: 'Ali', last:'G. ', ref: 'EG-19960510-99', misc: 'pref=call'" 
+2025-10-26T10:00:12.250Z DEBUG rtl - telemetry: "lat=30.0444,long=31.2357,alt=23m" payload_id=p_77bb
+
+# apache combined with subtle query param mixing numeric id and text
+203.0.113.11 - - [26/Oct/2025:10:00:13 +0300] "GET /v1/export?file=report.csv&owner=inspector-12970000&contact=inspector%2Bqa%40audit.test HTTP/1.1" 200 2048 "-" "Wget/1.21"
+2025-10-26T10:00:13.500Z DEBUG exporter - row: "record_id=R-9901, ssn_like=000-00-0000, note='masked by ui'"
+
+# obscured PII inside hyphenated tokens and camelCase keys
+2025-10-26T10:00:14.001Z INFO  frontend - userPayload={userId: 'u_332', displayName: 'Mostafa E.', contactPhone:'+201005550100', contactAlt:'+2010055501XX', contactHint:'last4=0100'}
+
+# XML error report with embedded contact
+<error ts="2025-10-26T10:00:15Z" service="ocr">
+  <file>scan_4923.pdf</file>
+  <page>3</page>
+  <text>Found "National ID: EG19960510-99" near line 23. Refer to operator (op_contact: op.team+ocr@ops.test)</text>
+</error>
+
+2025-10-26T10:00:15.500Z WARN  ci - pipeline failed step=unit-tests ref=feature/ci-2025-10-25 commit=5d41402abc4b2a76c9c0c7 invalidation="user:mostafa.elshamy@aucegypt.test; ticket:INC-12345"
+# hex dump of a small record (some bytes printable)
+2025-10-26T10:00:16.000Z DEBUG dump - raw_hex=6d6f73746166612e656c7368616d790a3330322d30312d (shows name + id-like)
+2025-10-26T10:00:16.100Z INFO  sessions - active=128 top_uids="u_1001,u_1002,u_00921"
+2025-10-26T10:00:16.500Z INFO  backup - snapshot completed to s3://backups/prod/2025-10-26/snap-01 size=12GB
+
+# CSV-ish rows appended
