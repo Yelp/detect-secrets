@@ -23,7 +23,6 @@ def main(path: str = 'logs.txt') -> int:
     plugin_cfg = [
         {'name': cls.__name__}
         for cls in mapping.values()
-        if cls.__name__ != 'PiiDetector'
     ]
 
     with transient_settings({'plugins_used': plugin_cfg}):

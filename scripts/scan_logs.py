@@ -8,7 +8,7 @@ Usage examples:
   # scan a specific file and output newline-delimited JSON, showing matched secret values
   python scripts/scan_logs.py /path/to/logfile.log --json --show-secret
 
-  # only enable a specific plugin by class name (e.g. PiiDetector)
+  # only enable a specific plugin by class name 
   python scripts/scan_logs.py --only PiiDetector
 """
 from __future__ import annotations
