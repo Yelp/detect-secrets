@@ -17,13 +17,13 @@ def is_invalid_file(filename: str) -> bool:
 
 
 def is_baseline_file(filename: str) -> bool:
-    return os.path.basename(filename) == _get_baseline_filename()
+    return os.path.normpath(filename) == _get_baseline_filename()
 
 
 @lru_cache(maxsize=1)
 def _get_baseline_filename() -> str:
     path = get_caller_path(offset=1)
-    return cast(str, get_settings().filters[path]['filename'])
+    return os.path.normpath(cast(str, get_settings().filters[path]['filename']))
 
 
 def is_ignored_due_to_verification_policies(
