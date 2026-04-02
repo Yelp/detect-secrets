@@ -6,9 +6,36 @@ import requests
 
 from detect_secrets import main as main_module
 from detect_secrets.constants import VerifiedResult
+from detect_secrets.filters.common import is_baseline_file
 from detect_secrets.plugins.base import RegexBasedDetector
+from detect_secrets.settings import transient_settings
 from testing.mocks import mock_printer
 from testing.plugins import register_plugin
+
+
+class TestIsBaselineFile:
+    @staticmethod
+    @pytest.mark.parametrize(
+        'baseline_path, scanned_filename, expected',
+        (
+            ('secrets.baseline', 'secrets.baseline', True),
+            ('./secrets.baseline', 'secrets.baseline', True),
+            ('secrets.baseline', './secrets.baseline', True),
+            ('./secrets.baseline', './secrets.baseline', True),
+            ('path/to/secrets.baseline', 'path/to/secrets.baseline', True),
+            ('./path/to/secrets.baseline', 'path/to/secrets.baseline', True),
+            ('secrets.baseline', 'other.baseline', False),
+        ),
+    )
+    def test_normalizes_baseline_path(baseline_path, scanned_filename, expected):
+        with transient_settings({
+            'plugins_used': [],
+            'filters_used': [{
+                'path': 'detect_secrets.filters.common.is_baseline_file',
+                'filename': baseline_path,
+            }],
+        }):
+            assert is_baseline_file(scanned_filename) is expected
 
 
 class TestVerify:

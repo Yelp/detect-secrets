@@ -1,3 +1,4 @@
+import os
 from contextlib import contextmanager
 from copy import deepcopy
 from functools import lru_cache
@@ -54,7 +55,7 @@ def configure_settings_from_baseline(baseline: Dict[str, Any], filename: str = '
 
     if filename:
         settings.filters['detect_secrets.filters.common.is_baseline_file'] = {
-            'filename': filename,
+            'filename': os.path.normpath(filename),
         }
 
     return settings
