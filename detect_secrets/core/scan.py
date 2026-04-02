@@ -201,8 +201,9 @@ def scan_for_allowlisted_secrets_in_file(filename: str) -> Generator[PotentialSe
     # know which lines we want to scan.
     try:
         for lines in _get_lines_from_file(filename):
-            yield from _scan_for_allowlisted_secrets_in_lines(enumerate(lines, start=1), filename)
-            break
+            if lines:
+                yield from _scan_for_allowlisted_secrets_in_lines(enumerate(lines, start=1), filename)
+                break
     except IOError:
         log.warning(f'Unable to open file: {filename}')
         return
