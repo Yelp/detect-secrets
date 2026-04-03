@@ -99,6 +99,7 @@ CloudantDetector
 DiscordBotTokenDetector
 GitHubTokenDetector
 GitLabTokenDetector
+HashiCorpVaultTokenDetector
 Base64HighEntropyString
 HexHighEntropyString
 IbmCloudIamDetector
