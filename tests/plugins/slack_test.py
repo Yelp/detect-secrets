@@ -30,6 +30,15 @@ class TestSlackDetector:
                 'xoxb-34532454-e039d02840a0b9379c'
             ),
             (
+                'xoxc-1111111111-111111111111-1111111111111-11111111111111111'
+            ),
+            (
+                'xwfp-523423-234243-234233-e039d02840a0b9379c'
+            ),
+            (
+                'xapp-523423-234243-234233-e039d02840a0b9379c'
+            ),
+            (
                 'https://hooks.slack.com/services/Txxxxxxxx/Bxxxxxxxx/xxxxxxxxxxxxxxxxxxxxxxxx'
             ),
         ],
