@@ -17,7 +17,22 @@ def is_invalid_file(filename: str) -> bool:
 
 
 def is_baseline_file(filename: str) -> bool:
-    return os.path.basename(filename) == _get_baseline_filename()
+    """
+    Checks if the given filename matches the baseline file.
+
+    This normalizes both paths to handle cases like:
+    - ./secrets.baseline vs secrets.baseline
+    - ../dir/file.txt vs ../dir/file.txt
+    - Paths with redundant separators (//, /./)
+    """
+    try:
+        # Normalize both paths to absolute paths for accurate comparison
+        normalized_filename = os.path.realpath(filename)
+        normalized_baseline = os.path.realpath(_get_baseline_filename())
+        return normalized_filename == normalized_baseline
+    except (OSError, ValueError):
+        # Fallback to basename comparison if path resolution fails
+        return os.path.basename(filename) == os.path.basename(_get_baseline_filename())
 
 
 @lru_cache(maxsize=1)
