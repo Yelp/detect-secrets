@@ -96,6 +96,13 @@ class TestScanFile:
 
             assert not list(scan.scan_file(f.name))
 
+    @staticmethod
+    def test_handles_empty_file_for_allowlisted_scan():
+        """Empty files should not raise ValueError in scan_for_allowlisted_secrets_in_file."""
+        with mock_named_temporary_file(suffix='.py') as f:
+            # File is empty (0 bytes) — no lines to unpack.
+            assert not list(scan.scan_for_allowlisted_secrets_in_file(f.name))
+
 
 @pytest.fixture(autouse=True)
 def configure_plugins():
