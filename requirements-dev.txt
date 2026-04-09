@@ -5,6 +5,7 @@ cfgv==3.4.0
 charset-normalizer==3.3.2
 coverage==7.5.3
 distlib==0.3.8
+fastapi
 filelock==3.16.1
 flake8==7.1.1
 gibberish-detector==0.1.1
@@ -38,5 +39,6 @@ types-requests==2.31.0.20240106
 typing-extensions==4.12.2
 unidiff==0.7.5
 urllib3==2.2.2
+uvicorn[standard]
 virtualenv==20.26.6
 zipp==3.19.2
