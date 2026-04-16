@@ -11,6 +11,7 @@ from typing import Tuple
 
 from . import scan
 from ..util.path import convert_local_os_path
+from .log import log
 from .potential_secret import PotentialSecret
 from detect_secrets.settings import configure_settings_from_baseline
 from detect_secrets.settings import get_settings
@@ -63,7 +64,7 @@ class SecretsCollection:
         with mp.Pool(
             processes=num_processors,
             initializer=configure_settings_from_baseline,
-            initargs=(child_process_settings,),
+            initargs=(child_process_settings, log.level),
         ) as p:
             for secrets in p.imap_unordered(
                 _scan_file_and_serialize,

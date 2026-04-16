@@ -6,9 +6,11 @@ from typing import Any
 from typing import Dict
 from typing import Generator
 from typing import List
+from typing import Optional
 from urllib.parse import urlparse
 
 from .exceptions import InvalidFile
+from .core.log import log
 from .util.importlib import import_file_as_module
 
 
@@ -21,11 +23,14 @@ def get_settings() -> 'Settings':
     return Settings()
 
 
-def configure_settings_from_baseline(baseline: Dict[str, Any], filename: str = '') -> 'Settings':
+def configure_settings_from_baseline(baseline: Dict[str, Any], log_level: Optional[int] = None, filename: str = '') -> 'Settings':
     """
     :raises: KeyError
     """
     settings = get_settings()
+
+    if log_level is not None:
+        log.setLevel(log_level)
 
     if 'plugins_used' in baseline:
         settings.configure_plugins(baseline['plugins_used'])
