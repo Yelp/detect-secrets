@@ -6,7 +6,10 @@ import statistics
 import subprocess
 import sys
 
-from monotonic import monotonic
+try:
+    from time import monotonic
+except ImportError:
+    from monotonic import monotonic
 
 from detect_secrets.core.color import AnsiColor
 from detect_secrets.core.color import colorize

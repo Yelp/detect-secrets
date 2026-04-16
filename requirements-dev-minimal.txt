@@ -1,7 +1,7 @@
 coverage
 flake8==7.1.1
 gibberish-detector>=0.1.1
-monotonic
+monotonic; python_version < '3.3'
 mypy
 pre-commit
 pyahocorasick
