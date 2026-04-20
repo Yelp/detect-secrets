@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 import re
+from typing import Generator
 
 from .base import RegexBasedDetector
 
@@ -39,16 +40,31 @@ class PrivateKeyDetector(RegexBasedDetector):
 
     secret_type = 'Private Key'
 
+    begin_key_opening = r'(?P<begin_key>BEGIN'
+    key_types = r'(?: DSA | EC | OPENSSH | PGP | RSA | SSH2 ENCRYPTED | )'
+    begin_key_closing = r'PRIVATE KEY-*)'
+    begin_key = fr'{begin_key_opening}{key_types}{begin_key_closing}'
+    secret_key = r'(?P<secret_key>[A-Za-z0-9+\/\\\n]*={0,3})?'
+    end_key = r'(?P<end_key>\n*-*END)?'
+
     denylist = [
-        re.compile(regexp)
-        for regexp in (
-            r'BEGIN DSA PRIVATE KEY',
-            r'BEGIN EC PRIVATE KEY',
-            r'BEGIN OPENSSH PRIVATE KEY',
-            r'BEGIN PGP PRIVATE KEY BLOCK',
-            r'BEGIN PRIVATE KEY',
-            r'BEGIN RSA PRIVATE KEY',
-            r'BEGIN SSH2 ENCRYPTED PRIVATE KEY',
-            r'PuTTY-User-Key-File-2',
-        )
+        re.compile(
+            r'{begin_key}{secret_key}{end_key}'.format(
+                begin_key=begin_key,
+                secret_key=secret_key,
+                end_key=end_key,
+            ),
+        ),
+        re.compile(r'PuTTY-User-Key-File-2'),
     ]
+
+    def analyze_string(self, string: str) -> Generator[str, None, None]:
+        for regex in self.denylist:
+            for match in regex.findall(string):
+                if isinstance(match, tuple):
+                    begin_key, secret_key, end_key = match
+                    if begin_key:
+                        yield secret_key if secret_key else begin_key
+                else:
+                    # only PuTTY-User-Key-File should not be a tuple
+                    yield match
