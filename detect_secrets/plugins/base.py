@@ -57,6 +57,8 @@ class BasePlugin(metaclass=ABCMeta):
             is_verified: bool = False
             # If the filter is disabled it means --no-verify flag was passed
             # We won't run verification in that case
+            if(len(match) < 5):
+                return
             if (
                 'detect_secrets.filters.common.is_ignored_due_to_verification_policies'
                 in get_settings().filters
