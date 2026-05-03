@@ -135,9 +135,13 @@ def handle_audit_action(args: argparse.Namespace) -> None:
                 class_to_print = audit.report.SecretClassToPrint.REAL_SECRET
             elif args.only_false:
                 class_to_print = audit.report.SecretClassToPrint.FALSE_POSITIVE
+            if getattr(args, 'sarif', False):
+                report = audit.sarif.generate_sarif_report(args.filename[0], class_to_print)
+            else:
+                report = audit.report.generate_report(args.filename[0], class_to_print)
             print(
                 json.dumps(
-                    audit.report.generate_report(args.filename[0], class_to_print),
+                    report,
                     indent=4,
                     sort_keys=True,
                 ),

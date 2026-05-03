@@ -82,6 +82,16 @@ def _add_report_module(parent: argparse.ArgumentParser) -> None:
         ),
     )
 
+    parser.add_argument(
+        '--sarif',
+        action='store_true',
+        help=(
+            'Output the report in SARIF 2.1.0 format. Useful for ingestion '
+            'by GitHub code scanning, GitLab, Azure DevOps, etc. '
+            'Used with --report.'
+        ),
+    )
+
 
 def _add_statistics_module(parent: argparse.ArgumentParser) -> None:
     parser = parent.add_argument_group(
