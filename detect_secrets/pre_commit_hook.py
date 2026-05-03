@@ -37,7 +37,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         if args.json:
             print(json.dumps(baseline.format_for_output(new_secrets), indent=2))
         else:
-            pretty_print_diagnostics(new_secrets)
+            pretty_print_diagnostics(
+                new_secrets,
+                security_team=resolve_security_team_contact(getattr(args, 'security_team', None)),
+            )
         return 1
 
     if not args.baseline:
@@ -121,7 +124,30 @@ def should_update_baseline(
     return False
 
 
-def pretty_print_diagnostics(secrets: SecretsCollection, width: int = 80) -> None:
+DEFAULT_SECURITY_TEAM_CONTACT = 'in #security'
+
+
+def resolve_security_team_contact(cli_value: Optional[str]) -> str:
+    """Pick the security-team contact string for diagnostic messages.
+
+    Precedence (highest first):
+      1. ``--security-team`` CLI flag.
+      2. ``DETECT_SECRETS_SECURITY_TEAM`` env var (legacy).
+      3. ``DEFAULT_SECURITY_TEAM_CONTACT``.
+    """
+    if cli_value:
+        return cli_value
+    return os.environ.get('DETECT_SECRETS_SECURITY_TEAM', DEFAULT_SECURITY_TEAM_CONTACT)
+
+
+def pretty_print_diagnostics(
+    secrets: SecretsCollection,
+    width: int = 80,
+    security_team: Optional[str] = None,
+) -> None:
+    if security_team is None:
+        security_team = resolve_security_team_contact(None)
+
     # Header
     print(
         textwrap.fill(
@@ -150,7 +176,7 @@ def pretty_print_diagnostics(secrets: SecretsCollection, width: int = 80) -> Non
     )
     for suggestion in [
         'For information about putting your secrets in a safer place, '
-        'please ask {0}'.format(os.environ.get('DETECT_SECRETS_SECURITY_TEAM', 'in #security')),
+        'please ask {0}'.format(security_team),
 
         'Mark false positives with an inline '
         '`{0}` comment'.format(color.colorize('pragma: allowlist secret', color.AnsiColor.BOLD)),
