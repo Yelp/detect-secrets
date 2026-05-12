@@ -18,6 +18,16 @@ from testing.mocks import mock_named_temporary_file
             '-----BEGIN PRIVATE KEY-----\n'
             'yabba dabba doo'
         ),
+        (
+            '-----BEGIN ENCRYPTED PRIVATE KEY-----\n'
+            'MIIFHDBOBgkqhkiG9w0BBQ0wQTApBgkqhkiG9w0BBQwwHAQI\n'
+            '-----END ENCRYPTED PRIVATE KEY-----'
+        ),
+        (
+            '-----BEGIN OpenVPN Static key V1-----\n'
+            'abcdef1234567890abcdef1234567890\n'
+            '-----END OpenVPN Static key V1-----'
+        ),
     ],
 )
 def test_basic(file_content):

@@ -25,6 +25,11 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [@xxxx]: https://github.com/xxxx
 -->
 
+### Unreleased
+
+#### :telescope: Accuracy
+- Added `BEGIN ENCRYPTED PRIVATE KEY` and `BEGIN OpenVPN Static key V1` patterns to `PrivateKeyDetector` for parity with `pre-commit-hooks` `detect-private-key`
+
 ### v1.5.0
 ##### May 6th, 2024
 

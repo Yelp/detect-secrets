@@ -44,7 +44,9 @@ class PrivateKeyDetector(RegexBasedDetector):
         for regexp in (
             r'BEGIN DSA PRIVATE KEY',
             r'BEGIN EC PRIVATE KEY',
+            r'BEGIN ENCRYPTED PRIVATE KEY',
             r'BEGIN OPENSSH PRIVATE KEY',
+            r'BEGIN OpenVPN Static key V1',
             r'BEGIN PGP PRIVATE KEY BLOCK',
             r'BEGIN PRIVATE KEY',
             r'BEGIN RSA PRIVATE KEY',
