@@ -263,3 +263,18 @@ class TestMultipleValues:
             ('key', 'value1', 5),
             ('key', 'value2', 8),
         ]
+
+
+def test_interpolation():
+    file = mock_file_object(
+        textwrap.dedent("""
+            [section]
+            key = %%(c)s
+            rice = fried
+        """)[1:-1],
+    )
+
+    assert list(IniFileParser(file)) == [
+        ('key', '%%(c)s', 2),
+        ('rice', 'fried', 3),
+    ]
