@@ -45,7 +45,7 @@ class MockExceptionRaisingPlugin(BasePlugin):
 
 
 class TestAnalyzeLine():
-    def setup(self):
+    def setup_method(self):
         self.line = 'some-secret'
         self.filename = 'secrets.py'
         self.context = get_code_snippet(lines=[self.line], line_number=1)
