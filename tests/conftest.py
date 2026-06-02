@@ -91,5 +91,5 @@ def mocked_requests():
 
 @pytest.fixture(autouse=True)
 def prevent_clear_screen():
-    with mock.patch('detect_secrets.audit.io.clear_screen'):
-        yield
+    with mock.patch('detect_secrets.audit.io.clear_screen') as mock_clear_screen:
+        yield mock_clear_screen
