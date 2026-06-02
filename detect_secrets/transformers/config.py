@@ -91,7 +91,7 @@ class IniFileParser:
         """
         :param add_header: whether or not to add a top-level [global] header.
         """
-        self.parser = configparser.ConfigParser()
+        self.parser = configparser.ConfigParser(interpolation=None)
         self.parser.optionxform = str  # type: ignore
 
         content = file.read()
