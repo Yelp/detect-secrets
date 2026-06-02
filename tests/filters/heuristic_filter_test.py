@@ -149,6 +149,7 @@ def test_is_lock_file():
     # Basic tests
     assert filters.heuristic.is_lock_file('composer.lock')
     assert filters.heuristic.is_lock_file('packages.lock.json')
+    assert filters.heuristic.is_lock_file('pnpm-lock.yaml')
 
     # file path
     assert filters.heuristic.is_lock_file('path/yarn.lock')
