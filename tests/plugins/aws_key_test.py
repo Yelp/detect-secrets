@@ -82,20 +82,16 @@ class TestAWSKeyDetector:
         ) == VerifiedResult.UNVERIFIED
 
     def test_verify_valid_secret(self):
-        with mock.patch(
-            'detect_secrets.plugins.aws.verify_aws_secret_access_key',
-            return_value=True,
-        ):
+        with mock.patch('detect_secrets.plugins.aws.verify_aws_secret_access_key') as m:
+            m.return_value = True
             assert AWSKeyDetector().verify(
                 self.example_key,
                 get_code_snippet(['={}'.format(EXAMPLE_SECRET)], 1),
             ) == VerifiedResult.VERIFIED_TRUE
 
     def test_verify_invalid_secret(self):
-        with mock.patch(
-            'detect_secrets.plugins.aws.verify_aws_secret_access_key',
-            return_value=False,
-        ):
+        with mock.patch('detect_secrets.plugins.aws.verify_aws_secret_access_key') as m:
+            m.return_value = False
             assert AWSKeyDetector().verify(
                 self.example_key,
                 get_code_snippet(['={}'.format(EXAMPLE_SECRET)], 1),

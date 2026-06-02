@@ -85,10 +85,8 @@ def disable_gibberish_filter() -> Iterator[None]:
 
     However, since this only happens in test environments, we can just mock it out.
     """
-    with mock.patch(
-        'detect_secrets.filters.gibberish.is_feature_enabled',
-        return_value=False,
-    ):
+    with mock.patch('detect_secrets.filters.gibberish.is_feature_enabled') as m:
+        m.return_value = False
         yield
 
 
