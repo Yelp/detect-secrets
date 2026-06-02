@@ -9,6 +9,7 @@ class TestGitHubTokenDetector:
         'payload, should_flag',
         [
             ('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', True),
+            ('ghs_12345_eyJhbGciOiJSUzI1NiJ9.' + 'A'*100 + '.' + 'B'*100, True),
             ('foo_wWPw5k4aXcaT4fNP0UcnZwJUVFk6LO0pINUx', False),
             ('foo', False),
         ],
