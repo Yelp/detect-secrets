@@ -171,7 +171,7 @@ def run_logic(
         baseline.save_to_file(secrets, f.name)
         f.seek(0)
 
-        with mock.patch('detect_secrets.audit.io.input') as m:
+        with mock.patch('detect_secrets.audit.io.input', create=True) as m:
             if input is not None:
                 m.side_effect = list(input) + ['q']
 
