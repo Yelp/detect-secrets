@@ -4,6 +4,7 @@ from unittest import mock
 
 import pytest
 import responses
+from mockey.fixture import MockAutospecFixture
 
 import detect_secrets
 from detect_secrets import filters
@@ -11,6 +12,14 @@ from detect_secrets import settings
 from detect_secrets.core.plugins.util import get_mapping_from_secret_type_to_class
 from detect_secrets.util.importlib import get_modules_from_package
 from testing.mocks import MockLogWrapper
+
+
+@pytest.fixture(autouse=True)
+def mock_autospec_fixture():
+    fixture = MockAutospecFixture()
+    fixture.setUp()
+    yield
+    fixture.cleanUp()
 
 
 @pytest.fixture(autouse=True)
@@ -82,5 +91,5 @@ def mocked_requests():
 
 @pytest.fixture(autouse=True)
 def prevent_clear_screen():
-    with mock.patch('detect_secrets.audit.io.clear_screen'):
-        yield
+    with mock.patch('detect_secrets.audit.io.clear_screen') as mock_clear_screen:
+        yield mock_clear_screen

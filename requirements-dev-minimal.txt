@@ -1,5 +1,6 @@
 coverage
 flake8==7.1.1
+mockey
 gibberish-detector>=0.1.1
 monotonic
 mypy

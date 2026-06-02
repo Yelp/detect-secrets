@@ -41,6 +41,7 @@ class TestScanFile:
         with mock.patch(
             'detect_secrets.core.scan.open',
             side_effect=IOError,
+            create=True,
         ):
             SecretsCollection().scan_file('test_data/config.env')
 
