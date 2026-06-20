@@ -34,7 +34,7 @@ class YAMLTransformer(BaseTransformer):
         """
         try:
             items = sorted(YAMLFileParser(file), key=lambda x: x.line_number)
-        except yaml.YAMLError:
+        except (ValueError, yaml.YAMLError):
             raise ParsingError
 
         seen = set()
