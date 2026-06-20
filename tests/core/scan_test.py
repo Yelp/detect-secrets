@@ -87,6 +87,14 @@ class TestScanFile:
             assert not list(scan.scan_file(f.name))
 
     @staticmethod
+    def test_handles_invalid_yaml_timestamp_gracefully():
+        with mock_named_temporary_file(suffix='.yaml') as f:
+            f.write(b'date: 0000-01-01\n')
+            f.seek(0)
+
+            assert not list(scan.scan_file(f.name))
+
+    @staticmethod
     def test_handles_binary_files_gracefully():
         # NOTE: This suffix needs to be something that isn't in the known file types, as determined
         # by `detect_secrets.util.filetype.determine_file_type`.

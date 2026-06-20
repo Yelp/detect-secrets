@@ -3,6 +3,7 @@ from unittest import mock
 
 import pytest
 
+from detect_secrets.transformers.exceptions import ParsingError
 from detect_secrets.transformers.yaml import YAMLFileParser
 from detect_secrets.transformers.yaml import YAMLTransformer
 from testing.mocks import mock_file_object
@@ -159,6 +160,13 @@ class TestYAMLTransformer:
             '',
             'keyC: "valueC"',
         ]
+
+    @staticmethod
+    def test_invalid_yaml_timestamp_raises_parsing_error():
+        file = mock_file_object('date: 0000-01-01')
+
+        with pytest.raises(ParsingError):
+            YAMLTransformer().parse_file(file)
 
 
 class TestYAMLFileParser:
