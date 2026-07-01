@@ -12,6 +12,7 @@ COMMON_SECRET = 'm{{h}o)p${e]nob(ody[finds>-_$#thisone}}'
 WHITES_SECRET = 'value with quotes and spaces'
 LETTER_SECRET = 'A,.:-¨@*¿?!'
 SYMBOL_SECRET = ',.:-¨@*¿?!'
+LEADING_SYMBOL_SECRET = '-x1yzAB9tokenvalue'  # starts with a symbol, has word chars
 
 LONG_LINE = '<img src="data:image/png;base64,{}\n"\n>'.format(base64.b64encode((str(randint(0, 9)) * 24000).encode()))  # noqa: E501
 
@@ -38,6 +39,7 @@ CONFIG_TEST_CASES = [
     ('if ("{}" !== secret) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('secrete = {}'.format(LETTER_SECRET), LETTER_SECRET),   # All symbols are allowed
     ('password = {}'.format(SYMBOL_SECRET), None),  # At least 1 alphanumeric character is required
+    ('apikey = {}'.format(LEADING_SYMBOL_SECRET), LEADING_SYMBOL_SECRET),  # Starts with a symbol
     ('api_key = ""', None),  # Nothing in the quotes
     ("secret: ''", None),   # Nothing in the quotes
     ('password = "somefakekey"', None),  # 'fake' in the secret
@@ -132,6 +134,7 @@ QUOTES_REQUIRED_TEST_CASES = [
     ("aws_secret_access_key: '{}'".format(COMMON_SECRET), COMMON_SECRET),
     ("db_pass: '{}'".format(LETTER_SECRET), LETTER_SECRET),  # All symbols are allowed
     ("password: '{}'".format(SYMBOL_SECRET), None),  # At least 1 alphanumeric character is required
+    ('apikey = "{}"'.format(LEADING_SYMBOL_SECRET), LEADING_SYMBOL_SECRET),  # Starts with a symbol
     ('if ("{}" == passwd) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if ("{}" === private_key) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if ("{}" === my_private_key) {{'.format(COMMON_SECRET), COMMON_SECRET),   # Prefix
