@@ -12,23 +12,29 @@ def get_logger(name: Optional[str] = None, format_string: Optional[str] = None) 
     """
     logging.captureWarnings(True)
     log = logging.getLogger(name)
+    has_existing_handlers = bool(log.handlers)
 
     # Bind custom method to instance.
     # Source: https://stackoverflow.com/a/2982
     log.set_debug_level = partial(CustomLogger.set_debug_level, log)    # type: ignore
-    cast(CustomLogger, log).set_debug_level(0)
+    if not has_existing_handlers:
+        cast(CustomLogger, log).set_debug_level(0)
 
-    # Setting up log formats
-    log.handlers = []
-    handler = logging.StreamHandler(sys.stderr)
-    handler.setFormatter(
-        logging.Formatter(
-            format_string
-            or
-            '[%(module)s]\t%(levelname)s\t%(message)s',
-        ),
-    )
-    log.addHandler(handler)
+    # Setting up log formats. Avoid replacing handlers that callers may have
+    # configured before importing detect-secrets.
+    if not has_existing_handlers:
+        handler = logging.StreamHandler(sys.stderr)
+        handler.setFormatter(
+            logging.Formatter(
+                format_string
+                or
+                '[%(module)s]\t%(levelname)s\t%(message)s',
+            ),
+        )
+        log.addHandler(handler)
+
+    if name is not None:
+        log.propagate = False
 
     return cast(CustomLogger, log)
 
