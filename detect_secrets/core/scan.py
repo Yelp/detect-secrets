@@ -258,7 +258,7 @@ def _get_lines_from_file(filename: str) -> Generator[List[str], None, None]:
     :raises: IOError
     :raises: FileNotFoundError
     """
-    with open(filename) as f:
+    with open(filename, encoding='utf-8') as f:
         log.info(f'Checking file: {filename}')
 
         try:

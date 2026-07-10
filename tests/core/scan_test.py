@@ -1,3 +1,4 @@
+import builtins
 import os
 import textwrap
 from pathlib import Path
@@ -73,6 +74,45 @@ class TestGetFilesToScan:
 
 
 class TestScanFile:
+    @staticmethod
+    def test_reads_utf8_files_when_locale_encoding_cannot_decode_them(monkeypatch):
+        content = textwrap.dedent("""
+            PASSWORD: "super-secret-value"
+            // U+201D
+            RIGHT_CURLY_DOUBLE_QUOTE: "”"
+        """)[1:]
+
+        with mock_named_temporary_file(suffix='.js') as f:
+            f.write(content.encode('utf-8'))
+            f.seek(0)
+
+            def open_with_windows_encoding(*args, **kwargs):
+                if 'encoding' not in kwargs:
+                    kwargs['encoding'] = 'cp1252'
+
+                return builtins.open(*args, **kwargs)
+
+            monkeypatch.setattr(
+                scan,
+                'open',
+                open_with_windows_encoding,
+                raising=False,
+            )
+
+            with transient_settings({
+                'plugins_used': [
+                    {
+                        'name': 'KeywordDetector',
+                    },
+                ],
+            }):
+                secrets = list(scan.scan_file(f.name))
+
+        assert [
+            secret.secret_value
+            for secret in secrets
+        ] == ['super-secret-value']
+
     @staticmethod
     def test_handles_broken_yaml_gracefully():
         with mock_named_temporary_file(suffix='.yaml') as f:
