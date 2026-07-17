@@ -25,6 +25,11 @@ If you love `detect-secrets`, please star our project on GitHub to show your sup
 [@xxxx]: https://github.com/xxxx
 -->
 
+### Unreleased
+
+#### :tada: New Features
+- Added `DatadogDetector` plugin to detect Datadog API and Application keys, with verification support.
+
 ### v1.5.0
 ##### May 6th, 2024
 
