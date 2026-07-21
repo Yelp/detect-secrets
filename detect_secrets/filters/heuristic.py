@@ -187,7 +187,7 @@ def is_indirect_reference(line: str) -> bool:
 @lru_cache(maxsize=1)
 def _get_indirect_reference_regex() -> Pattern:
     # Regex details:
-    #   ([^\v=!:]*)     ->  Something before the assignment or comparison
+    #   ([^\v\s=!:]*)   ->  Something before the assignment or comparison
     #   \s*             ->  Some optional whitespaces
     #   (:=?|[!=]{1,3}) ->  Assignment or comparison: :=, =, ==, ===, !=, !==
     #   \s*             ->  Some optional whitespaces
@@ -197,7 +197,13 @@ def _get_indirect_reference_regex() -> Pattern:
     #       [^\v]*      ->  Something except line breaks
     #       [\]\)]      ->  End of indirect reference: ] or )
     #   )
-    return re.compile(r'([^\v=!:]*)\s*(:=?|[!=]{1,3})\s*([\w.-]+[\[\(][^\v]*[\]\)])')
+    # Note: whitespace is excluded from the first group (in addition to the
+    # existing \v=!: exclusions) so it can only be consumed by the following
+    # \s*. Previously both groups could match whitespace, giving the engine
+    # exponentially many ways to split long whitespace runs between them
+    # whenever the overall match failed - a catastrophic backtracking / ReDoS
+    # bug (see #868).
+    return re.compile(r'([^\v\s=!:]*)\s*(:=?|[!=]{1,3})\s*([\w.-]+[\[\(][^\v]*[\]\)])')
 
 
 def is_lock_file(filename: str) -> bool:
