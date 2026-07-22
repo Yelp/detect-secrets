@@ -7,6 +7,7 @@ import re
 import string
 import textwrap
 from datetime import datetime
+from typing import Optional
 from typing import cast
 from typing import List
 from typing import Union
@@ -53,11 +54,19 @@ class AWSKeyDetector(RegexBasedDetector):
         if not secret_access_key_candidates:
             return VerifiedResult.UNVERIFIED
 
+        saw_verified_false = False
         for candidate in secret_access_key_candidates:
-            if verify_aws_secret_access_key(secret, candidate):
+            result = verify_aws_secret_access_key(secret, candidate)
+            if result is True:
                 return VerifiedResult.VERIFIED_TRUE
+            if result is False:
+                saw_verified_false = True
 
-        return VerifiedResult.VERIFIED_FALSE
+        # Prefer VERIFIED_FALSE only when STS actually rejected a candidate.
+        # None means verification could not be completed (e.g. proxy 403).
+        if saw_verified_false:
+            return VerifiedResult.VERIFIED_FALSE
+        return VerifiedResult.UNVERIFIED
 
 
 def get_secret_access_keys(content: CodeSnippet) -> List[str]:
@@ -77,10 +86,18 @@ def get_secret_access_keys(content: CodeSnippet) -> List[str]:
     ]
 
 
-def verify_aws_secret_access_key(key: str, secret: str) -> bool:  # pragma: no cover
+def verify_aws_secret_access_key(
+    key: str,
+    secret: str,
+) -> Optional[bool]:  # pragma: no cover
     """
     Using requests, because we don't want to require boto3 for this one
     optional verification step.
+
+    Returns:
+        True  - STS accepted the credentials
+        False - STS rejected the credentials (real AWS ErrorResponse)
+        None  - verification incomplete (network/proxy/non-STS response)
 
     Loosely based off:
     https://docs.aws.amazon.com/general/latest/gr/sigv4-signed-request-examples.html
@@ -188,16 +205,55 @@ def verify_aws_secret_access_key(key: str, secret: str) -> bool:  # pragma: no c
     )
 
     # Step #5: Finally send the request
-    response = requests.post(
-        'https://sts.amazonaws.com',
-        headers=headers,
-        data=body,
-    )
+    try:
+        response = requests.post(
+            'https://sts.amazonaws.com',
+            headers=headers,
+            data=body,
+        )
+    except requests.exceptions.RequestException:
+        return None
 
-    if response.status_code == 403:
+    return _interpret_sts_response(response)
+
+
+def _interpret_sts_response(response: requests.Response) -> Optional[bool]:
+    """Map an HTTP response from (or pretending to be) STS into verify result.
+
+    Real STS rejections for bad credentials are 403 with an XML ErrorResponse.
+    Egress proxies often answer blocked hosts with a bare 403 and non-AWS body;
+    those must not be treated as "not a secret".
+    """
+    status = response.status_code
+    text = response.text or ''
+
+    if status == 200 and 'GetCallerIdentityResponse' in text:
+        return True
+
+    if status == 403 and _is_sts_error_response(text):
         return False
 
-    return True
+    # Anything else: incomplete verification (proxy 403, HTML block page, 5xx, ...)
+    return None
+
+
+def _is_sts_error_response(body: str) -> bool:
+    if not body:
+        return False
+    # STS error documents are XML ErrorResponse payloads.
+    if '<ErrorResponse' not in body and '<Error>' not in body:
+        return False
+    # Common credential-rejection codes from GetCallerIdentity.
+    markers = (
+        'InvalidClientTokenId',
+        'SignatureDoesNotMatch',
+        'IncompleteSignature',
+        'AccessDenied',
+        'InvalidUserID.NotFound',
+        'AuthFailure',
+        'InvalidAccessKeyId',
+    )
+    return any(marker in body for marker in markers)
 
 
 def _sign(key: bytes, message: str, hex: bool = False) -> Union[str, bytes]:  # pragma: no cover
