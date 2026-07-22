@@ -5,6 +5,7 @@ import pytest
 
 from detect_secrets.constants import VerifiedResult
 from detect_secrets.plugins.aws import AWSKeyDetector
+from detect_secrets.plugins.aws import _interpret_sts_response
 from detect_secrets.plugins.aws import get_secret_access_keys
 from detect_secrets.util.code_snippet import get_code_snippet
 
@@ -14,7 +15,7 @@ EXAMPLE_SECRET = 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'
 
 class TestAWSKeyDetector:
 
-    def setup(self):
+    def setup_method(self):
         self.example_key = 'AKIAZZZZZZZZZZZZZZZZ'
 
     @pytest.mark.parametrize(
@@ -124,6 +125,52 @@ class TestAWSKeyDetector:
                     1,
                 ),
             ) == VerifiedResult.VERIFIED_TRUE
+
+    def test_verify_proxy_403_is_unverified(self):
+        with mock.patch(
+            'detect_secrets.plugins.aws.verify_aws_secret_access_key',
+            return_value=None,
+        ):
+            assert AWSKeyDetector().verify(
+                self.example_key,
+                get_code_snippet(['={}'.format(EXAMPLE_SECRET)], 1),
+            ) == VerifiedResult.UNVERIFIED
+
+
+class TestInterpretStsResponse:
+
+    def _response(self, status_code, text):
+        response = mock.Mock()
+        response.status_code = status_code
+        response.text = text
+        return response
+
+    def test_proxy_403_without_sts_body_is_incomplete(self):
+        assert _interpret_sts_response(
+            self._response(403, 'BLOCKED by egress proxy: sts.amazonaws.com'),
+        ) is None
+
+    def test_sts_invalid_token_is_false(self):
+        body = (
+            '<ErrorResponse xmlns="https://sts.amazonaws.com/doc/2011-06-15/">'
+            '<Error><Code>InvalidClientTokenId</Code>'
+            '<Message>The security token included in the request is invalid.'
+            '</Message></Error></ErrorResponse>'
+        )
+        assert _interpret_sts_response(self._response(403, body)) is False
+
+    def test_sts_success_is_true(self):
+        body = (
+            '<GetCallerIdentityResponse '
+            'xmlns="https://sts.amazonaws.com/doc/2011-06-15/">'
+            '<GetCallerIdentityResult><Arn>arn:aws:iam::1:user/x'
+            '</Arn></GetCallerIdentityResult>'
+            '</GetCallerIdentityResponse>'
+        )
+        assert _interpret_sts_response(self._response(200, body)) is True
+
+    def test_empty_403_is_incomplete(self):
+        assert _interpret_sts_response(self._response(403, '')) is None
 
 
 @pytest.mark.parametrize(
