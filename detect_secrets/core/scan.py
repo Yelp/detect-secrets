@@ -391,7 +391,7 @@ def _is_filtered_out(required_filter_parameters: Iterable[str], **kwargs: Any) -
         try:
             if call_function_with_arguments(filter_fn, **kwargs):
                 if 'secret' in kwargs:
-                    debug_msg = f'Skipping "{0}" due to `{1}`.'.format(
+                    debug_msg = 'Skipping "{0}" due to `{1}`.'.format(
                         kwargs['secret'],
                         filter_fn.path,
                     )
