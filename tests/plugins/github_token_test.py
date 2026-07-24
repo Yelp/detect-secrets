@@ -11,6 +11,13 @@ class TestGitHubTokenDetector:
             ('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', True),
             ('foo_wWPw5k4aXcaT4fNP0UcnZwJUVFk6LO0pINUx', False),
             ('foo', False),
+            # Fine-grained personal access token (github_pat_...)
+            (
+                'github_pat_11ABCDEFGHIJKLMNOPQRST_'
+                '0123456789abcdefghijABCDEFGHIJ0123456789abcdefghijABCDEFGHI',
+                True,
+            ),
+            ('github_pat_tooshort', False),
         ],
     )
     def test_analyze(self, payload, should_flag):
