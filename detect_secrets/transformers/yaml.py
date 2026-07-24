@@ -86,7 +86,12 @@ class YAMLTransformer(BaseTransformer):
             # However, if there is a quote inside, we need to escape it.
             value = value.replace('"', '\\"')
 
-            lines.append(f'{item.key}: "{value}"{comment}')     # type: ignore
+            # Sequence items (e.g. `- SECRET_KEY=foo` under a YAML list) have no key of
+            # their own, so we don't synthesize a `key: ` prefix for them.
+            if item.key:
+                lines.append(f'{item.key}: "{value}"{comment}')     # type: ignore
+            else:
+                lines.append(f'"{value}"{comment}')
 
         return lines
 
@@ -220,11 +225,16 @@ class YAMLFileParser:
         parent: Optional[yaml.nodes.Node],
         index: Optional[yaml.nodes.Node],
     ) -> Optional[yaml.nodes.Node]:
-        line = (
-            self.loader.marks[-1].line
-            if self.is_inline_flow_mapping_key
-            else self.loader.line
-        )
+        if parent is not None and parent.tag.endswith(':seq'):
+            # Checking for the end of a sequence (SequenceEndEvent) before composing the
+            # next item causes the parser to look ahead, advancing `self.loader.line` past
+            # this item's own line. The event for this item has already been produced by
+            # that lookahead, so its mark is accurate even though `self.loader.line` isn't.
+            line = self.loader.peek_event().start_mark.line
+        elif self.is_inline_flow_mapping_key:
+            line = self.loader.marks[-1].line
+        else:
+            line = self.loader.line
 
         node = yaml.composer.Composer.compose_node(self.loader, parent, index)  # type: ignore
         if node is None:
@@ -238,7 +248,8 @@ class YAMLFileParser:
             self.is_inline_flow_mapping_key = False
             return _tag_dict_values(cast(yaml.nodes.MappingNode, node))
 
-        # TODO: Not sure if need to do :seq
+        if node.tag.endswith(':seq'):
+            return _tag_sequence_values(cast(yaml.nodes.SequenceNode, node))
 
         return node
 
@@ -333,6 +344,52 @@ def _tag_dict_values(map_node: yaml.nodes.MappingNode) -> yaml.nodes.MappingNode
         flow_style=map_node.flow_style,
     )
     return output
+
+
+def _tag_sequence_values(seq_node: yaml.nodes.SequenceNode) -> yaml.nodes.SequenceNode:
+    """
+    Mirrors `_tag_dict_values`, but for plain string/binary items inside a YAML
+    sequence (e.g. `environment: ['SECRET_KEY=foo']`), which have no key of their own.
+    """
+    new_values = []
+    for value in seq_node.value:
+        if not (
+            value.tag.endswith(':str') or
+            value.tag.endswith(':binary')
+        ):
+            new_values.append(value)
+            continue
+
+        augmented_string = yaml.nodes.MappingNode(
+            tag='tag:yaml.org,2002:map',
+            value=[
+                _create_key_value_pair_for_mapping_node_value(
+                    key='__value__',
+                    value=value.value,
+                    tag=value.tag,
+                ),
+                _create_key_value_pair_for_mapping_node_value(
+                    key='__line__',
+                    value=str(value.__line__),
+                    tag='tag:yaml.org,2002:int',
+                ),
+                _create_key_value_pair_for_mapping_node_value(
+                    key='__original_key__',
+                    value='',
+                    tag='tag:yaml.org,2002:str',
+                ),
+            ],
+        )
+
+        new_values.append(augmented_string)
+
+    return yaml.nodes.SequenceNode(
+        tag=seq_node.tag,
+        value=new_values,
+        start_mark=seq_node.start_mark,
+        end_mark=seq_node.end_mark,
+        flow_style=seq_node.flow_style,
+    )
 
 
 def _create_key_value_pair_for_mapping_node_value(
