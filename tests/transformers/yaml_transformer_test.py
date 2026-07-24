@@ -40,6 +40,30 @@ class TestYAMLTransformer:
         ]
 
     @staticmethod
+    def test_sequence_of_strings():
+        # https://github.com/Yelp/detect-secrets/issues/791
+        # String values inside a YAML sequence (e.g. docker-compose's
+        # `environment: [KEY=value, ...]` list form) have no key of their own, but should
+        # still be scanned and attributed to the correct line number.
+        file = mock_file_object(
+            textwrap.dedent("""
+                services:
+                    foo:
+                        environment:
+                            - SECRET_KEY=value
+                        other: bar
+            """)[1:-1],
+        )
+
+        assert YAMLTransformer().parse_file(file) == [
+            '',
+            '',
+            '',
+            '"SECRET_KEY=value"',
+            'other: "bar"',
+        ]
+
+    @staticmethod
     @pytest.mark.xfail(reason='TODO')
     @pytest.mark.parametrize(
         'block_chomping',
