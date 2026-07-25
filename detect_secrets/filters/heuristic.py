@@ -214,6 +214,7 @@ def is_lock_file(filename: str) -> bool:
         'poetry.lock',
         'Cargo.lock',
         'packages.lock.json',
+        'pnpm-lock.yaml',
     }
 
 
