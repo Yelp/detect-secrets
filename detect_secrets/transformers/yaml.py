@@ -36,6 +36,11 @@ class YAMLTransformer(BaseTransformer):
             items = sorted(YAMLFileParser(file), key=lambda x: x.line_number)
         except yaml.YAMLError:
             raise ParsingError
+        except ValueError:
+            # PyYAML's timestamp constructor can raise a bare ValueError (e.g.
+            # "year 0 is out of range") for out-of-range date/time scalars that
+            # it otherwise parses without a YAMLError.
+            raise ParsingError
 
         seen = set()
 
