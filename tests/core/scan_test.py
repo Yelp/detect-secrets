@@ -97,6 +97,13 @@ class TestScanFile:
             assert not list(scan.scan_file(f.name))
 
 
+class TestScanForAllowlistedSecretsInFile:
+    @staticmethod
+    def test_handles_empty_files_gracefully():
+        with mock_named_temporary_file() as f:
+            assert not list(scan.scan_for_allowlisted_secrets_in_file(f.name))
+
+
 @pytest.fixture(autouse=True)
 def configure_plugins():
     with transient_settings({
