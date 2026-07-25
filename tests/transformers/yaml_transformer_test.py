@@ -3,6 +3,7 @@ from unittest import mock
 
 import pytest
 
+from detect_secrets.transformers.exceptions import ParsingError
 from detect_secrets.transformers.yaml import YAMLFileParser
 from detect_secrets.transformers.yaml import YAMLTransformer
 from testing.mocks import mock_file_object
@@ -159,6 +160,19 @@ class TestYAMLTransformer:
             '',
             'keyC: "valueC"',
         ]
+
+    @staticmethod
+    def test_out_of_range_timestamp_raises_parsing_error():
+        # regression test for https://github.com/Yelp/detect-secrets/issues/584
+        # PyYAML's timestamp constructor raises a bare ValueError (not a
+        # yaml.YAMLError) for a scalar like this, since year 0 isn't a valid
+        # `datetime.date`. This shouldn't propagate out of `parse_file` and
+        # crash the scan -- it should be treated like any other unparseable
+        # YAML file.
+        file = mock_file_object('key: 0000-01-01')
+
+        with pytest.raises(ParsingError):
+            YAMLTransformer().parse_file(file)
 
 
 class TestYAMLFileParser:
