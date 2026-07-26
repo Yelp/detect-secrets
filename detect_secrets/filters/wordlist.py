@@ -58,9 +58,19 @@ def initialize(wordlist_filename: str, min_length: int = 3, file_hash: str = '')
 
 
 def should_exclude_secret(secret: str) -> bool:
+    import ahocorasick
+
+    automaton = get_automaton()
+    if automaton.kind != ahocorasick.AHOCORASICK:
+        # No words were added to the automaton (e.g. an empty word list, or every
+        # line was shorter than min_length), so make_automaton() never actually
+        # converted it out of TRIE mode. Calling iter() on it would raise
+        # AttributeError instead of just finding no matches.
+        return False
+
     try:
         # .lower() to make everything case-insensitive
-        next(get_automaton().iter(string=secret.lower()))
+        next(automaton.iter(string=secret.lower()))
         return True
     except StopIteration:
         return False
