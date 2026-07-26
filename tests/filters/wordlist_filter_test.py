@@ -41,6 +41,22 @@ class TestShouldExcludeSecret:
         assert filters.wordlist.should_exclude_secret('AKIAnotr') is False
 
 
+def test_empty_wordlist_does_not_crash(tmp_path):
+    # Regression test for https://github.com/Yelp/detect-secrets/issues/844:
+    # an empty (or all-too-short) word list never adds any words to the
+    # automaton, so make_automaton() leaves it in TRIE mode and a plain
+    # call to should_exclude_secret used to raise AttributeError instead
+    # of returning False.
+    empty_word_list = tmp_path / 'empty_word_list.txt'
+    empty_word_list.write_text('')
+
+    filters.wordlist.initialize(str(empty_word_list), min_length=3)
+    try:
+        assert filters.wordlist.should_exclude_secret('APEOptState') is False
+    finally:
+        filters.wordlist.get_automaton.cache_clear()
+
+
 def test_load_from_baseline():
     with transient_settings({
         'filters_used': [{
