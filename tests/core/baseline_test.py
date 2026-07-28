@@ -82,6 +82,15 @@ class TestCreate:
             secrets = baseline.create('test_data/files/tmp', should_scan_all_files=True)
             assert get_relative_path_if_in_cwd(f.name) in secrets.data
 
+    @staticmethod
+    def test_scan_all_files_outside_cwd(tmp_path):
+        secret_file = tmp_path / 'secret.py'
+        secret_file.write_text('"2b00042f7481c7b056c4b410d28f33cf"')
+
+        secrets = baseline.create(str(tmp_path), should_scan_all_files=True)
+
+        assert str(secret_file.resolve()) in secrets.data
+
 
 def test_load_and_output():
     with open('.secrets.baseline') as f:

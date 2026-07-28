@@ -26,6 +26,16 @@ from .plugins import Plugin
 from .potential_secret import PotentialSecret
 
 
+def _is_path_within_directory(path: str, directory: str) -> bool:
+    try:
+        return os.path.commonpath([
+            os.path.realpath(path),
+            os.path.realpath(directory),
+        ]) == os.path.realpath(directory)
+    except ValueError:
+        return False
+
+
 def get_files_to_scan(
     *paths: str,
     should_scan_all_files: bool = False,
@@ -83,18 +93,41 @@ def get_files_to_scan(
         return
 
     for path in paths:
+        scan_root = root or os.getcwd()
+        resolved_path = os.path.realpath(path)
+        path_is_outside_root = not _is_path_within_directory(
+            resolved_path,
+            scan_root,
+        )
+        external_scan_root = (
+            resolved_path
+            if os.path.isdir(path)
+            else os.path.dirname(resolved_path)
+        )
         iterator = (
-            cast(List[Tuple], [(root or os.getcwd(), None, [path])])
+            cast(List[Tuple], [(scan_root, None, [path])])
             if os.path.isfile(path)
             else os.walk(path)
         )
 
         for path_root, _, filenames in iterator:
             for filename in filenames:
-                relative_path = get_relative_path(
-                    root=root or os.getcwd(),
-                    path=os.path.join(path_root, filename),
-                )
+                file_path = os.path.join(path_root, filename)
+                if path_is_outside_root:
+                    resolved_file_path = os.path.realpath(file_path)
+                    relative_path = (
+                        resolved_file_path
+                        if _is_path_within_directory(
+                            resolved_file_path,
+                            external_scan_root,
+                        )
+                        else None
+                    )
+                else:
+                    relative_path = get_relative_path(
+                        root=scan_root,
+                        path=file_path,
+                    )
                 if not relative_path:
                     # e.g. symbolic links may be pointing outside the root directory
                     continue
