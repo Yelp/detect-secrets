@@ -97,6 +97,30 @@ class TestScanFile:
             assert not list(scan.scan_file(f.name))
 
 
+class TestScanLine:
+    """
+    https://github.com/Yelp/detect-secrets/issues/709
+
+    `scan_line` requires plugins to be configured first (e.g. by wrapping the
+    call in `with default_settings():`), same as `scan_file`/`scan_diff`/etc.
+    Unlike those, it used to silently yield nothing instead of logging the
+    same "No plugins to scan with!" diagnostic when none are configured.
+    """
+
+    @staticmethod
+    def test_no_plugins_configured_logs_error_and_returns_nothing(mock_log):
+        with transient_settings({'plugins_used': []}):
+            assert not list(scan.scan_line('password = "hunter2"'))
+
+        assert 'No plugins to scan with!' in mock_log.error_messages
+
+    @staticmethod
+    def test_detects_secret_when_plugins_are_configured():
+        # Relies on the `configure_plugins` autouse fixture below (BasicAuthDetector).
+        secrets = list(scan.scan_line('https://username:password@example.com'))
+        assert secrets
+
+
 @pytest.fixture(autouse=True)
 def configure_plugins():
     with transient_settings({
