@@ -69,7 +69,10 @@ def get_files_to_scan(
 
         if not should_scan_all_files:
             try:
-                valid_paths = git.get_tracked_files(git.get_root_directory(root))
+                valid_paths = git.get_tracked_files(
+                    git.get_root_directory(root),
+                    relative_to=root or os.getcwd(),
+                )
             except subprocess.CalledProcessError:
                 log.warning('Did not detect git repository. Try scanning all files instead.')
                 valid_paths = False

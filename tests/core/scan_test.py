@@ -61,6 +61,25 @@ class TestGetFilesToScan:
             assert len(list(filter(lambda x: x.startswith(str(prefix)), results))) > 1
 
     @staticmethod
+    def test_should_scan_tracked_files_from_a_subdirectory_of_the_repo():
+        # Regression test for https://github.com/Yelp/detect-secrets/issues/876:
+        # scanning from within a subdirectory of the git repo (rather than from
+        # the repo root, with no explicit `root` argument) used to return zero
+        # tracked files. `get_tracked_files` always computed paths relative to
+        # the git root, while `get_files_to_scan` computed the walked files'
+        # paths relative to the current working directory -- so the two never
+        # matched once cwd was a subdirectory of the git root.
+        original_cwd = os.getcwd()
+        subdirectory = os.path.join(git.get_root_directory(), 'test_data/files')
+        try:
+            os.chdir(subdirectory)
+            results = set(scan.get_files_to_scan('.', should_scan_all_files=False))
+        finally:
+            os.chdir(original_cwd)
+
+        assert 'file_with_secrets.py' in results
+
+    @staticmethod
     @pytest.fixture(autouse=True, scope='class')
     def non_tracked_file():
         with mock_named_temporary_file(

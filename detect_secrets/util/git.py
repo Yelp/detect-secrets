@@ -18,13 +18,22 @@ def get_root_directory(path: str = '') -> str:
     return subprocess.check_output(command).decode('utf-8').strip()
 
 
-def get_tracked_files(root: str) -> Set[str]:
+def get_tracked_files(root: str, relative_to: str = '') -> Set[str]:
     """Parsing .gitignore rules is hard.
 
     However, a way we can get around this problem by just listing all
     currently tracked git files, and start our search from there.
     After all, if it isn't in the git repo, we're not concerned about
     it, because secrets aren't being entered in a shared place.
+
+    :param root: the git repository root, used to list tracked files.
+    :param relative_to: the directory the returned paths should be relative
+        to. Defaults to `root`, which is only correct when scanning starts
+        from the git root itself -- callers scanning from a subdirectory of
+        the repository (e.g. `root` unset, cwd inside a nested tracked
+        directory) must pass the actual scan root here, so the returned
+        paths match the ones `get_files_to_scan` computes while walking
+        that same scan root.
 
     :raises: CalledProcessError
     """
@@ -36,7 +45,7 @@ def get_tracked_files(root: str) -> Set[str]:
         )
 
         for filename in files.decode('utf-8').splitlines():
-            path = get_relative_path(root, os.path.join(root, filename))
+            path = get_relative_path(relative_to or root, os.path.join(root, filename))
             if path:
                 output.add(path)
 
