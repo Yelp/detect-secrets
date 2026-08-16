@@ -97,8 +97,8 @@ SECRET = r'(?=[^\v\'\"]*)(?=\w+)[^\v\'\"]*[^\v,\'\"`]'
 SQUARE_BRACKETS = r'(\[[0-9]*\])'
 
 FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
-    # e.g. my_password := "bar" or my_password := bar
-    r'{denylist}({closing})?{whitespace}:={whitespace}({quote}?)({secret})(\3)'.format(
+    # e.g. my_password := "bar"
+    r'{denylist}({closing})?{whitespace}:={whitespace}({quote})({secret})(\3)'.format(
         denylist=DENYLIST_REGEX,
         closing=CLOSING,
         quote=QUOTE,
@@ -223,7 +223,7 @@ CONFIG_DENYLIST_REGEX_TO_GROUP = {
 GOLANG_DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX: 4,
     PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX: 2,
-    FOLLOWED_BY_EQUAL_SIGNS_REGEX: 5,
+    FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 5,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
 }
 COMMON_C_DENYLIST_REGEX_TO_GROUP = {
