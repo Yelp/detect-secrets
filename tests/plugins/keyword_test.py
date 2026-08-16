@@ -50,13 +50,15 @@ CONFIG_TEST_CASES = [
 GOLANG_TEST_CASES = [
     ('apikey := "{}"'.format(COMMON_SECRET), COMMON_SECRET),
     ("api_key := '{}'".format(COMMON_SECRET), COMMON_SECRET),
+    ('password := someVariable', None),
+    ('password = someVariable', None),
     ('aws_secret_access_key := `{}`'.format(COMMON_SECRET), COMMON_SECRET),
-    ('db_pass := {}'.format(COMMON_SECRET), COMMON_SECRET),
-    ('db_pass_secure := {}'.format(COMMON_SECRET), COMMON_SECRET),  # Suffix
-    ('passwd := {},'.format(COMMON_SECRET), COMMON_SECRET),         # Last character is ignored
-    ("private_key := {}'".format(COMMON_SECRET), COMMON_SECRET),    # Last character is ignored
-    ('secret := {}"'.format(COMMON_SECRET), COMMON_SECRET),         # Last character is ignored
-    ('password := {}`'.format(COMMON_SECRET), COMMON_SECRET),       # Last character is ignored
+    ('db_pass := {}'.format(COMMON_SECRET), None),
+    ('db_pass_secure := {}'.format(COMMON_SECRET), None),  # Suffix
+    ('passwd := {},'.format(COMMON_SECRET), None),         # Last character is ignored
+    ("private_key := {}'".format(COMMON_SECRET), None),    # Last character is ignored
+    ('secret := {}"'.format(COMMON_SECRET), None),         # Last character is ignored
+    ('password := {}`'.format(COMMON_SECRET), None),       # Last character is ignored
     ('if ("{}" == passwd) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if ("{}" === private_key) {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if ("{}" != secret) {{'.format(COMMON_SECRET), COMMON_SECRET),
@@ -65,18 +67,18 @@ GOLANG_TEST_CASES = [
     ('apikey = "{}"'.format(COMMON_SECRET), COMMON_SECRET),
     ("api_key = '{}'".format(COMMON_SECRET), COMMON_SECRET),
     ('aws_secret_access_key = `{}`'.format(COMMON_SECRET), COMMON_SECRET),
-    ('db_pass = {}'.format(COMMON_SECRET), COMMON_SECRET),
-    ('password = {},'.format(COMMON_SECRET), COMMON_SECRET),        # Last character is ignored
-    ("passwd = {}'".format(COMMON_SECRET), COMMON_SECRET),          # Last character is ignored
-    ('private_key = {}"'.format(COMMON_SECRET), COMMON_SECRET),     # Last character is ignored
-    ('secret = {}`'.format(COMMON_SECRET), COMMON_SECRET),          # Last character is ignored
+    ('db_pass = {}'.format(COMMON_SECRET), None),
+    ('password = {},'.format(COMMON_SECRET), None),        # Last character is ignored
+    ("passwd = {}'".format(COMMON_SECRET), None),          # Last character is ignored
+    ('private_key = {}"'.format(COMMON_SECRET), None),     # Last character is ignored
+    ('secret = {}`'.format(COMMON_SECRET), None),          # Last character is ignored
     ('secrete = "{}"'.format(COMMON_SECRET), COMMON_SECRET),
     ('if (apikey == "{}") {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if (api_key === "{}") {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if (aws_secret_access_key != "{}") {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('if (db_pass !== "{}") {{'.format(COMMON_SECRET), COMMON_SECRET),
     ('password "{}";'.format(COMMON_SECRET), COMMON_SECRET),
-    ('secrete := {}'.format(LETTER_SECRET), LETTER_SECRET),   # All symbols are allowed
+    ('secrete := {}'.format(LETTER_SECRET), None),   # All symbols are allowed
     ('password :={}'.format(SYMBOL_SECRET), None),  # At least 1 alphanumeric character is required
     ('api_key = ""', None),    # Nothing in the quotes
     ("secret := ''", None),    # Nothing in the quotes
