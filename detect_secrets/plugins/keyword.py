@@ -79,6 +79,13 @@ DENYLIST_REGEX_WITH_PREFIX = r'{prefix}{denylist}'.format(
 OPTIONAL_WHITESPACE = r'\s*'
 OPTIONAL_NON_WHITESPACE = r'[^\s]{0,50}?'
 QUOTE = r'[\'"`]'
+# Optional type annotation between a keyword and its assignment, e.g. the
+# ": str" in `my_password: str = "bar"`. Non-capturing so it does not shift the
+# existing regex group numbers. The type itself may not contain '=' or a line
+# break, which keeps the match within a single annotated assignment.
+OPTIONAL_TYPE_ANNOTATION = r'(?:{whitespace}:{whitespace}[^\v=]+?)?'.format(
+    whitespace=OPTIONAL_WHITESPACE,
+)
 # Secret regex details:
 #   (?=[^\v\'"]*)   ->  this section match with every character except line breaks and quotes. This
 #                       allows to find secrets that starts with symbols or alphanumeric characters.
@@ -167,13 +174,15 @@ FOLLOWED_BY_EQUAL_SIGNS_REGEX = re.compile(
 )
 FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
     # e.g. my_password = "bar"
+    # e.g. my_password: str = "bar" (optional type annotation)
     # e.g. my_password == "bar" or my_password != "bar" or my_password === "bar"
     # or my_password !== "bar"
     # e.g. my_password == 'bar' or my_password != 'bar' or my_password === 'bar'
     # or my_password !== 'bar'
-    r'{denylist}({closing})?{whitespace}(={{1,3}}|!==?){whitespace}({quote})({secret})(\4)'.format(  # noqa: E501
+    r'{denylist}({closing})?{type_annotation}{whitespace}(={{1,3}}|!==?){whitespace}({quote})({secret})(\4)'.format(  # noqa: E501
         denylist=DENYLIST_REGEX,
         closing=CLOSING,
+        type_annotation=OPTIONAL_TYPE_ANNOTATION,
         quote=QUOTE,
         whitespace=OPTIONAL_WHITESPACE,
         secret=SECRET,
