@@ -263,3 +263,31 @@ def baseline_file():
         baseline.save_to_file(secrets, baseline_file.name)
         baseline_file.seek(0)
         yield baseline_file.name
+
+
+def test_generate_report_skips_deleted_files(tmp_path):
+    # A baseline outlives the files it points at, and the report used to raise
+    # FileNotFoundError out of LineGetter.open_file. See #604.
+    kept = tmp_path / 'kept.py'
+    kept.write_text('url = {}\n'.format(url_format.format(first_secret)))
+    deleted = tmp_path / 'deleted.py'
+    deleted.write_text('url = {}\n'.format(url_format.format(second_secret)))
+
+    with transient_settings({
+        'plugins_used': [
+            {'name': 'BasicAuthDetector'},
+            {'name': 'JwtTokenDetector'},
+        ],
+    }), mock_named_temporary_file() as baseline_file:
+        secrets = SecretsCollection()
+        secrets.scan_file(str(kept))
+        secrets.scan_file(str(deleted))
+        assert {str(kept), str(deleted)} == set(secrets.files)
+
+        baseline.save_to_file(secrets, baseline_file.name)
+        baseline_file.seek(0)
+        deleted.unlink()
+
+        output = generate_report(baseline_file.name)
+
+    assert {item['filename'] for item in output['results']} == {str(kept)}

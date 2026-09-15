@@ -30,8 +30,15 @@ def generate_report(
     line_getter_factory: Callable[[str], 'LineGetter'] = open_file,
 ) -> Dict[str, List[Dict[str, Any]]]:
 
+    baseline_secrets = get_baseline_from_file(baseline_file)
+
+    # A baseline can outlive the files it points at. audit_baseline() drops those entries
+    # before it reads anything; do the same here, or the first deleted file raises
+    # FileNotFoundError out of LineGetter.open_file.
+    baseline_secrets.trim()
+
     secrets: Dict[Tuple[str, str], Any] = {}
-    for filename, secret in get_baseline_from_file(baseline_file):
+    for filename, secret in baseline_secrets:
         verified_result = VerifiedResult.from_secret(secret)
         if (
             class_to_print is not None and
