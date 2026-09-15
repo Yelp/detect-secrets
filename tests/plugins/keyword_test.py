@@ -154,6 +154,13 @@ QUOTES_REQUIRED_TEST_CASES = [
     (LONG_LINE, None),  # Long line test
     ('password => ""', None),
     ('password => {}'.format(COMMON_SECRET), None),
+    # Type-annotated assignments, e.g. Python / TypeScript (Issue #780)
+    ('my_password: str = "{}"'.format(COMMON_SECRET), COMMON_SECRET),
+    ('api_key: Optional[str] = "{}"'.format(COMMON_SECRET), COMMON_SECRET),
+    ('password:str="{}"'.format(COMMON_SECRET), COMMON_SECRET),  # No surrounding spaces
+    ('secret: dict = "{}"'.format(COMMON_SECRET), COMMON_SECRET),
+    ('password: str', None),          # Annotation only, no assignment
+    ('if password: return "{}"'.format(COMMON_SECRET), None),  # Not an assignment
 ]
 
 
