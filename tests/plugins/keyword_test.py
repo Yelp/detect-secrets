@@ -154,6 +154,12 @@ QUOTES_REQUIRED_TEST_CASES = [
     (LONG_LINE, None),  # Long line test
     ('password => ""', None),
     ('password => {}'.format(COMMON_SECRET), None),
+    # Python walrus operator, e.g. `if (password := "bar"):`
+    ('if (password := "{}"):'.format(COMMON_SECRET), COMMON_SECRET),
+    ('api_key:="{}"'.format(COMMON_SECRET), COMMON_SECRET),  # No surrounding spaces
+    ('while (secret := "{}"):'.format(COMMON_SECRET), COMMON_SECRET),
+    ('password := {}'.format(COMMON_SECRET), None),  # Walrus without quotes
+    ('secret := ""', None),  # Nothing in the quotes
 ]
 
 
