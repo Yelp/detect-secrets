@@ -1,1 +1,2 @@
 include detect_secrets/filters/gibberish/rfc.model
+include detect_secrets/py.typed
