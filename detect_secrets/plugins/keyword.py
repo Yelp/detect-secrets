@@ -107,6 +107,17 @@ FOLLOWED_BY_COLON_EQUAL_SIGNS_REGEX = re.compile(
     ),
     flags=re.IGNORECASE,
 )
+FOLLOWED_BY_COLON_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX = re.compile(
+    # e.g. my_password := "bar" (Python walrus operator)
+    r'{denylist}({closing})?{whitespace}:={whitespace}({quote})({secret})(\3)'.format(
+        denylist=DENYLIST_REGEX,
+        closing=CLOSING,
+        quote=QUOTE,
+        whitespace=OPTIONAL_WHITESPACE,
+        secret=SECRET,
+    ),
+    flags=re.IGNORECASE,
+)
 FOLLOWED_BY_COLON_REGEX = re.compile(
     # e.g. api_key: foo
     r'{denylist}({closing})?:{whitespace}({quote}?)({secret})(\3)'.format(
@@ -235,6 +246,7 @@ C_PLUS_PLUS_REGEX_TO_GROUP = {
 }
 QUOTES_REQUIRED_DENYLIST_REGEX_TO_GROUP = {
     FOLLOWED_BY_COLON_QUOTES_REQUIRED_REGEX: 5,
+    FOLLOWED_BY_COLON_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 4,
     PRECEDED_BY_EQUAL_COMPARISON_SIGNS_QUOTES_REQUIRED_REGEX: 2,
     FOLLOWED_BY_EQUAL_SIGNS_QUOTES_REQUIRED_REGEX: 5,
     FOLLOWED_BY_QUOTES_AND_SEMICOLON_REGEX: 3,
