@@ -208,6 +208,7 @@ def is_lock_file(filename: str) -> bool:
         'Gemfile.lock',
         'Package.resolved',
         'package-lock.json',
+        'pnpm-lock.yaml',
         'Podfile.lock',
         'yarn.lock',
         'Pipfile.lock',
