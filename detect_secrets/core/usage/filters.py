@@ -98,7 +98,10 @@ def _add_custom_filters(parser: argparse._ArgumentGroup) -> None:
             # May be local file.
             # We do some initial pre-processing, but perform the file validation during the
             # post-processing step.
-            components = parts.path.split('::')
+            # NOTE: urlparse() treats the leading component of a relative path
+            # as a netloc (e.g. 'file://custom_filter.py::f' parses with an
+            # empty path), so fall back to the netloc to find the '::'.
+            components = (parts.path or parts.netloc).split('::')
             if len(components) != 2:
                 raise argparse.ArgumentTypeError(
                     'Did not specify function name for imported file.',

@@ -96,6 +96,33 @@ class TestCustomFilters:
         assert not secrets
 
     @staticmethod
+    @pytest.mark.parametrize(
+        'scheme',
+        (
+            '',
+            'file://',
+        ),
+    )
+    def test_local_file_bare_filename_success(scheme, parser, monkeypatch):
+        # Regression test for https://github.com/Yelp/detect-secrets/issues/715:
+        # a bare filename (no directory component), exactly as documented, used to
+        # fail with "Did not specify function name for imported file." because
+        # urlparse() treats the leading path component as a netloc.
+        monkeypatch.chdir('testing')
+        with transient_settings({
+            'plugins_used': [{
+                'name': 'Base64HighEntropyString',
+            }],
+        }):
+            parser.parse_args([
+                'scan',
+                '--filter',
+                scheme + 'custom_filters.py::is_invalid_secret',
+            ])
+
+            assert 'file://custom_filters.py::is_invalid_secret' in get_settings().filters
+
+    @staticmethod
     def test_module_success(parser):
         config = {
             # Remove all filters, so we can test adding things back in.
