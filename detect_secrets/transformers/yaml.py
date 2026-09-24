@@ -10,6 +10,7 @@ from typing import List
 from typing import NamedTuple
 from typing import Optional
 from typing import Pattern
+from typing import Set
 from typing import Tuple
 from typing import Union
 
@@ -177,8 +178,16 @@ class YAMLFileParser:
         lines = self.content.splitlines()
 
         to_search = deque([self.json()])
+        seen: Set[int] = set()
         while to_search:
             item: Any = to_search.popleft()
+
+            if isinstance(item, (dict, list)):
+                # Aliases share container objects and may form cycles. Visit each
+                # container once, while preserving distinct values at different lines.
+                if id(item) in seen:
+                    continue
+                seen.add(id(item))
 
             if not item:
                 # mainly for base case (e.g. if file is all comments)
