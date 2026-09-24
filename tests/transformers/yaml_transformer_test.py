@@ -1,4 +1,5 @@
 import textwrap
+from itertools import islice
 from unittest import mock
 
 import pytest
@@ -162,6 +163,37 @@ class TestYAMLTransformer:
 
 
 class TestYAMLFileParser:
+    @staticmethod
+    @pytest.mark.parametrize('alias', ('*loop', '[*loop]'))
+    def test_recursive_sequence_alias_does_not_repeat_values(alias):
+        file = mock_file_object(
+            f'loop: &loop\n  - {alias}\n  - password: synthetic-value\n'
+            'other: independent-value\n',
+        )
+
+        # Bound consumption so a regression fails instead of hanging the test suite.
+        values = list(islice(YAMLFileParser(file), 3))
+
+        assert [(item.key, item.value, item.line_number) for item in values] == [
+            ('other', 'independent-value', 4),
+            ('password', 'synthetic-value', 3),
+        ]
+
+    @staticmethod
+    def test_shared_sequence_alias_is_visited_once():
+        file = mock_file_object(
+            'original: &original\n  - password: synthetic-value\n'
+            'aliases: [*original, *original]\n'
+            'distinct:\n  - password: synthetic-value\n',
+        )
+
+        values = list(YAMLFileParser(file))
+
+        assert [(item.key, item.value, item.line_number) for item in values] == [
+            ('password', 'synthetic-value', 2),
+            ('password', 'synthetic-value', 5),
+        ]
+
     @staticmethod
     def test_basic():
         file = mock_file_object(
