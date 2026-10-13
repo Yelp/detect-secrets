@@ -86,6 +86,41 @@ class CodeSnippet:
         except ValueError:
             raise SecretNotFoundOnSpecifiedLineError(self.target_index)
 
+    def truncate_lines(self, max_width: int, secret_value: str = '') -> 'CodeSnippet':
+        """Limit the length of audit-view lines while retaining the detected secret.
+
+        If the secret itself exceeds the limit, keep the full secret so the
+        subsequent highlighter can still locate it.
+        """
+        if max_width < 16:
+            raise ValueError('max_width must be at least 16')
+
+        for index, line in enumerate(self.lines):
+            if len(line) <= max_width:
+                continue
+
+            if index != self.target_index or not secret_value:
+                self.lines[index] = line[:max_width - 3] + '...'
+                continue
+
+            position = line.lower().find(secret_value.lower())
+            if position == -1:
+                self.lines[index] = line[:max_width - 3] + '...'
+                continue
+
+            budget = max(max_width - 6, len(secret_value))
+            left = max(
+                0,
+                min(position - (budget - len(secret_value)) // 2, len(line) - budget),
+            )
+            right = min(len(line), left + budget)
+            self.lines[index] = (
+                ('...' if left else '') + line[left:right]
+                + ('...' if right < len(line) else '')
+            )
+
+        return self
+
     def get_line_number(self, line_number: int) -> str:
         """Broken out, for custom colorization."""
         return colorize(str(line_number), AnsiColor.LIGHT_GREEN)

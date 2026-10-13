@@ -3,6 +3,7 @@ Responsible for input/output for audit related functions.
 """
 import os
 import platform
+import shutil
 import sys
 from enum import Enum
 
@@ -32,6 +33,12 @@ def print_context(context: SecretContext) -> None:
 
     _print_header(context)
 
+    terminal_width = shutil.get_terminal_size(fallback=(120, 24)).columns
+    display_width = max(16, min(160, terminal_width - 12))
+    context.snippet.truncate_lines(
+        max_width=display_width,
+        secret_value=context.secret.secret_value or '',
+    )
     context.snippet.add_line_numbers()
     if context.secret.secret_value:
         context.snippet.highlight_line(context.secret.secret_value)
