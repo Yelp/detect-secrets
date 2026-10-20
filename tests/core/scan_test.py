@@ -74,6 +74,36 @@ class TestGetFilesToScan:
 
 class TestScanFile:
     @staticmethod
+    def test_ignores_jupyter_image_data_but_scans_other_fields():
+        image_data = (
+            'AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKiss'
+            'LS4vMDEyMzQ1Njc4OTo7PD0+P0BBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZ'
+            'WltcXV5fYGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6e3x9fn8='
+        )
+        with mock_named_temporary_file(suffix='.ipynb') as f:
+            f.write(
+                (
+                    f'"image/png": "{image_data}"\n'
+                    f'"api_key": "{image_data[::-1]}"\n'
+                ).encode(),
+            )
+            f.seek(0)
+
+            with transient_settings({
+                'plugins_used': [{'name': 'Base64HighEntropyString'}],
+                'filters_used': [{
+                    'path': (
+                        'detect_secrets.filters.heuristic.'
+                        'is_jupyter_notebook_image'
+                    ),
+                }],
+            }):
+                results = list(scan.scan_file(f.name))
+
+        assert len(results) == 1
+        assert results[0].line_number == 2
+
+    @staticmethod
     def test_handles_broken_yaml_gracefully():
         with mock_named_temporary_file(suffix='.yaml') as f:
             f.write(

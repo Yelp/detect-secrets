@@ -158,6 +158,39 @@ def test_is_lock_file():
 
 
 @pytest.mark.parametrize(
+    'filename, line, secret, result',
+    (
+        (
+            'notebook.ipynb',
+            '"image/png": "highEntropyImageData"',
+            'highEntropyImageData',
+            True,
+        ),
+        (
+            'notebook.ipynb',
+            '"<img src=\\"data:image/jpeg;base64,highEntropyImageData\\">"',
+            'highEntropyImageData',
+            True,
+        ),
+        (
+            'notebook.ipynb',
+            '"api_key": "highEntropyImageData"',
+            'highEntropyImageData',
+            False,
+        ),
+        (
+            'settings.py',
+            '"image/png": "highEntropyImageData"',
+            'highEntropyImageData',
+            False,
+        ),
+    ),
+)
+def test_is_jupyter_notebook_image(filename, line, secret, result):
+    assert filters.heuristic.is_jupyter_notebook_image(filename, line, secret) is result
+
+
+@pytest.mark.parametrize(
     'secret, result',
     (
         ('*****', True),

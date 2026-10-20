@@ -88,6 +88,27 @@ def is_non_text_file(filename: str) -> bool:
     return ext in IGNORED_FILE_EXTENSIONS
 
 
+def is_jupyter_notebook_image(filename: str, line: str, secret: str) -> bool:
+    """Ignore base64 image data embedded in a Jupyter notebook."""
+    if not filename.lower().endswith('.ipynb'):
+        return False
+
+    try:
+        prefix = line[:line.index(secret)]
+    except ValueError:
+        return False
+
+    return bool(_get_jupyter_notebook_image_regex().search(prefix))
+
+
+@lru_cache(maxsize=1)
+def _get_jupyter_notebook_image_regex() -> Pattern:
+    return re.compile(
+        r'(?:"image/[a-z0-9.+-]+"\s*:\s*"|data:image/[a-z0-9.+-]+;base64,)$',
+        re.IGNORECASE,
+    )
+
+
 # We don't scan files with these extensions.
 # Note: We might be able to do this better with
 #       `subprocess.check_output(['file', filename])`
