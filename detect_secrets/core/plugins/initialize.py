@@ -8,6 +8,7 @@ from ...settings import get_settings
 from ..log import log
 from .util import get_mapping_from_secret_type_to_class
 from .util import get_plugins_from_file
+from .util import load_custom_plugins_from_settings
 from .util import Plugin
 
 
@@ -15,8 +16,15 @@ def from_secret_type(secret_type: str) -> Plugin:
     """
     :raises: TypeError
     """
+    mapping = get_mapping_from_secret_type_to_class()
+    if secret_type not in mapping:
+        # The mapping may have been cached before custom plugins were
+        # registered (e.g. during argument parsing). Load any custom plugins
+        # from the current settings and retry (issue #611).
+        load_custom_plugins_from_settings(mapping)
+
     try:
-        plugin_type = get_mapping_from_secret_type_to_class()[secret_type]
+        plugin_type = mapping[secret_type]
     except KeyError:
         raise TypeError
 
@@ -40,6 +48,13 @@ def from_plugin_classname(classname: str) -> Plugin:
             'custom plugin with a path that does not exist.',
         )
         raise
+
+    if not any(plugin_type.__name__ == classname for plugin_type in plugin_types):
+        # The mapping may have been cached before custom plugins were
+        # registered (e.g. during argument parsing). Load any custom plugins
+        # from the current settings and retry (issue #611).
+        load_custom_plugins_from_settings(get_mapping_from_secret_type_to_class())
+        plugin_types = get_mapping_from_secret_type_to_class().values()
 
     for plugin_type in plugin_types:
         if plugin_type.__name__ == classname:

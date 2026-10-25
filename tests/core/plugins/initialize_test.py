@@ -1,6 +1,7 @@
 import pytest
 
 from detect_secrets.core.plugins import initialize
+from detect_secrets.core.plugins.util import get_mapping_from_secret_type_to_class
 from detect_secrets.exceptions import InvalidFile
 from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
 from detect_secrets.plugins.private_key import PrivateKeyDetector
@@ -90,3 +91,20 @@ class TestFromFile:
     @staticmethod
     def test_no_compatible_plugins():
         assert not initialize.from_file('testing/mocks.py')
+
+
+class TestLatePluginRegistration:
+    @staticmethod
+    def test_custom_plugins_registered_after_mapping_is_cached():
+        # The secret-type mapping can be cached before custom plugins are
+        # registered (e.g. during argument parsing). Lookups must still find
+        # plugins registered afterwards, otherwise scanning with a custom
+        # plugin and auditing a baseline that references one fails (issue #611).
+        get_mapping_from_secret_type_to_class()
+
+        get_settings().configure_plugins([
+            {'name': 'HippoDetector', 'path': 'file://testing/plugins.py'},
+        ])
+
+        assert initialize.from_secret_type('Hippo').secret_type == 'Hippo'
+        assert initialize.from_plugin_classname('HippoDetector').secret_type == 'Hippo'

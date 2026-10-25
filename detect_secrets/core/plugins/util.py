@@ -34,6 +34,19 @@ def get_mapping_from_secret_type_to_class() -> Dict[str, Type[Plugin]]:
     # someone to cause this to break (e.g. arbitrary imports from unexpected places).
     # However, this falls under the same security assumptions as listed in
     # `import_file_as_module`.
+    load_custom_plugins_from_settings(output)
+
+    return output
+
+
+def load_custom_plugins_from_settings(output: Dict[str, Type[Plugin]]) -> None:
+    """Add path-based custom plugins from the current settings to `output`.
+
+    This is used both when building the secret-type mapping and to update an
+    already-cached mapping when custom plugins were registered after the
+    mapping was built (e.g. during argument parsing). Existing entries are
+    preserved.
+    """
     for classname, config in get_settings().plugins.items():
         if 'path' not in config:
             continue
@@ -42,8 +55,6 @@ def get_mapping_from_secret_type_to_class() -> Dict[str, Type[Plugin]]:
         filename = config['path'][len('file://'):]
         for plugin_class in get_plugins_from_file(filename):
             output[cast(BasePlugin, plugin_class).secret_type] = plugin_class
-
-    return output
 
 
 def get_plugins_from_file(filename: str) -> Generator[Type[Plugin], None, None]:
