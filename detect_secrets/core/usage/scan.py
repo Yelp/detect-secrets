@@ -94,5 +94,11 @@ def parse_args(args: argparse.Namespace) -> None:
     # NOTE: This is assumed to run *after* the baseline argument processor, and before
     # the plugin argument processor.
     if args.baseline is not None and args.force_use_all_plugins:
+        # Only the plugins should be replaced by the latest defaults. The filters
+        # configured from the baseline (including the exclusion of the baseline file
+        # itself) must be kept, otherwise the baseline file gets scanned and the
+        # results change on every run (issue #502).
+        filters = get_settings().filters
         get_settings().plugins.clear()
         initialize_plugin_settings(args)
+        get_settings().filters = filters

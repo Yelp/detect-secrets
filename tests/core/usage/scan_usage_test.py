@@ -40,3 +40,27 @@ def test_default_plugins_initialized(parser):
     assert len(get_settings().plugins) == len(get_mapping_from_secret_type_to_class())
     assert plugins.initialize.from_plugin_classname('HexHighEntropyString').entropy_limit == 2
     assert plugins.initialize.from_plugin_classname('Base64HighEntropyString').entropy_limit == 4.5
+
+
+def test_force_use_all_plugins_preserves_baseline_filters(parser):
+    with mock_named_temporary_file() as f:
+        f.write(
+            json.dumps({
+                'version': '0.0.1',
+                'plugins_used': [
+                    {
+                        'name': 'AWSKeyDetector',
+                    },
+                ],
+                'results': [],
+            }).encode(),
+        )
+        f.seek(0)
+
+        parser.parse_args(['scan', '--force-use-all-plugins', '--baseline', f.name])
+
+    # Forcing the latest plugins must not reset the filters loaded from the
+    # baseline, in particular the exclusion of the baseline file itself (#502).
+    assert get_settings().filters['detect_secrets.filters.common.is_baseline_file'] == {
+        'filename': f.name,
+    }

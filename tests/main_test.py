@@ -241,3 +241,50 @@ def mock_stdin(response=None):
             m.stdin.isatty.return_value = False
             m.stdin.read.return_value = response
             yield
+
+
+class TestForceUseAllPlugins:
+    @staticmethod
+    def test_forcing_latest_plugins_keeps_baseline_stable():
+        with tempfile.TemporaryDirectory() as d:
+            sample = Path(d, 'sample.txt')
+            sample.write_text('password = "hunter2"\n')
+            baseline_path = Path(d, '.secrets.baseline')
+
+            with transient_settings({
+                'plugins_used': [{'name': 'KeywordDetector'}],
+                'filters_used': [],
+            }):
+                baseline.save_to_file(
+                    baseline.format_for_output(SecretsCollection()),
+                    str(baseline_path),
+                )
+
+            # Keep the test independent of the optional gibberish dependency:
+            # the baseline must not require that filter to be initialized.
+            content = json.loads(baseline_path.read_text())
+            content['filters_used'] = [
+                f for f in content['filters_used']
+                if 'gibberish' not in f['path']
+            ]
+            baseline_path.write_text(json.dumps(content))
+
+            results = []
+            with disable_gibberish_filter():
+                old_cwd = os.getcwd()
+                os.chdir(d)
+                try:
+                    for _ in range(2):
+                        main_module.main([
+                            'scan', '--all-files', '--no-verify',
+                            '--baseline', '.secrets.baseline', '--force-use-all-plugins', '.',
+                        ])
+                        results.append(json.loads(baseline_path.read_text())['results'])
+                finally:
+                    os.chdir(old_cwd)
+
+            # Forcing the latest plugins must not make the baseline file get
+            # scanned, which used to change the results on every run (#502).
+            assert results[0] == results[1]
+            assert '.secrets.baseline' not in results[0]
+            assert 'sample.txt' in results[0]
