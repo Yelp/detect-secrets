@@ -72,6 +72,12 @@ class TestIsLikelyIdString:
             ('RANDOM_STRING', 'data test_id = RANDOM_STRING'),
             ('RANDOM_STRING', 'ids = RANDOM_STRING, RANDOM_STRING'),
             ('RANDOM_STRING', 'my_ids: RANDOM_STRING, RANDOM_STRING'),
+            # camelCase identifiers should be treated as ids, not secrets (#262)
+            ('RANDOM_STRING', 'val someIdHere = "RANDOM_STRING"'),
+            (
+                'f10cba071b66829c5d5a2fb33cfa3f53R121',
+                'val someIdHere = "f10cba071b66829c5d5a2fb33cfa3f53R121"',
+            ),
         ],
     )
     def test_success(self, secret, line):
@@ -94,6 +100,10 @@ class TestIsLikelyIdString:
 
             # fail since this is an aws access key id, a real secret
             ('AKIA4NACSIJMDDNSEDTE', 'aws_access_key_id=AKIA4NACSIJMDDNSEDTE', AWSKeyDetector()),
+
+            # not a camelCase id (lower-case i), and a different variable name
+            ('RANDOM_STRING', 'val someidHere = "RANDOM_STRING"', None),
+            ('RANDOM_STRING', 'val someOtherValue = "RANDOM_STRING"', None),
         ],
     )
     def test_failure(self, secret, line, plugin):

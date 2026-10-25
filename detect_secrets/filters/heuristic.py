@@ -67,8 +67,20 @@ def is_likely_id_string(secret: str, line: str, plugin: Optional[BasePlugin] = N
     except ValueError:
         return False
 
-    return (not plugin or not isinstance(plugin, RegexBasedDetector)) \
-        and bool(_get_id_detector_regex().search(line, pos=0, endpos=index))
+    return (not plugin or not isinstance(plugin, RegexBasedDetector)) and (
+        bool(_get_id_detector_regex().search(line, pos=0, endpos=index))
+        or bool(_get_camel_case_id_detector_regex().search(line, pos=0, endpos=index))
+    )
+
+
+@lru_cache(maxsize=1)
+def _get_camel_case_id_detector_regex() -> Pattern:
+    """
+    Matches camelCase identifiers (e.g. `someIdHere`), which are often
+    identifiers rather than secrets. Case-sensitive on purpose: the lower-case
+    letter before `Id` and the upper-case letter after it carry the meaning.
+    """
+    return re.compile(r'[a-z]Id[A-Z]')
 
 
 @lru_cache(maxsize=1)
