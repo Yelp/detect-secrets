@@ -108,6 +108,7 @@ JwtTokenDetector
 KeywordDetector
 MailchimpDetector
 NpmDetector
+NuntiqDetector
 OpenAIDetector
 PrivateKeyDetector
 PypiTokenDetector
