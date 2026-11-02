@@ -6,6 +6,7 @@ import hmac
 import re
 import string
 import textwrap
+import xml.etree.ElementTree
 from datetime import datetime
 from typing import cast
 from typing import List
@@ -16,6 +17,19 @@ import requests
 from ..constants import VerifiedResult
 from ..util.code_snippet import CodeSnippet
 from .base import RegexBasedDetector
+
+
+# STS error codes that mean the supplied credentials were rejected by AWS.
+# Anything else (including a 403 produced by a proxy or egress gateway) does
+# not prove the credentials are invalid, so verification is inconclusive.
+_AWS_CREDENTIAL_REJECTION_CODES = frozenset({
+    'ExpiredToken',
+    'IncompleteSignature',
+    'InvalidClientTokenId',
+    'RequestExpired',
+    'SignatureDoesNotMatch',
+    'TokenRefreshRequired',
+})
 
 
 class AWSKeyDetector(RegexBasedDetector):
@@ -53,9 +67,19 @@ class AWSKeyDetector(RegexBasedDetector):
         if not secret_access_key_candidates:
             return VerifiedResult.UNVERIFIED
 
+        inconclusive = False
         for candidate in secret_access_key_candidates:
-            if verify_aws_secret_access_key(secret, candidate):
+            verification_result = verify_aws_secret_access_key(secret, candidate)
+            if verification_result == VerifiedResult.VERIFIED_TRUE:
                 return VerifiedResult.VERIFIED_TRUE
+
+            if verification_result == VerifiedResult.UNVERIFIED:
+                inconclusive = True
+
+        # If verification could not be completed for any candidate, we cannot
+        # conclude that this is a false positive. Report it as unverified.
+        if inconclusive:
+            return VerifiedResult.UNVERIFIED
 
         return VerifiedResult.VERIFIED_FALSE
 
@@ -77,7 +101,7 @@ def get_secret_access_keys(content: CodeSnippet) -> List[str]:
     ]
 
 
-def verify_aws_secret_access_key(key: str, secret: str) -> bool:  # pragma: no cover
+def verify_aws_secret_access_key(key: str, secret: str) -> VerifiedResult:  # pragma: no cover
     """
     Using requests, because we don't want to require boto3 for this one
     optional verification step.
@@ -188,16 +212,52 @@ def verify_aws_secret_access_key(key: str, secret: str) -> bool:  # pragma: no c
     )
 
     # Step #5: Finally send the request
-    response = requests.post(
-        'https://sts.amazonaws.com',
-        headers=headers,
-        data=body,
-    )
+    try:
+        response = requests.post(
+            'https://sts.amazonaws.com',
+            headers=headers,
+            data=body,
+        )
+    except requests.exceptions.RequestException:
+        return VerifiedResult.UNVERIFIED
 
-    if response.status_code == 403:
+    if response.status_code == 200:
+        return VerifiedResult.VERIFIED_TRUE
+
+    if response.status_code == 403 and _is_aws_credential_rejection(response.text):
+        return VerifiedResult.VERIFIED_FALSE
+
+    # A non-AWS intermediary (e.g. an egress proxy) can answer with any status
+    # code, including 403. Unless STS explicitly told us the credentials were
+    # rejected, we cannot verify anything about this credential.
+    return VerifiedResult.UNVERIFIED
+
+
+def _is_aws_credential_rejection(response_text: str) -> bool:
+    """
+    Whether a response body is an STS error that specifically rejects the
+    supplied credentials.
+
+    A real STS rejection is an XML ``ErrorResponse`` whose ``Code`` is a known
+    credential error. Intermediaries that block the request may return a 403
+    too, but their body is not an STS error response, so it must not be read
+    as "this credential is fake".
+    """
+    try:
+        root = xml.etree.ElementTree.fromstring(response_text)
+    except (xml.etree.ElementTree.ParseError, ValueError):
         return False
 
-    return True
+    if root.tag.rsplit('}', 1)[-1] != 'ErrorResponse':
+        return False
+
+    for element in root.iter():
+        if element.tag.rsplit('}', 1)[-1] != 'Code':
+            continue
+
+        return (element.text or '').strip() in _AWS_CREDENTIAL_REJECTION_CODES
+
+    return False
 
 
 def _sign(key: bytes, message: str, hex: bool = False) -> Union[str, bytes]:  # pragma: no cover
