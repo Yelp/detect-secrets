@@ -1,4 +1,6 @@
 import re
+import socket
+import ssl
 from contextlib import contextmanager
 from unittest import mock
 
@@ -26,6 +28,25 @@ def potential_secret_factory(secret: str, **kwargs):
     return output
 
 
+def occurrence_factory(
+    secret: str,
+    filename: str = 'a.py',
+    line_number: int = 1,
+    type: str = 'Basic Auth',
+):
+    """Builds a `PotentialSecret` with its real hash, at a specific location.
+
+    NOTE: `SecretsCollection` deduplicates on (filename, type, secret_hash), so two
+    entries at different lines need different plugin types to be retained.
+    """
+    return original_potential_secret_factory(
+        type=type,
+        filename=filename,
+        secret=secret,
+        line_number=line_number,
+    )
+
+
 def test_comparing_same_file(printer):
     main(['audit', '--diff', '.secrets.baseline', '.secrets.baseline'])
 
@@ -40,6 +61,94 @@ def test_same_secrets_are_skipped(mock_user_decision):
         run_logic(baselineA, baselineB)
 
     assert not mock_user_decision.called
+
+
+@pytest.mark.parametrize(
+    'secretsA, secretsB, expected_output',
+    (
+        # A matching secret must not swallow an added secret in the next file.
+        (
+            [occurrence_factory('dummy-value', filename='a.py')],
+            [
+                occurrence_factory('dummy-value', filename='a.py'),
+                occurrence_factory('dummy-value', filename='b.py'),
+            ],
+            [('ADDED', 'b.py')],
+        ),
+        # ... nor a removed secret in the next file.
+        (
+            [
+                occurrence_factory('dummy-value', filename='a.py'),
+                occurrence_factory('dummy-value', filename='b.py'),
+            ],
+            [occurrence_factory('dummy-value', filename='a.py')],
+            [('REMOVED', 'b.py')],
+        ),
+        # Multiple file boundaries, all sharing the same secret value.
+        (
+            [
+                occurrence_factory('dummy-value', filename='a.py'),
+                occurrence_factory('dummy-value', filename='c.py'),
+            ],
+            [
+                occurrence_factory('dummy-value', filename='a.py'),
+                occurrence_factory('dummy-value', filename='b.py'),
+                occurrence_factory('dummy-value', filename='c.py'),
+            ],
+            [('ADDED', 'b.py')],
+        ),
+        # A matched secret must not consume the leftovers of an exhausted baseline.
+        (
+            [
+                occurrence_factory('dummy-value'),
+                occurrence_factory('dummy-value', line_number=2, type='Private Key'),
+            ],
+            [occurrence_factory('dummy-value')],
+            [('REMOVED', 'a.py')],
+        ),
+        (
+            [occurrence_factory('dummy-value')],
+            [
+                occurrence_factory('dummy-value'),
+                occurrence_factory('dummy-value', line_number=2, type='Private Key'),
+            ],
+            [('ADDED', 'a.py')],
+        ),
+        # Same location, same value, different plugins: deliberately collapsed.
+        (
+            [
+                occurrence_factory('dummy-value'),
+                occurrence_factory('dummy-value', type='Private Key'),
+            ],
+            [occurrence_factory('dummy-value')],
+            [],
+        ),
+        # Different hashes are actual changes; ordered by hash of the shared location.
+        (
+            [occurrence_factory('dummy-old')],
+            [occurrence_factory('dummy-new')],
+            [('REMOVED', 'a.py'), ('ADDED', 'a.py')],
+        ),
+        # Equal baselines, and empty baselines, stay silent.
+        (
+            [
+                occurrence_factory('dummy-value', filename='a.py'),
+                occurrence_factory('dummy-value', filename='b.py'),
+            ],
+            [
+                occurrence_factory('dummy-value', filename='a.py'),
+                occurrence_factory('dummy-value', filename='b.py'),
+            ],
+            [],
+        ),
+        ([], [], []),
+    ),
+)
+def test_occurrence_boundaries(printer, secretsA, secretsB, expected_output):
+    with allow_fake_files():
+        run_logic(get_secrets(*secretsA), get_secrets(*secretsB))
+
+    assert parse_audit_output(printer.message) == expected_output
 
 
 @pytest.mark.parametrize(
@@ -117,6 +226,26 @@ def parse_ordering(printer) -> str:
     return ''.join(output)
 
 
+def parse_audit_output(message: str):
+    """Returns the rendered (status, filename) entries, in display order."""
+    output = []
+    filename = None
+
+    # Strip ANSI escape codes, since colorization depends on the terminal.
+    message = re.sub(r'\x1b\[[0-9;]*m', '', message)
+    for line in message.splitlines():
+        match = re.search(r'Filename:\s+(\S+)', line)
+        if match:
+            filename = match.group(1)
+            continue
+
+        match = re.search(r'>> (ADDED|REMOVED) <<', line)
+        if match:
+            output.append((match.group(1), filename))
+
+    return output
+
+
 def test_file_no_longer_exists(printer, mock_user_decision):
     secretsA = SecretsCollection()
     secretsA['fileB'].add(potential_secret_factory('a'))
@@ -178,3 +307,21 @@ def mock_user_decision():
         return_value=InputOptions.SKIP,
     ) as m:
         yield m
+
+
+def deny_network(*args, **kwargs):
+    raise AssertionError('audit comparison tests must not use the network')
+
+
+@pytest.fixture(autouse=True)
+def no_network(monkeypatch):
+    """Guards this offline test module against accidental socket usage.
+
+    `ssl` is imported at module load time, so patching the bound methods of the
+    existing socket classes is enough -- including for `ssl.SSLSocket` subclasses.
+    """
+    monkeypatch.setattr(socket.socket, 'connect', deny_network)
+    monkeypatch.setattr(socket.socket, 'connect_ex', deny_network)
+    monkeypatch.setattr(ssl.SSLSocket, 'connect', deny_network)
+    monkeypatch.setattr(ssl.SSLSocket, 'connect_ex', deny_network)
+    monkeypatch.setattr(socket, 'create_connection', deny_network)
