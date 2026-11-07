@@ -63,7 +63,7 @@ following:
 ```bash
 $ detect-secrets scan --list-all-plugins | \
     grep -v 'BasicAuthDetector' | \
-    sed "s#^#--disable-plugin #g | \
+    sed "s#^#--disable-plugin #g" | \
     xargs detect-secrets scan test_data
 ```
 
