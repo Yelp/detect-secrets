@@ -258,7 +258,11 @@ def _get_lines_from_file(filename: str) -> Generator[List[str], None, None]:
     :raises: IOError
     :raises: FileNotFoundError
     """
-    with open(filename) as f:
+    # Always decode as UTF-8 so that scanning does not depend on the platform
+    # locale. On Windows, ``open()`` defaults to the ANSI code page (often
+    # cp1252), which cannot decode valid UTF-8 files that contain bytes such
+    # as 0x81. Those files used to be silently treated as binary.
+    with open(filename, encoding='utf-8') as f:
         log.info(f'Checking file: {filename}')
 
         try:
@@ -266,7 +270,8 @@ def _get_lines_from_file(filename: str) -> Generator[List[str], None, None]:
             if not lines:
                 lines = f.readlines()
         except UnicodeDecodeError:
-            # We flat out ignore binary files
+            # We flat out ignore binary (or non-UTF-8) files
+            log.debug(f'Skipping non-UTF-8 file: {filename}')
             return
 
         yield lines

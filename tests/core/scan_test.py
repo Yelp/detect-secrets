@@ -96,6 +96,26 @@ class TestScanFile:
 
             assert not list(scan.scan_file(f.name))
 
+    @staticmethod
+    def test_scans_utf8_files_when_locale_cannot_decode_them(monkeypatch):
+        # Simulate a non-UTF-8 locale (e.g. cp1252 on Windows). The file is
+        # valid UTF-8, but 0x81 (part of the Cyrillic "es") is undefined in
+        # cp1252, so opening it without an explicit encoding used to fail and
+        # the whole file was silently skipped.
+        real_open = open
+
+        def cp1252_open(*args, **kwargs):
+            kwargs.setdefault('encoding', 'cp1252')
+            return real_open(*args, **kwargs)
+
+        monkeypatch.setattr('builtins.open', cp1252_open)
+
+        with mock_named_temporary_file(suffix='.md') as f:
+            f.write('# \u0441\nhttps://user:pass@example.com\n'.encode('utf-8'))
+            f.seek(0)
+
+            assert list(scan.scan_file(f.name))
+
 
 @pytest.fixture(autouse=True)
 def configure_plugins():
