@@ -11,11 +11,15 @@ def get_relative_path(root: str, path: str) -> Optional[str]:
 
 
 def get_relative_path_if_in_cwd(path: str) -> Optional[str]:
-    filepath = os.path.realpath(path)[len(os.getcwd() + '/'):]
-    if os.path.isfile(filepath):
-        return filepath
+    real_path = os.path.realpath(path)
+    if not os.path.isfile(real_path):
+        return None
 
-    return None
+    try:
+        rel = Path(real_path).relative_to(Path.cwd().resolve())
+        return str(rel)
+    except ValueError:
+        return real_path
 
 
 def convert_local_os_path(path: str) -> str:
