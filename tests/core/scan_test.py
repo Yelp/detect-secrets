@@ -39,6 +39,17 @@ class TestGetFilesToScan:
         )
 
     @staticmethod
+    def test_should_scan_files_outside_cwd_when_all_files_flag_is_provided():
+        import tempfile
+        with tempfile.TemporaryDirectory() as td:
+            target_file = os.path.join(td, 'outside_secret.env')
+            with open(target_file, 'w') as f:
+                f.write('password = 123456\n')
+
+            scanned = list(scan.get_files_to_scan(td, should_scan_all_files=True))
+            assert os.path.realpath(target_file) in [os.path.realpath(p) for p in scanned]
+
+    @staticmethod
     def test_handles_each_path_separately(non_tracked_file):
         results = list(
             scan.get_files_to_scan(
